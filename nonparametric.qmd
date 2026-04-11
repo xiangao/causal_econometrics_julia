@@ -119,7 +119,8 @@ X_mu0 = copy(X_mu); X_mu0.A .= 0
 mu1hat = pdf.(MLJ.predict(mach_mu, X_mu1), 1)
 mu0hat = pdf.(MLJ.predict(mach_mu, X_mu0), 1)
 
-mean(mu1hat .- mu0hat)
+plug_in_ate = mean(mu1hat .- mu0hat)
+DataFrame(Estimand=["ATE (plug-in)"], Value=[round(plug_in_ate, digits=4)])
 ```
 
 ### AIPW ATE
@@ -154,7 +155,8 @@ aipw_manual = aipw_1 - aipw_0
 ci_lb = mean(IF) - quantile(Normal(), 0.975) * std(IF) / sqrt(length(IF))
 ci_ub = mean(IF) + quantile(Normal(), 0.975) * std(IF) / sqrt(length(IF))
 res_manual_aipw = [aipw_manual, ci_lb, ci_ub]
-res_manual_aipw
+DataFrame(Estimand=["ATE (AIPW)", "95% CI Lower", "95% CI Upper"],
+          Value=round.(res_manual_aipw, digits=4))
 ```
 
 ### AIPW ATE Using NPCausal.jl

@@ -161,7 +161,7 @@ stage1 = feols(data, @formula(w ~ z))
 data.w_hat = data.w .- stage1.residuals # Obtain fitted values
 
 # Stage 2: Regress outcome y on predicted w_hat
-tsls_manual = feols(data, @formula(y ~ w_hat))
+tsls_manual = feols(data, @formula(y ~ w_hat));
 ```
 
 ```{julia}

@@ -211,7 +211,8 @@ Qbar_A1_M0 = predict(or_fit, data_A1_M0)
 Qbar_A0_M0 = predict(or_fit, data_A0_M0)
 
 # gcomp estimate of CDE(0)
-mean(Qbar_A1_M0 .- Qbar_A0_M0)
+cde_gcomp = mean(Qbar_A1_M0 .- Qbar_A0_M0)
+DataFrame(Estimand=["CDE(0) G-computation"], Value=[round(cde_gcomp, digits=4)])
 ```
 
 ### Example: IPW
@@ -239,8 +240,9 @@ data_A0 = copy(full_data); data_A0.A .= 0
 P_M0_A0_W = 1 .- predict(ps_fit2, data_A0)
 
 # ipw estimate of CDE(0)
-mean( (A .== 1) ./ P_A1_W .* (M .== 0) ./ P_M0_A1_W .* Y ) -
-mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* Y )
+cde_ipw = mean( (A .== 1) ./ P_A1_W .* (M .== 0) ./ P_M0_A1_W .* Y ) -
+          mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* Y )
+DataFrame(Estimand=["CDE(0) IPW"], Value=[round(cde_ipw, digits=4)])
 ```
 
 ### Example: AIPW
@@ -260,7 +262,8 @@ aiptw_EY_A0_M0 = mean(Qbar_A0_M0) +
 mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* (Y .- Qbar_A0_M0) )
 
 # aipw estimate of CDE(0)
-aiptw_EY_A1_M0 - aiptw_EY_A0_M0
+cde_aipw = aiptw_EY_A1_M0 - aiptw_EY_A0_M0
+DataFrame(Estimand=["CDE(0) AIPW"], Value=[round(cde_aipw, digits=4)])
 ```
 
 ## NIE and NDE: Natural Direct and Indirect Effects
@@ -346,6 +349,12 @@ E_Y0M1 = mean(EY0M1_Wi)
 E_Y1M0 = mean(EY1M0_Wi)
 # estimate of E[Y(0, M(0))]
 E_Y0M0 = mean(EY0M0_Wi)
+
+# NDE = E[Y(1,M(0))] - E[Y(0,M(0))], NIE = E[Y(1,M(1))] - E[Y(1,M(0))]
+DataFrame(
+    Effect = ["NDE", "NIE", "ATE"],
+    Value  = round.([E_Y1M0 - E_Y0M0, E_Y1M1 - E_Y1M0, E_Y1M1 - E_Y0M0], digits=4)
+)
 ```
 
 ## IIE and IDE: Interventional Direct and Indirect Effects

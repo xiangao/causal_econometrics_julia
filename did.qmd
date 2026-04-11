@@ -146,7 +146,7 @@ mod = feols(mpdta, @formula(lemp ~ lpop + first_treat_str & year_str + fe(county
 #| warning: false
 #| cache: true
 #| echo: true
-mod
+show(stdout, MIME("text/plain"), StatsAPI.coeftable(mod))
 ```
 
 ```{julia did5}
@@ -269,7 +269,7 @@ did_data.year_str = string.(did_data.year)
 
 # this replicates Jeff's results with pooled ols or xtreg, with covariate x.
 mod = feols(did_data, @formula(y ~ x + first_treat_str & year_str + fe(id) + fe(year)), vcov = Vcov.cluster(:id))
-mod
+show(stdout, MIME("text/plain"), StatsAPI.coeftable(mod))
 ```
 
 ```{julia did12}

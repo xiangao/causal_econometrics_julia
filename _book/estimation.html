@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -105,6 +105,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -348,7 +351,7 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <h2 data-number="2.4" class="anchored" data-anchor-id="linear-ra"><span class="header-section-number">2.4</span> Linear RA</h2>
 <p>Regression Adjustment is basically an imputation estimator. While we observe <span class="math inline">\(E[Y|W=1,X]\)</span>, we model <span class="math inline">\(E[Y(0)|W=1]\)</span>, based on unconfoundedness and a functional form (say linear form). We estimate <span class="math inline">\(\beta_0\)</span> on the control sample, then get the expected values for the treated sample, for each value of <span class="math inline">\(X\)</span>.</p>
 <p>Implementation of linear RA is easy. We regress <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span> and their interaction. It’s shown that we need to de-mean <span class="math inline">\(X\)</span> to get the effect correct.</p>
-<div id="b7ca7403" class="cell" data-cache="true" data-message="false" data-execution_count="2">
+<div id="445b8ca5" class="cell" data-cache="true" data-message="false" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">Statistics</span>, <span class="bu">GLM</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the pension dataset from the hdm R package (Chernozhukov et al.)</span></span>
@@ -367,86 +370,18 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>lm_ra <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(net_tfa <span class="op">~</span> p401 <span class="op">*</span> (inc_dm <span class="op">+</span> age_dm)), data)</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftable</span>(lm_ra)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="3">
-<table class="caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 17%">
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 7%">
-<col style="width: 11%">
-<col style="width: 15%">
-<col style="width: 15%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;"></th>
-<th style="text-align: right;">Coef.</th>
-<th style="text-align: right;">Std. Error</th>
-<th style="text-align: right;">t</th>
-<th style="text-align: left;">Pr(&gt;</th>
-<th style="text-align: left;">t</th>
-<th style="text-align: right;">)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">24101.9</td>
-<td style="text-align: right;">831.154</td>
-<td style="text-align: right;">29.00</td>
-<td style="text-align: left;">&lt;1e-99</td>
-<td style="text-align: left;">22472.6</td>
-<td style="text-align: right;">25731.1</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">p401</td>
-<td style="text-align: right;">14160.2</td>
-<td style="text-align: right;">1397.3</td>
-<td style="text-align: right;">10.13</td>
-<td style="text-align: left;">&lt;1e-23</td>
-<td style="text-align: left;">11421.2</td>
-<td style="text-align: right;">16899.2</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">inc_dm</td>
-<td style="text-align: right;">0.772333</td>
-<td style="text-align: right;">0.0300867</td>
-<td style="text-align: right;">25.67</td>
-<td style="text-align: left;">&lt;1e-99</td>
-<td style="text-align: left;">0.713357</td>
-<td style="text-align: right;">0.831309</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">age_dm</td>
-<td style="text-align: right;">797.675</td>
-<td style="text-align: right;">63.5026</td>
-<td style="text-align: right;">12.56</td>
-<td style="text-align: left;">&lt;1e-35</td>
-<td style="text-align: left;">673.197</td>
-<td style="text-align: right;">922.153</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">p401 &amp; inc_dm</td>
-<td style="text-align: right;">0.330018</td>
-<td style="text-align: right;">0.0513314</td>
-<td style="text-align: right;">6.43</td>
-<td style="text-align: left;">&lt;1e-09</td>
-<td style="text-align: left;">0.229398</td>
-<td style="text-align: right;">0.430638</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">p401 &amp; age_dm</td>
-<td style="text-align: right;">815.335</td>
-<td style="text-align: right;">133.26</td>
-<td style="text-align: right;">6.12</td>
-<td style="text-align: left;">&lt;1e-09</td>
-<td style="text-align: left;">554.119</td>
-<td style="text-align: right;">1076.55</td>
-</tr>
-</tbody>
-</table>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(<span class="cn">stdout</span>, <span class="fu">MIME</span>(<span class="st">"text/plain"</span>), <span class="fu">coeftable</span>(lm_ra))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>──────────────────────────────────────────────────────────────────────────────────────
+                      Coef.    Std. Error      t  Pr(&gt;|t|)     Lower 95%     Upper 95%
+──────────────────────────────────────────────────────────────────────────────────────
+(Intercept)    24101.9        831.154      29.00    &lt;1e-99  22472.6       25731.1
+p401           14160.2       1397.3        10.13    &lt;1e-23  11421.2       16899.2
+inc_dm             0.772333     0.0300867  25.67    &lt;1e-99      0.713357      0.831309
+age_dm           797.675       63.5026     12.56    &lt;1e-35    673.197       922.153
+p401 &amp; inc_dm      0.330018     0.0513314   6.43    &lt;1e-09      0.229398      0.430638
+p401 &amp; age_dm    815.335      133.26        6.12    &lt;1e-09    554.119      1076.55
+──────────────────────────────────────────────────────────────────────────────────────</code></pre>
 </div>
 </div>
 <p>After demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on <span class="math inline">\(W\)</span> is the average treatment effect.</p>
@@ -503,47 +438,70 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <h3 data-number="2.6.1" class="anchored" data-anchor-id="aipw"><span class="header-section-number">2.6.1</span> AIPW</h3>
 <p><span class="math display">\[ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] \]</span></p>
 <p><span class="math display">\[ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] \]</span></p>
-<div id="f8725a2a" class="cell" data-cache="true" data-message="false" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment: mbsmoke (maternal smoking), Outcome: bweight (birthweight in grams)</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/cattaneo2.csv"</span>, DataFrame)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome Model (mu)</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(bweight <span class="op">~</span> mbsmoke <span class="op">*</span> (prenatal1 <span class="op">+</span> mmarried <span class="op">+</span> mage <span class="op">+</span> fbaby)), data)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Propensity Score Model (pi)</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>pi_model <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(mbsmoke <span class="op">~</span> mmarried <span class="op">+</span> mage <span class="op">+</span> fbaby <span class="op">+</span> medu), data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict Potential Outcomes for treated and control assignments</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>data_treated <span class="op">=</span> <span class="fu">copy</span>(data)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>data_treated.mbsmoke <span class="op">.=</span> <span class="fl">1</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>mm1 <span class="op">=</span> GLM.<span class="fu">predict</span>(mu, data_treated)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>data_control <span class="op">=</span> <span class="fu">copy</span>(data)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>data_control.mbsmoke <span class="op">.=</span> <span class="fl">0</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>mm0 <span class="op">=</span> GLM.<span class="fu">predict</span>(mu, data_control)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict Propensity Scores</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>pi1 <span class="op">=</span> GLM.<span class="fu">predict</span>(pi_model, data)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Assemble data for final AIPW computation</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>data.w <span class="op">=</span> data.mbsmoke</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>data.y <span class="op">=</span> data.bweight</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>data.m1 <span class="op">=</span> mm1</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>data.m0 <span class="op">=</span> mm0</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>data.pi1 <span class="op">=</span> pi1</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute Doubly Robust potential outcomes</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>data.mu1 <span class="op">=</span> @. (data.w <span class="op">*</span> (data.y <span class="op">-</span> data.m1) <span class="op">/</span> data.pi1 <span class="op">+</span> data.m1)</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>data.mu0 <span class="op">=</span> @. ((<span class="fl">1</span> <span class="op">-</span> data.w) <span class="op">*</span> (data.y <span class="op">-</span> data.m0) <span class="op">/</span> (<span class="fl">1</span> <span class="op">-</span> data.pi1) <span class="op">+</span> data.m0)</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate treatment effect</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>data.tau <span class="op">=</span> data.mu1 <span class="op">.-</span> data.mu0</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(data.tau)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="dae36936" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment: mbsmoke (maternal smoking), Outcome: bweight (birthweight in grams)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/cattaneo2.csv"</span>, DataFrame)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome Model (mu)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(bweight <span class="op">~</span> mbsmoke <span class="op">*</span> (prenatal1 <span class="op">+</span> mmarried <span class="op">+</span> mage <span class="op">+</span> fbaby)), data)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Propensity Score Model (pi)</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>pi_model <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(mbsmoke <span class="op">~</span> mmarried <span class="op">+</span> mage <span class="op">+</span> fbaby <span class="op">+</span> medu), data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict Potential Outcomes for treated and control assignments</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>data_treated <span class="op">=</span> <span class="fu">copy</span>(data)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>data_treated.mbsmoke <span class="op">.=</span> <span class="fl">1</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>mm1 <span class="op">=</span> GLM.<span class="fu">predict</span>(mu, data_treated)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>data_control <span class="op">=</span> <span class="fu">copy</span>(data)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>data_control.mbsmoke <span class="op">.=</span> <span class="fl">0</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>mm0 <span class="op">=</span> GLM.<span class="fu">predict</span>(mu, data_control)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict Propensity Scores</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>pi1 <span class="op">=</span> GLM.<span class="fu">predict</span>(pi_model, data)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Assemble data for final AIPW computation</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>data.w <span class="op">=</span> data.mbsmoke</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>data.y <span class="op">=</span> data.bweight</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>data.m1 <span class="op">=</span> mm1</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>data.m0 <span class="op">=</span> mm0</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>data.pi1 <span class="op">=</span> pi1</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute Doubly Robust potential outcomes</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>data.mu1 <span class="op">=</span> @. (data.w <span class="op">*</span> (data.y <span class="op">-</span> data.m1) <span class="op">/</span> data.pi1 <span class="op">+</span> data.m1)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>data.mu0 <span class="op">=</span> @. ((<span class="fl">1</span> <span class="op">-</span> data.w) <span class="op">*</span> (data.y <span class="op">-</span> data.m0) <span class="op">/</span> (<span class="fl">1</span> <span class="op">-</span> data.pi1) <span class="op">+</span> data.m0)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate treatment effect</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>data.tau <span class="op">=</span> data.mu1 <span class="op">.-</span> data.mu0</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>tau_aipw <span class="op">=</span> <span class="fu">mean</span>(data.tau)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(Estimand<span class="op">=</span>[<span class="st">"ATE (AIPW)"</span>], Value<span class="op">=</span>[<span class="fu">round</span>(tau_aipw, digits<span class="op">=</span><span class="fl">2</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
-<pre><code>-233.77374284829116</code></pre>
+<div><div style="float: left;"><span>1×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Estimand</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Value</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">ATE (AIPW)</td>
+<td style="text-align: right;">-233.77</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 </section>
@@ -557,7 +515,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <li>Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.</li>
 <li>Take difference. The average is the ATE.</li>
 </ul>
-<div id="854d6048" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="27afde1d" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
@@ -595,9 +553,32 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>data.m0 <span class="op">=</span> mm0</span>
 <span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>data.tau <span class="op">=</span> data.m1 <span class="op">.-</span> data.m0</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(data.tau)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>tau_ipwra <span class="op">=</span> <span class="fu">mean</span>(data.tau)</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(Estimand<span class="op">=</span>[<span class="st">"ATE (IPWRA)"</span>], Value<span class="op">=</span>[<span class="fu">round</span>(tau_ipwra, digits<span class="op">=</span><span class="fl">2</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
-<pre><code>-233.1791522978111</code></pre>
+<div><div style="float: left;"><span>1×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Estimand</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Value</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">ATE (IPWRA)</td>
+<td style="text-align: right;">-233.18</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 
