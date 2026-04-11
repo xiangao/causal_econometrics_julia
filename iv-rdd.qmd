@@ -10,6 +10,7 @@ using Panelest
 using Vcov
 using DataFrames
 using StatsModels, StatsAPI, DataFramesMeta
+using Printf
 ```
 
 If we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.
@@ -261,8 +262,8 @@ fig2
 #| echo: true
 # Estimate the sharp RDD model
 rdd_gpa = rdrobust(future_success, GPA, c=3.0)
-println("Tau (bias-corrected) = ", round(rdd_gpa.Estimate.tau_us[1], digits=2))
-println("P-value (robust)     = ", round(rdd_gpa.pv.PValue[3], digits=4))
+@printf "Tau (bias-corrected) = %.2f\n" rdd_gpa.Estimate.tau_us[1]
+@printf "P-value (robust)     = %.4f\n" rdd_gpa.pv.PValue[3]
 ```
 
 ### Nonparametric Estimation
@@ -272,8 +273,8 @@ println("P-value (robust)     = ", round(rdd_gpa.pv.PValue[3], digits=4))
 #| message: false
 #| echo: true
 rdd_house = rdrobust(senate.vote, senate.margin, c=0.0)
-println("Tau (bias-corrected) = ", round(rdd_house.Estimate.tau_us[1], digits=2))
-println("P-value (robust)     = ", round(rdd_house.pv.PValue[3], digits=4))
+@printf "Tau (bias-corrected) = %.2f\n" rdd_house.Estimate.tau_us[1]
+@printf "P-value (robust)     = %.4f\n" rdd_house.pv.PValue[3]
 ```
 
 ### Fuzzy RDD
@@ -340,8 +341,8 @@ m_rdd = rdrobust(vet.home_ownership,
                  vet.qob_minus_kw,
                  fuzzy = vet.vet_wwko,
                  c = 0.0)
-println("Manual 2SLS     tau = ", round(m_iv.beta[3], digits=2))
-println("RDRobust (FRDD) tau = ", round(m_rdd.Estimate.tau_us[1], digits=2))
+@printf "Manual 2SLS     tau = %.2f\n" m_iv.beta[3]
+@printf "RDRobust (FRDD) tau = %.2f\n" m_rdd.Estimate.tau_us[1]
 ```
 
 These two results are very different, which is one of RDD's problems. It can be sensitive to model selection. For example, in the case of 2SLS, it's a linear model. In the case of `rdrobust`, it's a local regression, which can be sensitive to bandwidth selection.

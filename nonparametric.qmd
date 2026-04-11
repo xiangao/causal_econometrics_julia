@@ -12,6 +12,7 @@ using MLJLinearModels
 using DecisionTree
 using NPCausal
 using TMLE
+using Printf
 ```
 
 ## Why Do We Need Nonparametric Methods?
@@ -76,7 +77,7 @@ W = DataFrame(w1=w1, w2=w2, w3=w3, w4=w4)
 df = DataFrame(w1=w1, w2=w2, w3=w3, w4=w4, A=A, Y=Y, Y_1=Y_1, Y_0=Y_0)
 
 True_Psi = mean(df.Y_1 .- df.Y_0)
-println("True ATE = ", round(True_Psi, digits=2))
+@printf "True ATE = %.2f\n" True_Psi
 ```
 
 ```{julia}
@@ -120,7 +121,7 @@ mu1hat = pdf.(MLJ.predict(mach_mu, X_mu1), 1)
 mu0hat = pdf.(MLJ.predict(mach_mu, X_mu0), 1)
 
 plug_in_ate = mean(mu1hat .- mu0hat)
-println("ATE (plug-in) = ", round(plug_in_ate, digits=2))
+@printf "ATE (plug-in) = %.2f\n" plug_in_ate
 ```
 
 ### AIPW ATE
@@ -155,8 +156,8 @@ aipw_manual = aipw_1 - aipw_0
 ci_lb = mean(IF) - quantile(Normal(), 0.975) * std(IF) / sqrt(length(IF))
 ci_ub = mean(IF) + quantile(Normal(), 0.975) * std(IF) / sqrt(length(IF))
 res_manual_aipw = [aipw_manual, ci_lb, ci_ub]
-println("ATE (AIPW)   = ", round(aipw_manual, digits=2))
-println("95% CI       = [", round(ci_lb, digits=2), ", ", round(ci_ub, digits=2), "]")
+@printf "ATE (AIPW)   = %.2f\n" aipw_manual
+@printf "95%% CI       = [%.2f, %.2f]\n" ci_lb ci_ub
 ```
 
 ### AIPW ATE Using NPCausal.jl
@@ -246,7 +247,7 @@ Random.seed!(42)
 
 tmle_result = tmle(Ψ, η, df; crossfit=5, verbosity=0)
 show(stdout, MIME("text/plain"), tmle_result)
-println("\nTrue ATE: ", round(True_Psi, digits=2))
+@printf "\nTrue ATE: %.2f\n" True_Psi
 ```
 
 ## DoubleML
@@ -328,6 +329,6 @@ se_theta = sqrt(var_theta / n_samples)
 
 ci_lb = theta_hat - 1.96 * se_theta
 ci_ub = theta_hat + 1.96 * se_theta
-println("DML PLR Estimate = ", round(theta_hat, digits=2), " (SE = ", round(se_theta, digits=2), ")")
-println("95% CI           = [", round(ci_lb, digits=2), ", ", round(ci_ub, digits=2), "]")
+@printf "DML PLR Estimate = %.2f (SE = %.2f)\n" theta_hat se_theta
+@printf "95%% CI           = [%.2f, %.2f]\n" ci_lb ci_ub
 ```

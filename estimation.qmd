@@ -14,6 +14,7 @@ using Statistics
 using GLM
 using Downloads
 using Random
+using Printf
 ```
 
 Once we have identification, which means we can identify the causal effect from the observed data, we can move to estimation. Estimation is to estimate the identified causal effect from the observed data. We have several methods for estimation, including regression adjustment (RA), inverse probability weighting (IPW), augmented inverse probability weighting (AIPW) and inverse probability weighted regression adjustment (IPWRA).
@@ -198,7 +199,7 @@ data.mu0 = @. ((1 - data.w) * (data.y - data.m0) / (1 - data.pi1) + data.m0)
 # Calculate treatment effect
 data.tau = data.mu1 .- data.mu0
 tau_aipw = mean(data.tau)
-println("ATE (AIPW) = ", round(tau_aipw, digits=2))
+@printf "ATE (AIPW) = %.2f\n" tau_aipw
 ```
 
 ### IPWRA
@@ -255,5 +256,5 @@ data.m0 = mm0
 
 data.tau = data.m1 .- data.m0
 tau_ipwra = mean(data.tau)
-println("ATE (IPWRA) = ", round(tau_ipwra, digits=2))
+@printf "ATE (IPWRA) = %.2f\n" tau_ipwra
 ```

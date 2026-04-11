@@ -13,6 +13,7 @@ using CSV
 using SynthDiD
 using CairoMakie
 using Statistics
+using Printf
 ```
 
 What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.
@@ -119,7 +120,7 @@ We'll use the mpdta dataset on US teen employment from the did package. "Treatme
 # US teen employment data; treatment = minimum wage increase
 mpdta = CSV.read("data/mpdta.csv", DataFrame)
 rename!(mpdta, "first.treat" => "first_treat")
-first(mpdta, 6)
+show(stdout, first(mpdta, 6); eltypes=false)
 ```
 
 ```{julia did2}
@@ -204,7 +205,7 @@ did_data = DataFrame(readstat("data/did_staggered_6.dta"))
     end
 end
 
-first(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat), 6)
+show(stdout, first(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat), 6); eltypes=false)
 ```
 
 ```{julia did19}
@@ -337,7 +338,7 @@ tau_hat = synthdid_estimate(setup.Y, setup.N0, setup.T0)
 tau_sc  = sc_estimate(setup.Y, setup.N0, setup.T0)
 tau_did = did_estimate(setup.Y, setup.N0, setup.T0)
 
-println("Diff-in-Diff           = ", round(tau_did.estimate, digits=2))
-println("Synthetic Control      = ", round(tau_sc.estimate, digits=2))
-println("Synthetic Diff-in-Diff = ", round(tau_hat.estimate, digits=2))
+@printf "Diff-in-Diff           = %.2f\n" tau_did.estimate
+@printf "Synthetic Control      = %.2f\n" tau_sc.estimate
+@printf "Synthetic Diff-in-Diff = %.2f\n" tau_hat.estimate
 ```

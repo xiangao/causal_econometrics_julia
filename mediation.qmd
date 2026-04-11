@@ -16,6 +16,7 @@ using StatsFuns
 using Statistics
 using Lavaan
 using Crumble
+using Printf
 ```
 
 ```{julia}
@@ -212,7 +213,7 @@ Qbar_A0_M0 = predict(or_fit, data_A0_M0)
 
 # gcomp estimate of CDE(0)
 cde_gcomp = mean(Qbar_A1_M0 .- Qbar_A0_M0)
-println("CDE(0) G-computation = ", round(cde_gcomp, digits=2))
+@printf "CDE(0) G-computation = %.2f\n" cde_gcomp
 ```
 
 ### Example: IPW
@@ -242,7 +243,7 @@ P_M0_A0_W = 1 .- predict(ps_fit2, data_A0)
 # ipw estimate of CDE(0)
 cde_ipw = mean( (A .== 1) ./ P_A1_W .* (M .== 0) ./ P_M0_A1_W .* Y ) -
           mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* Y )
-println("CDE(0) IPW = ", round(cde_ipw, digits=2))
+@printf "CDE(0) IPW = %.2f\n" cde_ipw
 ```
 
 ### Example: AIPW
@@ -263,7 +264,7 @@ mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* (Y .- Qbar_A0_M0) )
 
 # aipw estimate of CDE(0)
 cde_aipw = aiptw_EY_A1_M0 - aiptw_EY_A0_M0
-println("CDE(0) AIPW = ", round(cde_aipw, digits=2))
+@printf "CDE(0) AIPW = %.2f\n" cde_aipw
 ```
 
 ## NIE and NDE: Natural Direct and Indirect Effects
@@ -351,9 +352,9 @@ E_Y1M0 = mean(EY1M0_Wi)
 E_Y0M0 = mean(EY0M0_Wi)
 
 # NDE = E[Y(1,M(0))] - E[Y(0,M(0))], NIE = E[Y(1,M(1))] - E[Y(1,M(0))]
-println("NDE = ", round(E_Y1M0 - E_Y0M0, digits=2))
-println("NIE = ", round(E_Y1M1 - E_Y1M0, digits=2))
-println("ATE = ", round(E_Y1M1 - E_Y0M0, digits=2))
+@printf "NDE = %.2f\n" (E_Y1M0 - E_Y0M0)
+@printf "NIE = %.2f\n" (E_Y1M1 - E_Y1M0)
+@printf "ATE = %.2f\n" (E_Y1M1 - E_Y0M0)
 ```
 
 ## IIE and IDE: Interventional Direct and Indirect Effects
@@ -431,7 +432,7 @@ w_names = ["W_1", "W_2", "W_3"]
 m_names = ["M"]
 
 # quick look at the data
-first(example_data, 6)
+show(stdout, first(example_data, 6); eltypes=false)
 ```
 
 ```{julia}
@@ -462,7 +463,7 @@ result
 # Extract direct and indirect effect estimates
 ide = result.estimates["direct"]
 iie = result.estimates["indirect"]
-println("IDE (Direct)   = ", round(ide["estimate"], digits=2), " (SE = ", round(ide["std.error"], digits=2), ")")
-println("IIE (Indirect) = ", round(iie["estimate"], digits=2), " (SE = ", round(iie["std.error"], digits=2), ")")
-println("ATE            = ", round(result.estimates["ate"]["estimate"], digits=2))
+@printf "IDE (Direct)   = %.2f (SE = %.2f)\n" ide["estimate"] ide["std.error"]
+@printf "IIE (Indirect) = %.2f (SE = %.2f)\n" iie["estimate"] iie["std.error"]
+@printf "ATE            = %.2f\n" result.estimates["ate"]["estimate"]
 ```

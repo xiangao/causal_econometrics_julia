@@ -336,7 +336,7 @@ window.Quarto = {
 <p>In this estimator, both <span class="math inline">\(\hat \mu\)</span> and <span class="math inline">\(\hat \pi\)</span> can be done using any estimator, such as machine learning.</p>
 <section id="simulation-setup" class="level3" data-number="3.2.1">
 <h3 data-number="3.2.1" class="anchored" data-anchor-id="simulation-setup"><span class="header-section-number">3.2.1</span> Simulation Setup</h3>
-<div id="2adddc3b" class="cell" data-cache="true" data-message="false" data-execution_count="2">
+<div id="0ca0c311" class="cell" data-cache="true" data-message="false" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1000</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>w1 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Binomial</span>(<span class="fl">1</span>, <span class="fl">0.5</span>), n)</span>
@@ -360,12 +360,12 @@ window.Quarto = {
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(w1<span class="op">=</span>w1, w2<span class="op">=</span>w2, w3<span class="op">=</span>w3, w4<span class="op">=</span>w4, A<span class="op">=</span>A, Y<span class="op">=</span>Y, Y_1<span class="op">=</span>Y_1, Y_0<span class="op">=</span>Y_0)</span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>True_Psi <span class="op">=</span> <span class="fu">mean</span>(df.Y_1 <span class="op">.-</span> df.Y_0)</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"True ATE = "</span>, <span class="fu">round</span>(True_Psi, digits<span class="op">=</span><span class="fl">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"True ATE = %.2f</span><span class="sc">\n</span><span class="st">"</span> True_Psi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True ATE = 0.18</code></pre>
 </div>
 </div>
-<div id="01b9aabd" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="e321fa8f" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load MLJ models to form our equivalent of SuperLearner</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>LogisticClassifier <span class="op">=</span> <span class="pp">@load</span> LogisticClassifier pkg<span class="op">=</span>MLJLinearModels verbosity<span class="op">=</span><span class="fl">0</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>EvoTreeClassifier <span class="op">=</span> <span class="pp">@load</span> EvoTreeClassifier pkg<span class="op">=</span>EvoTrees verbosity<span class="op">=</span><span class="fl">0</span></span>
@@ -437,7 +437,7 @@ window.Quarto = {
 </section>
 <section id="plug-in-estimator-from-outcome-regression" class="level3" data-number="3.2.2">
 <h3 data-number="3.2.2" class="anchored" data-anchor-id="plug-in-estimator-from-outcome-regression"><span class="header-section-number">3.2.2</span> Plug-in Estimator from Outcome Regression</h3>
-<div id="61c2e944" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="c818f922" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X_mu <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4, <span class="op">:</span>A)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>mach_mu <span class="op">=</span> <span class="fu">machine</span>(stack, X_mu, <span class="fu">categorical</span>(df.Y))</span>
@@ -452,7 +452,7 @@ window.Quarto = {
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>mu0hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu, X_mu0), <span class="fl">1</span>)</span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>plug_in_ate <span class="op">=</span> <span class="fu">mean</span>(mu1hat <span class="op">.-</span> mu0hat)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"ATE (plug-in) = "</span>, <span class="fu">round</span>(plug_in_ate, digits<span class="op">=</span><span class="fl">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (plug-in) = %.2f</span><span class="sc">\n</span><span class="st">"</span> plug_in_ate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ATE (plug-in) = 0.18</code></pre>
 </div>
@@ -460,7 +460,7 @@ window.Quarto = {
 </section>
 <section id="aipw-ate" class="level3" data-number="3.2.3">
 <h3 data-number="3.2.3" class="anchored" data-anchor-id="aipw-ate"><span class="header-section-number">3.2.3</span> AIPW ATE</h3>
-<div id="ffeffffd" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<div id="4652946c" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>X_pi <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>mach_pi <span class="op">=</span> <span class="fu">machine</span>(stack, X_pi, <span class="fu">categorical</span>(df.A))</span>
@@ -486,8 +486,8 @@ window.Quarto = {
 <span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>ci_lb <span class="op">=</span> <span class="fu">mean</span>(IF) <span class="op">-</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF))</span>
 <span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>ci_ub <span class="op">=</span> <span class="fu">mean</span>(IF) <span class="op">+</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF))</span>
 <span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>res_manual_aipw <span class="op">=</span> [aipw_manual, ci_lb, ci_ub]</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"ATE (AIPW)   = "</span>, <span class="fu">round</span>(aipw_manual, digits<span class="op">=</span><span class="fl">2</span>))</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"95% CI       = ["</span>, <span class="fu">round</span>(ci_lb, digits<span class="op">=</span><span class="fl">2</span>), <span class="st">", "</span>, <span class="fu">round</span>(ci_ub, digits<span class="op">=</span><span class="fl">2</span>), <span class="st">"]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (AIPW)   = %.2f</span><span class="sc">\n</span><span class="st">"</span> aipw_manual</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"95%% CI       = [%.2f, %.2f]</span><span class="sc">\n</span><span class="st">"</span> ci_lb ci_ub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ATE (AIPW)   = 0.19
 95% CI       = [0.13, 0.25]</code></pre>
@@ -496,7 +496,7 @@ window.Quarto = {
 </section>
 <section id="aipw-ate-using-npcausal.jl" class="level3" data-number="3.2.4">
 <h3 data-number="3.2.4" class="anchored" data-anchor-id="aipw-ate-using-npcausal.jl"><span class="header-section-number">3.2.4</span> AIPW ATE Using NPCausal.jl</h3>
-<div id="5760095c" class="cell" data-cache="true" data-message="false" data-execution_count="6">
+<div id="5dbf53a4" class="cell" data-cache="true" data-message="false" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">NPCausal</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># SuperLearner ensemble for nuisance estimation</span></span>
@@ -543,7 +543,7 @@ window.Quarto = {
 </section>
 <section id="aipw-att" class="level3" data-number="3.2.5">
 <h3 data-number="3.2.5" class="anchored" data-anchor-id="aipw-att"><span class="header-section-number">3.2.5</span> AIPW ATT</h3>
-<div id="7789f6d2" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<div id="b11c2e8e" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> <span class="fu">copy</span>(df)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df2.pi0hat <span class="op">=</span> pi0hat</span>
@@ -579,7 +579,7 @@ window.Quarto = {
 </section>
 <section id="aipw-att-using-npcausal.jl" class="level3" data-number="3.2.6">
 <h3 data-number="3.2.6" class="anchored" data-anchor-id="aipw-att-using-npcausal.jl"><span class="header-section-number">3.2.6</span> AIPW ATT Using NPCausal.jl</h3>
-<div id="5e225f9a" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<div id="221a9cec" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">NPCausal</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>aipw_att_est <span class="op">=</span> <span class="fu">att</span>(df.Y, df.A, W; nsplits<span class="op">=</span><span class="fl">5</span>, mu_model<span class="op">=</span>mu_model, pi_model<span class="op">=</span>pi_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
@@ -600,7 +600,7 @@ window.Quarto = {
 <h2 data-number="3.3" class="anchored" data-anchor-id="tmle"><span class="header-section-number">3.3</span> TMLE</h2>
 <p>TMLE is a variant of IF based estimator. It is also a doubly robust estimator. See Mark van der Laan and his coauthors for the recent development of TMLE.</p>
 <p>We should expect NPCausal and TMLE to give similar answers.</p>
-<div id="edb7bc2a" class="cell" data-cache="true" data-message="false" data-execution_count="9">
+<div id="a25c95f9" class="cell" data-cache="true" data-message="false" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TMLE</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
@@ -615,7 +615,7 @@ window.Quarto = {
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>tmle_result <span class="op">=</span> <span class="fu">tmle</span>(Ψ, η, df; crossfit<span class="op">=</span><span class="fl">5</span>, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
 <span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(<span class="cn">stdout</span>, <span class="fu">MIME</span>(<span class="st">"text/plain"</span>), tmle_result)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">True ATE: "</span>, <span class="fu">round</span>(True_Psi, digits<span class="op">=</span><span class="fl">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"</span><span class="sc">\n</span><span class="st">True ATE: %.2f</span><span class="sc">\n</span><span class="st">"</span> True_Psi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>TMLE Results
   Parameter:   ATE(Y | A=1 vs 0)
@@ -644,7 +644,7 @@ True ATE: 0.18</code></pre>
 <p><span class="math display">\[\psi (W; \theta, \eta) = (Y-D\theta -g(X))(D-m(X)) \]</span></p>
 <p>The estimator <span class="math inline">\(\hat \theta\)</span> is to solve the equation that the sample mean of this score function being 0.</p>
 <p>And the variance of this score function is used as the variance of the doubleML estimator’s variance.</p>
-<div id="887b3bd4" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div id="59abd28a" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -679,7 +679,7 @@ True ATE: 0.18</code></pre>
 <span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    V_res[test_idx] <span class="op">=</span> df.A[test_idx] <span class="op">.-</span> a_pred</span>
 <span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="ec5a95c6" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<div id="8a4fb653" class="cell" data-cache="true" data-message="false" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FWL theorem: regress residual W_res on residual V_res</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>theta_hat <span class="op">=</span> <span class="fu">sum</span>(W_res <span class="op">.*</span> V_res) <span class="op">/</span> <span class="fu">sum</span>(V_res <span class="op">.^</span> <span class="fl">2</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -690,8 +690,8 @@ True ATE: 0.18</code></pre>
 <span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>ci_lb <span class="op">=</span> theta_hat <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se_theta</span>
 <span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>ci_ub <span class="op">=</span> theta_hat <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se_theta</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"DML PLR Estimate = "</span>, <span class="fu">round</span>(theta_hat, digits<span class="op">=</span><span class="fl">2</span>), <span class="st">" (SE = "</span>, <span class="fu">round</span>(se_theta, digits<span class="op">=</span><span class="fl">2</span>), <span class="st">")"</span>)</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"95% CI           = ["</span>, <span class="fu">round</span>(ci_lb, digits<span class="op">=</span><span class="fl">2</span>), <span class="st">", "</span>, <span class="fu">round</span>(ci_ub, digits<span class="op">=</span><span class="fl">2</span>), <span class="st">"]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"DML PLR Estimate = %.2f (SE = %.2f)</span><span class="sc">\n</span><span class="st">"</span> theta_hat se_theta</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"95%% CI           = [%.2f, %.2f]</span><span class="sc">\n</span><span class="st">"</span> ci_lb ci_ub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>DML PLR Estimate = 0.19 (SE = 0.03)
 95% CI           = [0.13, 0.25]</code></pre>
