@@ -261,11 +261,8 @@ fig2
 #| echo: true
 # Estimate the sharp RDD model
 rdd_gpa = rdrobust(future_success, GPA, c=3.0)
-DataFrame(
-    Estimand = ["Tau (bias-corrected)", "P-value (robust)"],
-    Value    = [round(rdd_gpa.Estimate.tau_us[1], digits=4),
-                round(rdd_gpa.pv.PValue[3], digits=6)]
-)
+println("Tau (bias-corrected) = ", round(rdd_gpa.Estimate.tau_us[1], digits=2))
+println("P-value (robust)     = ", round(rdd_gpa.pv.PValue[3], digits=4))
 ```
 
 ### Nonparametric Estimation
@@ -275,11 +272,8 @@ DataFrame(
 #| message: false
 #| echo: true
 rdd_house = rdrobust(senate.vote, senate.margin, c=0.0)
-DataFrame(
-    Estimand = ["Tau (bias-corrected)", "P-value (robust)"],
-    Value    = [round(rdd_house.Estimate.tau_us[1], digits=4),
-                round(rdd_house.pv.PValue[3], digits=6)]
-)
+println("Tau (bias-corrected) = ", round(rdd_house.Estimate.tau_us[1], digits=2))
+println("P-value (robust)     = ", round(rdd_house.pv.PValue[3], digits=4))
 ```
 
 ### Fuzzy RDD
@@ -346,11 +340,8 @@ m_rdd = rdrobust(vet.home_ownership,
                  vet.qob_minus_kw,
                  fuzzy = vet.vet_wwko,
                  c = 0.0)
-DataFrame(
-    Method   = ["Manual 2SLS", "RDRobust (FRDD)"],
-    Tau      = [round(m_iv.beta[3], digits=4),
-                round(m_rdd.Estimate.tau_us[1], digits=4)]
-)
+println("Manual 2SLS     tau = ", round(m_iv.beta[3], digits=2))
+println("RDRobust (FRDD) tau = ", round(m_rdd.Estimate.tau_us[1], digits=2))
 ```
 
 These two results are very different, which is one of RDD's problems. It can be sensitive to model selection. For example, in the case of 2SLS, it's a linear model. In the case of `rdrobust`, it's a local regression, which can be sensitive to bandwidth selection.

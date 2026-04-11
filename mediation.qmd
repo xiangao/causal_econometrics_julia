@@ -212,7 +212,7 @@ Qbar_A0_M0 = predict(or_fit, data_A0_M0)
 
 # gcomp estimate of CDE(0)
 cde_gcomp = mean(Qbar_A1_M0 .- Qbar_A0_M0)
-DataFrame(Estimand=["CDE(0) G-computation"], Value=[round(cde_gcomp, digits=4)])
+println("CDE(0) G-computation = ", round(cde_gcomp, digits=2))
 ```
 
 ### Example: IPW
@@ -242,7 +242,7 @@ P_M0_A0_W = 1 .- predict(ps_fit2, data_A0)
 # ipw estimate of CDE(0)
 cde_ipw = mean( (A .== 1) ./ P_A1_W .* (M .== 0) ./ P_M0_A1_W .* Y ) -
           mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* Y )
-DataFrame(Estimand=["CDE(0) IPW"], Value=[round(cde_ipw, digits=4)])
+println("CDE(0) IPW = ", round(cde_ipw, digits=2))
 ```
 
 ### Example: AIPW
@@ -263,7 +263,7 @@ mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* (Y .- Qbar_A0_M0) )
 
 # aipw estimate of CDE(0)
 cde_aipw = aiptw_EY_A1_M0 - aiptw_EY_A0_M0
-DataFrame(Estimand=["CDE(0) AIPW"], Value=[round(cde_aipw, digits=4)])
+println("CDE(0) AIPW = ", round(cde_aipw, digits=2))
 ```
 
 ## NIE and NDE: Natural Direct and Indirect Effects
@@ -351,10 +351,9 @@ E_Y1M0 = mean(EY1M0_Wi)
 E_Y0M0 = mean(EY0M0_Wi)
 
 # NDE = E[Y(1,M(0))] - E[Y(0,M(0))], NIE = E[Y(1,M(1))] - E[Y(1,M(0))]
-DataFrame(
-    Effect = ["NDE", "NIE", "ATE"],
-    Value  = round.([E_Y1M0 - E_Y0M0, E_Y1M1 - E_Y1M0, E_Y1M1 - E_Y0M0], digits=4)
-)
+println("NDE = ", round(E_Y1M0 - E_Y0M0, digits=2))
+println("NIE = ", round(E_Y1M1 - E_Y1M0, digits=2))
+println("ATE = ", round(E_Y1M1 - E_Y0M0, digits=2))
 ```
 
 ## IIE and IDE: Interventional Direct and Indirect Effects
@@ -463,9 +462,7 @@ result
 # Extract direct and indirect effect estimates
 ide = result.estimates["direct"]
 iie = result.estimates["indirect"]
-DataFrame(
-    Effect   = ["IDE (Direct)", "IIE (Indirect)", "ATE"],
-    Estimate = round.([ide["estimate"], iie["estimate"], result.estimates["ate"]["estimate"]], digits=4),
-    SE       = [round(ide["std.error"], digits=4), round(iie["std.error"], digits=4), missing]
-)
+println("IDE (Direct)   = ", round(ide["estimate"], digits=2), " (SE = ", round(ide["std.error"], digits=2), ")")
+println("IIE (Indirect) = ", round(iie["estimate"], digits=2), " (SE = ", round(iie["std.error"], digits=2), ")")
+println("ATE            = ", round(result.estimates["ate"]["estimate"], digits=2))
 ```

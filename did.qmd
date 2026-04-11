@@ -337,8 +337,7 @@ tau_hat = synthdid_estimate(setup.Y, setup.N0, setup.T0)
 tau_sc  = sc_estimate(setup.Y, setup.N0, setup.T0)
 tau_did = did_estimate(setup.Y, setup.N0, setup.T0)
 
-DataFrame(
-    Method   = ["Diff-in-Diff", "Synthetic Control", "Synthetic Diff-in-Diff"],
-    Estimate = round.([tau_did.estimate, tau_sc.estimate, tau_hat.estimate], digits=4)
-)
+println("Diff-in-Diff           = ", round(tau_did.estimate, digits=2))
+println("Synthetic Control      = ", round(tau_sc.estimate, digits=2))
+println("Synthetic Diff-in-Diff = ", round(tau_hat.estimate, digits=2))
 ```

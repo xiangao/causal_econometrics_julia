@@ -198,7 +198,7 @@ data.mu0 = @. ((1 - data.w) * (data.y - data.m0) / (1 - data.pi1) + data.m0)
 # Calculate treatment effect
 data.tau = data.mu1 .- data.mu0
 tau_aipw = mean(data.tau)
-DataFrame(Estimand=["ATE (AIPW)"], Value=[round(tau_aipw, digits=2)])
+println("ATE (AIPW) = ", round(tau_aipw, digits=2))
 ```
 
 ### IPWRA
@@ -255,5 +255,5 @@ data.m0 = mm0
 
 data.tau = data.m1 .- data.m0
 tau_ipwra = mean(data.tau)
-DataFrame(Estimand=["ATE (IPWRA)"], Value=[round(tau_ipwra, digits=2)])
+println("ATE (IPWRA) = ", round(tau_ipwra, digits=2))
 ```
