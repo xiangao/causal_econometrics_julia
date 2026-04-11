@@ -476,9 +476,9 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 <span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co"># gcomp estimate of CDE(0)</span></span>
 <span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>cde_gcomp <span class="op">=</span> <span class="fu">mean</span>(Qbar_A1_M0 <span class="op">.-</span> Qbar_A0_M0)</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) G-computation = %.2f</span><span class="sc">\n</span><span class="st">"</span> cde_gcomp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) G-computation = %.4f</span><span class="sc">\n</span><span class="st">"</span> cde_gcomp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>CDE(0) G-computation = 0.21</code></pre>
+<pre><code>CDE(0) G-computation = 0.2113</code></pre>
 </div>
 </div>
 </section>
@@ -504,9 +504,9 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># ipw estimate of CDE(0)</span></span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>cde_ipw <span class="op">=</span> <span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">1</span>) <span class="op">./</span> P_A1_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A1_W <span class="op">.*</span> Y ) <span class="op">-</span></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_A0_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A0_W <span class="op">.*</span> Y )</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) IPW = %.2f</span><span class="sc">\n</span><span class="st">"</span> cde_ipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) IPW = %.4f</span><span class="sc">\n</span><span class="st">"</span> cde_ipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>CDE(0) IPW = 0.23</code></pre>
+<pre><code>CDE(0) IPW = 0.2260</code></pre>
 </div>
 </div>
 </section>
@@ -523,9 +523,9 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># aipw estimate of CDE(0)</span></span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>cde_aipw <span class="op">=</span> aiptw_EY_A1_M0 <span class="op">-</span> aiptw_EY_A0_M0</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) AIPW = %.2f</span><span class="sc">\n</span><span class="st">"</span> cde_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) AIPW = %.4f</span><span class="sc">\n</span><span class="st">"</span> cde_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>CDE(0) AIPW = 0.22</code></pre>
+<pre><code>CDE(0) AIPW = 0.2245</code></pre>
 </div>
 </div>
 </section>
@@ -605,13 +605,13 @@ ATE &amp;=&amp; NIE + NDE \\
 <span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>E_Y0M0 <span class="op">=</span> <span class="fu">mean</span>(EY0M0_Wi)</span>
 <span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a><span class="co"># NDE = E[Y(1,M(0))] - E[Y(0,M(0))], NIE = E[Y(1,M(1))] - E[Y(1,M(0))]</span></span>
-<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NDE = %.2f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M0 <span class="op">-</span> E_Y0M0)</span>
-<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NIE = %.2f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y1M0)</span>
-<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE = %.2f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y0M0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NDE = %.4f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M0 <span class="op">-</span> E_Y0M0)</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NIE = %.4f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y1M0)</span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE = %.4f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y0M0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>NDE = 0.21
-NIE = 0.00
-ATE = 0.21</code></pre>
+<pre><code>NDE = 0.2077
+NIE = 0.0000
+ATE = 0.2077</code></pre>
 </div>
 </div>
 </section>
@@ -679,26 +679,26 @@ ATE &amp;=&amp; IIE + IDE \\
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>m_names <span class="op">=</span> [<span class="st">"M"</span>]</span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># quick look at the data</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">show</span>(<span class="cn">stdout</span>, <span class="fu">first</span>(example_data, <span class="fl">6</span>); eltypes<span class="op">=</span><span class="cn">false</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">preview</span>(example_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-bold">6×7 DataFrame</span>
 
-<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> W_1   </span><span class="ansi-bold"> W_2   </span><span class="ansi-bold"> W_3   </span><span class="ansi-bold"> A     </span><span class="ansi-bold"> Z     </span><span class="ansi-bold"> M     </span><span class="ansi-bold"> Y     </span>
+<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> W_1 </span><span class="ansi-bold"> W_2 </span><span class="ansi-bold"> W_3 </span><span class="ansi-bold"> A </span><span class="ansi-bold"> Z </span><span class="ansi-bold"> M </span><span class="ansi-bold"> Y </span>
 
-─────┼─────────────────────────────────────────────────
+─────┼───────────────────────────
 
-   1 │ false   true  false  false  false   true   true
+   1 │   0    1    0  0  0  1  1
 
-   2 │ false  false  false  false  false   true   true
+   2 │   0    0    0  0  0  1  1
 
-   3 │ false  false  false  false  false   true   true
+   3 │   0    0    0  0  0  1  1
 
-   4 │ false  false  false  false  false   true   true
+   4 │   0    0    0  0  0  1  1
 
-   5 │  true  false  false  false  false  false   true
+   5 │   1    0    0  0  0  0  1
 
-   6 │  true   true   true   true   true   true  false</pre>
+   6 │   1    1    1  1  1  1  0</pre>
 </div>
 </div>
 </div>
@@ -728,13 +728,13 @@ Estimates:
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract direct and indirect effect estimates</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ide <span class="op">=</span> result.estimates[<span class="st">"direct"</span>]</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>iie <span class="op">=</span> result.estimates[<span class="st">"indirect"</span>]</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IDE (Direct)   = %.2f (SE = %.2f)</span><span class="sc">\n</span><span class="st">"</span> ide[<span class="st">"estimate"</span>] ide[<span class="st">"std.error"</span>]</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IIE (Indirect) = %.2f (SE = %.2f)</span><span class="sc">\n</span><span class="st">"</span> iie[<span class="st">"estimate"</span>] iie[<span class="st">"std.error"</span>]</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE            = %.2f</span><span class="sc">\n</span><span class="st">"</span> result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IDE (Direct)   = %.4f (SE = %.4f)</span><span class="sc">\n</span><span class="st">"</span> ide[<span class="st">"estimate"</span>] ide[<span class="st">"std.error"</span>]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IIE (Indirect) = %.4f (SE = %.4f)</span><span class="sc">\n</span><span class="st">"</span> iie[<span class="st">"estimate"</span>] iie[<span class="st">"std.error"</span>]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE            = %.4f</span><span class="sc">\n</span><span class="st">"</span> result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>IDE (Direct)   = -0.00 (SE = 0.76)
-IIE (Indirect) = -0.00 (SE = 0.76)
-ATE            = -0.00</code></pre>
+<pre><code>IDE (Direct)   = -0.0005 (SE = 0.7612)
+IIE (Indirect) = -0.0000 (SE = 0.7617)
+ATE            = -0.0005</code></pre>
 </div>
 </div>
 
