@@ -1,0 +1,257 @@
+# Estimation: RA, IPW, AIPW and IPWRA
+
+```{julia}
+#| include: false
+using NPCausal
+using Panelest
+using MLJ
+using GLMNet
+using DecisionTree
+using Vcov
+using ReadStatTables
+using DataFrames
+using Statistics
+using GLM
+using Downloads
+using Random
+```
+
+Once we have identification, which means we can identify the causal effect from the observed data, we can move to estimation. Estimation is to estimate the identified causal effect from the observed data. We have several methods for estimation, including regression adjustment (RA), inverse probability weighting (IPW), augmented inverse probability weighting (AIPW) and inverse probability weighted regression adjustment (IPWRA).
+
+## Experimental Data
+
+If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator. $$ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 $$
+
+In experimental setting, we can do a t test for the difference in means. We can also do a regression of $Y$ on $W$ and $X$.
+
+## Adjustment Formula
+
+From causal to estimation: $$ \small \begin{align}
+E[Y(1)-Y(0)] &= E[Y(1)] - E[Y(0)] \\
+&=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\
+&=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\
+&=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]
+\end{align} $$ where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.
+
+## Regression Adjustment
+
+How do we get $E[Y|W=w, X=x]$? We can use regression adjustment.
+
+We define a conditional mean function:
+
+$$  \begin{align}
+\mu_0(X) &\equiv E[Y|W=0, X] \\
+&= E[Y(0)|W=0, X]  \\
+&= E[Y(0)|W=1, X]
+\end{align}  $$
+
+The RA estimators are:
+
+$$ \hat \tau_{ATT} = \sum_{i=1}^n (W_i(Y_i-\hat \mu_0(X_i)) /n_1$$ $$ \hat \tau_{ATE} = \sum_{i=1}^n (W_i(Y_i-\hat \mu_0(X_i)) + (1-W_i)(\hat \mu_1(X_i) - Y_i)) /n$$
+
+where $\hat \mu_0(X_i)$ is the predicted value of $Y_i$ from a regression of $Y$ on $X$ for the control group.
+
+Target: $$  \begin{align}
+\tau_{ATT} &= E[Y|W=1] - E[Y(0)|W=1] \\
+&= E[Y|W=1, X] - \mu_0(X)  \\
+& = E[Y|W=1, X] - (\alpha_0 + E(X) \beta_0)
+\end{align}
+$$
+
+The last term is a linear form of $\mu_0(X)$. We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.
+
+## Linear RA
+
+Regression Adjustment is basically an imputation estimator. While we observe $E[Y|W=1,X]$, we model $E[Y(0)|W=1]$, based on unconfoundedness and a functional form (say linear form). We estimate $\beta_0$ on the control sample, then get the expected values for the treated sample, for each value of $X$.
+
+Implementation of linear RA is easy. We regress $Y$ on $X$ and $W$ and their interaction. It's shown that we need to de-mean $X$ to get the effect correct.
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using CSV, DataFrames, Statistics, GLM
+
+# Load the pension dataset from the hdm R package (Chernozhukov et al.)
+# Treatment: p401 (eligibility for 401k), Outcome: net_tfa (net total financial assets)
+pension = CSV.read("data/pension.csv", DataFrame)
+
+# Calculate means for de-meaning (treated group means)
+mean_inc_treated = mean(pension[pension.p401 .== 1, :inc])
+mean_age_treated = mean(pension[pension.p401 .== 1, :age])
+
+# For ATT: we de-mean X by deducting the mean of X in the treated group
+# For ATE: we de-mean X by deducting the mean of X in the whole sample
+data = DataFrames.transform(pension,
+    :inc => (x -> x .- mean_inc_treated) => :inc_dm,
+    :age => (x -> x .- mean_age_treated) => :age_dm
+)
+
+lm_ra = lm(@formula(net_tfa ~ p401 * (inc_dm + age_dm)), data)
+coeftable(lm_ra)
+```
+
+After demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on $W$ is the average treatment effect. 
+
+
+### Questions on RA
+
+1.  Why do we have to do interaction of $W$ and $X$? What if we don't do it?
+2.  What if we don't de-mean $X$?
+
+Answers:
+
+1.  It has been shown (Słoczyński (2022, REStat)) that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we'll get biased estimates, for $\tau_{ATT}$ or $\tau_{ATE}$. The intuition is that we need to model the difference between treated and control, and the difference is not constant across $X$.
+2.  If we don't de-mean $X$, then the coefficient on $W$ is not the average treatment effect. We can still retrieve the ATT or ATE by calculating the marginal effect of $W$ though.
+
+## IPW
+
+Under unconfoundedness and overlap,
+
+$$ \small \begin{align}
+E[Y(w)] &= E[E[y|W=w,X]] \\
+&= \sum_x (\sum_y P(y|w,x)) P(x) \\
+&= \sum_x \sum_y P(y|w,x)) P(x) {\frac{P(w|x)}{P(w|x)}} \\
+&= \sum_x \sum_y y P(y,w,x) {\frac{1}{P(w|x)}} \\
+&= \sum_x E[\mathbb{1}(W=w,X=x)Y] {\frac{1}{P(w|x)}} \\
+&= E[\frac{\mathbb{1}(W=w)Y} {P(w|X)}]
+\end{align}
+$$
+
+The IPW equation means that the expected value of the potential outcome is the weighted average of the observed outcome, where the weight is the inverse of the propensity score $P(w|x)$. $\mathbb{1}(W=w)$ is an indicator function, which is 1 if $W=w$ and 0 otherwise.
+
+$$ \begin{align}
+\tau_{ATE} &= E[Y(1)] - E[Y(0)] \\
+&= E[\frac{W Y} {\pi_1(X)}] - E[\frac{(1-W) Y} {1-\pi_1(X)}] \\
+\end{align}
+$$
+
+The sample estimators are:
+
+$$ \begin{align}
+\hat \tau_{ATE, IPW} &= \frac{1}{N} \sum_i \frac{W_i Y_i} {\hat\pi(X_i)} - \frac{1}{N} \sum_i \frac{(1-W_i) Y_i} {1-\hat \pi(X_i)}
+\end{align}
+$$
+
+$$ \begin{align}
+\hat \tau_{ATT, IPW} &= \bar Y_1 - \frac{1}{N_1} \sum_i \frac{(1-W_i) Y_i} {1-\hat \pi(X_i)}
+\end{align}
+$$
+
+### IPW Intuition
+
+IPW removes confounding $X$ by creating a pseudo-population in which $X$ is independent of $W$. The intuition is that we can create a pseudo-population in which $X$ is independent of $W$, by weighting the observations by the inverse of the propensity score. Once $X$ is independent of $W$, $X$ is not a confounder anymore. We can then estimate the effect of $W$ on $Y$ by comparing the weighted average of $Y$ for $W=1$ and $W=0$.
+
+Suppose there are two types of people, one type has high probability to be treated, the other one has low probability to be treated. Without adjusting for the propensity score, the treated group will be dominated by the first type, and the control group will be dominated by the second type. The difference between the treated and control group will be due to the difference in the composition of the two groups, not due to the treatment effect. By weighting the observations by the inverse of the propensity score, we can create a pseudo-population in which the two groups have the same composition. The difference between the treated and control group will be due to the treatment effect.
+
+## Doubly Robust Estimators
+
+We can model both outcome and treatment assignment, and use both models to estimate the treatment effect. The intuition is that if either model is correct, the estimator will be consistent. The estimator is called doubly robust because it is robust to either model being misspecified.
+
+### AIPW
+
+$$ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] $$
+
+$$ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] $$
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using CSV, DataFrames, GLM, Statistics
+
+# Load Cattaneo (2010) birthweight dataset
+# Treatment: mbsmoke (maternal smoking), Outcome: bweight (birthweight in grams)
+data = CSV.read("data/cattaneo2.csv", DataFrame)
+
+# Outcome Model (mu)
+mu = lm(@formula(bweight ~ mbsmoke * (prenatal1 + mmarried + mage + fbaby)), data)
+
+# Propensity Score Model (pi)
+pi_model = glm(@formula(mbsmoke ~ mmarried + mage + fbaby + medu), data, Binomial(), LogitLink())
+
+# Predict Potential Outcomes for treated and control assignments
+data_treated = copy(data)
+data_treated.mbsmoke .= 1
+mm1 = GLM.predict(mu, data_treated)
+
+data_control = copy(data)
+data_control.mbsmoke .= 0
+mm0 = GLM.predict(mu, data_control)
+
+# Predict Propensity Scores
+pi1 = GLM.predict(pi_model, data)
+
+# Assemble data for final AIPW computation
+data.w = data.mbsmoke
+data.y = data.bweight
+data.m1 = mm1
+data.m0 = mm0
+data.pi1 = pi1
+
+# Compute Doubly Robust potential outcomes
+data.mu1 = @. (data.w * (data.y - data.m1) / data.pi1 + data.m1)
+data.mu0 = @. ((1 - data.w) * (data.y - data.m0) / (1 - data.pi1) + data.m0)
+
+# Calculate treatment effect
+data.tau = data.mu1 .- data.mu0
+mean(data.tau)
+```
+
+### IPWRA
+
+The idea of IPWRA is to combine RA and IPW. Basically RA with IPW weights.
+
+Implementation:
+
+-   Estimate propensity score. Get predicted probability of treated for each observation.
+-   Estimate outcome model. But cannot use fully interaction of treatment and covariates. Instead, estimate two equations, one for treated and one for control. Use $1/\hat \pi(X)$ as weights for treated group and $1/(1-\hat \pi(X))$ as weights for control group.
+-   Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.
+-   Take difference. The average is the ATE.
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using CSV, DataFrames, GLM, Statistics
+
+# Load Cattaneo (2010) birthweight dataset
+data = CSV.read("data/cattaneo2.csv", DataFrame)
+
+# 1. Estimate propensity score
+pi_model = glm(@formula(mbsmoke ~ mmarried + mage + fbaby + medu), data, Binomial(), LogitLink())
+data.pi1 = GLM.predict(pi_model, data)
+
+# Split data into treated and control
+data1 = subset(data, :mbsmoke => x -> x .== 1)
+data0 = subset(data, :mbsmoke => x -> x .== 0)
+
+# 2. Estimate outcome models using inverse probability weights
+wts1 = 1 ./ data1.pi1
+wts0 = 1 ./ (1 .- data0.pi1)
+
+# GLM.jl lm accepts weights via the `wts` keyword argument
+mu1 = lm(@formula(bweight ~ prenatal1 + mmarried + mage + fbaby), data1; wts=wts1)
+mu0 = lm(@formula(bweight ~ prenatal1 + mmarried + mage + fbaby), data0; wts=wts0)
+
+# 3. Predict potential outcomes for the whole sample using the respective models
+data_treated = copy(data)
+data_treated.mbsmoke .= 1
+mm1 = GLM.predict(mu1, data_treated)
+
+data_control = copy(data)
+data_control.mbsmoke .= 0
+mm0 = GLM.predict(mu0, data_control)
+
+# 4. Take the difference
+data.w = data.mbsmoke
+data.y = data.bweight
+data.m1 = mm1
+data.m0 = mm0
+
+data.tau = data.m1 .- data.m0
+mean(data.tau)
+```

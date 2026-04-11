@@ -1,0 +1,356 @@
+# IV & Regression Discontinuity
+
+```{julia}
+#| include: false
+using CairoMakie
+using GraphMakie, Graphs
+using Distributions, Random, LinearAlgebra
+using RDRobust
+using Panelest
+using Vcov
+using DataFrames
+using StatsModels, StatsAPI, DataFramesMeta
+```
+
+If we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.
+
+## Instrumental Variables
+
+### Uncontrolled Confounder
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: false
+g = SimpleDiGraph(3)
+add_edge!(g, 1, 3) # W -> Y
+add_edge!(g, 2, 1) # C -> W
+add_edge!(g, 2, 3) # C -> Y
+
+coords = [(2.0, 2.0), (3.0, 3.0), (4.0, 2.0)]
+labels = ["W", "C", "Y"]
+
+fig, ax, p = graphplot(g, layout = coords, nlabels = labels, node_size = 40,
+                       nlabels_fontsize = 20, nlabels_align = (:center, :center),
+                       arrow_size = 20)
+hidedecorations!(ax); hidespines!(ax)
+fig
+```
+
+### Why Does IV Work?
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: false
+g2 = SimpleDiGraph(4)
+add_edge!(g2, 1, 3) # W -> Y
+add_edge!(g2, 2, 1) # C -> W
+add_edge!(g2, 2, 3) # C -> Y
+add_edge!(g2, 4, 1) # Z -> W
+
+coords2 = [(2.0, 2.0), (3.0, 3.0), (4.0, 2.0), (0.0, 2.0)]
+labels2 = ["W", "C", "Y", "Z"]
+
+fig2, ax2, p2 = graphplot(g2, layout = coords2, nlabels = labels2, node_size = 40,
+                          nlabels_fontsize = 20, nlabels_align = (:center, :center),
+                          arrow_size = 20)
+hidedecorations!(ax2); hidespines!(ax2)
+fig2
+```
+
+### IV Under Potential Outcomes
+
+-   W has two potential outcomes W(1) and W(0), as a function of Z.
+-   Y has two potential outcomes Y(1) and Y(0), as a function of W.
+
+Intention to Treat (ITT) is the average treatment effect of the treatment assignment Z. It is the difference between the average potential outcome under treatment and the average potential outcome under control. It is the average treatment effect of the treatment assignment Z, regardless of whether the subject complies with the assignment.
+
+There are four possible groups of subjects in the case of binary treatment and binary instrument. For example treatment assignment Z and treated status W could be:
+
+-   Z=0, W=0: never-taker
+-   Z=0, W=1: complier
+-   Z=1, W=0: defier
+-   Z=1, W=1: always-taker
+
+|        | W(1)=0 | W(1)=1 |
+|:-------|:-------|:-------|
+| W(0)=0 | N      | C      |
+| W(0)=1 | D      | A      |
+
+: compliance groups
+
+These four groups (stratum) have different causal mechanisms. For example, the compliers are the only group that is affected by the treatment assignment Z in the same direction. The defiers are the only group that is affected by the treatment assignment Z in the opposite direction. The always-takers and never-takers are not affected by the treatment assignment Z.
+
+Unfortunately we cannot identify the compliance group by looking at the data.
+
+| Z   | W   | G    |
+|:----|:----|:-----|
+| 0   | 0   | C, N |
+| 0   | 1   | A, D |
+| 1   | 0   | N, D |
+| 1   | 1   | C, A |
+
+### Assumptions
+
+-   Exclusion restriction: $Y(w, 1) = Y(w,0)$
+-   Exogeneity of instrument: $Z \perp [W(0),W(1), Y(0), Y(1)]$
+-   Monotonicity (no defiers): $W(0) \leq W(1)$
+
+### LATE Identification
+
+Since we excluded defiers, and the other two groups (always-takers and never-takers) are not affected by the treatment assignment Z. The only effect we can identify is the treatment effect on the compliers. This is called the Local Average Treatment Effect (LATE).
+
+$$ \small
+\begin{aligned}
+& E[Y(Z=1) - Y(Z=0) | G = C] \\
+&= \frac{E[Y(Z=1) - Y(Z=0)]}{P(W(1)=1, W(0)=0)} \\
+&= \frac{E[Y|Z=1] - E[Y|Z=0]}{1-P(W=0|Z=1)-P(W=1|Z=0)} \text{ (rule out groups A and N) } \\
+&= \frac{E[Y|Z=1] - E[Y|Z=0]}{P(W=1|Z=1)-P(W=1|Z=0)} \\
+&= \frac{E[Y|Z=1] - E[Y|Z=0]}{E[W|Z=1]-E[W|Z=0]}
+\end{aligned}
+$$
+
+### Parametric Models
+
+If we assume linearity, then this becomes the ratio of two OLS coefficients, sometimes called the Wald estimator.
+
+$$
+\begin{aligned}
+\tau_{ATE} &= \frac{E[Y|Z=1] - E[Y|Z=0]}{E[W|Z=1]-E[W|Z=0]} \\
+&= \frac{Cov(Y,Z)}{Cov(W,Z)}
+\end{aligned}
+$$
+
+Why do covariates help? Because we hope even if we don't have exogeneity or exclusion assumption held, we would have those assumptions held within each level of $X$.
+
+### Example
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+Random.seed!(66)
+nobs = 10000
+
+# Here we have three variables w, m, z.
+# m is the omitted variable, w and m are correlated.
+# z is the instrument, which is correlated with w, but not m.
+# u is independent of everything else.
+covarMat = [
+    1.0   0.36  0.64;
+    0.36  1.0   0.0;
+    0.64  0.0   1.0
+]
+
+mvn = MvNormal(zeros(3), covarMat)
+mat = rand(mvn, nobs)'
+
+data = DataFrame(w = mat[:, 1], m = mat[:, 2], z = mat[:, 3])
+data.u = rand(Normal(0, 1), nobs)
+
+# DGP
+data.y = data.w .+ data.m .+ data.u
+
+lm_biased = feols(data, @formula(y ~ w))
+lm_full = feols(data, @formula(y ~ w + m))
+
+# Manual 2SLS explicitly (educational)
+# Stage 1: Predict endogenous variable w using instrument z
+stage1 = feols(data, @formula(w ~ z))
+data.w_hat = data.w .- stage1.residuals # Obtain fitted values
+
+# Stage 2: Regress outcome y on predicted w_hat
+tsls_manual = feols(data, @formula(y ~ w_hat))
+```
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+# Biased OLS
+println("── Biased OLS (w only) ──────────────────────")
+show(stdout, MIME("text/plain"), StatsAPI.coeftable(lm_biased))
+
+# Full OLS is good
+println("\n── Full OLS (w + m) ─────────────────────────")
+show(stdout, MIME("text/plain"), StatsAPI.coeftable(lm_full))
+
+# Manual 2SLS is good
+# Note: the coefficients from manual 2SLS are correct, but standard
+# errors are slightly incorrect because they use residuals from w_hat,
+# not the true w.
+println("\n── Manual 2SLS ──────────────────────────────")
+show(stdout, MIME("text/plain"), StatsAPI.coeftable(tsls_manual))
+```
+
+## Regression Discontinuity Design
+
+RDD (regression discontinuity design) is a quasi-experimental design that is used to estimate causal effects of interventions when assignment to the intervention is determined by whether a subject's value on an observed covariate exceeds a threshold. The idea is that the assignment is as good as random, so we can estimate the causal effect of the intervention by comparing the outcomes of subjects who are just above and just below the threshold.
+
+### Sharp RDD
+
+We have a continuous variable $X$, called the running variable, which determines the binary treatment $W$. The treatment is assigned according to a threshold $c$. The outcome variable $Y$ is a function of $X$ and $W$.
+
+$$ W=\mathbb{1}(X>c)$$
+
+Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable $X_i$ is the difference in vote share between the Democratic and Republican parties in one election, with the threshold $c = 0$. The outcome variable $Y_i$ is vote share at the second election.
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+using CSV
+senate = CSV.read("data/rdrobust_senate.csv", DataFrame)
+
+# Calculate RD plot data
+plot_data = rdplot(senate.vote, senate.margin, c=0.0)
+
+fig = Figure()
+ax = Axis(fig[1, 1], xlabel="Margin", ylabel="Vote")
+scatter!(ax, plot_data.vars_bins.rdplot_mean_x, plot_data.vars_bins.rdplot_mean_y, 
+         color=:gray, markersize=6)
+
+# Plot polynomial fit for left side
+poly_l = filter(r -> r.rdplot_x < 0.0, plot_data.vars_poly)
+lines!(ax, poly_l.rdplot_x, poly_l.rdplot_y, color=:blue, linewidth=2)
+
+# Plot polynomial fit for right side
+poly_r = filter(r -> r.rdplot_x >= 0.0, plot_data.vars_poly)
+lines!(ax, poly_r.rdplot_x, poly_r.rdplot_y, color=:blue, linewidth=2)
+
+vlines!(ax, [0.0], color=:black, linestyle=:dash)
+fig
+```
+
+### Identification of SRDD
+
+$$ \tau_{RD} = \lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x] $$
+
+In words, the treatment effect is the difference in the outcome from the right side and from the left side. This is the same as the difference in the outcome at the threshold, as if the treatment is assigned randomly.
+
+### Estimation of SRDD
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+GPA = rand(Uniform(0, 4), 1000)
+future_success = 10 .+ 1.5 .* GPA .+ 2 .* (GPA .<= 3) .+ rand(Normal(0, 1), 1000)
+
+plot_data_gpa = rdplot(future_success, GPA, c=3.0)
+
+fig2 = Figure()
+ax2 = Axis(fig2[1, 1], xlabel="GPA", ylabel="Future Success")
+scatter!(ax2, plot_data_gpa.vars_bins.rdplot_mean_x, plot_data_gpa.vars_bins.rdplot_mean_y, 
+         color=:gray, markersize=6)
+
+poly_gpa_l = filter(r -> r.rdplot_x < 3.0, plot_data_gpa.vars_poly)
+lines!(ax2, poly_gpa_l.rdplot_x, poly_gpa_l.rdplot_y, color=:blue, linewidth=2)
+
+poly_gpa_r = filter(r -> r.rdplot_x >= 3.0, plot_data_gpa.vars_poly)
+lines!(ax2, poly_gpa_r.rdplot_x, poly_gpa_r.rdplot_y, color=:blue, linewidth=2)
+
+vlines!(ax2, [3.0], color=:black, linestyle=:dash)
+fig2
+```
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+# Estimate the sharp RDD model
+rdd_gpa = rdrobust(future_success, GPA, c=3.0)
+DataFrame(
+    Estimand = ["Tau (bias-corrected)", "P-value (robust)"],
+    Value    = [round(rdd_gpa.Estimate.tau_us[1], digits=4),
+                round(rdd_gpa.pv.PValue[3], digits=6)]
+)
+```
+
+### Nonparametric Estimation
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+rdd_house = rdrobust(senate.vote, senate.margin, c=0.0)
+DataFrame(
+    Estimand = ["Tau (bias-corrected)", "P-value (robust)"],
+    Value    = [round(rdd_house.Estimate.tau_us[1], digits=4),
+                round(rdd_house.pv.PValue[3], digits=6)]
+)
+```
+
+### Fuzzy RDD
+
+In fuzzy RDD, the treatment is assigned according to a threshold $c$, but there exist non-compliance. This is similar to IV case.
+
+$$ \tau_{FRD} = \frac{\lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x]}{\lim_{x \to c^+} E[W|X=x] - \lim_{x \to c^-} E[W|X=x]} $$
+
+For example, if food stamp eligibility is given to all households below a certain income, but not all households receive the food stamps. In other words, income does not solely determine the assignment. Cutoff point increases the probability of treatment but doesn't completely determine treatment.
+
+FRDD is IV.
+
+### FRDD Example
+
+Fetter (2013)'s main question of interest is how much of the increase in the home ownership rate in the midcentury US was due to mortgage subsidies given out by the government.
+
+We're using the running variable quarter of birth (qob), which has been centered on the quarter of birth you'd need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+#| cache: true
+using CSV
+
+# Load the real mortgages dataset (Fetter 2013) from causaldata R package
+vet = CSV.read("data/mortgages.csv", DataFrame)
+
+# Create an "above-cutoff" variable as the instrument
+vet.above = vet.qob_minus_kw .> 0
+
+# Impose a bandwidth of 12 quarters on either side
+vet = vet[abs.(vet.qob_minus_kw) .< 12, :]
+
+# Manual 2SLS explicitly (educational)
+# We have Fixed Effects for state (bpl) and quarter of birth (qob).
+# Endogenous variable: vet_wwko and qob_minus_kw * vet_wwko
+# Instruments: above and qob_minus_kw * above
+vet.vet_inter = vet.qob_minus_kw .* vet.vet_wwko
+vet.above_inter = vet.qob_minus_kw .* vet.above
+
+# Stage 1a: Predict vet_wwko
+stage1a = feols(vet, @formula(vet_wwko ~ nonwhite + qob_minus_kw + above + above_inter + fe(bpl) + fe(qob)))
+vet.vet_wwko_hat = vet.vet_wwko .- stage1a.residuals
+
+# Stage 1b: Predict vet_inter
+stage1b = feols(vet, @formula(vet_inter ~ nonwhite + qob_minus_kw + above + above_inter + fe(bpl) + fe(qob)))
+vet.vet_inter_hat = vet.vet_inter .- stage1b.residuals
+
+# Stage 2: Regress home_ownership on fitted endogenous variables
+# Note: we use RobustVcov for heteroskedasticity-robust SEs
+m_iv = feols(vet, @formula(home_ownership ~ nonwhite + qob_minus_kw + vet_wwko_hat + vet_inter_hat + fe(bpl) + fe(qob)), vcov=Vcov.robust())
+show(stdout, MIME("text/plain"), StatsAPI.coeftable(m_iv))
+```
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+#| cache: true
+# Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)
+# Note: rdrobust uses a data-driven bandwidth — no global FE needed
+m_rdd = rdrobust(vet.home_ownership,
+                 vet.qob_minus_kw,
+                 fuzzy = vet.vet_wwko,
+                 c = 0.0)
+DataFrame(
+    Method   = ["Manual 2SLS", "RDRobust (FRDD)"],
+    Tau      = [round(m_iv.beta[3], digits=4),
+                round(m_rdd.Estimate.tau_us[1], digits=4)]
+)
+```
+
+These two results are very different, which is one of RDD's problems. It can be sensitive to model selection. For example, in the case of 2SLS, it's a linear model. In the case of `rdrobust`, it's a local regression, which can be sensitive to bandwidth selection.

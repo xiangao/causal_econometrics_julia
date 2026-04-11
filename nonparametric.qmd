@@ -1,0 +1,333 @@
+# Nonparametric Causal Methods
+
+```{julia}
+#| include: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using MLJ
+using EvoTrees
+using MLJLinearModels
+using DecisionTree
+using NPCausal
+using TMLE
+```
+
+## Why Do We Need Nonparametric Methods?
+
+-   Parametric models are often mis-specified
+-   Nonparametric models are more flexible; less assumptions
+-   What kind of nonparametrics are good?
+
+Considerations:
+
+-   Plug-in estimators are easy
+-   But they are biased, or inefficient, because they are trying to estimate $E[Y(0)]$ and $E[Y(1)]$, not the difference.
+-   They can be consistent, but convergence rate can be terrible, especially when the dimension is high
+-   Ideally we can correct the biases, and get efficiency
+-   Influence function based estimators are shown to be efficient.
+
+## Influence Function Based Estimators
+
+Estimators based on efficient influence function are often $\sqrt n$ consistent, meaning they converge to the truth as fast as $\sqrt n$ rate. This means the bias not only goes to 0 with $n$ goes to infinity, but also as fast as $1/ \sqrt n$ goes to 0. Why does this matter? Because we have limited sample size, when we are based on asymptotics, the faster the bias goes to 0 the smaller sample size we need.
+
+If we have an estimator such that $$ \sqrt n (\hat \psi - \psi) = \sqrt n P_n(\phi) + o_P(1) \rightarrow N(0, var(\phi))$$
+
+Then this estimator is $\sqrt n$ consistent and asymptotically normal; and $\phi$ is the influence function. The efficient influence function is the one with variance at the lower bound (similar to parametric case for Cramer-Rao lower bound).
+
+Unfortunately there is no universal formula for efficient influence function for every problem. We need to derive it for each problem. For example, ATE has an IF based estimator, but ATT needs a different formula; and LATE has a different formula too, etc. Deriving them is hard!
+
+For ATE, target parameter $\psi = E \{ E(Y | X, A=1) \}$, the efficient influence function is $$\phi (Z; P) = \frac{A}{\pi (X)} \{ Y - \mu (X) \} + \mu(X) - \psi$$ where $\pi (X) = P(A=1 | X)$ the propensity score model, $\mu (X) = E(Y |X, A=1)$, the outcome model.
+
+For example, an IF-based bias-corrected estimator $$\hat \psi = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu (X) \} + \hat \mu(X) \right]$$ where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
+
+Since we know the influence function, we can calculate its variance. This variance is the same as variance of $\hat \psi$ since they differ by a constant $\psi$. We can use any estimators to estimate the nuisance parameters, then get $\hat \psi$. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.
+
+In this estimator, both $\hat \mu$ and $\hat \pi$ can be done using any estimator, such as machine learning.
+
+### Simulation Setup
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+Random.seed!(1)
+n = 1000
+w1 = rand(Binomial(1, 0.5), n)
+w2 = rand(Binomial(1, 0.5), n)
+w3 = round.(rand(Uniform(0, 4), n), digits=3)
+w4 = round.(rand(Uniform(0, 5), n), digits=3)
+
+logit(x) = 1.0 ./ (1.0 .+ exp.(-x))
+
+prob_A = logit.(-0.4 .+ 0.2.*w2 .+ 0.15.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
+A = rand.(Binomial.(1, prob_A))
+
+prob_Y1 = logit.(-1.0 .+ 1.0 .- 0.1.*w1 .+ 0.3.*w2 .+ 0.25.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
+prob_Y0 = logit.(-1.0 .+ 0.0 .- 0.1.*w1 .+ 0.3.*w2 .+ 0.25.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
+
+Y_1 = rand.(Binomial.(1, prob_Y1))
+Y_0 = rand.(Binomial.(1, prob_Y0))
+Y = Y_1 .* A .+ Y_0 .* (1 .- A)
+
+W = DataFrame(w1=w1, w2=w2, w3=w3, w4=w4)
+df = DataFrame(w1=w1, w2=w2, w3=w3, w4=w4, A=A, Y=Y, Y_1=Y_1, Y_0=Y_0)
+
+True_Psi = mean(df.Y_1 .- df.Y_0)
+DataFrame(Estimand=["True ATE"], Value=[round(True_Psi, digits=4)])
+```
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+# Load MLJ models to form our equivalent of SuperLearner
+LogisticClassifier = @load LogisticClassifier pkg=MLJLinearModels verbosity=0
+EvoTreeClassifier = @load EvoTreeClassifier pkg=EvoTrees verbosity=0
+RandomForestClassifier = @load RandomForestClassifier pkg=DecisionTree verbosity=0
+
+# Define a Stack (SuperLearner)
+stack = Stack(
+    metalearner = LogisticClassifier(),
+    resampling = CV(nfolds=5),
+    evo = EvoTreeClassifier(max_depth=4, nrounds=100),
+    rf = RandomForestClassifier(n_trees=100, max_depth=5),
+    glm = LogisticClassifier()
+)
+```
+
+### Plug-in Estimator from Outcome Regression
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+Random.seed!(1)
+X_mu = select(df, :w1, :w2, :w3, :w4, :A)
+mach_mu = machine(stack, X_mu, categorical(df.Y))
+MLJ.fit!(mach_mu, verbosity=0)
+
+# predict the PO Y^1
+X_mu1 = copy(X_mu); X_mu1.A .= 1
+X_mu0 = copy(X_mu); X_mu0.A .= 0
+
+# Predict probability of Y=1 (assuming 1 is the positive class)
+mu1hat = pdf.(MLJ.predict(mach_mu, X_mu1), 1)
+mu0hat = pdf.(MLJ.predict(mach_mu, X_mu0), 1)
+
+mean(mu1hat .- mu0hat)
+```
+
+### AIPW ATE
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+Random.seed!(123)
+X_pi = select(df, :w1, :w2, :w3, :w4)
+mach_pi = machine(stack, X_pi, categorical(df.A))
+MLJ.fit!(mach_pi, verbosity=0)
+
+pi1hat = pdf.(MLJ.predict(mach_pi, X_pi), 1)
+
+# Bound propensity scores to avoid extreme weights
+pi1hat = max.(min.(pi1hat, 0.999), 0.001)
+pi0hat = 1.0 .- pi1hat
+
+# Current prediction on observed data
+mu1hat_obs = mu1hat
+mu0hat_obs = mu0hat
+
+IF_1 = ((df.A ./ pi1hat) .* (df.Y .- mu1hat_obs) .+ mu1hat_obs)
+IF_0 = (((1 .- df.A) ./ pi0hat) .* (df.Y .- mu0hat_obs) .+ mu0hat_obs)
+IF = IF_1 .- IF_0
+
+aipw_1 = mean(IF_1); aipw_0 = mean(IF_0)
+aipw_manual = aipw_1 - aipw_0
+
+ci_lb = mean(IF) - quantile(Normal(), 0.975) * std(IF) / sqrt(length(IF))
+ci_ub = mean(IF) + quantile(Normal(), 0.975) * std(IF) / sqrt(length(IF))
+res_manual_aipw = [aipw_manual, ci_lb, ci_ub]
+res_manual_aipw
+```
+
+### AIPW ATE Using NPCausal.jl
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using NPCausal
+
+# SuperLearner ensemble for nuisance estimation
+mu_model = superlearner(binary=false)
+pi_model = superlearner(binary=true)
+
+aipw = ate(df.Y, df.A, W; nsplits=5, mu_model=mu_model, pi_model=pi_model)
+aipw.contrasts
+```
+
+### AIPW ATT
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+Random.seed!(1)
+df2 = copy(df)
+df2.pi0hat = pi0hat
+df2.pi1hat = pi1hat
+
+df0 = filter(row -> row.A == 0, df2)
+df1 = filter(row -> row.A == 1, df2)
+
+# Fit outcome model only on controls
+X_mu0 = select(df0, :w1, :w2, :w3, :w4)
+mach_mu0 = machine(stack, X_mu0, categorical(df0.Y))
+MLJ.fit!(mach_mu0, verbosity=0)
+
+# Predict counterfactual for treated
+X_mu1 = select(df1, :w1, :w2, :w3, :w4)
+mu0hat_treated = pdf.(MLJ.predict(mach_mu0, X_mu1), 1)
+
+IF_0_att = (((1 .- df1.A) ./ df1.pi0hat) .* (df1.Y .- mu0hat_treated) .+ mu0hat_treated)
+IF_att = df1.Y .- IF_0_att
+
+aipw_manual_att = mean(IF_att)
+ci_lb_att = mean(IF_att) - quantile(Normal(), 0.975) * std(IF_att) / sqrt(length(IF_att))
+ci_ub_att = mean(IF_att) + quantile(Normal(), 0.975) * std(IF_att) / sqrt(length(IF_att))
+res_manual_aipw_att = [aipw_manual_att, ci_lb_att, ci_ub_att]
+res_manual_aipw_att
+```
+
+### AIPW ATT Using NPCausal.jl
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using NPCausal
+aipw_att_est = att(df.Y, df.A, W; nsplits=5, mu_model=mu_model, pi_model=pi_model)
+```
+
+## TMLE
+
+TMLE is a variant of IF based estimator. It is also a doubly robust estimator. See Mark van der Laan and his coauthors for the recent development of TMLE.
+
+We should expect NPCausal and TMLE to give similar answers.
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using TMLE
+
+Random.seed!(42)
+Ψ = ATE(target      = :Y,
+         treatment   = (A = (case=1, control=0),),
+         confounders = [:w1, :w2, :w3, :w4])
+
+η = NuisanceSpec(
+    EvoTreeClassifier(max_depth=4, nrounds=100),  # Q: E(Y | A, W)
+    EvoTreeClassifier(max_depth=4, nrounds=100)   # g: P(A=1 | W)
+)
+
+tmle_result = tmle(Ψ, η, df; crossfit=5, verbosity=0)
+show(stdout, MIME("text/plain"), tmle_result)
+println("\nTrue ATE: ", round(True_Psi, digits=4))
+```
+
+## DoubleML
+
+DoubleML (Double/Debiased Machine Learning) was proposed by Chernozhukov et al. (2018). An R package `DoubleML` implements the framework; as of this writing there is no native Julia package, but the algorithm is straightforward to implement directly. The double machine learning framework consists of three key ingredients: Neyman orthogonality, high-quality machine learning estimation, and sample splitting.
+
+They consider a partially linear model:
+
+$$ y_i = \theta d_i + g_0(x_i) + \eta_i $$
+
+$$ d_i = m_0(x_i) + v_i $$
+
+This model is quite general, except it does not allow interaction of $d$ and $x$; therefore no heterogeneous treatment effect across $x$. But "DoubleML" implements more than partially linear model, it actually allows for heterogeneous treatment effects, in models such as interactive regression model.
+
+The basic idea of doubleML is to use any machine learning algorithm to estimate outcome equation ($l_0(X) = E(Y | X)$) and treatment equation ($m_0(X) = E(D | X)$). Then get the residuals, namely $\hat W=Y-\hat l_0(X)$ and $\hat V = D - \hat m_0(X)$.
+
+Then regress $\hat W$ on $\hat V$. Based on FWL theorem, you get $\hat \theta$.
+
+An important component here is to specify a Neyman-orthogonal score function. In the case of PLR, it can be the product of the two residuals:
+
+$$\psi (W; \theta, \eta) = (Y-D\theta -g(X))(D-m(X)) $$
+
+The estimator $\hat \theta$ is to solve the equation that the sample mean of this score function being 0.
+
+And the variance of this score function is used as the variance of the doubleML estimator's variance.
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using MLJ
+using Random
+
+# We implement DoubleML PLR (Partially Linear Regression) manually with cross-fitting
+Random.seed!(123)
+nsplits = 5
+n_samples = nrow(df)
+s = shuffle(1:n_samples)
+folds = [s[1 + floor(Int, (k-1)*n_samples/nsplits) : floor(Int, k*n_samples/nsplits)] for k in 1:nsplits]
+
+# Base learner (Random Forest for regression)
+RandomForestRegressor = @load RandomForestRegressor pkg=DecisionTree verbosity=0
+learner = RandomForestRegressor(n_trees=500, max_depth=5)
+
+W_res = zeros(n_samples)
+V_res = zeros(n_samples)
+
+for fold in 1:nsplits
+    test_idx = folds[fold]
+    train_idx = setdiff(1:n_samples, test_idx)
+    
+    # Fit outcome model l_0(X) = E(Y | X)
+    mach_l = machine(learner, W[train_idx, :], df.Y[train_idx])
+    MLJ.fit!(mach_l, verbosity=0)
+    y_pred = MLJ.predict(mach_l, W[test_idx, :])
+    W_res[test_idx] = df.Y[test_idx] .- y_pred
+    
+    # Fit treatment model m_0(X) = E(D | X)
+    mach_m = machine(learner, W[train_idx, :], df.A[train_idx])
+    MLJ.fit!(mach_m, verbosity=0)
+    a_pred = MLJ.predict(mach_m, W[test_idx, :])
+    V_res[test_idx] = df.A[test_idx] .- a_pred
+end
+```
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+# FWL theorem: regress residual W_res on residual V_res
+theta_hat = sum(W_res .* V_res) / sum(V_res .^ 2)
+
+# Variance of score function (Neyman-orthogonal score)
+psi = (W_res .- theta_hat .* V_res) .* V_res
+var_theta = var(psi) / (mean(V_res .^ 2)^2)
+se_theta = sqrt(var_theta / n_samples)
+
+ci_lb = theta_hat - 1.96 * se_theta
+ci_ub = theta_hat + 1.96 * se_theta
+DataFrame(
+    Estimand = ["DML PLR Estimate", "Std. Error", "95% CI Lower", "95% CI Upper"],
+    Value    = round.([theta_hat, se_theta, ci_lb, ci_ub], digits=4)
+)
+```

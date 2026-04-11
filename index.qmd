@@ -1,0 +1,13 @@
+# Preface {.unnumbered}
+
+This is an introduction to causal econometrics with observational data. It covers the key frameworks, estimation strategies, and modern methods that allow researchers to make causal claims from non-experimental data.
+
+The material progresses from foundational concepts to advanced methods:
+
+- **Foundations**: The potential outcomes framework, identification assumptions, and core estimation strategies (regression adjustment, IPW, doubly robust methods).
+- **Methods**: Nonparametric estimators (influence function methods, TMLE, DoubleML).
+- **Designs**: Difference-in-differences (including staggered treatment timing), synthetic control, instrumental variables, and regression discontinuity.
+- **Mediation**: Classical SEM (via Lavaan.jl) and causal mediation analysis, including CDE, natural effects, and interventional effects estimated with Crumble.jl (recanting twin estimand).
+
+All examples use Julia with real and simulated datasets.  I decide to re-write all the codes in Julia, because of the speed of Julia comparing to R.  With the help of Coding agents, Claude Code, Gemini CLI, with LLM's such as Minimax 2.5, we were able to use Julia on the examples.  Throughout the book we rely heavily on custom Julia packages developed alongside this text: Lavaan.jl (SEM), Crumble.jl (causal mediation), NPCausal.jl (semiparametric ATE/ATT), TMLE.jl, Panelest.jl (panel regression), DiD.jl, SynthDiD.jl, and RDRobust.jl.
+
