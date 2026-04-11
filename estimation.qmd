@@ -27,7 +27,7 @@ function show_coef(model)
         s = rpad(ct.rownms[i], w_nm)
         for c in ct.cols
             v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.2f", v), w) :
+            s *= v isa AbstractFloat ? lpad(@sprintf("%.4f", v), w) :
                                        lpad(string(v), w)
         end
         println(s)

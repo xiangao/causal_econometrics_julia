@@ -8,6 +8,7 @@ using DiD
 using Panelest
 using Vcov
 using StatsModels
+import StatsAPI: coeftable
 using ReadStatTables
 using CSV
 using SynthDiD
@@ -26,7 +27,7 @@ function show_coef(model)
         s = rpad(ct.rownms[i], w_nm)
         for c in ct.cols
             v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.2f", v), w) :
+            s *= v isa AbstractFloat ? lpad(@sprintf("%.4f", v), w) :
                                        lpad(string(v), w)
         end
         println(s)
@@ -36,7 +37,9 @@ end
 function preview(df, n=6)
     df2 = copy(first(df, n))
     for col in names(df2)
-        if eltype(df2[!, col]) <: AbstractFloat
+        if eltype(df2[!, col]) == Bool
+            df2[!, col] = Int.(df2[!, col])
+        elseif eltype(df2[!, col]) <: AbstractFloat
             df2[!, col] = round.(df2[!, col], digits=2)
         end
     end

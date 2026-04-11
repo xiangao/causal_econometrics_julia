@@ -21,7 +21,9 @@ using Printf
 function preview(df, n=6)
     df2 = copy(first(df, n))
     for col in names(df2)
-        if eltype(df2[!, col]) <: AbstractFloat
+        if eltype(df2[!, col]) == Bool
+            df2[!, col] = Int.(df2[!, col])
+        elseif eltype(df2[!, col]) <: AbstractFloat
             df2[!, col] = round.(df2[!, col], digits=2)
         end
     end
@@ -223,7 +225,7 @@ Qbar_A0_M0 = predict(or_fit, data_A0_M0)
 
 # gcomp estimate of CDE(0)
 cde_gcomp = mean(Qbar_A1_M0 .- Qbar_A0_M0)
-@printf "CDE(0) G-computation = %.2f\n" cde_gcomp
+@printf "CDE(0) G-computation = %.4f\n" cde_gcomp
 ```
 
 ### Example: IPW
@@ -253,7 +255,7 @@ P_M0_A0_W = 1 .- predict(ps_fit2, data_A0)
 # ipw estimate of CDE(0)
 cde_ipw = mean( (A .== 1) ./ P_A1_W .* (M .== 0) ./ P_M0_A1_W .* Y ) -
           mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* Y )
-@printf "CDE(0) IPW = %.2f\n" cde_ipw
+@printf "CDE(0) IPW = %.4f\n" cde_ipw
 ```
 
 ### Example: AIPW
@@ -274,7 +276,7 @@ mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* (Y .- Qbar_A0_M0) )
 
 # aipw estimate of CDE(0)
 cde_aipw = aiptw_EY_A1_M0 - aiptw_EY_A0_M0
-@printf "CDE(0) AIPW = %.2f\n" cde_aipw
+@printf "CDE(0) AIPW = %.4f\n" cde_aipw
 ```
 
 ## NIE and NDE: Natural Direct and Indirect Effects
@@ -362,9 +364,9 @@ E_Y1M0 = mean(EY1M0_Wi)
 E_Y0M0 = mean(EY0M0_Wi)
 
 # NDE = E[Y(1,M(0))] - E[Y(0,M(0))], NIE = E[Y(1,M(1))] - E[Y(1,M(0))]
-@printf "NDE = %.2f\n" (E_Y1M0 - E_Y0M0)
-@printf "NIE = %.2f\n" (E_Y1M1 - E_Y1M0)
-@printf "ATE = %.2f\n" (E_Y1M1 - E_Y0M0)
+@printf "NDE = %.4f\n" (E_Y1M0 - E_Y0M0)
+@printf "NIE = %.4f\n" (E_Y1M1 - E_Y1M0)
+@printf "ATE = %.4f\n" (E_Y1M1 - E_Y0M0)
 ```
 
 ## IIE and IDE: Interventional Direct and Indirect Effects
@@ -473,7 +475,7 @@ result
 # Extract direct and indirect effect estimates
 ide = result.estimates["direct"]
 iie = result.estimates["indirect"]
-@printf "IDE (Direct)   = %.2f (SE = %.2f)\n" ide["estimate"] ide["std.error"]
-@printf "IIE (Indirect) = %.2f (SE = %.2f)\n" iie["estimate"] iie["std.error"]
-@printf "ATE            = %.2f\n" result.estimates["ate"]["estimate"]
+@printf "IDE (Direct)   = %.4f (SE = %.4f)\n" ide["estimate"] ide["std.error"]
+@printf "IIE (Indirect) = %.4f (SE = %.4f)\n" iie["estimate"] iie["std.error"]
+@printf "ATE            = %.4f\n" result.estimates["ate"]["estimate"]
 ```
