@@ -27,7 +27,7 @@ function show_coef(model)
         s = rpad(ct.rownms[i], w_nm)
         for c in ct.cols
             v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.4f", v), w) :
+            s *= v isa AbstractFloat ? lpad(@sprintf("%.4g", v), w) :
                                        lpad(string(v), w)
         end
         println(s)
@@ -217,7 +217,7 @@ data.mu0 = @. ((1 - data.w) * (data.y - data.m0) / (1 - data.pi1) + data.m0)
 # Calculate treatment effect
 data.tau = data.mu1 .- data.mu0
 tau_aipw = mean(data.tau)
-@printf "ATE (AIPW) = %.2f\n" tau_aipw
+@printf "ATE (AIPW) = %.4g\n" tau_aipw
 ```
 
 ### IPWRA
@@ -274,5 +274,5 @@ data.m0 = mm0
 
 data.tau = data.m1 .- data.m0
 tau_ipwra = mean(data.tau)
-@printf "ATE (IPWRA) = %.2f\n" tau_ipwra
+@printf "ATE (IPWRA) = %.4g\n" tau_ipwra
 ```

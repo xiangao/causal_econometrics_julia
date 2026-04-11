@@ -27,24 +27,13 @@ function show_coef(model)
         s = rpad(ct.rownms[i], w_nm)
         for c in ct.cols
             v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.4f", v), w) :
+            s *= v isa AbstractFloat ? lpad(@sprintf("%.4g", v), w) :
                                        lpad(string(v), w)
         end
         println(s)
     end
 end
 
-function preview(df, n=6)
-    df2 = copy(first(df, n))
-    for col in names(df2)
-        if eltype(df2[!, col]) == Bool
-            df2[!, col] = Int.(df2[!, col])
-        elseif eltype(df2[!, col]) <: AbstractFloat
-            df2[!, col] = round.(df2[!, col], digits=2)
-        end
-    end
-    show(stdout, df2; eltypes=false)
-end
 ```
 
 What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.
@@ -151,7 +140,7 @@ We'll use the mpdta dataset on US teen employment from the did package. "Treatme
 # US teen employment data; treatment = minimum wage increase
 mpdta = CSV.read("data/mpdta.csv", DataFrame)
 rename!(mpdta, "first.treat" => "first_treat")
-preview(mpdta)
+first(mpdta, 6)
 ```
 
 ```{julia did2}
@@ -236,7 +225,7 @@ did_data = DataFrame(readstat("data/did_staggered_6.dta"))
     end
 end
 
-preview(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat))
+first(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat), 6)
 ```
 
 ```{julia did19}
@@ -369,7 +358,7 @@ tau_hat = synthdid_estimate(setup.Y, setup.N0, setup.T0)
 tau_sc  = sc_estimate(setup.Y, setup.N0, setup.T0)
 tau_did = did_estimate(setup.Y, setup.N0, setup.T0)
 
-@printf "Diff-in-Diff           = %.2f\n" tau_did.estimate
-@printf "Synthetic Control      = %.2f\n" tau_sc.estimate
-@printf "Synthetic Diff-in-Diff = %.2f\n" tau_hat.estimate
+@printf "Diff-in-Diff           = %.4g\n" tau_did.estimate
+@printf "Synthetic Control      = %.4g\n" tau_sc.estimate
+@printf "Synthetic Diff-in-Diff = %.4g\n" tau_hat.estimate
 ```

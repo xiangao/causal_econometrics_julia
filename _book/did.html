@@ -395,35 +395,96 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="example-1-us-teen-employment" class="level2" data-number="4.10">
 <h2 data-number="4.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">4.10</span> Example 1: US Teen Employment</h2>
 <p>We’ll use the mpdta dataset on US teen employment from the did package. “Treatment” in this dataset refers to an increase in the minimum wage rate. Our goal is to estimate the effect of this minimum wage treatment (treat) on the log of teen employment (lemp). Notice that the panel ID is at the county level (countyreal), but treatment was staggered across cohorts (first_treat) so that a group of counties were treated at the same time. In addition to these staggered treatment effects, we also observe log population (lpop) as a potential control variable.</p>
-<div id="cfefd0ac" class="cell" data-cache="true" data-execution_count="2">
+<div id="a80437f0" class="cell" data-cache="true" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load mpdta dataset from the did R package (Callaway &amp; Sant'Anna 2021)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># US teen employment data; treatment = minimum wage increase</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>mpdta <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mpdta.csv"</span>, DataFrame)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rename!</span>(mpdta, <span class="st">"first.treat"</span> <span class="op">=&gt;</span> <span class="st">"first_treat"</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">preview</span>(mpdta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-bold">6×6 DataFrame</span>
-
-<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> year </span><span class="ansi-bold"> countyreal </span><span class="ansi-bold"> lpop </span><span class="ansi-bold"> lemp </span><span class="ansi-bold"> first_treat </span><span class="ansi-bold"> treat </span>
-
-─────┼──────────────────────────────────────────────────
-
-   1 │ 2003        8001  5.9   8.46         2007      1
-
-   2 │ 2004        8001  5.9   8.34         2007      1
-
-   3 │ 2005        8001  5.9   8.34         2007      1
-
-   4 │ 2006        8001  5.9   8.38         2007      1
-
-   5 │ 2007        8001  5.9   8.49         2007      1
-
-   6 │ 2003        8019  2.23  5.0          2007      1</pre>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(mpdta, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div><div style="float: left;"><span>6×6 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">year</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">countyreal</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">lpop</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">lemp</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">first_treat</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">treat</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int64">Int64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int64">Int64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int64">Int64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int64">Int64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">8001</td>
+<td style="text-align: right;">5.89676</td>
+<td style="text-align: right;">8.46147</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">8001</td>
+<td style="text-align: right;">5.89676</td>
+<td style="text-align: right;">8.33687</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: right;">2005</td>
+<td style="text-align: right;">8001</td>
+<td style="text-align: right;">5.89676</td>
+<td style="text-align: right;">8.34022</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">8001</td>
+<td style="text-align: right;">5.89676</td>
+<td style="text-align: right;">8.37816</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">8001</td>
+<td style="text-align: right;">5.89676</td>
+<td style="text-align: right;">8.48735</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">8019</td>
+<td style="text-align: right;">2.23238</td>
+<td style="text-align: right;">4.99721</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
-<div id="23ba6026" class="cell" data-cache="true" data-execution_count="3">
+<div id="544c60c3" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>year), nrow)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>treat), nrow)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -468,7 +529,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="7eeaf5dd" class="cell" data-cache="true" data-execution_count="4">
+<div id="80979757" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns enable StatsModels to generate cohort×time dummies (ETWFE)</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mpdta.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.first_treat)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>mpdta.year_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.year)</span>
@@ -482,35 +543,35 @@ Iterations: 1
 StatsBase.CoefTable(Any[[-3.4135316702287624e-33, -0.016068364858818695, 0.047730936400964666, -0.0104701478480778, -0.02119242369406829, -0.022699245305459644, 0.0305968097333614, -0.01058091587048539, 0.0026833514425835467, -0.00635008942575461  …  0.0030174212587004232, 0.016306614436172342, 0.01927923735644746, -0.054180200273172406, 0.02405214108803968, 0.010848821828685481, 0.02583846223358552, -0.011173599592035538, -0.006018498628176904, -0.008646364013373136], [2.693734919824209e-33, 0.010078316236422944, 0.01595288409731988, 0.017137025099277562, 0.011759676186809464, 0.007612886466273422, 0.013915644744225132, 0.00989279226068868, 0.008805267304217107, 0.006488322802137784  …  0.009240983616431102, 0.007952522630443234, 0.008259811231470142, 0.013273467701922963, 0.010176640147651453, 0.009275934764944458, 0.009151011027330144, 0.015526030036024176, 0.012651681503127534, 0.011287368047456251], [-1.2672114264500558, -1.5943501356652978, 2.991994181728154, -0.6109664768197828, -1.802126466529691, -2.9816870914891145, 2.198734610989462, -1.0695580774025883, 0.30474389361222565, -0.9786950525430658  …  0.3265259829413875, 2.050495823017041, 2.334101448104886, -4.081842174921869, 2.363465813772573, 1.1695664214549315, 2.823563664869064, -0.7196688120601379, -0.47570740906567344, -0.7660212705938744], [0.20507970114688281, 0.11085763425089842, 0.0027716154538513574, 0.5412217737289009, 0.07152551052359446, 0.0028666482948026565, 0.02789679840386153, 0.28481827388510017, 0.7605612164012949, 0.32773067736526  …  0.7440264340669105, 0.04031607098319924, 0.019590410497807256, 4.4680135143972516e-5, 0.01810489696348593, 0.24217549685092654, 0.004749299250498021, 0.4717289331182837, 0.6342828417802775, 0.4436636459744491]], ["Estimate", "Std. Error", "z value", "Pr(&gt;|z|)"], ["lpop", "first_treat_str: 0 &amp; year_str: 2003", "first_treat_str: 2004 &amp; year_str: 2003", "first_treat_str: 2006 &amp; year_str: 2003", "first_treat_str: 2007 &amp; year_str: 2003", "first_treat_str: 0 &amp; year_str: 2004", "first_treat_str: 2004 &amp; year_str: 2004", "first_treat_str: 2006 &amp; year_str: 2004", "first_treat_str: 2007 &amp; year_str: 2004", "first_treat_str: 0 &amp; year_str: 2005"  …  "first_treat_str: 2006 &amp; year_str: 2005", "first_treat_str: 2007 &amp; year_str: 2005", "first_treat_str: 0 &amp; year_str: 2006", "first_treat_str: 2004 &amp; year_str: 2006", "first_treat_str: 2006 &amp; year_str: 2006", "first_treat_str: 2007 &amp; year_str: 2006", "first_treat_str: 0 &amp; year_str: 2007", "first_treat_str: 2004 &amp; year_str: 2007", "first_treat_str: 2006 &amp; year_str: 2007", "first_treat_str: 2007 &amp; year_str: 2007"], 4, 3)</code></pre>
 </div>
 </div>
-<div id="d05a11eb" class="cell" data-cache="true" data-execution_count="5">
+<div id="30bdae41" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_coef</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                            Estimate  Std. Error     z value    Pr(&gt;|z|)
 ────────────────────────────────────────────────────────────────────────────────────────
-lpop                                         -0.0000      0.0000     -1.2672      0.2051
-first_treat_str: 0 &amp; year_str: 2003          -0.0161      0.0101     -1.5944      0.1109
-first_treat_str: 2004 &amp; year_str: 2003        0.0477      0.0160      2.9920      0.0028
-first_treat_str: 2006 &amp; year_str: 2003       -0.0105      0.0171     -0.6110      0.5412
-first_treat_str: 2007 &amp; year_str: 2003       -0.0212      0.0118     -1.8021      0.0715
-first_treat_str: 0 &amp; year_str: 2004          -0.0227      0.0076     -2.9817      0.0029
-first_treat_str: 2004 &amp; year_str: 2004        0.0306      0.0139      2.1987      0.0279
-first_treat_str: 2006 &amp; year_str: 2004       -0.0106      0.0099     -1.0696      0.2848
-first_treat_str: 2007 &amp; year_str: 2004        0.0027      0.0088      0.3047      0.7606
-first_treat_str: 0 &amp; year_str: 2005          -0.0064      0.0065     -0.9787      0.3277
-first_treat_str: 2004 &amp; year_str: 2005       -0.0130      0.0104     -1.2438      0.2136
-first_treat_str: 2006 &amp; year_str: 2005        0.0030      0.0092      0.3265      0.7440
-first_treat_str: 2007 &amp; year_str: 2005        0.0163      0.0080      2.0505      0.0403
-first_treat_str: 0 &amp; year_str: 2006           0.0193      0.0083      2.3341      0.0196
-first_treat_str: 2004 &amp; year_str: 2006       -0.0542      0.0133     -4.0818      0.0000
-first_treat_str: 2006 &amp; year_str: 2006        0.0241      0.0102      2.3635      0.0181
-first_treat_str: 2007 &amp; year_str: 2006        0.0108      0.0093      1.1696      0.2422
-first_treat_str: 0 &amp; year_str: 2007           0.0258      0.0092      2.8236      0.0047
-first_treat_str: 2004 &amp; year_str: 2007       -0.0112      0.0155     -0.7197      0.4717
-first_treat_str: 2006 &amp; year_str: 2007       -0.0060      0.0127     -0.4757      0.6343
-first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660      0.4437</code></pre>
+lpop                                      -3.414e-33   2.694e-33      -1.267      0.2051
+first_treat_str: 0 &amp; year_str: 2003         -0.01607     0.01008      -1.594      0.1109
+first_treat_str: 2004 &amp; year_str: 2003       0.04773     0.01595       2.992    0.002772
+first_treat_str: 2006 &amp; year_str: 2003      -0.01047     0.01714      -0.611      0.5412
+first_treat_str: 2007 &amp; year_str: 2003      -0.02119     0.01176      -1.802     0.07153
+first_treat_str: 0 &amp; year_str: 2004          -0.0227    0.007613      -2.982    0.002867
+first_treat_str: 2004 &amp; year_str: 2004        0.0306     0.01392       2.199      0.0279
+first_treat_str: 2006 &amp; year_str: 2004      -0.01058    0.009893       -1.07      0.2848
+first_treat_str: 2007 &amp; year_str: 2004      0.002683    0.008805      0.3047      0.7606
+first_treat_str: 0 &amp; year_str: 2005         -0.00635    0.006488     -0.9787      0.3277
+first_treat_str: 2004 &amp; year_str: 2005      -0.01297     0.01043      -1.244      0.2136
+first_treat_str: 2006 &amp; year_str: 2005      0.003017    0.009241      0.3265       0.744
+first_treat_str: 2007 &amp; year_str: 2005       0.01631    0.007953        2.05     0.04032
+first_treat_str: 0 &amp; year_str: 2006          0.01928     0.00826       2.334     0.01959
+first_treat_str: 2004 &amp; year_str: 2006      -0.05418     0.01327      -4.082   4.468e-05
+first_treat_str: 2006 &amp; year_str: 2006       0.02405     0.01018       2.363      0.0181
+first_treat_str: 2007 &amp; year_str: 2006       0.01085    0.009276        1.17      0.2422
+first_treat_str: 0 &amp; year_str: 2007          0.02584    0.009151       2.824    0.004749
+first_treat_str: 2004 &amp; year_str: 2007      -0.01117     0.01553     -0.7197      0.4717
+first_treat_str: 2006 &amp; year_str: 2007     -0.006018     0.01265     -0.4757      0.6343
+first_treat_str: 2007 &amp; year_str: 2007     -0.008646     0.01129      -0.766      0.4437</code></pre>
 </div>
 </div>
-<div id="4abc2541" class="cell" data-cache="true" data-execution_count="6">
+<div id="cf374969" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -547,7 +608,7 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 </div>
 </div>
 </div>
-<div id="e8bd0393" class="cell" data-cache="true" data-execution_count="7">
+<div id="e09c0bb2" class="cell" data-cache="true" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -609,7 +670,7 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 </div>
 </div>
 </div>
-<div id="978f4a9e" class="cell" data-cache="true" data-execution_count="8">
+<div id="bb097ccb" class="cell" data-cache="true" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
@@ -636,7 +697,7 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 </section>
 <section id="example-2-staggered-did" class="level2" data-number="4.11">
 <h2 data-number="4.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">4.11</span> Example 2: Staggered DiD</h2>
-<div id="d1d15bfc" class="cell" data-cache="true" data-execution_count="9">
+<div id="69e6e561" class="cell" data-cache="true" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>did_data <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">readstat</span>(<span class="st">"data/did_staggered_6.dta"</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>first_treat <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span></span>
@@ -650,30 +711,131 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">preview</span>(<span class="fu">select</span>(did_data, <span class="op">:</span>id, <span class="op">:</span>year, <span class="op">:</span>y, <span class="op">:</span>x, <span class="op">:</span>d4, <span class="op">:</span>d5, <span class="op">:</span>d6, <span class="op">:</span>te4, <span class="op">:</span>te5, <span class="op">:</span>te6, <span class="op">:</span>first_treat))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-bold">6×11 DataFrame</span>
-
-<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> id </span><span class="ansi-bold"> year </span><span class="ansi-bold"> y     </span><span class="ansi-bold"> x   </span><span class="ansi-bold"> d4 </span><span class="ansi-bold"> d5 </span><span class="ansi-bold"> d6 </span><span class="ansi-bold"> te4  </span><span class="ansi-bold"> te5  </span><span class="ansi-bold"> te6  </span><span class="ansi-bold"> first_treat </span>
-
-─────┼─────────────────────────────────────────────────────────────────
-
-   1 │  1  2001  18.36  0.9   0   0   0  0.0   0.0   0.0             0
-
-   2 │  1  2002  18.1   0.9   0   0   0  0.0   0.0   0.0             0
-
-   3 │  1  2003  18.6   0.9   0   0   0  0.0   0.0   0.0             0
-
-   4 │  1  2004  16.5   0.9   0   0   0  1.43  0.0   0.0             0
-
-   5 │  1  2005  19.96  0.9   0   0   0  2.57  2.25  0.0             0
-
-   6 │  1  2006  19.87  0.9   0   0   0  5.07  4.23  0.79            0</pre>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(<span class="fu">select</span>(did_data, <span class="op">:</span>id, <span class="op">:</span>year, <span class="op">:</span>y, <span class="op">:</span>x, <span class="op">:</span>d4, <span class="op">:</span>d5, <span class="op">:</span>d6, <span class="op">:</span>te4, <span class="op">:</span>te5, <span class="op">:</span>te6, <span class="op">:</span>first_treat), <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div><div style="float: left;"><span>6×11 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">year</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">y</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">d4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">d5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">d6</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">te4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">te5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">te6</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">first_treat</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int16">Int16</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int16">Int16</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float32">Float32</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float32">Float32</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int8">Int8</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int8">Int8</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int8">Int8</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float32">Float32</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float32">Float32</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float32">Float32</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int64">Int64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2001</td>
+<td style="text-align: right;">18.3596</td>
+<td style="text-align: right;">0.899984</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2002</td>
+<td style="text-align: right;">18.1016</td>
+<td style="text-align: right;">0.899984</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">18.5956</td>
+<td style="text-align: right;">0.899984</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">16.5003</td>
+<td style="text-align: right;">0.899984</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.43223</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2005</td>
+<td style="text-align: right;">19.9573</td>
+<td style="text-align: right;">0.899984</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2.57319</td>
+<td style="text-align: right;">2.24723</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">19.8659</td>
+<td style="text-align: right;">0.899984</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5.06752</td>
+<td style="text-align: right;">4.23316</td>
+<td style="text-align: right;">0.785892</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
-<div id="e7b8391e" class="cell" data-cache="true" data-execution_count="10">
+<div id="134b35ab" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(did_data, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div><div style="float: left;"><span>4×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -716,7 +878,7 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 </div>
 </div>
 </div>
-<div id="0683e817" class="cell" data-cache="true" data-execution_count="11">
+<div id="e99ea666" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>treated_cohort1 <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="op">:</span>f04 <span class="op">==</span> <span class="fl">1</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"d4f04"</span></span>
@@ -784,7 +946,7 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 </div>
 </div>
 </div>
-<div id="a6f5b172" class="cell" data-cache="true" data-execution_count="12">
+<div id="8cbe4418" class="cell" data-cache="true" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort2), <span class="op">:</span>treated_cohort2), <span class="op">:</span>te5 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean5)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort3), <span class="op">:</span>treated_cohort3), <span class="op">:</span>te6 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
@@ -813,7 +975,7 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 </div>
 </div>
 </div>
-<div id="277937a9" class="cell" data-cache="true" data-execution_count="13">
+<div id="b50a70af" class="cell" data-cache="true" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns needed for cohort×time ETWFE dummies</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>did_data.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(did_data.first_treat)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>did_data.year_str <span class="op">=</span> <span class="fu">string</span>.(did_data.year)</span>
@@ -824,34 +986,34 @@ first_treat_str: 2007 &amp; year_str: 2007       -0.0086      0.0113     -0.7660
 <div class="cell-output cell-output-stdout">
 <pre><code>                                            Estimate  Std. Error     z value    Pr(&gt;|z|)
 ────────────────────────────────────────────────────────────────────────────────────────
-x                                            -0.0000      0.0000     -0.2270      0.8205
-first_treat_str: 0 &amp; year_str: 2001           0.9128      0.1333      6.8501      0.0000
-first_treat_str: 2004 &amp; year_str: 2001       -1.1241      0.1586     -7.0860      0.0000
-first_treat_str: 2005 &amp; year_str: 2001       -0.4251      0.1725     -2.4648      0.0137
-first_treat_str: 2006 &amp; year_str: 2001        0.6364      0.2425      2.6246      0.0087
-first_treat_str: 0 &amp; year_str: 2002           0.8015      0.1294      6.1943      0.0000
-first_treat_str: 2004 &amp; year_str: 2002       -1.1979      0.1782     -6.7241      0.0000
-first_treat_str: 2005 &amp; year_str: 2002       -0.2907      0.1806     -1.6097      0.1075
-first_treat_str: 2006 &amp; year_str: 2002        0.6871      0.2329      2.9502      0.0032
-first_treat_str: 0 &amp; year_str: 2003           0.6445      0.1369      4.7073      0.0000
-first_treat_str: 2004 &amp; year_str: 2003       -1.1874      0.1679     -7.0734      0.0000
-first_treat_str: 2005 &amp; year_str: 2003        0.1981      0.2110      0.9388      0.3478
-first_treat_str: 2006 &amp; year_str: 2003        0.3449      0.2605      1.3240      0.1855
-first_treat_str: 0 &amp; year_str: 2004           0.2243      0.1378      1.6278      0.1036
-first_treat_str: 2004 &amp; year_str: 2004        1.6105      0.2049      7.8603      0.0000
-first_treat_str: 2005 &amp; year_str: 2004       -1.3609      0.1812     -7.5124      0.0000
-first_treat_str: 2006 &amp; year_str: 2004       -0.4739      0.2584     -1.8341      0.0666
-first_treat_str: 0 &amp; year_str: 2005          -0.9659      0.1457     -6.6286      0.0000
-first_treat_str: 2004 &amp; year_str: 2005        1.2991      0.2126      6.1093      0.0000
-first_treat_str: 2005 &amp; year_str: 2005        0.9160      0.2233      4.1022      0.0000
-first_treat_str: 2006 &amp; year_str: 2005       -1.2492      0.2544     -4.9097      0.0000
-first_treat_str: 0 &amp; year_str: 2006          -1.6173      0.1687     -9.5847      0.0000
-first_treat_str: 2004 &amp; year_str: 2006        0.5998      0.2318      2.5875      0.0097
-first_treat_str: 2005 &amp; year_str: 2006        0.9626      0.2491      3.8639      0.0001
-first_treat_str: 2006 &amp; year_str: 2006        0.0549      0.3538      0.1550      0.8768</code></pre>
+x                                         -1.313e-32   5.787e-32      -0.227      0.8205
+first_treat_str: 0 &amp; year_str: 2001           0.9128      0.1333        6.85   7.378e-12
+first_treat_str: 2004 &amp; year_str: 2001        -1.124      0.1586      -7.086   1.381e-12
+first_treat_str: 2005 &amp; year_str: 2001       -0.4251      0.1725      -2.465     0.01371
+first_treat_str: 2006 &amp; year_str: 2001        0.6364      0.2425       2.625    0.008675
+first_treat_str: 0 &amp; year_str: 2002           0.8015      0.1294       6.194   5.854e-10
+first_treat_str: 2004 &amp; year_str: 2002        -1.198      0.1782      -6.724   1.767e-11
+first_treat_str: 2005 &amp; year_str: 2002       -0.2907      0.1806       -1.61      0.1075
+first_treat_str: 2006 &amp; year_str: 2002        0.6871      0.2329        2.95    0.003176
+first_treat_str: 0 &amp; year_str: 2003           0.6445      0.1369       4.707    2.51e-06
+first_treat_str: 2004 &amp; year_str: 2003        -1.187      0.1679      -7.073   1.512e-12
+first_treat_str: 2005 &amp; year_str: 2003        0.1981       0.211      0.9388      0.3478
+first_treat_str: 2006 &amp; year_str: 2003        0.3449      0.2605       1.324      0.1855
+first_treat_str: 0 &amp; year_str: 2004           0.2243      0.1378       1.628      0.1036
+first_treat_str: 2004 &amp; year_str: 2004         1.611      0.2049        7.86   3.832e-15
+first_treat_str: 2005 &amp; year_str: 2004        -1.361      0.1812      -7.512   5.806e-14
+first_treat_str: 2006 &amp; year_str: 2004       -0.4739      0.2584      -1.834     0.06663
+first_treat_str: 0 &amp; year_str: 2005          -0.9659      0.1457      -6.629   3.389e-11
+first_treat_str: 2004 &amp; year_str: 2005         1.299      0.2126       6.109       1e-09
+first_treat_str: 2005 &amp; year_str: 2005         0.916      0.2233       4.102   4.092e-05
+first_treat_str: 2006 &amp; year_str: 2005        -1.249      0.2544       -4.91   9.123e-07
+first_treat_str: 0 &amp; year_str: 2006           -1.617      0.1687      -9.585   9.271e-22
+first_treat_str: 2004 &amp; year_str: 2006        0.5998      0.2318       2.587    0.009669
+first_treat_str: 2005 &amp; year_str: 2006        0.9626      0.2491       3.864   0.0001116
+first_treat_str: 2006 &amp; year_str: 2006       0.05486      0.3538       0.155      0.8768</code></pre>
 </div>
 </div>
-<div id="ed969bfd" class="cell" data-cache="true" data-execution_count="14">
+<div id="5965e4b7" class="cell" data-cache="true" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -888,7 +1050,7 @@ first_treat_str: 2006 &amp; year_str: 2006        0.0549      0.3538      0.1550
 </div>
 </div>
 </div>
-<div id="0a4e676b" class="cell" data-cache="true" data-execution_count="15">
+<div id="4426c41f" class="cell" data-cache="true" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -942,7 +1104,7 @@ first_treat_str: 2006 &amp; year_str: 2006        0.0549      0.3538      0.1550
 </div>
 </div>
 </div>
-<div id="5472b735" class="cell" data-cache="true" data-execution_count="16">
+<div id="3a0f42a5" class="cell" data-cache="true" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>mod_es2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
@@ -1014,7 +1176,7 @@ first_treat_str: 2006 &amp; year_str: 2006        0.0549      0.3538      0.1550
 <p>SDiD sets another weight in addition to SC weights, which changes over time. The SC weights are trying to construct a control unit that is close to the treated unit; the SDiD weights are trying to put more weights on pre-treatment periods that are more similar to post-treatment periods.</p>
 <section id="example-california-proposition-99" class="level3" data-number="4.13.1">
 <h3 data-number="4.13.1" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">4.13.1</span> Example: California Proposition 99</h3>
-<div id="52d842f2" class="cell" data-cache="true" data-execution_count="17">
+<div id="985fc111" class="cell" data-cache="true" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>tau_hat <span class="op">=</span> <span class="fu">synthdid_estimate</span>(setup.Y, setup.N0, setup.T0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1027,17 +1189,17 @@ first_treat_str: 2006 &amp; year_str: 2006        0.0549      0.3538      0.1550
   N₀_eff = 16.4,  T₀_eff = 2.8</code></pre>
 </div>
 </div>
-<div id="56785c0d" class="cell" data-cache="true" data-execution_count="18">
+<div id="67e6fab3" class="cell" data-cache="true" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>tau_sc  <span class="op">=</span> <span class="fu">sc_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>tau_did <span class="op">=</span> <span class="fu">did_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Diff-in-Diff           = %.2f</span><span class="sc">\n</span><span class="st">"</span> tau_did.estimate</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic Control      = %.2f</span><span class="sc">\n</span><span class="st">"</span> tau_sc.estimate</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic Diff-in-Diff = %.2f</span><span class="sc">\n</span><span class="st">"</span> tau_hat.estimate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Diff-in-Diff           = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_did.estimate</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic Control      = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_sc.estimate</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic Diff-in-Diff = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_hat.estimate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Diff-in-Diff           = -27.35
 Synthetic Control      = -19.62
-Synthetic Diff-in-Diff = -15.60</code></pre>
+Synthetic Diff-in-Diff = -15.6</code></pre>
 </div>
 </div>
 

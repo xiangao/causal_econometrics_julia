@@ -348,7 +348,7 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <h2 data-number="2.4" class="anchored" data-anchor-id="linear-ra"><span class="header-section-number">2.4</span> Linear RA</h2>
 <p>Regression Adjustment is basically an imputation estimator. While we observe <span class="math inline">\(E[Y|W=1,X]\)</span>, we model <span class="math inline">\(E[Y(0)|W=1]\)</span>, based on unconfoundedness and a functional form (say linear form). We estimate <span class="math inline">\(\beta_0\)</span> on the control sample, then get the expected values for the treated sample, for each value of <span class="math inline">\(X\)</span>.</p>
 <p>Implementation of linear RA is easy. We regress <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span> and their interaction. It’s shown that we need to de-mean <span class="math inline">\(X\)</span> to get the effect correct.</p>
-<div id="38cfbf69" class="cell" data-cache="true" data-message="false" data-execution_count="2">
+<div id="d5af1ef5" class="cell" data-cache="true" data-message="false" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">Statistics</span>, <span class="bu">GLM</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the pension dataset from the hdm R package (Chernozhukov et al.)</span></span>
@@ -371,12 +371,12 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <div class="cell-output cell-output-stdout">
 <pre><code>                               Coef.  Std. Error           t    Pr(&gt;|t|)   Lower 95%   Upper 95%
 ────────────────────────────────────────────────────────────────────────────────────────────────
-(Intercept)               24101.8541    831.1539     28.9981      0.0000  22472.6233  25731.0849
-p401                      14160.2064   1397.3043     10.1339      0.0000  11421.2057  16899.2071
-inc_dm                        0.7723      0.0301     25.6702      0.0000      0.7134      0.8313
-age_dm                      797.6753     63.5026     12.5613      0.0000    673.1973    922.1532
-p401 &amp; inc_dm                 0.3300      0.0513      6.4292      0.0000      0.2294      0.4306
-p401 &amp; age_dm               815.3346    133.2596      6.1184      0.0000    554.1186   1076.5505</code></pre>
+(Intercept)                 2.41e+04       831.2          29   1.57e-177   2.247e+04   2.573e+04
+p401                       1.416e+04        1397       10.13   5.113e-24   1.142e+04    1.69e+04
+inc_dm                        0.7723     0.03009       25.67  9.357e-141      0.7134      0.8313
+age_dm                         797.7        63.5       12.56   6.466e-36       673.2       922.2
+p401 &amp; inc_dm                   0.33     0.05133       6.429   1.342e-10      0.2294      0.4306
+p401 &amp; age_dm                  815.3       133.3       6.118    9.81e-10       554.1        1077</code></pre>
 </div>
 </div>
 <p>After demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on <span class="math inline">\(W\)</span> is the average treatment effect.</p>
@@ -433,7 +433,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <h3 data-number="2.6.1" class="anchored" data-anchor-id="aipw"><span class="header-section-number">2.6.1</span> AIPW</h3>
 <p><span class="math display">\[ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] \]</span></p>
 <p><span class="math display">\[ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] \]</span></p>
-<div id="94d71add" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="7499cb17" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
@@ -472,9 +472,9 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate treatment effect</span></span>
 <span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>data.tau <span class="op">=</span> data.mu1 <span class="op">.-</span> data.mu0</span>
 <span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>tau_aipw <span class="op">=</span> <span class="fu">mean</span>(data.tau)</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (AIPW) = %.2f</span><span class="sc">\n</span><span class="st">"</span> tau_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (AIPW) = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>ATE (AIPW) = -233.77</code></pre>
+<pre><code>ATE (AIPW) = -233.8</code></pre>
 </div>
 </div>
 </section>
@@ -488,7 +488,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <li>Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.</li>
 <li>Take difference. The average is the ATE.</li>
 </ul>
-<div id="29ddbe31" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="c01e0016" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
@@ -527,9 +527,9 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>data.tau <span class="op">=</span> data.m1 <span class="op">.-</span> data.m0</span>
 <span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>tau_ipwra <span class="op">=</span> <span class="fu">mean</span>(data.tau)</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (IPWRA) = %.2f</span><span class="sc">\n</span><span class="st">"</span> tau_ipwra</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (IPWRA) = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_ipwra</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>ATE (IPWRA) = -233.18</code></pre>
+<pre><code>ATE (IPWRA) = -233.2</code></pre>
 </div>
 </div>
 

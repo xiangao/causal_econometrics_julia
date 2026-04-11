@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -104,6 +104,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -476,7 +479,7 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 <span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co"># gcomp estimate of CDE(0)</span></span>
 <span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>cde_gcomp <span class="op">=</span> <span class="fu">mean</span>(Qbar_A1_M0 <span class="op">.-</span> Qbar_A0_M0)</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) G-computation = %.4f</span><span class="sc">\n</span><span class="st">"</span> cde_gcomp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) G-computation = %.4g</span><span class="sc">\n</span><span class="st">"</span> cde_gcomp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>CDE(0) G-computation = 0.2113</code></pre>
 </div>
@@ -504,9 +507,9 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># ipw estimate of CDE(0)</span></span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>cde_ipw <span class="op">=</span> <span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">1</span>) <span class="op">./</span> P_A1_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A1_W <span class="op">.*</span> Y ) <span class="op">-</span></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_A0_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A0_W <span class="op">.*</span> Y )</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) IPW = %.4f</span><span class="sc">\n</span><span class="st">"</span> cde_ipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) IPW = %.4g</span><span class="sc">\n</span><span class="st">"</span> cde_ipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>CDE(0) IPW = 0.2260</code></pre>
+<pre><code>CDE(0) IPW = 0.226</code></pre>
 </div>
 </div>
 </section>
@@ -523,7 +526,7 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># aipw estimate of CDE(0)</span></span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>cde_aipw <span class="op">=</span> aiptw_EY_A1_M0 <span class="op">-</span> aiptw_EY_A0_M0</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) AIPW = %.4f</span><span class="sc">\n</span><span class="st">"</span> cde_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) AIPW = %.4g</span><span class="sc">\n</span><span class="st">"</span> cde_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>CDE(0) AIPW = 0.2245</code></pre>
 </div>
@@ -605,12 +608,12 @@ ATE &amp;=&amp; NIE + NDE \\
 <span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>E_Y0M0 <span class="op">=</span> <span class="fu">mean</span>(EY0M0_Wi)</span>
 <span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a><span class="co"># NDE = E[Y(1,M(0))] - E[Y(0,M(0))], NIE = E[Y(1,M(1))] - E[Y(1,M(0))]</span></span>
-<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NDE = %.4f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M0 <span class="op">-</span> E_Y0M0)</span>
-<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NIE = %.4f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y1M0)</span>
-<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE = %.4f</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y0M0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NDE = %.4g</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M0 <span class="op">-</span> E_Y0M0)</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NIE = %.4g</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y1M0)</span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE = %.4g</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y0M0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>NDE = 0.2077
-NIE = 0.0000
+NIE = 1.494e-06
 ATE = 0.2077</code></pre>
 </div>
 </div>
@@ -672,33 +675,102 @@ ATE &amp;=&amp; IIE + IDE \\
 <pre><code>make_example_data (generic function with 2 methods)</code></pre>
 </div>
 </div>
-<div id="med8" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div id="cell-med8" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set seed and simulate example data</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>example_data <span class="op">=</span> <span class="fu">make_example_data</span>()</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>w_names <span class="op">=</span> [<span class="st">"W_1"</span>, <span class="st">"W_2"</span>, <span class="st">"W_3"</span>]</span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>m_names <span class="op">=</span> [<span class="st">"M"</span>]</span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># quick look at the data</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">preview</span>(example_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-bold">6×7 DataFrame</span>
-
-<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> W_1 </span><span class="ansi-bold"> W_2 </span><span class="ansi-bold"> W_3 </span><span class="ansi-bold"> A </span><span class="ansi-bold"> Z </span><span class="ansi-bold"> M </span><span class="ansi-bold"> Y </span>
-
-─────┼───────────────────────────
-
-   1 │   0    1    0  0  0  1  1
-
-   2 │   0    0    0  0  0  1  1
-
-   3 │   0    0    0  0  0  1  1
-
-   4 │   0    0    0  0  0  1  1
-
-   5 │   1    0    0  0  0  0  1
-
-   6 │   1    1    1  1  1  1  0</pre>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(example_data, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="med8" class="cell-output cell-output-display" data-execution_count="11">
+<div><div style="float: left;"><span>6×7 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">W_1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">W_2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">W_3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">A</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Z</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">M</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Y</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">true</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
@@ -728,13 +800,13 @@ Estimates:
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract direct and indirect effect estimates</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ide <span class="op">=</span> result.estimates[<span class="st">"direct"</span>]</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>iie <span class="op">=</span> result.estimates[<span class="st">"indirect"</span>]</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IDE (Direct)   = %.4f (SE = %.4f)</span><span class="sc">\n</span><span class="st">"</span> ide[<span class="st">"estimate"</span>] ide[<span class="st">"std.error"</span>]</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IIE (Indirect) = %.4f (SE = %.4f)</span><span class="sc">\n</span><span class="st">"</span> iie[<span class="st">"estimate"</span>] iie[<span class="st">"std.error"</span>]</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE            = %.4f</span><span class="sc">\n</span><span class="st">"</span> result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IDE (Direct)   = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> ide[<span class="st">"estimate"</span>] ide[<span class="st">"std.error"</span>]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IIE (Indirect) = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> iie[<span class="st">"estimate"</span>] iie[<span class="st">"std.error"</span>]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE            = %.4g</span><span class="sc">\n</span><span class="st">"</span> result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>IDE (Direct)   = -0.0005 (SE = 0.7612)
-IIE (Indirect) = -0.0000 (SE = 0.7617)
-ATE            = -0.0005</code></pre>
+<pre><code>IDE (Direct)   = -0.0005093 (SE = 0.7612)
+IIE (Indirect) = -2.789e-05 (SE = 0.7617)
+ATE            = -0.0005372</code></pre>
 </div>
 </div>
 

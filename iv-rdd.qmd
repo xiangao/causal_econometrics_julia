@@ -24,7 +24,7 @@ function show_coef(model)
         s = rpad(ct.rownms[i], w_nm)
         for c in ct.cols
             v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.4f", v), w) :
+            s *= v isa AbstractFloat ? lpad(@sprintf("%.4g", v), w) :
                                        lpad(string(v), w)
         end
         println(s)
@@ -281,7 +281,7 @@ fig2
 #| echo: true
 # Estimate the sharp RDD model
 rdd_gpa = rdrobust(future_success, GPA, c=3.0)
-@printf "Tau (bias-corrected) = %.2f\n" rdd_gpa.Estimate.tau_us[1]
+@printf "Tau (bias-corrected) = %.4g\n" rdd_gpa.Estimate.tau_us[1]
 @printf "P-value (robust)     = %.4f\n" rdd_gpa.pv.PValue[3]
 ```
 
@@ -292,7 +292,7 @@ rdd_gpa = rdrobust(future_success, GPA, c=3.0)
 #| message: false
 #| echo: true
 rdd_house = rdrobust(senate.vote, senate.margin, c=0.0)
-@printf "Tau (bias-corrected) = %.2f\n" rdd_house.Estimate.tau_us[1]
+@printf "Tau (bias-corrected) = %.4g\n" rdd_house.Estimate.tau_us[1]
 @printf "P-value (robust)     = %.4f\n" rdd_house.pv.PValue[3]
 ```
 
@@ -360,8 +360,8 @@ m_rdd = rdrobust(vet.home_ownership,
                  vet.qob_minus_kw,
                  fuzzy = vet.vet_wwko,
                  c = 0.0)
-@printf "Manual 2SLS     tau = %.2f\n" m_iv.beta[3]
-@printf "RDRobust (FRDD) tau = %.2f\n" m_rdd.Estimate.tau_us[1]
+@printf "Manual 2SLS     tau = %.4g\n" m_iv.beta[3]
+@printf "RDRobust (FRDD) tau = %.4g\n" m_rdd.Estimate.tau_us[1]
 ```
 
 These two results are very different, which is one of RDD's problems. It can be sensitive to model selection. For example, in the case of 2SLS, it's a linear model. In the case of `rdrobust`, it's a local regression, which can be sensitive to bandwidth selection.

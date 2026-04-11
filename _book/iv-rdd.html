@@ -317,7 +317,7 @@ window.Quarto = {
 <h2 data-number="5.1" class="anchored" data-anchor-id="instrumental-variables"><span class="header-section-number">5.1</span> Instrumental Variables</h2>
 <section id="uncontrolled-confounder" class="level3" data-number="5.1.1">
 <h3 data-number="5.1.1" class="anchored" data-anchor-id="uncontrolled-confounder"><span class="header-section-number">5.1.1</span> Uncontrolled Confounder</h3>
-<div id="371500ed" class="cell" data-message="false" data-execution_count="2">
+<div id="d87393dd" class="cell" data-message="false" data-execution_count="2">
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 <figure class="figure">
@@ -329,7 +329,7 @@ window.Quarto = {
 </section>
 <section id="why-does-iv-work" class="level3" data-number="5.1.2">
 <h3 data-number="5.1.2" class="anchored" data-anchor-id="why-does-iv-work"><span class="header-section-number">5.1.2</span> Why Does IV Work?</h3>
-<div id="b0696786" class="cell" data-message="false" data-execution_count="3">
+<div id="d5f056a4" class="cell" data-message="false" data-execution_count="3">
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div>
 <figure class="figure">
@@ -443,7 +443,7 @@ window.Quarto = {
 </section>
 <section id="example" class="level3" data-number="5.1.7">
 <h3 data-number="5.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">5.1.7</span> Example</h3>
-<div id="785fa6d8" class="cell" data-message="false" data-execution_count="4">
+<div id="f5630f57" class="cell" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">66</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nobs <span class="op">=</span> <span class="fl">10000</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -477,7 +477,7 @@ window.Quarto = {
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: Regress outcome y on predicted w_hat</span></span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>tsls_manual <span class="op">=</span> <span class="fu">feols</span>(data, <span class="pp">@formula</span>(y <span class="op">~</span> w_hat));</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="9030b895" class="cell" data-message="false" data-execution_count="5">
+<div id="844cf313" class="cell" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Biased OLS</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"── Biased OLS (w only) ──────────────────────"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_coef</span>(lm_biased)</span>
@@ -496,21 +496,21 @@ window.Quarto = {
 <pre><code>── Biased OLS (w only) ──────────────────────
                             Estimate  Std. Error     z value    Pr(&gt;|z|)
 ────────────────────────────────────────────────────────────────────────
-(Intercept)                  -0.0116      0.0100     -1.1640      0.2444
-w                             1.3571      0.0100    135.8227      0.0000
+(Intercept)                 -0.01164        0.01      -1.164      0.2444
+w                              1.357    0.009991       135.8           0
 
 ── Full OLS (w + m) ─────────────────────────
                             Estimate  Std. Error     z value    Pr(&gt;|z|)
 ────────────────────────────────────────────────────────────────────────
-(Intercept)                  -0.0091      0.0100     -0.9145      0.3604
-w                             0.9976      0.0107     93.1763      0.0000
-m                             0.9984      0.0107     93.4394      0.0000
+(Intercept)                -0.009147        0.01     -0.9145      0.3604
+w                             0.9976     0.01071       93.18           0
+m                             0.9984     0.01068       93.44           0
 
 ── Manual 2SLS ──────────────────────────────
                             Estimate  Std. Error     z value    Pr(&gt;|z|)
 ────────────────────────────────────────────────────────────────────────
-(Intercept)                  -0.0058      0.0100     -0.5770      0.5639
-w_hat                         0.9999      0.0155     64.4258      0.0000</code></pre>
+(Intercept)                -0.005772        0.01      -0.577      0.5639
+w_hat                         0.9999     0.01552       64.43           0</code></pre>
 </div>
 </div>
 </section>
@@ -523,7 +523,7 @@ w_hat                         0.9999      0.0155     64.4258      0.0000</code><
 <p>We have a continuous variable <span class="math inline">\(X\)</span>, called the running variable, which determines the binary treatment <span class="math inline">\(W\)</span>. The treatment is assigned according to a threshold <span class="math inline">\(c\)</span>. The outcome variable <span class="math inline">\(Y\)</span> is a function of <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span>.</p>
 <p><span class="math display">\[ W=\mathbb{1}(X&gt;c)\]</span></p>
 <p>Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable <span class="math inline">\(X_i\)</span> is the difference in vote share between the Democratic and Republican parties in one election, with the threshold <span class="math inline">\(c = 0\)</span>. The outcome variable <span class="math inline">\(Y_i\)</span> is vote share at the second election.</p>
-<div id="e70833d7" class="cell" data-message="false" data-execution_count="6">
+<div id="96f00cd4" class="cell" data-message="false" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>senate <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/rdrobust_senate.csv"</span>, DataFrame)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -561,7 +561,7 @@ w_hat                         0.9999      0.0155     64.4258      0.0000</code><
 </section>
 <section id="estimation-of-srdd" class="level3" data-number="5.2.3">
 <h3 data-number="5.2.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">5.2.3</span> Estimation of SRDD</h3>
-<div id="dd86ecb9" class="cell" data-message="false" data-execution_count="7">
+<div id="55f34b27" class="cell" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>GPA <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">4</span>), <span class="fl">1000</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>future_success <span class="op">=</span> <span class="fl">10</span> <span class="op">.+</span> <span class="fl">1.5</span> <span class="op">.*</span> GPA <span class="op">.+</span> <span class="fl">2</span> <span class="op">.*</span> (GPA <span class="op">.&lt;=</span> <span class="fl">3</span>) <span class="op">.+</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), <span class="fl">1000</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -588,25 +588,25 @@ w_hat                         0.9999      0.0155     64.4258      0.0000</code><
 </div>
 </div>
 </div>
-<div id="32e8e224" class="cell" data-message="false" data-execution_count="8">
+<div id="319131a5" class="cell" data-message="false" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the sharp RDD model</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rdd_gpa <span class="op">=</span> <span class="fu">rdrobust</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.2f</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.Estimate.tau_us[<span class="fl">1</span>]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.Estimate.tau_us[<span class="fl">1</span>]</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Tau (bias-corrected) = -1.66
+<pre><code>Tau (bias-corrected) = -1.657
 P-value (robust)     = 0.0000</code></pre>
 </div>
 </div>
 </section>
 <section id="nonparametric-estimation" class="level3" data-number="5.2.4">
 <h3 data-number="5.2.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">5.2.4</span> Nonparametric Estimation</h3>
-<div id="c809db38" class="cell" data-message="false" data-execution_count="9">
+<div id="c38ec4da" class="cell" data-message="false" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rdd_house <span class="op">=</span> <span class="fu">rdrobust</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.2f</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_house.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Tau (bias-corrected) = 7.41
+<pre><code>Tau (bias-corrected) = 7.414
 P-value (robust)     = 0.0000</code></pre>
 </div>
 </div>
@@ -622,7 +622,7 @@ P-value (robust)     = 0.0000</code></pre>
 <h3 data-number="5.2.6" class="anchored" data-anchor-id="frdd-example"><span class="header-section-number">5.2.6</span> FRDD Example</h3>
 <p>Fetter (2013)’s main question of interest is how much of the increase in the home ownership rate in the midcentury US was due to mortgage subsidies given out by the government.</p>
 <p>We’re using the running variable quarter of birth (qob), which has been centered on the quarter of birth you’d need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).</p>
-<div id="4db81386" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div id="14f8cfc5" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the real mortgages dataset (Fetter 2013) from causaldata R package</span></span>
@@ -656,24 +656,24 @@ P-value (robust)     = 0.0000</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>                            Estimate  Std. Error     z value    Pr(&gt;|z|)
 ────────────────────────────────────────────────────────────────────────
-nonwhite                     -0.1904      0.0068    -27.9510      0.0000
-qob_minus_kw                 -0.0072      0.0018     -4.0697      0.0000
-vet_wwko_hat                  0.1702      0.0456      3.7327      0.0002
-vet_inter_hat                -0.0029      0.0026     -1.0922      0.2747</code></pre>
+nonwhite                     -0.1904    0.006813      -27.95  6.413e-172
+qob_minus_kw               -0.007151    0.001757       -4.07   4.707e-05
+vet_wwko_hat                  0.1702     0.04559       3.733   0.0001894
+vet_inter_hat              -0.002853    0.002612      -1.092      0.2747</code></pre>
 </div>
 </div>
-<div id="4a65b618" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<div id="61f2e840" class="cell" data-cache="true" data-message="false" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: rdrobust uses a data-driven bandwidth — no global FE needed</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>m_rdd <span class="op">=</span> <span class="fu">rdrobust</span>(vet.home_ownership,</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                 vet.qob_minus_kw,</span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                 fuzzy <span class="op">=</span> vet.vet_wwko,</span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                 c <span class="op">=</span> <span class="fl">0.0</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Manual 2SLS     tau = %.2f</span><span class="sc">\n</span><span class="st">"</span> m_iv.beta[<span class="fl">3</span>]</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"RDRobust (FRDD) tau = %.2f</span><span class="sc">\n</span><span class="st">"</span> m_rdd.Estimate.tau_us[<span class="fl">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Manual 2SLS     tau = %.4g</span><span class="sc">\n</span><span class="st">"</span> m_iv.beta[<span class="fl">3</span>]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"RDRobust (FRDD) tau = %.4g</span><span class="sc">\n</span><span class="st">"</span> m_rdd.Estimate.tau_us[<span class="fl">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Manual 2SLS     tau = 0.17
-RDRobust (FRDD) tau = 1.88</code></pre>
+<pre><code>Manual 2SLS     tau = 0.1702
+RDRobust (FRDD) tau = 1.879</code></pre>
 </div>
 </div>
 <p>These two results are very different, which is one of RDD’s problems. It can be sensitive to model selection. For example, in the case of 2SLS, it’s a linear model. In the case of <code>rdrobust</code>, it’s a local regression, which can be sensitive to bandwidth selection.</p>
