@@ -786,22 +786,54 @@ Estimates:
   Indirect Effect                           -0.0000 (SE:   0.7617) [95% CI:  -1.4930,   1.4929]</code></pre>
 </div>
 </div>
-<div id="med10" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<div id="cell-med10" class="cell" data-cache="true" data-message="false" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract direct and indirect effect estimates</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ide <span class="op">=</span> result.estimates[<span class="st">"direct"</span>]</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>iie <span class="op">=</span> result.estimates[<span class="st">"indirect"</span>]</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Interventional Direct Effect (IDE):   "</span>,</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">round</span>(ide[<span class="st">"estimate"</span>], digits <span class="op">=</span> <span class="fl">4</span>),</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"  (se = "</span>, <span class="fu">round</span>(ide[<span class="st">"std.error"</span>], digits <span class="op">=</span> <span class="fl">4</span>), <span class="st">")"</span>)</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Interventional Indirect Effect (IIE): "</span>,</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">round</span>(iie[<span class="st">"estimate"</span>], digits <span class="op">=</span> <span class="fl">4</span>),</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"  (se = "</span>, <span class="fu">round</span>(iie[<span class="st">"std.error"</span>], digits <span class="op">=</span> <span class="fl">4</span>), <span class="st">")"</span>)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"ATE:                                  "</span>,</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">round</span>(result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>], digits <span class="op">=</span> <span class="fl">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Interventional Direct Effect (IDE):   -0.0005  (se = 0.7612)
-Interventional Indirect Effect (IIE): -0.0  (se = 0.7617)
-ATE:                                  -0.0005</code></pre>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    Effect   <span class="op">=</span> [<span class="st">"IDE (Direct)"</span>, <span class="st">"IIE (Indirect)"</span>, <span class="st">"ATE"</span>],</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    Estimate <span class="op">=</span> <span class="fu">round</span>.([ide[<span class="st">"estimate"</span>], iie[<span class="st">"estimate"</span>], result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]], digits<span class="op">=</span><span class="fl">4</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    SE       <span class="op">=</span> [<span class="fu">round</span>(ide[<span class="st">"std.error"</span>], digits<span class="op">=</span><span class="fl">4</span>), <span class="fu">round</span>(iie[<span class="st">"std.error"</span>], digits<span class="op">=</span><span class="fl">4</span>), <span class="cn">missing</span>]</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="med10" class="cell-output cell-output-display" data-execution_count="13">
+<div><div style="float: left;"><span>3×3 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Effect</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Estimate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">SE</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Union{Missing, Float64}">Float64?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">IDE (Direct)</td>
+<td style="text-align: right;">-0.0005</td>
+<td style="text-align: right;">0.7612</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: left;">IIE (Indirect)</td>
+<td style="text-align: right;">-0.0</td>
+<td style="text-align: right;">0.7617</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: left;">ATE</td>
+<td style="text-align: right;">-0.0005</td>
+<td style="text-align: right; font-style: italic;">missing</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 
