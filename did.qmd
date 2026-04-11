@@ -14,6 +14,34 @@ using SynthDiD
 using CairoMakie
 using Statistics
 using Printf
+
+function show_coef(model)
+    ct = coeftable(model)
+    isempty(ct.rownms) && return
+    w_nm = max(24, maximum(length.(ct.rownms)) + 2)
+    w = 12
+    println(rpad("", w_nm) * join(lpad.(ct.colnms, w)))
+    println("─"^(w_nm + w * length(ct.colnms)))
+    for i in eachindex(ct.rownms)
+        s = rpad(ct.rownms[i], w_nm)
+        for c in ct.cols
+            v = c[i]
+            s *= v isa AbstractFloat ? lpad(@sprintf("%.2f", v), w) :
+                                       lpad(string(v), w)
+        end
+        println(s)
+    end
+end
+
+function preview(df, n=6)
+    df2 = copy(first(df, n))
+    for col in names(df2)
+        if eltype(df2[!, col]) <: AbstractFloat
+            df2[!, col] = round.(df2[!, col], digits=2)
+        end
+    end
+    show(stdout, df2; eltypes=false)
+end
 ```
 
 What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.
@@ -120,7 +148,7 @@ We'll use the mpdta dataset on US teen employment from the did package. "Treatme
 # US teen employment data; treatment = minimum wage increase
 mpdta = CSV.read("data/mpdta.csv", DataFrame)
 rename!(mpdta, "first.treat" => "first_treat")
-show(stdout, first(mpdta, 6); eltypes=false)
+preview(mpdta)
 ```
 
 ```{julia did2}
@@ -147,7 +175,7 @@ mod = feols(mpdta, @formula(lemp ~ lpop + first_treat_str & year_str + fe(county
 #| warning: false
 #| cache: true
 #| echo: true
-show(stdout, MIME("text/plain"), StatsAPI.coeftable(mod))
+show_coef(mod)
 ```
 
 ```{julia did5}
@@ -205,7 +233,7 @@ did_data = DataFrame(readstat("data/did_staggered_6.dta"))
     end
 end
 
-show(stdout, first(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat), 6); eltypes=false)
+preview(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat))
 ```
 
 ```{julia did19}
@@ -270,7 +298,7 @@ did_data.year_str = string.(did_data.year)
 
 # this replicates Jeff's results with pooled ols or xtreg, with covariate x.
 mod = feols(did_data, @formula(y ~ x + first_treat_str & year_str + fe(id) + fe(year)), vcov = Vcov.cluster(:id))
-show(stdout, MIME("text/plain"), StatsAPI.coeftable(mod))
+show_coef(mod)
 ```
 
 ```{julia did12}

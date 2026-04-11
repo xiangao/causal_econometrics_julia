@@ -17,6 +17,16 @@ using Statistics
 using Lavaan
 using Crumble
 using Printf
+
+function preview(df, n=6)
+    df2 = copy(first(df, n))
+    for col in names(df2)
+        if eltype(df2[!, col]) <: AbstractFloat
+            df2[!, col] = round.(df2[!, col], digits=2)
+        end
+    end
+    show(stdout, df2; eltypes=false)
+end
 ```
 
 ```{julia}
@@ -432,7 +442,7 @@ w_names = ["W_1", "W_2", "W_3"]
 m_names = ["M"]
 
 # quick look at the data
-show(stdout, first(example_data, 6); eltypes=false)
+preview(example_data)
 ```
 
 ```{julia}
