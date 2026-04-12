@@ -15,24 +15,8 @@ using GLM
 using Downloads
 using Random
 using Printf
-
-function show_coef(model)
-    ct = coeftable(model)
-    isempty(ct.rownms) && return
-    w_nm = max(24, maximum(length.(ct.rownms)) + 2)
-    w = 12
-    println(rpad("", w_nm) * join(lpad.(ct.colnms, w)))
-    println("─"^(w_nm + w * length(ct.colnms)))
-    for i in eachindex(ct.rownms)
-        s = rpad(ct.rownms[i], w_nm)
-        for c in ct.cols
-            v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.4g", v), w) :
-                                       lpad(string(v), w)
-        end
-        println(s)
-    end
-end
+using RegressionTables
+include("regtable_helpers.jl")
 ```
 
 Once we have identification, which means we can identify the causal effect from the observed data, we can move to estimation. Estimation is to estimate the identified causal effect from the observed data. We have several methods for estimation, including regression adjustment (RA), inverse probability weighting (IPW), augmented inverse probability weighting (AIPW) and inverse probability weighted regression adjustment (IPWRA).
@@ -108,10 +92,10 @@ data = DataFrames.transform(pension,
 )
 
 lm_ra = lm(@formula(net_tfa ~ p401 * (inc_dm + age_dm)), data)
-show_coef(lm_ra)
+show_regression_html(lm_ra)
 ```
 
-After demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on $W$ is the average treatment effect. 
+After demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on $W$ is the average treatment effect.
 
 
 ### Questions on RA

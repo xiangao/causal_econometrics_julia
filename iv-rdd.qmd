@@ -12,24 +12,8 @@ using DataFrames
 using StatsModels, DataFramesMeta
 import StatsAPI: coeftable
 using Printf
-
-function show_coef(model)
-    ct = coeftable(model)
-    isempty(ct.rownms) && return
-    w_nm = max(24, maximum(length.(ct.rownms)) + 2)
-    w = 12
-    println(rpad("", w_nm) * join(lpad.(ct.colnms, w)))
-    println("─"^(w_nm + w * length(ct.colnms)))
-    for i in eachindex(ct.rownms)
-        s = rpad(ct.rownms[i], w_nm)
-        for c in ct.cols
-            v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.4g", v), w) :
-                                       lpad(string(v), w)
-        end
-        println(s)
-    end
-end
+using RegressionTables
+include("regtable_helpers.jl")
 ```
 
 If we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.
@@ -190,18 +174,18 @@ tsls_manual = feols(data, @formula(y ~ w_hat));
 #| echo: true
 # Biased OLS
 println("── Biased OLS (w only) ──────────────────────")
-show_coef(lm_biased)
+show_regression_html(lm_biased)
 
 # Full OLS is good
 println("\n── Full OLS (w + m) ─────────────────────────")
-show_coef(lm_full)
+show_regression_html(lm_full)
 
 # Manual 2SLS is good
 # Note: the coefficients from manual 2SLS are correct, but standard
 # errors are slightly incorrect because they use residuals from w_hat,
 # not the true w.
 println("\n── Manual 2SLS ──────────────────────────────")
-show_coef(tsls_manual)
+show_regression_html(tsls_manual)
 ```
 
 ## Regression Discontinuity Design
@@ -346,7 +330,7 @@ vet.vet_inter_hat = vet.vet_inter .- stage1b.residuals
 # Stage 2: Regress home_ownership on fitted endogenous variables
 # Note: we use RobustVcov for heteroskedasticity-robust SEs
 m_iv = feols(vet, @formula(home_ownership ~ nonwhite + qob_minus_kw + vet_wwko_hat + vet_inter_hat + fe(bpl) + fe(qob)), vcov=Vcov.robust())
-show_coef(m_iv)
+show_regression_html(m_iv)
 ```
 
 ```{julia}

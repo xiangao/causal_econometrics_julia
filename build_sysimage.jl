@@ -12,10 +12,10 @@ using PackageCompiler
 packages = [
     :CairoMakie, :GraphMakie, :Graphs,
     :GLM, :DataFrames, :DataFramesMeta, :StatsModels,
-    :Distributions, :StatsFuns,
+    :Distributions, :StatsFuns, :StatsBase,
     :CSV, :ReadStatTables, :StatsAPI, :Vcov, :GeometryBasics,
     :MLJ, :MLJLinearModels, :MLJDecisionTreeInterface, :DecisionTree,
-    :EvoTrees, :GLMNet,
+    :EvoTrees, :GLMNet, :RegressionTables,
     :NPCausal, :Panelest, :DiD, :SynthDiD, :RDRobust, :TMLE,
     :Lavaan, :Crumble,
 ]

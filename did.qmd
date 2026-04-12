@@ -15,24 +15,8 @@ using SynthDiD
 using CairoMakie
 using Statistics
 using Printf
-
-function show_coef(model)
-    ct = coeftable(model)
-    isempty(ct.rownms) && return
-    w_nm = max(24, maximum(length.(ct.rownms)) + 2)
-    w = 12
-    println(rpad("", w_nm) * join(lpad.(ct.colnms, w)))
-    println("─"^(w_nm + w * length(ct.colnms)))
-    for i in eachindex(ct.rownms)
-        s = rpad(ct.rownms[i], w_nm)
-        for c in ct.cols
-            v = c[i]
-            s *= v isa AbstractFloat ? lpad(@sprintf("%.4g", v), w) :
-                                       lpad(string(v), w)
-        end
-        println(s)
-    end
-end
+using RegressionTables
+include("regtable_helpers.jl")
 
 ```
 
@@ -167,7 +151,7 @@ mod = feols(mpdta, @formula(lemp ~ lpop + first_treat_str & year_str + fe(county
 #| warning: false
 #| cache: true
 #| echo: true
-show_coef(mod)
+show_regression_html(mod)
 ```
 
 ```{julia did5}
@@ -290,7 +274,7 @@ did_data.year_str = string.(did_data.year)
 
 # this replicates Jeff's results with pooled ols or xtreg, with covariate x.
 mod = feols(did_data, @formula(y ~ x + first_treat_str & year_str + fe(id) + fe(year)), vcov = Vcov.cluster(:id))
-show_coef(mod)
+show_regression_html(mod)
 ```
 
 ```{julia did12}
