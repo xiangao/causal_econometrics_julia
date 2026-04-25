@@ -1,0 +1,205 @@
+# Julia Packages Used in This Book
+
+This book relies on a small Julia causal econometrics stack developed alongside the examples. The packages live under `~/projects/software` and are loaded through this book's local Julia environment. The goal is not to replace the broader Julia ecosystem, but to fill the gaps that matter for the workflows in this text: fixed effects, semiparametric causal estimators, staggered DiD, synthetic DiD, regression discontinuity, SEM, and causal mediation.
+
+The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as `../../software/Panelest.jl`, which resolves to `~/projects/software/Panelest.jl`.
+
+## Working With The Environment
+
+The reproducible workflow is:
+
+```bash
+cd ~/projects/books/causal_econometrics_julia
+julia --project -e 'using Pkg; Pkg.instantiate()'
+julia --project -e 'using NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'
+quarto render
+```
+
+The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up the book environment when rendering from this directory. A custom sysimage can still be useful for speed, but it is optional and should be rebuilt whenever the local packages change.
+
+## Package Map
+
+| Package | Used For | Main Book Chapters |
+|---|---|---|
+| `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, and IV/2SLS support | Estimation, DiD, IV/RDD |
+| `NPCausal.jl` | Influence-function estimators for ATE, ATT, continuous treatment effects, IV LATE, bounds, and incremental propensity interventions | Estimation, Nonparametric |
+| `TMLE.jl` | Targeted maximum likelihood and one-step AIPW for ATE with MLJ nuisance models | Nonparametric |
+| `DiD` | ETWFE helper layer, `emfx()` aggregation, and a local `mpdta`-style dataset helper | DiD |
+| `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
+| `RDRobust.jl` | Local-polynomial RD estimation, bandwidth selection, RD plot data, and fuzzy RD | IV/RDD |
+| `Lavaan.jl` | SEM, CFA, defined parameters, fit measures, and lavaan-style mediation syntax | Mediation |
+| `Crumble.jl` | Flexible causal mediation using cross-fitting, Riesz representers, and neural-network nuisance estimation | Mediation |
+
+## Panelest.jl
+
+`Panelest.jl` is the workhorse for regression models with high-dimensional fixed effects. Its API is intentionally close to the formula style used throughout the book:
+
+```julia
+using Panelest, Vcov
+
+feols(df, @formula(y ~ x + fe(id) + fe(year)))
+fepois(df, @formula(y ~ x + fe(id) + fe(year)))
+feols(df, @formula(y ~ x + fe(id) + fe(year)), vcov = Vcov.cluster(:id))
+```
+
+The package exports `feols`, `fepois`, `felogit`, `feprobit`, `feglm`, `clogit`, `cre`, `feiv`, and `fe`. The fixed-effect term `fe(...)` is the central convenience feature. In the DiD chapter, it lets ETWFE specifications stay readable:
+
+```julia
+feols(
+    mpdta,
+    @formula(lemp ~ lpop + first_treat_str & year_str + fe(countyreal) + fe(year)),
+    vcov = Vcov.cluster(:countyreal),
+)
+```
+
+The current package also includes `feiv` for 2SLS-style workflows:
+
+```julia
+feiv(df, @formula(y ~ x_exo + fe(id)), endo = :x_endo, inst = :z)
+```
+
+## NPCausal.jl
+
+`NPCausal.jl` provides the nonparametric causal estimators used in the estimation and nonparametric chapters. The core pattern is to pass the outcome, treatment, and covariate `DataFrame`, then let the package handle cross-fitting and nuisance estimation.
+
+```julia
+using NPCausal, DataFrames
+
+X = DataFrame(x1 = randn(1000), x2 = randn(1000))
+a = rand([0, 1], 1000)
+y = X.x1 .+ X.x2 .* a .+ randn(1000)
+
+result = ate(y, a, X; nsplits = 5)
+result.contrasts
+```
+
+The package exports `ate`, `att`, `ctseff`, `ivlate`, `ivbds`, `ipsi`, and `superlearner`. In this book, `ate` and `att` do most of the work, while `superlearner(binary=true/false)` provides an MLJ-based ensemble for nuisance functions.
+
+## TMLE.jl
+
+`TMLE.jl` implements targeted maximum likelihood and one-step AIPW estimators for ATEs. It uses an explicit target-parameter object and an explicit nuisance-model specification:
+
+```julia
+using TMLE, MLJ, EvoTrees
+import TMLE: estimate, pvalue
+
+EvoTreeClassifier = @load EvoTreeClassifier pkg=EvoTrees verbosity=0
+
+Ψ = ATE(
+    target = :Y,
+    treatment = (A = (case = 1, control = 0),),
+    confounders = [:W1, :W2],
+)
+
+η = NuisanceSpec(
+    EvoTreeClassifier(max_depth = 4, nrounds = 100),
+    EvoTreeClassifier(max_depth = 4, nrounds = 100),
+)
+
+result = tmle(Ψ, η, df; crossfit = 5, verbosity = 0)
+estimate(result)
+```
+
+When `TMLE.jl` and `MLJ.jl` are used together, explicitly importing `estimate` and `pvalue` from `TMLE` avoids a name conflict.
+
+## DiD
+
+The local `DiD` package is deliberately small. Its main role in this book is ETWFE post-processing:
+
+```julia
+using DiD
+
+att = emfx(model)
+event_study = emfx(model, type = "event")
+calendar = emfx(model, type = "calendar")
+```
+
+`emfx()` reads the cohort-by-time interaction coefficients from a `Panelest.feols` model and aggregates them into an overall ATT, event-time effects, or calendar-time effects. The package also exports `dataset("mpdta")`, which creates a balanced panel with string cohort and year columns for StatsModels interactions.
+
+The exported `att_gt()` function is currently a placeholder API. For the implemented workflow in this book, use `Panelest.feols(...)` plus `DiD.emfx(...)`.
+
+## SynthDiD.jl
+
+`SynthDiD.jl` implements the comparison among standard DiD, synthetic control, and synthetic DiD. The package exposes a matrix-oriented workflow:
+
+```julia
+using SynthDiD
+
+df = california_prop99()
+setup = panel_matrices(df, :State, :Year, :PacksPerCapita, :treated)
+
+τ_sdid = synthdid_estimate(setup.Y, setup.N0, setup.T0)
+τ_sc   = sc_estimate(setup.Y, setup.N0, setup.T0)
+τ_did  = did_estimate(setup.Y, setup.N0, setup.T0)
+```
+
+The most important functions are `panel_matrices`, `synthdid_estimate`, `sc_estimate`, `did_estimate`, `effect_curve`, `placebo`, `vcov`, `se`, `california_prop99`, and `synthdid_controls`.
+
+## RDRobust.jl
+
+`RDRobust.jl` is the RD layer used in the IV/RDD chapter. It mirrors the familiar `rdrobust` workflow:
+
+```julia
+using RDRobust
+
+fit = rdrobust(y, x; c = 0.0)
+bw = rdbwselect(y, x; c = 0.0)
+plot_data = rdplot(y, x; c = 0.0)
+```
+
+It supports local-polynomial RD estimation, robust bias-corrected intervals, bandwidth selectors, covariate adjustment, clustered inference, multiple kernels, and fuzzy RD designs. In the book, `rdrobust` is used both for a sharp RD example and for a fuzzy RD comparison with a manual 2SLS specification.
+
+## Lavaan.jl
+
+`Lavaan.jl` ports the R `lavaan` modeling style to Julia. It is used for classical SEM-based mediation:
+
+```julia
+using Lavaan
+
+model = """
+  m ~ a * x
+  y ~ b * m + c * x
+  indirect := a * b
+  total := c + indirect
+"""
+
+fit = sem(model, df)
+parameterEstimates(fit)
+```
+
+The public API includes `lavaan`, `cfa`, `sem`, `growth`, `sam`, `parameterEstimates`, `fitMeasures`, `standardizedSolution`, `lavInspect`, `lavTestLRT`, `modindices`, `rsquare`, `lavPredict`, and `simulateData`. The package supports the familiar lavaan operators `=~`, `~`, `~~`, `~1`, and `:=`.
+
+## Crumble.jl
+
+`Crumble.jl` is the causal mediation package used for interventional and recanting-twin estimands. Its entry point is `crumble()`:
+
+```julia
+using Crumble
+
+control = crumble_control(crossfit_folds = 5, epochs = 50)
+
+result = crumble(
+    df,
+    ["A"];
+    outcome = "Y",
+    mediators = ["M"],
+    moc = ["Z"],
+    covar = ["W1", "W2"],
+    effect = "RT",
+    control = control,
+)
+
+result.estimates
+```
+
+The package exports `crumble`, `crumble_control`, `sequential_module`, and `CrumbleResult`. The supported effect families are natural (`"N"`), organic (`"O"`), randomized interventional (`"RI"`), and recanting twin (`"RT"`). In the mediation chapter, `"RT"` is used because it handles a mediator-outcome confounder affected by treatment.
+
+## Practical Advice
+
+These packages are best treated as a coherent local research stack. When changing package code, rerun a direct load check from the book directory:
+
+```bash
+julia --project -e 'using NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'
+```
+
+For content changes, render the affected chapter first. For package API changes, render the full book after deleting the relevant `_freeze` chapter directory so Quarto does not reuse stale cached results.

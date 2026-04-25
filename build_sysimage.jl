@@ -38,6 +38,6 @@ IJulia.installkernel(
 )
 println("""
 Kernel installed.
-Update _quarto.yml:  jupyter: julia-1.12 (book)
+For fast renders, update _quarto.yml to use:  jupyter: julia-_book_-1.12
 Then `quarto render` will be much faster.
 """)

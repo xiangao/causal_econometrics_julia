@@ -5,12 +5,12 @@ A Quarto book covering modern causal inference methods implemented in Julia.
 ## Chapters
 
 1. **Identification** — Potential outcomes, DAGs, identification strategies
-2. **Estimation** — OLS, IV, fixed effects
+2. **Estimation** — Regression adjustment, IPW, AIPW, IPWRA
 3. **Nonparametric / ML-based** — AIPW, TMLE, DoubleML
-4. **DiD** — Difference-in-differences, staggered adoption (ETWFE)
+4. **DiD** — Difference-in-differences, staggered adoption (ETWFE), synthetic control, synthetic DiD
 5. **IV & RD** — Instrumental variables, regression discontinuity
 6. **Mediation** — Causal mediation analysis
-7. **Synthetic DiD** — Synthetic control and synthetic DiD
+7. **Julia Packages** — Local Julia packages used throughout the book
 
 ## Rendering
 
@@ -22,7 +22,9 @@ quarto render
 quarto render nonparametric.qmd
 ```
 
-The book uses a custom Julia sysimage (`book_sysimage.so`) for fast compilation. To rebuild after changing packages:
+The book renders with the `julia-1.12` Jupyter kernel, which uses `--project=@.` and therefore picks up this book's `Project.toml` when rendering from this directory.
+
+A custom Julia sysimage (`book_sysimage.so`) can be used for faster compilation. To rebuild after changing packages:
 
 ```bash
 julia --project build_sysimage.jl

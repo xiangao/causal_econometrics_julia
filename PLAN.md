@@ -1,5 +1,7 @@
 # Causal Econometrics with Julia — Rewrite Plan
 
+This is the historical rewrite plan for the book. The current book now includes the DiD, IV/RDD, mediation, and package-ecosystem chapters; consult `_quarto.yml` and `README.md` for the active chapter list.
+
 ## Book Structure (7 chapters — ML chapter skipped)
 
 | Part | Chapter | R Original | Julia Strategy |

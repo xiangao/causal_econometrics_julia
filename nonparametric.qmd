@@ -39,7 +39,7 @@ Then this estimator is $\sqrt n$ consistent and asymptotically normal; and $\phi
 
 Unfortunately there is no universal formula for efficient influence function for every problem. We need to derive it for each problem. For example, ATE has an IF based estimator, but ATT needs a different formula; and LATE has a different formula too, etc. Deriving them is hard!
 
-For ATE, target parameter $\psi = E \{ E(Y | X, A=1) \}$, the efficient influence function is $$\phi (Z; P) = \frac{A}{\pi (X)} \{ Y - \mu (X) \} + \mu(X) - \psi$$ where $\pi (X) = P(A=1 | X)$ the propensity score model, $\mu (X) = E(Y |X, A=1)$, the outcome model.
+For the treated potential-outcome mean, $\psi_1 = E\{E(Y \mid X, A=1)\}$, the efficient influence function is $$\phi_1 (Z; P) = \frac{A}{\pi (X)} \{ Y - \mu_1 (X) \} + \mu_1(X) - \psi_1$$ where $\pi (X) = P(A=1 | X)$ is the propensity score model and $\mu_1 (X) = E(Y |X, A=1)$ is the treated outcome model. The ATE influence function is the difference between the treated and untreated components, $\phi_1-\phi_0$.
 
 For example, an IF-based bias-corrected estimator $$\hat \psi = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu (X) \} + \hat \mu(X) \right]$$ where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
 

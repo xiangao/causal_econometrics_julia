@@ -50,7 +50,15 @@ $$  \begin{align}
 
 The RA estimators are:
 
-$$ \hat \tau_{ATT} = \sum_{i=1}^n (W_i(Y_i-\hat \mu_0(X_i)) /n_1$$ $$ \hat \tau_{ATE} = \sum_{i=1}^n (W_i(Y_i-\hat \mu_0(X_i)) + (1-W_i)(\hat \mu_1(X_i) - Y_i)) /n$$
+$$
+\hat \tau_{ATT}
+= \frac{1}{n_1}\sum_{i:W_i=1}\{Y_i-\hat\mu_0(X_i)\}
+$$
+
+$$
+\hat \tau_{ATE}
+= \frac{1}{n}\sum_{i=1}^n\{\hat\mu_1(X_i)-\hat\mu_0(X_i)\}
+$$
 
 where $\hat \mu_0(X_i)$ is the predicted value of $Y_i$ from a regression of $Y$ on $X$ for the control group.
 
