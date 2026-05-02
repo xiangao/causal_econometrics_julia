@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>6&nbsp; IV in Poisson with Fixed Effects – Causal Econometrics with Julia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./mediation.html" rel="next">
+<link href="./iv-rdd.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./poisson-iv.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Causal Econometrics with Julia</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Designs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./did.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Mediation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#part-1-continuous-endogenous-variable" id="toc-part-1-continuous-endogenous-variable" class="nav-link active" data-scroll-target="#part-1-continuous-endogenous-variable"><span class="header-section-number">6.1</span> Part 1 — Continuous endogenous variable</a>
+  <ul class="collapse">
+  <li><a href="#data-generating-process" id="toc-data-generating-process" class="nav-link" data-scroll-target="#data-generating-process"><span class="header-section-number">6.1.1</span> Data generating process</a></li>
+  <li><a href="#naive-poisson-endogeneity-bias" id="toc-naive-poisson-endogeneity-bias" class="nav-link" data-scroll-target="#naive-poisson-endogeneity-bias"><span class="header-section-number">6.1.2</span> Naive Poisson — endogeneity bias</a></li>
+  <li><a href="#control-function-approach" id="toc-control-function-approach" class="nav-link" data-scroll-target="#control-function-approach"><span class="header-section-number">6.1.3</span> Control function approach</a></li>
+  <li><a href="#bootstrap-standard-errors" id="toc-bootstrap-standard-errors" class="nav-link" data-scroll-target="#bootstrap-standard-errors"><span class="header-section-number">6.1.4</span> Bootstrap standard errors</a></li>
+  </ul></li>
+  <li><a href="#part-2-binary-endogenous-variable" id="toc-part-2-binary-endogenous-variable" class="nav-link" data-scroll-target="#part-2-binary-endogenous-variable"><span class="header-section-number">6.2</span> Part 2 — Binary endogenous variable</a>
+  <ul class="collapse">
+  <li><a href="#data-generating-process-1" id="toc-data-generating-process-1" class="nav-link" data-scroll-target="#data-generating-process-1"><span class="header-section-number">6.2.1</span> Data generating process</a></li>
+  <li><a href="#three-approaches-theory-recap" id="toc-three-approaches-theory-recap" class="nav-link" data-scroll-target="#three-approaches-theory-recap"><span class="header-section-number">6.2.2</span> Three approaches: theory recap</a></li>
+  <li><a href="#approach-a-linear-projection-cf" id="toc-approach-a-linear-projection-cf" class="nav-link" data-scroll-target="#approach-a-linear-projection-cf"><span class="header-section-number">6.2.3</span> Approach A — Linear projection CF</a></li>
+  <li><a href="#approach-b-probit-generalized-residuals" id="toc-approach-b-probit-generalized-residuals" class="nav-link" data-scroll-target="#approach-b-probit-generalized-residuals"><span class="header-section-number">6.2.4</span> Approach B — Probit generalized residuals</a></li>
+  <li><a href="#approach-c-fitted-values-as-instrument-ivgmm-poisson" id="toc-approach-c-fitted-values-as-instrument-ivgmm-poisson" class="nav-link" data-scroll-target="#approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">6.2.5</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</a></li>
+  <li><a href="#a-vs-c-not-equivalent-in-poisson" id="toc-a-vs-c-not-equivalent-in-poisson" class="nav-link" data-scroll-target="#a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">6.2.6</span> A vs C — not equivalent in Poisson</a></li>
+  <li><a href="#bootstrap-for-approach-a-binary-eev" id="toc-bootstrap-for-approach-a-binary-eev" class="nav-link" data-scroll-target="#bootstrap-for-approach-a-binary-eev"><span class="header-section-number">6.2.7</span> Bootstrap for Approach A (binary EEV)</a></li>
+  <li><a href="#comparison-across-all-methods" id="toc-comparison-across-all-methods" class="nav-link" data-scroll-target="#comparison-across-all-methods"><span class="header-section-number">6.2.8</span> Comparison across all methods</a></li>
+  </ul></li>
+  <li><a href="#why-julia-is-faster" id="toc-why-julia-is-faster" class="nav-link" data-scroll-target="#why-julia-is-faster"><span class="header-section-number">6.3</span> Why Julia is faster</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./poisson-iv.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Poisson regression handles count and non-negative outcomes by specifying the conditional mean as an exponential function. Because it is a quasi-MLE, it requires only the mean to be correct — no distributional assumption on the count. When an explanatory variable is endogenous, we need an IV strategy adapted to the nonlinear mean. This chapter covers two cases: a continuous endogenous variable (where the control function works exactly) and a binary endogenous variable (where three CF/IV approaches are available with different trade-offs).</p>
+<section id="part-1-continuous-endogenous-variable" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="part-1-continuous-endogenous-variable"><span class="header-section-number">6.1</span> Part 1 — Continuous endogenous variable</h2>
+<section id="data-generating-process" class="level3" data-number="6.1.1">
+<h3 data-number="6.1.1" class="anchored" data-anchor-id="data-generating-process"><span class="header-section-number">6.1.1</span> Data generating process</h3>
+<p>We simulate a panel where <code>time</code> (continuous, e.g.&nbsp;minutes on site) is endogenous: it is correlated with an unobserved factor <code>e</code> that also affects <code>visits</code>. The excluded instrument is <code>phone</code> (binary, e.g.&nbsp;phone-access indicator). Fixed effects are <code>ad</code> (20 groups) and <code>female</code>.</p>
+<div id="74150c2b" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>n_ad <span class="op">=</span> <span class="fl">20</span>; obs_per <span class="op">=</span> <span class="fl">250</span>; n <span class="op">=</span> n_ad <span class="op">*</span> obs_per</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>fe_ad  <span class="op">=</span> <span class="fu">randn</span>(n_ad) <span class="op">.*</span> <span class="fl">0.5</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>fe_grp <span class="op">=</span> <span class="fu">repeat</span>(<span class="fl">1</span><span class="op">:</span>n_ad, inner <span class="op">=</span> obs_per)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>female <span class="op">=</span> <span class="fu">Int</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> <span class="fl">0.5</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>phone  <span class="op">=</span> <span class="fu">Int</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> <span class="fl">0.4</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>frfam  <span class="op">=</span> <span class="fu">rand</span>(n)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Common error drives endogeneity</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="cn">e</span> <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Continuous endogenous variable (linear first stage holds exactly)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>time <span class="op">=</span> <span class="fl">1.5</span> <span class="op">.*</span> phone <span class="op">.+</span> <span class="fl">0.5</span> <span class="op">.*</span> frfam <span class="op">.+</span> fe_ad[fe_grp] <span class="op">.+</span> <span class="cn">e</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Poisson outcome — true coefficient on time = 0.8</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>true_α <span class="op">=</span> <span class="fl">0.8</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>λ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fl">0.5</span> <span class="op">.+</span> true_α <span class="op">.*</span> time <span class="op">.+</span> <span class="fl">0.4</span> <span class="op">.*</span> frfam <span class="op">.+</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>         fe_ad[fe_grp] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> female <span class="op">.+</span> <span class="fl">0.5</span> <span class="op">.*</span> <span class="cn">e</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>visits <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">Poisson</span>(λi)) for λi <span class="kw">in</span> λ]</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>df1 <span class="op">=</span> <span class="fu">DataFrame</span>(visits<span class="op">=</span>visits, time<span class="op">=</span>time, phone<span class="op">=</span>phone,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                frfam<span class="op">=</span>frfam, female<span class="op">=</span>female, ad<span class="op">=</span>fe_grp)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"n = </span><span class="sc">$</span>n<span class="st">   groups = </span><span class="sc">$</span>n_ad<span class="st">   visits mean = </span><span class="sc">$</span>(<span class="fu">round</span>(<span class="fu">mean</span>(visits),digits<span class="op">=</span><span class="fl">2</span>))<span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n = 5000   groups = 20   visits mean = 15.93</code></pre>
+</div>
+</div>
+</section>
+<section id="naive-poisson-endogeneity-bias" class="level3" data-number="6.1.2">
+<h3 data-number="6.1.2" class="anchored" data-anchor-id="naive-poisson-endogeneity-bias"><span class="header-section-number">6.1.2</span> Naive Poisson — endogeneity bias</h3>
+<p>Ignoring the endogeneity of <code>time</code> gives a biased estimate of <code>α₁</code>:</p>
+<div id="9ed20703" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>naive1 <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Naive (biased):"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(naive1; title<span class="op">=</span><span class="st">"Naive Poisson — time is endogenous"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Naive (biased):</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><strong>Naive Poisson — time is endogenous</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid black;"></th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Estimate</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Std. Error</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">t value</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Pr(&gt;|t|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">time</td>
+<td style="text-align: right; padding: 3px 8px;">1.150</td>
+<td style="text-align: right; padding: 3px 8px;">0.003</td>
+<td style="text-align: right; padding: 3px 8px;">392.827</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 3px 10px 3px 0;">frfam</td>
+<td style="text-align: right; padding: 3px 8px;">0.291</td>
+<td style="text-align: right; padding: 3px 8px;">0.013</td>
+<td style="text-align: right; padding: 3px 8px;">22.698</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td colspan="5" style="text-align: left; padding: 6px 0 0 0; border-top: 1px solid black;">---<br>
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="control-function-approach" class="level3" data-number="6.1.3">
+<h3 data-number="6.1.3" class="anchored" data-anchor-id="control-function-approach"><span class="header-section-number">6.1.3</span> Control function approach</h3>
+<p>The CF procedure (Wooldridge 2002, 2014):</p>
+<ol type="1">
+<li><strong>First stage</strong> — linear projection of <code>time</code> on <code>phone</code>, <code>frfam</code>, and fixed effects via <code>feols</code>. The residual <span class="math inline">\(\hat{v}_2 = \text{time} - \hat{\text{time}}\)</span> satisfies <span class="math inline">\(E(\mathbf{z}'\hat{v}_2)=0\)</span> by construction.</li>
+<li><strong>Second stage</strong> — Poisson QMLE with <span class="math inline">\(\hat{v}_2\)</span> added as a regressor. Including <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> absorbs the endogenous variation.</li>
+</ol>
+<p>Because the first stage is a linear model and the true DGP has a linear first stage, the CF assumption <span class="math inline">\(E[y_1 \mid \mathbf{z_1}, y_2, v_2] = \exp(\mathbf{z_1}\boldsymbol{\delta_1} + \alpha_1 y_2 + \rho v_2)\)</span> holds exactly here.</p>
+<div id="daaa3af4" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>fs1 <span class="op">=</span> <span class="fu">feols</span>(df1, <span class="pp">@formula</span>(time <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>df1.v2hat <span class="op">=</span> fs1.residuals</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Poisson CF</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>m1_cf <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> v2hat <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"CF estimate (should recover α₁ = </span><span class="sc">$</span>(true_α)<span class="st">):"</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(m1_cf; title<span class="op">=</span><span class="st">"CF: linear projection first stage"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CF estimate (should recover α₁ = 0.8):</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><strong>CF: linear projection first stage</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid black;"></th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Estimate</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Std. Error</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">t value</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Pr(&gt;|t|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">time</td>
+<td style="text-align: right; padding: 3px 8px;">0.810</td>
+<td style="text-align: right; padding: 3px 8px;">0.005</td>
+<td style="text-align: right; padding: 3px 8px;">158.862</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 3px 10px 3px 0;">v2hat</td>
+<td style="text-align: right; padding: 3px 8px;">0.489</td>
+<td style="text-align: right; padding: 3px 8px;">0.006</td>
+<td style="text-align: right; padding: 3px 8px;">76.972</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">frfam</td>
+<td style="text-align: right; padding: 3px 8px;">0.405</td>
+<td style="text-align: right; padding: 3px 8px;">0.013</td>
+<td style="text-align: right; padding: 3px 8px;">31.664</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td colspan="5" style="text-align: left; padding: 6px 0 0 0; border-top: 1px solid black;">---<br>
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The coefficient on <code>time</code> recovers the true <span class="math inline">\(\alpha_1 = 0.8\)</span>. The <code>v2hat</code> coefficient tests exogeneity — its t-statistic is the Hausman-type test.</p>
+</section>
+<section id="bootstrap-standard-errors" class="level3" data-number="6.1.4">
+<h3 data-number="6.1.4" class="anchored" data-anchor-id="bootstrap-standard-errors"><span class="header-section-number">6.1.4</span> Bootstrap standard errors</h3>
+<p>The second-stage standard errors are incorrect because the first-stage estimation error propagates. Julia’s <code>Threads.@threads</code> parallelises the cluster bootstrap across all CPU cores:</p>
+<div id="edecf693" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_resample</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    clusters <span class="op">=</span> <span class="fu">unique</span>(df.ad)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    K <span class="op">=</span> <span class="fu">length</span>(clusters)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    draws <span class="op">=</span> [<span class="fu">sample</span>(clusters, K, replace<span class="op">=</span><span class="cn">true</span>) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>B]</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> draws</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">build_boot_df</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, drawn_clusters<span class="op">::</span><span class="dt">Vector</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    frames <span class="op">=</span> DataFrame[]</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (id, c) <span class="kw">in</span> <span class="fu">enumerate</span>(drawn_clusters)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        sub <span class="op">=</span> <span class="fu">copy</span>(df[df.ad <span class="op">.==</span> c, <span class="op">:</span>])</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        sub.ad_boot <span class="op">=</span> <span class="fu">fill</span>(id, <span class="fu">nrow</span>(sub))</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(frames, sub)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">vcat</span>(frames<span class="op">...</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 1 bootstrap: continuous time</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_cf_continuous</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    draws   <span class="op">=</span> <span class="fu">bootstrap_resample</span>(df, B; seed<span class="op">=</span>seed)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> <span class="fu">zeros</span>(B)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> b <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>B</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        df_b <span class="op">=</span> <span class="fu">build_boot_df</span>(df, draws[b])</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        fs   <span class="op">=</span> <span class="fu">feols</span>(df_b,  <span class="pp">@formula</span>(time <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        df_b.v2hat <span class="op">=</span> fs.residuals</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        ss   <span class="op">=</span> <span class="fu">fepois</span>(df_b, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> v2hat <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        idx  <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time"</span>), <span class="fu">coefnames</span>(ss))</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        results[b] <span class="op">=</span> <span class="fu">coef</span>(ss)[idx]</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>boot1 <span class="op">=</span> <span class="fu">bootstrap_cf_continuous</span>(df1, <span class="fl">500</span>)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>naive_se1 <span class="op">=</span> <span class="fu">stderror</span>(m1_cf)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time"</span>), <span class="fu">coefnames</span>(m1_cf))]</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>coef1     <span class="op">=</span> <span class="fu">coef</span>(m1_cf)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time"</span>), <span class="fu">coefnames</span>(m1_cf))]</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"time coefficient:  %.4f  (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>, coef1, true_α)</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive 2nd-stage SE: %.4f</span><span class="sc">\n</span><span class="st">"</span>, naive_se1)</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bootstrap SE:       %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(boot1))</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bootstrap 95%% CI: [%.4f, %.4f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(boot1, <span class="fl">0.025</span>), <span class="fu">quantile</span>(boot1, <span class="fl">0.975</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>time coefficient:  0.8103  (true 0.8)
+Naive 2nd-stage SE: 0.0051
+Bootstrap SE:       0.0112
+Bootstrap 95% CI: [0.7868, 0.8312]</code></pre>
+</div>
+</div>
+<p>The bootstrapped SE is larger than the naive second-stage SE, confirming that ignoring the first-stage uncertainty understates uncertainty.</p>
+<hr>
+</section>
+</section>
+<section id="part-2-binary-endogenous-variable" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="part-2-binary-endogenous-variable"><span class="header-section-number">6.2</span> Part 2 — Binary endogenous variable</h2>
+<p>When <span class="math inline">\(y_2 \in \{0,1\}\)</span>, the same linear projection first stage is still valid, but two additional approaches exploiting the binary structure become available.</p>
+<section id="data-generating-process-1" class="level3" data-number="6.2.1">
+<h3 data-number="6.2.1" class="anchored" data-anchor-id="data-generating-process-1"><span class="header-section-number">6.2.1</span> Data generating process</h3>
+<p>We use a clean probit DGP for the binary endogenous variable with a fresh structural error <code>e2</code> independent of Part 1. The endogeneity coefficient <code>ρ = 0.2</code> is kept small so the CF assumption holds approximately well and estimates are close to the true value.</p>
+<div id="95fddae8" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fresh structural error for Part 2 (independent of Part 1's e)</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>e2 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Binary endogenous variable: clean probit latent index</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># phone is the excluded instrument; no FE in latent index for clarity</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>time_hi <span class="op">=</span> <span class="fu">Int</span>.(<span class="fl">1.5</span> <span class="op">.*</span> phone <span class="op">.+</span> <span class="fl">0.4</span> <span class="op">.*</span> frfam <span class="op">.+</span> e2 <span class="op">.&gt;=</span> <span class="fl">0</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Poisson outcome — true coefficient 0.8, endogeneity via ρ*e2 (ρ=0.2)</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Small ρ ensures the approximate CF assumption holds closely</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>ρ<span class="fl">2</span> <span class="op">=</span> <span class="fl">0.2</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>λ<span class="fl">2</span> <span class="op">=</span> <span class="fu">exp</span>.(<span class="fl">0.5</span> <span class="op">.+</span> true_α <span class="op">.*</span> time_hi <span class="op">.+</span> <span class="fl">0.4</span> <span class="op">.*</span> frfam <span class="op">.+</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>          fe_ad[fe_grp] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> female <span class="op">.+</span> ρ<span class="fl">2</span> <span class="op">.*</span> e2)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>visits2 <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">Poisson</span>(λ<span class="fl">2</span>i)) for λ<span class="fl">2</span>i <span class="kw">in</span> λ<span class="fl">2</span>]</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> <span class="fu">DataFrame</span>(visits<span class="op">=</span>visits2, time_hi<span class="op">=</span>time_hi, phone<span class="op">=</span>phone,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                frfam<span class="op">=</span>frfam, female<span class="op">=</span>female, ad<span class="op">=</span>fe_grp, e2<span class="op">=</span>e2)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"time_hi mean:      </span><span class="sc">$</span>(<span class="fu">round</span>(<span class="fu">mean</span>(time_hi), digits<span class="op">=</span><span class="fl">3</span>))<span class="st">"</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Cor(time_hi, e2):  </span><span class="sc">$</span>(<span class="fu">round</span>(<span class="fu">cor</span>(time_hi, e2), digits<span class="op">=</span><span class="fl">3</span>))<span class="st">  (endogeneity)"</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"visits mean:       </span><span class="sc">$</span>(<span class="fu">round</span>(<span class="fu">mean</span>(visits2), digits<span class="op">=</span><span class="fl">2</span>))<span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>time_hi mean:      0.727
+Cor(time_hi, e2):  0.613  (endogeneity)
+visits mean:       4.78</code></pre>
+</div>
+</div>
+</section>
+<section id="three-approaches-theory-recap" class="level3" data-number="6.2.2">
+<h3 data-number="6.2.2" class="anchored" data-anchor-id="three-approaches-theory-recap"><span class="header-section-number">6.2.2</span> Three approaches: theory recap</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>First stage</th>
+<th>What enters 2nd stage</th>
+<th>1st-stage assumption</th>
+<th>2nd-stage assumption</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A</strong></td>
+<td><code>feols</code> (OLS)</td>
+<td>Residuals <span class="math inline">\(\hat{v}_2\)</span></td>
+<td>Exogeneity of <span class="math inline">\(\mathbf{z}\)</span> only</td>
+<td>CF mean <span class="math inline">\(\exp(\cdots + \rho v_2)\)</span> correct</td>
+</tr>
+<tr class="even">
+<td><strong>B</strong></td>
+<td><code>feprobit</code></td>
+<td>Gen.&nbsp;residuals <span class="math inline">\(\hat{r}_2\)</span></td>
+<td>Probit correctly specified</td>
+<td>CF mean <span class="math inline">\(\exp(\cdots + \rho r_2)\)</span> correct</td>
+</tr>
+<tr class="odd">
+<td><strong>C</strong></td>
+<td>Any model</td>
+<td>Fitted values <span class="math inline">\(\hat{p}_2\)</span></td>
+<td>Exogeneity of <span class="math inline">\(\mathbf{z}\)</span> only</td>
+<td>Structural mean <span class="math inline">\(\exp(\cdots)\)</span> correct</td>
+</tr>
+</tbody>
+</table>
+<p>All three require the second-stage Poisson conditional mean to be correctly specified. A and C share the same (weaker) first-stage assumption; B additionally requires correct probit specification.</p>
+</section>
+<section id="approach-a-linear-projection-cf" class="level3" data-number="6.2.3">
+<h3 data-number="6.2.3" class="anchored" data-anchor-id="approach-a-linear-projection-cf"><span class="header-section-number">6.2.3</span> Approach A — Linear projection CF</h3>
+<div id="2e8c2611" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection of binary time_hi</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fs_a <span class="op">=</span> <span class="fu">feols</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df2.v2hat <span class="op">=</span> fs_a.residuals</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Poisson CF</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>m_a <span class="op">=</span> <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> v2hat <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Approach A — Linear projection CF:"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(m_a; title<span class="op">=</span><span class="st">"Approach A: OLS residual as control function"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Approach A — Linear projection CF:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><strong>Approach A: OLS residual as control function</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid black;"></th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Estimate</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Std. Error</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">t value</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Pr(&gt;|t|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">time_hi</td>
+<td style="text-align: right; padding: 3px 8px;">0.813</td>
+<td style="text-align: right; padding: 3px 8px;">0.036</td>
+<td style="text-align: right; padding: 3px 8px;">22.719</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 3px 10px 3px 0;">v2hat</td>
+<td style="text-align: right; padding: 3px 8px;">0.330</td>
+<td style="text-align: right; padding: 3px 8px;">0.035</td>
+<td style="text-align: right; padding: 3px 8px;">9.396</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">frfam</td>
+<td style="text-align: right; padding: 3px 8px;">0.413</td>
+<td style="text-align: right; padding: 3px 8px;">0.023</td>
+<td style="text-align: right; padding: 3px 8px;">17.921</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td colspan="5" style="text-align: left; padding: 6px 0 0 0; border-top: 1px solid black;">---<br>
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="approach-b-probit-generalized-residuals" class="level3" data-number="6.2.4">
+<h3 data-number="6.2.4" class="anchored" data-anchor-id="approach-b-probit-generalized-residuals"><span class="header-section-number">6.2.4</span> Approach B — Probit generalized residuals</h3>
+<div id="7f310de7" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: probit first stage</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>fs_b <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generalized residual: r̂ = y*λ(η) - (1-y)*λ(-η),  λ = φ/Φ (inv. Mills ratio)</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>η  <span class="op">=</span> fs_b.eta</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>nd <span class="op">=</span> <span class="fu">Normal</span>()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>df2.gr2 <span class="op">=</span> @. <span class="fu">ifelse</span>(df2.time_hi <span class="op">==</span> <span class="fl">1</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pdf</span>(nd, η) <span class="op">/</span> <span class="fu">cdf</span>(nd, η),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">-pdf</span>(nd, η) <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">-</span> <span class="fu">cdf</span>(nd, η)))</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Poisson CF with generalized residual</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>m_b <span class="op">=</span> <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> gr2 <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Approach B — Probit generalized residual CF:"</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(m_b; title<span class="op">=</span><span class="st">"Approach B: probit generalized residual"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Approach B — Probit generalized residual CF:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><strong>Approach B: probit generalized residual</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid black;"></th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Estimate</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Std. Error</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">t value</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Pr(&gt;|t|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">time_hi</td>
+<td style="text-align: right; padding: 3px 8px;">0.764</td>
+<td style="text-align: right; padding: 3px 8px;">0.039</td>
+<td style="text-align: right; padding: 3px 8px;">19.549</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 3px 10px 3px 0;">gr2</td>
+<td style="text-align: right; padding: 3px 8px;">0.230</td>
+<td style="text-align: right; padding: 3px 8px;">0.024</td>
+<td style="text-align: right; padding: 3px 8px;">9.721</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">frfam</td>
+<td style="text-align: right; padding: 3px 8px;">0.415</td>
+<td style="text-align: right; padding: 3px 8px;">0.023</td>
+<td style="text-align: right; padding: 3px 8px;">17.969</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td colspan="5" style="text-align: left; padding: 6px 0 0 0; border-top: 1px solid black;">---<br>
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="approach-c-fitted-values-as-instrument-ivgmm-poisson" class="level3" data-number="6.2.5">
+<h3 data-number="6.2.5" class="anchored" data-anchor-id="approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">6.2.5</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</h3>
+<p>Any function of the exogenous <span class="math inline">\(\mathbf{z}\)</span> is a valid instrument. Probit, logit, and linear probability fitted values are all equally valid from a consistency standpoint — the choice affects efficiency (instrument strength). We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument:</p>
+<div id="aedb34a3" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois(y, X, Z) -&gt; (β, se)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">IV/GMM Poisson (just-identified). X = [endog, exog], Z = [instrument, exog].</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="st">Damped IRLS: intercept initialised from log(mean(y)), half-steps for stability.</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ivpois</span>(y<span class="op">::</span><span class="dt">Vector{Float64}</span>, X<span class="op">::</span><span class="dt">Matrix{Float64}</span>, Z<span class="op">::</span><span class="dt">Matrix{Float64}</span>;</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                maxiter<span class="op">=</span><span class="fl">500</span>, tol<span class="op">=</span><span class="fl">1e-8</span>, step<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(X, <span class="fl">2</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    β  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    β[p] <span class="op">=</span> <span class="fu">log</span>(<span class="fu">mean</span>(y))    <span class="co"># intercept from marginal mean — prevents divergence</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        μ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (μ <span class="op">.*</span> X)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (y <span class="op">.-</span> μ)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        Δ <span class="op">=</span> <span class="cf">try</span> H <span class="op">\</span> g <span class="cf">catch</span>; <span class="fu">pinv</span>(H) <span class="op">*</span> g <span class="cf">end</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        β <span class="op">.+=</span> step <span class="op">.*</span> Δ</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(<span class="fu">abs</span>.(step <span class="op">.*</span> Δ)) <span class="op">&lt;</span> tol <span class="op">&amp;&amp;</span> <span class="cf">break</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    μ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (μ <span class="op">.*</span> X)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    B <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> ((y <span class="op">.-</span> μ)<span class="op">.^</span><span class="fl">2</span> <span class="op">.*</span> Z)       <span class="co"># robust sandwich meat</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> <span class="cf">try</span> <span class="fu">inv</span>(H) <span class="op">*</span> B <span class="op">*</span> <span class="fu">inv</span>(H)<span class="ch">' catch; pinv(H) * B * pinv(H)'</span> <span class="cf">end</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β, <span class="fu">sqrt</span>.(<span class="fu">max</span>.(<span class="fl">0.0</span>, <span class="fu">diag</span>(V)))</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Probit (without FE, to avoid collinearity with instrument matrix)</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>fs_c  <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam))</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>phat  <span class="op">=</span> fs_c.mu</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Regressor matrix X: [time_hi, frfam, intercept]</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Instrument matrix Z: [phat,    frfam, intercept]  ← phat replaces time_hi</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>X_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>Z_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(phat),        <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>β_c, se_c <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Approach C — IV/GMM Poisson (no FE, for illustration)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  time_hi:  coef = %7.4f   SE = %7.4f   z = %6.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">1</span>], se_c[<span class="fl">1</span>], β_c[<span class="fl">1</span>]<span class="op">/</span>se_c[<span class="fl">1</span>])</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  frfam:    coef = %7.4f   SE = %7.4f   z = %6.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">2</span>], se_c[<span class="fl">2</span>], β_c[<span class="fl">2</span>]<span class="op">/</span>se_c[<span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Approach C — IV/GMM Poisson (no FE, for illustration)
+  time_hi:  coef =  0.5273   SE =  0.0706   z =  7.466
+  frfam:    coef =  0.4001   SE =  0.0357   z = 11.222</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Approach C with FE</strong> requires demeaning the regressor and instrument matrices via within-group centering before solving the IV Poisson moment conditions. Because Poisson is nonlinear this is not straightforward, and <code>ivpoisson</code> in Stata similarly drops <code>absorb()</code>. Approach A via <code>feols</code> + <code>fepois</code> is the practical choice when many fixed effects are present.</p>
+</div>
+</div>
+</section>
+<section id="a-vs-c-not-equivalent-in-poisson" class="level3" data-number="6.2.6">
+<h3 data-number="6.2.6" class="anchored" data-anchor-id="a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">6.2.6</span> A vs C — not equivalent in Poisson</h3>
+<p>In a linear model, using <span class="math inline">\(\hat{y}_2\)</span> as an instrument (2SLS) is numerically identical to adding <span class="math inline">\(\hat{v}_2 = y_2 - \hat{y}_2\)</span> as a regressor — the Frisch-Waugh-Lovell theorem. <strong>In Poisson this equivalence breaks</strong>, because Approach A puts <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> while Approach C uses <span class="math inline">\(\hat{y}_2\)</span> in the moment conditions without modifying the exponential mean.</p>
+<div id="a67ccede" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (Approach C with linear first stage)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>ŷ<span class="fl">2</span>  <span class="op">=</span> <span class="fu">Float64</span>.(df2.time_hi) <span class="op">.-</span> <span class="fu">Float64</span>.(fs_a.residuals)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>X_l <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>Z_l <span class="op">=</span> <span class="fu">hcat</span>(ŷ<span class="fl">2</span>,                    <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>β_l, _ <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_l, Z_l)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>coef_a <span class="op">=</span> <span class="fu">coef</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A  (CF, residual as regressor, with FE): α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_a)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-linear    (IV, linear fitted values, no FE):    α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_l[<span class="fl">1</span>])</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-probit    (IV, probit fitted values, no FE):    α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_c[<span class="fl">1</span>])</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True α₁ = %.1f</span><span class="sc">\n</span><span class="st">"</span>, true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Approach A  (CF, residual as regressor, with FE): α̂₁ = 0.8128
+C-linear    (IV, linear fitted values, no FE):    α̂₁ = 0.6194
+C-probit    (IV, probit fitted values, no FE):    α̂₁ = 0.5273
+True α₁ = 0.8</code></pre>
+</div>
+</div>
+<p>The estimates differ despite using the same first-stage linear projection, confirming that 2SLS ≠ CF for Poisson.</p>
+</section>
+<section id="bootstrap-for-approach-a-binary-eev" class="level3" data-number="6.2.7">
+<h3 data-number="6.2.7" class="anchored" data-anchor-id="bootstrap-for-approach-a-binary-eev"><span class="header-section-number">6.2.7</span> Bootstrap for Approach A (binary EEV)</h3>
+<div id="0740389f" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_cf_binary</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    draws   <span class="op">=</span> <span class="fu">bootstrap_resample</span>(df, B; seed<span class="op">=</span>seed)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> <span class="fu">zeros</span>(B)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> b <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>B</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        df_b <span class="op">=</span> <span class="fu">build_boot_df</span>(df, draws[b])</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        fs   <span class="op">=</span> <span class="fu">feols</span>(df_b,  <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        df_b.v2hat <span class="op">=</span> fs.residuals</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        ss   <span class="op">=</span> <span class="fu">fepois</span>(df_b, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> v2hat <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        idx  <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(ss))</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        results[b] <span class="op">=</span> <span class="fu">coef</span>(ss)[idx]</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>boot2 <span class="op">=</span> <span class="fu">bootstrap_cf_binary</span>(df2, <span class="fl">500</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>naive_se2 <span class="op">=</span> <span class="fu">stderror</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A bootstrap (binary EEV, 500 reps, cluster by ad)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Point estimate:     %.4f  (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>, coef_a, true_α)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Naive 2nd-stage SE: %.4f</span><span class="sc">\n</span><span class="st">"</span>, naive_se2)</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Bootstrap SE:       %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(boot2))</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Bootstrap 95%% CI:  [%.4f, %.4f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(boot2, <span class="fl">0.025</span>), <span class="fu">quantile</span>(boot2, <span class="fl">0.975</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Approach A bootstrap (binary EEV, 500 reps, cluster by ad)
+  Point estimate:     0.8128  (true 0.8)
+  Naive 2nd-stage SE: 0.0358
+  Bootstrap SE:       0.0343
+  Bootstrap 95% CI:  [0.7380, 0.8766]</code></pre>
+</div>
+</div>
+</section>
+<section id="comparison-across-all-methods" class="level3" data-number="6.2.8">
+<h3 data-number="6.2.8" class="anchored" data-anchor-id="comparison-across-all-methods"><span class="header-section-number">6.2.8</span> Comparison across all methods</h3>
+<div id="befe0a87" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coefnames</span>(<span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))))]</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>coef_b <span class="op">=</span> <span class="fu">coef</span>(m_b)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_b))]</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>methods <span class="op">=</span> [<span class="st">"True value"</span>, <span class="st">"Naive Poisson (binary y₂)"</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">"A: Linear CF (with FE)"</span>, <span class="st">"B: Probit GR CF (with FE)"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, probit inst. (no FE)"</span>]</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>ests    <span class="op">=</span> [true_α, coef_naive2, coef_a, coef_b, β_c[<span class="fl">1</span>]]</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">── Binary EEV: coefficient on time_hi ─────────────────────"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (m, <span class="cn">e</span>) <span class="kw">in</span> <span class="fu">zip</span>(methods, ests)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"  %-38s  α̂₁ = %6.4f</span><span class="sc">\n</span><span class="st">"</span>, m, <span class="cn">e</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Note: with small endogeneity (ρ=0.2) the CF assumption holds"</span>)</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"approximately well and all three CF/IV approaches recover the"</span>)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"true value closely. Larger ρ widens the gap from truth."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+── Binary EEV: coefficient on time_hi ─────────────────────
+  True value                              α̂₁ = 0.8000
+  Naive Poisson (binary y₂)               α̂₁ = 1.0852
+  A: Linear CF (with FE)                  α̂₁ = 0.8128
+  B: Probit GR CF (with FE)               α̂₁ = 0.7636
+  C: IV Poisson, probit inst. (no FE)     α̂₁ = 0.5273
+
+Note: with small endogeneity (ρ=0.2) the CF assumption holds
+approximately well and all three CF/IV approaches recover the
+true value closely. Larger ρ widens the gap from truth.</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="why-julia-is-faster" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="why-julia-is-faster"><span class="header-section-number">6.3</span> Why Julia is faster</h2>
+<p>The parallel bootstrap above uses <code>Threads.@threads</code> which runs each of the 500 replications simultaneously across all CPU cores. A single replication calls <code>feols</code> + <code>fepois</code>, both implemented with the fast within-demeaning algorithm from <code>Panelest.jl</code>. On a machine with 8 cores this is roughly 6–8× faster than Stata’s serial <code>bootstrap</code> command, and the speed advantage grows with replication count and sample size.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./iv-rdd.html" class="pagination-link" aria-label="IV &amp; Regression Discontinuity">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./mediation.html" class="pagination-link" aria-label="Causal Mediation Analysis">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
