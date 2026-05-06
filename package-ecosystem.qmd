@@ -22,8 +22,8 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 | Package | Used For | Main Book Chapters |
 |---|---|---|
 | `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, and IV/2SLS support | Estimation, DiD, IV/RDD |
-| `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs |
-| `NPCausal.jl` | Influence-function estimators for ATE, ATT, continuous treatment effects, IV LATE, bounds, and incremental propensity interventions | Estimation, Nonparametric |
+| `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs, Smoking cessation |
+| `NPCausal.jl` | Influence-function estimators for ATE, ATT, continuous treatment effects, IV LATE, bounds, incremental propensity interventions, and graph-routed effects | Estimation, Nonparametric, Smoking cessation |
 | `TMLE.jl` | Targeted maximum likelihood and one-step AIPW for ATE with MLJ nuisance models | Nonparametric |
 | `DiD` | ETWFE helper layer, `emfx()` aggregation, and a local `mpdta`-style dataset helper | DiD |
 | `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
@@ -61,7 +61,7 @@ feiv(df, @formula(y ~ x_exo + fe(id)), endo = :x_endo, inst = :z)
 
 ## NPCausal.jl
 
-`NPCausal.jl` provides the nonparametric causal estimators used in the estimation and nonparametric chapters. The core pattern is to pass the outcome, treatment, and covariate `DataFrame`, then let the package handle cross-fitting and nuisance estimation.
+`NPCausal.jl` provides the nonparametric causal estimators used in the estimation, nonparametric, and applied graph chapters. The core pattern is to pass the outcome, treatment, and covariate `DataFrame`, then let the package handle cross-fitting and nuisance estimation.
 
 ```julia
 using NPCausal, DataFrames
@@ -104,7 +104,7 @@ functionals through the ID plug-in.
 
 ## CausalGraphs.jl
 
-`CausalGraphs.jl` is the graph layer for the DAG/ADMG chapter. It constructs
+`CausalGraphs.jl` is the graph layer for the DAG/ADMG chapters. It constructs
 graphs, checks graph properties, runs `identify()`, and exposes the general
 Pearl-Shpitser `ID_algorithm()`:
 

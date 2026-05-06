@@ -1,0 +1,265 @@
+# Applied Graph Workflow: Smoking Cessation
+
+```{julia}
+#| include: false
+using CausalGraphs
+using NPCausal
+using DataFrames
+using DelimitedFiles
+using Downloads
+using Logging
+using Random
+```
+
+The previous chapter introduced the graph-identification-estimation workflow
+with small examples. This chapter applies the same workflow to a real data set:
+the complete-case National Health and Nutrition Examination Survey I
+Epidemiologic Follow-up Study (NHEFS) data distributed through `causaldata` and
+mirrored by RDatasets.
+
+The question is:
+
+```text
+What is the effect of quitting smoking on weight change from 1971 to 1982?
+```
+
+The treatment is `qsmk`, an indicator for quitting smoking between baseline and
+follow-up. The outcome is `wt82_71`, weight change over the follow-up period.
+This is observational data, so identification depends on the adjustment
+assumptions encoded in the graph.
+
+```{julia}
+#| include: false
+r4(x) = round(x, sigdigits = 4)
+
+function preview_table(df, n = 5)
+    DataFrame((name => r4.(df[1:n, name]) for name in names(df))...)
+end
+
+function effect_table(name, estimate; se = missing)
+    DataFrame(
+        estimand = [name],
+        estimate = [r4(estimate.ACE)],
+        lower_95 = [r4(estimate.lower_ci)],
+        upper_95 = [r4(estimate.upper_ci)],
+        se = [ismissing(se) ? missing : r4(se)],
+    )
+end
+```
+
+## Data
+
+For a focused example, keep the treatment, outcome, and baseline covariates
+commonly used in the NHEFS smoking cessation examples.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+function read_rdatasets_csv(url, cols)
+    local_file = Downloads.download(url; timeout = 120)
+    x, header = readdlm(local_file, ',', Any, '\n'; header = true)
+    raw = DataFrame(x, Symbol.(vec(header)))
+    DataFrame((c => Float64.(raw[!, c]) for c in cols)...)
+end
+
+nhefs_url = "https://vincentarelbundock.github.io/Rdatasets/csv/causaldata/nhefs_complete.csv"
+nhefs_cols = [
+    :qsmk, :wt82_71,
+    :sex, :race, :age, :school,
+    :smokeintensity, :smokeyrs,
+    :exercise, :active, :wt71,
+]
+
+nhefs = read_rdatasets_csv(nhefs_url, nhefs_cols);
+
+(n = nrow(nhefs), variables = ncol(nhefs))
+```
+
+```{julia}
+preview_table(nhefs)
+```
+
+## Adjustment DAG
+
+Start with the grouped graph
+
+```text
+X -> A -> Y
+X -----> Y
+```
+
+where `X` is the baseline covariate set, `A` is quitting smoking, and `Y` is
+later weight change. This graph says the baseline variables may affect both
+quitting and later weight change, and that there is no unmeasured common cause
+of quitting and later weight change after conditioning on those baseline
+variables.
+
+```{julia}
+conceptual_graph = make_graph(
+    vertices = [:X, :A, :Y],
+    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],
+);
+```
+
+```{julia}
+#| output: asis
+println("```{mermaid}")
+println(to_mermaid(conceptual_graph; direction = "LR"))
+println("```")
+```
+
+For estimation, expand `X` into the observed NHEFS columns. The expanded graph
+is still an adjustment DAG: each baseline variable is allowed to point into
+quitting and into later weight change.
+
+```{julia}
+nhefs_vertices = [
+    :sex, :race, :age, :school,
+    :smokeintensity, :smokeyrs,
+    :exercise, :active, :wt71,
+    :qsmk, :wt82_71,
+]
+
+baseline = setdiff(nhefs_vertices, [:qsmk, :wt82_71])
+
+nhefs_edges = vcat(
+    [(w, :qsmk) for w in baseline],
+    [(w, :wt82_71) for w in baseline],
+    [(:qsmk, :wt82_71)],
+)
+
+nhefs_graph = make_graph(vertices = nhefs_vertices, di_edges = nhefs_edges);
+
+(vertices = length(nhefs_vertices), directed_edges = length(nhefs_edges))
+```
+
+## Identification
+
+`CausalGraphs.identify` checks the graph before estimation. In this adjustment
+DAG, the quitting node is a-fixable. The Markov pillow is the sufficient
+adjustment set:
+
+```{julia}
+nhefs_id = identify(nhefs_graph, :qsmk, :wt82_71)
+
+DataFrame(
+    strategy = [string(nhefs_id.strategy)],
+    markov_pillow = [join(string.(markov_pillow(nhefs_graph, :qsmk; treatment = :qsmk)), ", ")],
+)
+```
+
+The graph has therefore identified the causal mean by the adjustment formula
+
+$$
+E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
+$$
+
+This formula is not a modeling claim by itself. It is the observed-data
+functional implied by the graph. Estimation still requires nuisance models for
+the outcome regression and treatment mechanism.
+
+## Estimation with NPCausal
+
+The book keeps identification and estimation as separate steps. Here
+`CausalGraphs` supplies the graph result and `NPCausal` estimates the identified
+functional. Because the graph is a-fixable, `NPCausal.admg_estimate_causal`
+routes to the one-step/AIPW average treatment effect machinery.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+Random.seed!(2026)
+
+nhefs_res = with_logger(NullLogger()) do
+    NPCausal.admg_estimate_causal(
+        a = [1.0, 0.0],
+        data = nhefs,
+        graph = nhefs_graph,
+        treatment = :qsmk,
+        outcome = :wt82_71,
+        nsplits = 2,
+    )
+end
+
+effect_table("Quit smoking vs continued smoking", nhefs_res[:NPCausalOnestep];
+             se = nhefs_res[:NPCausalOnestep].standard_error)
+```
+
+Interpreted under the DAG, the estimate is the average effect of quitting
+smoking versus continuing smoking on weight change in the complete-case NHEFS
+population. The positive estimate is consistent with weight gain after quitting.
+The causal interpretation depends on the graph, especially the no unmeasured
+confounding assumption after adjustment for the baseline variables.
+
+## Sensitivity Graph
+
+Now encode a different assumption: quitting and later weight change share an
+unobserved common cause even after conditioning on the measured baseline
+variables. In an ADMG this is a bidirected edge, `qsmk <-> wt82_71`.
+
+```{julia}
+sensitivity_graph = make_graph(
+    vertices = nhefs_vertices,
+    di_edges = nhefs_edges,
+    bi_edges = [(:qsmk, :wt82_71)],
+)
+
+sensitivity_id = identify(sensitivity_graph, :qsmk, :wt82_71)
+
+DataFrame(strategy = [string(sensitivity_id.strategy)])
+```
+
+The identifying conclusion changes. Under this graph, the observed NHEFS
+variables are not enough to identify the effect. This is the practical value of
+drawing the graph before estimating: the same data can support different causal
+answers under different assumptions.
+
+## Structured Baseline Graph
+
+The simple adjustment graph is often the clearest starting point. A richer DAG
+can record more assumptions about baseline temporal ordering and relationships:
+demographics may precede education, smoking history, activity, and baseline
+weight; those variables may then affect quitting and later weight change.
+
+```{julia}
+structured_edges = [
+    (:age, :school), (:age, :smokeyrs), (:age, :wt71),
+    (:age, :active), (:age, :exercise), (:age, :qsmk), (:age, :wt82_71),
+
+    (:sex, :smokeintensity), (:sex, :smokeyrs), (:sex, :wt71),
+    (:sex, :qsmk), (:sex, :wt82_71),
+
+    (:race, :school), (:race, :smokeintensity),
+    (:race, :qsmk), (:race, :wt82_71),
+
+    (:school, :smokeintensity), (:school, :qsmk), (:school, :wt82_71),
+
+    (:smokeyrs, :smokeintensity), (:smokeyrs, :qsmk), (:smokeyrs, :wt82_71),
+    (:smokeintensity, :qsmk), (:smokeintensity, :wt82_71),
+
+    (:exercise, :wt71), (:exercise, :qsmk), (:exercise, :wt82_71),
+    (:active, :wt71), (:active, :qsmk), (:active, :wt82_71),
+    (:wt71, :qsmk), (:wt71, :wt82_71),
+
+    (:qsmk, :wt82_71),
+]
+
+structured_graph = make_graph(vertices = nhefs_vertices, di_edges = structured_edges);
+structured_id = identify(structured_graph, :qsmk, :wt82_71)
+
+DataFrame(
+    strategy = [string(structured_id.strategy)],
+    same_adjustment_set = [
+        Set(markov_pillow(structured_graph, :qsmk; treatment = :qsmk)) == Set(baseline)
+    ],
+)
+```
+
+For this treatment effect, the richer baseline DAG is adjustment-equivalent to
+the simpler expanded DAG: it gives the same measured parents for `qsmk` and
+therefore the same identifying functional. The extra arrows among baseline
+variables may be useful for documentation, but they are additional causal
+assumptions. If those extra assumptions are not needed for the estimand, the
+grouped adjustment graph is usually easier to defend.
