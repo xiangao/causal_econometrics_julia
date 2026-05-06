@@ -25,6 +25,7 @@
 |---------|---------|
 | `RDRobust.jl` | RD estimation: `rdrobust`, `rdbwselect`, `rdplot` |
 | `Panelest.jl` | FE panel OLS/GLM: `feols`, `feiv` |
+| `CausalGraphs.jl` | DAG/ADMG construction, identification, and ID algorithm |
 | `NPCausal.jl` | Doubly-robust ATE/ATT via cross-fitting: `ate`, `att` |
 | `SynthDiD.jl` | Synthetic DiD: `synthdid_estimate`, `sc_estimate`, `did_estimate` |
 | `DiD.jl` | ETWFE + `emfx()` aggregation; `dataset("mpdta")` |

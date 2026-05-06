@@ -11,7 +11,7 @@ The reproducible workflow is:
 ```bash
 cd ~/projects/books/causal_econometrics_julia
 julia --project -e 'using Pkg; Pkg.instantiate()'
-julia --project -e 'using NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'
+julia --project -e 'using CausalGraphs, NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'
 quarto render
 ```
 
@@ -22,6 +22,7 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 | Package | Used For | Main Book Chapters |
 |---|---|---|
 | `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, and IV/2SLS support | Estimation, DiD, IV/RDD |
+| `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs |
 | `NPCausal.jl` | Influence-function estimators for ATE, ATT, continuous treatment effects, IV LATE, bounds, and incremental propensity interventions | Estimation, Nonparametric |
 | `TMLE.jl` | Targeted maximum likelihood and one-step AIPW for ATE with MLJ nuisance models | Nonparametric |
 | `DiD` | ETWFE helper layer, `emfx()` aggregation, and a local `mpdta`-style dataset helper | DiD |
@@ -74,6 +75,53 @@ result.contrasts
 ```
 
 The package exports `ate`, `att`, `ctseff`, `ivlate`, `ivbds`, `ipsi`, and `superlearner`. In this book, `ate` and `att` do most of the work, while `superlearner(binary=true/false)` provides an MLJ-based ensemble for nuisance functions.
+
+When loaded together with `CausalGraphs.jl`, `NPCausal.jl` also exposes ADMG
+estimation entry points:
+
+```julia
+using CausalGraphs, NPCausal
+
+g = make_graph(
+    vertices = [:A, :M, :Y],
+    di_edges = [(:A, :M), (:M, :Y)],
+    bi_edges = [(:A, :Y)],
+)
+
+res = NPCausal.admg_estimate_causal(
+    a = [1.0, 0.0],
+    data = df,
+    graph = g,
+    treatment = :A,
+    outcome = :Y,
+)
+```
+
+The graph layer identifies the effect and `NPCausal` routes to the matching
+estimator: backdoor/a-fixable effects through `ate`, p-fixable effects through
+NPS TMLE, nested-fixable effects through ANIPW, and finite-support ID
+functionals through the ID plug-in.
+
+## CausalGraphs.jl
+
+`CausalGraphs.jl` is the graph layer for the DAG/ADMG chapter. It constructs
+graphs, checks graph properties, runs `identify()`, and exposes the general
+Pearl-Shpitser `ID_algorithm()`:
+
+```julia
+using CausalGraphs
+
+g = make_graph(
+    vertices = [:X, :A, :Y],
+    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],
+)
+
+identify(g, :A, :Y).strategy
+```
+
+The key distinction is that `CausalGraphs.jl` handles assumptions and
+identification, while `NPCausal.jl` is the estimation namespace used in the
+combined graph-to-estimate workflow.
 
 ## TMLE.jl
 

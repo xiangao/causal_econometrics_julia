@@ -2,7 +2,7 @@
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "16b889b80163410780f98ec910b3bc3c578280e2"
+project_hash = "24493b4e970a33c7f9abb77102a01392ced57d30"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -322,6 +322,16 @@ version = "0.2.1"
 
     [deps.CategoricalDistributions.weakdeps]
     UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
+
+[[deps.CausalGraphs]]
+deps = ["DataFrames", "DecisionTree", "EvoTrees", "GLM", "LinearAlgebra", "MLJ", "MLJDecisionTreeInterface", "MLJLinearModels", "Random", "Statistics", "StatsModels"]
+path = "../../software/CausalGraphs.jl"
+uuid = "c9f3a1b2-7e4d-5f8a-b0c1-2d3e4f5a6b7c"
+version = "0.1.0"
+weakdeps = ["NPCausal"]
+
+    [deps.CausalGraphs.extensions]
+    CausalGraphsNPCausalExt = "NPCausal"
 
 [[deps.Chain]]
 git-tree-sha1 = "765487f32aeece2cf28aa7038e29c31060cb5a69"
@@ -1753,6 +1763,10 @@ deps = ["DataFrames", "DecisionTree", "Distributions", "EvoTrees", "LinearAlgebr
 path = "../../software/NPCausal.jl"
 uuid = "cd612eeb-661c-4b56-8bb8-fdd3887649b5"
 version = "0.1.0"
+weakdeps = ["CausalGraphs"]
+
+    [deps.NPCausal.extensions]
+    NPCausalCausalGraphsExt = "CausalGraphs"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]

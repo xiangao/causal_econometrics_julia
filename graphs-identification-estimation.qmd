@@ -1,0 +1,325 @@
+# DAGs, ADMGs, Identification, and Estimation
+
+```{julia}
+#| include: false
+using CausalGraphs
+using NPCausal
+using DataFrames
+using Random
+using Statistics
+using Logging
+```
+
+The potential-outcomes chapter introduced the question: when can an observed
+data set tell us about $E[Y(1)-Y(0)]$? Graphs are one way to make the answer
+explicit. A graph records which variables are assumed to cause other variables,
+and whether some observed variables may share unobserved common causes. Once
+the graph is stated, identification becomes a graph problem. Estimation is the
+next step: estimate the functional that the graph identified.
+
+In this chapter we use `CausalGraphs.jl` for the graph and identification
+steps, then call `NPCausal.jl` for the estimation step when possible.
+
+```{julia}
+#| include: false
+r4(x) = round(x, sigdigits = 4)
+logistic(x) = 1 / (1 + exp(-x))
+
+function effect_table(name, estimate; se = missing)
+    DataFrame(
+        estimand = [name],
+        estimate = [r4(estimate.ACE)],
+        lower_95 = [r4(estimate.lower_ci)],
+        upper_95 = [r4(estimate.upper_ci)],
+        se = [ismissing(se) ? missing : r4(se)],
+    )
+end
+```
+
+## DAGs and ADMGs
+
+A directed acyclic graph, or DAG, has directed arrows such as `X -> A`. In
+causal work, an arrow means a direct causal relation is allowed by the model.
+Absence of an arrow is also a substantive assumption.
+
+An acyclic directed mixed graph, or ADMG, adds bidirected arrows such as
+`A <-> Y`. A bidirected edge represents an unobserved common cause. This is
+useful because many econometric applications have variables we cannot measure:
+ability, preferences, latent health, firm quality, and so on.
+
+The graph is not an estimator. It is a compact statement of assumptions. The
+workflow is:
+
+1. write down a DAG or ADMG;
+2. ask whether the target effect is identified;
+3. estimate the identified functional from data.
+
+## A DAG: Backdoor Adjustment
+
+Start with a simple observational study. `A` is treatment, `Y` is the outcome,
+and `X` is an observed confounder:
+
+```{julia}
+g_dag = make_graph(
+    vertices = [:X, :A, :Y],
+    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],
+)
+```
+
+```{julia}
+#| output: asis
+println("```{mermaid}")
+println(to_mermaid(g_dag; direction = "LR"))
+println("```")
+```
+
+The graph says `X` affects both treatment and outcome. It also says there is no
+unobserved common cause between `A` and `Y` after we condition on `X`. In this
+case the treatment is a-fixable, which corresponds to backdoor-style
+identification.
+
+```{julia}
+id_dag = identify(g_dag, :A, :Y)
+(strategy = id_dag.strategy,
+ markov_pillow = markov_pillow(g_dag, :A; treatment = :A))
+```
+
+The Markov pillow is the adjustment set used by the estimator. Under this
+graph,
+
+$$
+E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
+$$
+
+So the graph has translated a causal query into a regression-style observed
+data functional.
+
+## Estimating the DAG Effect with NPCausal
+
+Here is a small simulated data set where `X` confounds the treatment-outcome
+association.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+Random.seed!(2026)
+
+n = 400
+X = randn(n)
+pA = logistic.(-0.2 .+ 0.8 .* X)
+A = Float64.(rand(n) .< pA)
+Y = 1 .+ 1.5 .* A .+ 0.7 .* X .+ 0.3 .* randn(n)
+
+df_dag = DataFrame(X = X, A = A, Y = Y)
+first(df_dag, 5)
+```
+
+Because the graph is a-fixable, `NPCausal.admg_estimate_causal(...)` routes to
+`NPCausal.ate(...)`. The call below asks for the average contrast
+$E[Y(1)-Y(0)]$.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+dag_res = with_logger(NullLogger()) do
+    NPCausal.admg_estimate_causal(
+        a = [1.0, 0.0],
+        data = df_dag,
+        graph = g_dag,
+        treatment = :A,
+        outcome = :Y,
+        nsplits = 2,
+    )
+end
+
+effect_table("Backdoor ACE", dag_res[:NPCausalOnestep];
+             se = dag_res[:NPCausalOnestep].standard_error)
+```
+
+The returned object also contains the raw `NPCausal.ate` output. The key point
+is that the graph chose the adjustment set and the estimator used that set.
+
+## An ADMG: Front-Door Identification
+
+Now suppose treatment and outcome share an unobserved common cause. A simple
+DAG adjustment argument no longer works. The front-door ADMG has a mediator `M`
+that transmits the effect of `A` to `Y`, while `A` and `Y` are hidden-confounded:
+
+```{julia}
+g_fd = make_graph(
+    vertices = [:A, :M, :Y],
+    di_edges = [(:A, :M), (:M, :Y)],
+    bi_edges = [(:A, :Y)],
+)
+```
+
+```{julia}
+#| output: asis
+println("```{mermaid}")
+println(to_mermaid(g_fd; direction = "LR"))
+println("```")
+```
+
+The bidirected edge `A <-> Y` means that ordinary backdoor adjustment is not
+available. But the graph is p-fixable, the ADMG generalization that includes
+front-door identification.
+
+```{julia}
+id_fd = identify(g_fd, :A, :Y)
+(strategy = id_fd.strategy,
+ a_fixable = is_fix(g_fd, :A),
+ p_fixable = is_p_fix(g_fd, :A))
+```
+
+The intuition is that `M` carries the causal effect of `A`, and `M` is not
+itself hidden-confounded with `A`. The graph lets us use mediator information
+to recover the causal effect even though `A` and `Y` are confounded.
+
+## Estimating the ADMG Effect with NPCausal
+
+Simulate a front-door setting. The latent `U` is not included in the observed
+data; it is represented in the graph by `A <-> Y`.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+Random.seed!(2027)
+
+U = randn(n)
+A_fd = Float64.(rand(n) .< logistic.(-0.1 .+ 0.8 .* U))
+M = Float64.(rand(n) .< logistic.(-0.4 .+ 1.2 .* A_fd))
+Y_fd = Float64.(rand(n) .< logistic.(-1 .+ 0.9 .* M .+ 0.7 .* U))
+
+df_fd = DataFrame(A = A_fd, M = M, Y = Y_fd)
+first(df_fd, 5)
+```
+
+The same NPCausal entry point now routes differently. Since `identify()` returns
+`:p_fixable`, the estimator is the NPS TMLE route rather than backdoor AIPW.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+fd_res = with_logger(NullLogger()) do
+    NPCausal.admg_estimate_causal(
+        a = [1.0, 0.0],
+        data = df_fd,
+        graph = g_fd,
+        treatment = :A,
+        outcome = :Y,
+        n_iter = 80,
+        cvg_criteria = 0.02,
+        truncate_lower = 0.01,
+        truncate_upper = 0.99,
+    )
+end
+
+effect_table("Front-door ACE", fd_res[:TMLE])
+```
+
+This is the main practical advantage of separating identification from
+estimation. The user states the graph once. The software checks the graph and
+routes the effect to the estimator that matches the identified functional.
+
+## General ID Algorithm
+
+The specialized routes above are useful because they have named estimators:
+backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more
+general. The Pearl-Shpitser ID algorithm asks the broader question:
+
+```text
+Can P(Y | do(A)) be written using only the observed joint law P(V)?
+```
+
+The algorithm works recursively:
+
+1. remove variables that are not ancestors of the outcome;
+2. add interventions that are irrelevant after graph surgery;
+3. split the remaining graph into bidirected districts;
+4. identify each district as a factor of the observed law, if possible;
+5. return a hedge witness when no such reduction is possible.
+
+For the front-door graph, the general ID algorithm also succeeds:
+
+```{julia}
+id_alg_fd = ID_algorithm(g_fd, :A, :Y)
+(identified = id_alg_fd.identified,
+ expression = string(id_alg_fd.expression))
+```
+
+The expression is symbolic. It is not yet an estimate. For finite-support
+variables, `NPCausal.admg_estimate_id(...)` can evaluate the symbolic functional
+by empirical probabilities and attach a finite-support EIF standard error.
+
+```{julia}
+#| warning: false
+#| message: false
+#| cache: true
+id_res = NPCausal.admg_estimate_id(
+    a = [1.0, 0.0],
+    data = df_fd,
+    graph = g_fd,
+    treatment = :A,
+    outcome = :Y,
+)
+
+effect_table("ID plug-in ACE", id_res[:IDPlugin];
+             se = id_res[:IDPlugin].standard_error)
+```
+
+This plug-in estimator is useful for discrete examples and diagnostics. It is
+not a universal TMLE for every continuous ID functional.
+
+## When the Graph Says No
+
+The bow graph has both a direct causal edge and unobserved confounding between
+the same two variables:
+
+```{julia}
+g_bow = make_graph(
+    vertices = [:A, :Y],
+    di_edges = [(:A, :Y)],
+    bi_edges = [(:A, :Y)],
+)
+```
+
+```{julia}
+#| output: asis
+println("```{mermaid}")
+println(to_mermaid(g_bow; direction = "LR"))
+println("```")
+```
+
+The effect of `A` on `Y` is not identified in this ADMG. The observed
+association mixes the direct causal effect with the latent common cause.
+
+```{julia}
+id_bow = identify(g_bow, :A, :Y)
+id_alg_bow = ID_algorithm(g_bow, :A, :Y)
+
+(route = id_bow.strategy,
+ id_algorithm_identified = id_alg_bow.identified,
+ hedge = id_alg_bow.hedge)
+```
+
+This is a feature, not a failure. If the graph does not justify the causal
+effect, the estimator should not manufacture one.
+
+## Practical Workflow
+
+For applied work, a useful workflow is:
+
+1. write the graph before looking at estimates;
+2. use bidirected edges for latent common causes;
+3. run `identify(graph, treatment, outcome)`;
+4. if identified, call `NPCausal.admg_estimate_causal(...)`;
+5. report the graph and the identification route along with the estimate.
+
+`CausalGraphs.jl` can also be called directly through
+`estimate_causal(...)`. The combined call through `NPCausal.jl` is useful when
+the goal is to treat `NPCausal` as the estimation package and `CausalGraphs` as
+the graph and identification layer.
