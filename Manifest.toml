@@ -2,7 +2,7 @@
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "24493b4e970a33c7f9abb77102a01392ced57d30"
+project_hash = "77bdb8e79e156a415d190b40472f3efdf6a489ab"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -323,15 +323,27 @@ version = "0.2.1"
     [deps.CategoricalDistributions.weakdeps]
     UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
+[[deps.CausalEstimate]]
+deps = ["DataFrames", "Distributions", "EvoTrees", "GLM", "MLJ", "Printf", "Random", "Statistics", "StatsModels"]
+path = "/home/xao/projects/software/CausalEstimate.jl"
+uuid = "a2a36b22-1ff4-42e2-82bf-31b7d21f152e"
+version = "0.1.0"
+weakdeps = ["CausalGraphs"]
+
+    [deps.CausalEstimate.extensions]
+    CausalEstimateCausalGraphsExt = "CausalGraphs"
+
 [[deps.CausalGraphs]]
 deps = ["DataFrames", "DecisionTree", "EvoTrees", "GLM", "LinearAlgebra", "MLJ", "MLJDecisionTreeInterface", "MLJLinearModels", "Random", "Statistics", "StatsModels"]
 path = "../../software/CausalGraphs.jl"
 uuid = "c9f3a1b2-7e4d-5f8a-b0c1-2d3e4f5a6b7c"
 version = "0.1.0"
-weakdeps = ["NPCausal"]
 
     [deps.CausalGraphs.extensions]
     CausalGraphsNPCausalExt = "NPCausal"
+
+    [deps.CausalGraphs.weakdeps]
+    NPCausal = "cd612eeb-661c-4b56-8bb8-fdd3887649b5"
 
 [[deps.Chain]]
 git-tree-sha1 = "765487f32aeece2cf28aa7038e29c31060cb5a69"
@@ -1758,16 +1770,6 @@ version = "0.9.33"
     SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
     cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
-[[deps.NPCausal]]
-deps = ["DataFrames", "DecisionTree", "Distributions", "EvoTrees", "LinearAlgebra", "MLJ", "MLJDecisionTreeInterface", "MLJLinearModels", "Random", "Roots", "Statistics"]
-path = "../../software/NPCausal.jl"
-uuid = "cd612eeb-661c-4b56-8bb8-fdd3887649b5"
-version = "0.1.0"
-weakdeps = ["CausalGraphs"]
-
-    [deps.NPCausal.extensions]
-    NPCausalCausalGraphsExt = "CausalGraphs"
-
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
 git-tree-sha1 = "9b8215b1ee9e78a293f99797cd31375471b2bcae"
@@ -2537,12 +2539,6 @@ version = "7.8.3+2"
 deps = ["CSV", "DataFrames", "Distributions", "LinearAlgebra", "Random", "RecipesBase", "Statistics"]
 path = "../../software/SynthDiD.jl"
 uuid = "6933d2b0-70b5-4b05-939b-4536f4ca9999"
-version = "0.1.0"
-
-[[deps.TMLE]]
-deps = ["DataFrames", "Distributions", "EvoTrees", "GLM", "HypothesisTests", "LinearAlgebra", "MLJ", "Printf", "Random", "Statistics", "StatsModels"]
-path = "../../software/TMLE.jl"
-uuid = "34f378bb-3faa-47fd-b853-cb2a0057fa1e"
 version = "0.1.0"
 
 [[deps.TOML]]

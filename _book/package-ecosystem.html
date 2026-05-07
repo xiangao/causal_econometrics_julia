@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>7&nbsp; Julia Packages Used in This Book – Causal Econometrics with Julia</title>
+<title>10&nbsp; Julia Packages Used in This Book – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -17,7 +17,7 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
 /* CSS for syntax highlighting */
@@ -105,6 +105,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -117,8 +146,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./package-ecosystem.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></a></li></ol></nav>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./package-ecosystem.html"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
@@ -132,7 +161,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Causal Econometrics with Julia</a>
+      <a href="./">Causal Econometrics with Julia</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -140,98 +169,116 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <div id="quarto-search" class="" title="Search"></div>
         </div>
         </div>
-    <div class="sidebar-menu-container">
+    <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Foundations</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./identification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Methods</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Designs</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
     </ul>
@@ -242,19 +289,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
-
+   
   <ul>
-  <li><a href="#working-with-the-environment" id="toc-working-with-the-environment" class="nav-link active" data-scroll-target="#working-with-the-environment"><span class="header-section-number">7.1</span> Working With The Environment</a></li>
-  <li><a href="#package-map" id="toc-package-map" class="nav-link" data-scroll-target="#package-map"><span class="header-section-number">7.2</span> Package Map</a></li>
-  <li><a href="#panelest.jl" id="toc-panelest.jl" class="nav-link" data-scroll-target="#panelest.jl"><span class="header-section-number">7.3</span> Panelest.jl</a></li>
-  <li><a href="#npcausal.jl" id="toc-npcausal.jl" class="nav-link" data-scroll-target="#npcausal.jl"><span class="header-section-number">7.4</span> NPCausal.jl</a></li>
-  <li><a href="#tmle.jl" id="toc-tmle.jl" class="nav-link" data-scroll-target="#tmle.jl"><span class="header-section-number">7.5</span> TMLE.jl</a></li>
-  <li><a href="#did" id="toc-did" class="nav-link" data-scroll-target="#did"><span class="header-section-number">7.6</span> DiD</a></li>
-  <li><a href="#synthdid.jl" id="toc-synthdid.jl" class="nav-link" data-scroll-target="#synthdid.jl"><span class="header-section-number">7.7</span> SynthDiD.jl</a></li>
-  <li><a href="#rdrobust.jl" id="toc-rdrobust.jl" class="nav-link" data-scroll-target="#rdrobust.jl"><span class="header-section-number">7.8</span> RDRobust.jl</a></li>
-  <li><a href="#lavaan.jl" id="toc-lavaan.jl" class="nav-link" data-scroll-target="#lavaan.jl"><span class="header-section-number">7.9</span> Lavaan.jl</a></li>
-  <li><a href="#crumble.jl" id="toc-crumble.jl" class="nav-link" data-scroll-target="#crumble.jl"><span class="header-section-number">7.10</span> Crumble.jl</a></li>
-  <li><a href="#practical-advice" id="toc-practical-advice" class="nav-link" data-scroll-target="#practical-advice"><span class="header-section-number">7.11</span> Practical Advice</a></li>
+  <li><a href="#working-with-the-environment" id="toc-working-with-the-environment" class="nav-link active" data-scroll-target="#working-with-the-environment"><span class="header-section-number">10.1</span> Working With The Environment</a></li>
+  <li><a href="#package-map" id="toc-package-map" class="nav-link" data-scroll-target="#package-map"><span class="header-section-number">10.2</span> Package Map</a></li>
+  <li><a href="#panelest.jl" id="toc-panelest.jl" class="nav-link" data-scroll-target="#panelest.jl"><span class="header-section-number">10.3</span> Panelest.jl</a></li>
+  <li><a href="#causalestimate.jl" id="toc-causalestimate.jl" class="nav-link" data-scroll-target="#causalestimate.jl"><span class="header-section-number">10.4</span> CausalEstimate.jl</a></li>
+  <li><a href="#causalgraphs.jl" id="toc-causalgraphs.jl" class="nav-link" data-scroll-target="#causalgraphs.jl"><span class="header-section-number">10.5</span> CausalGraphs.jl</a></li>
+  <li><a href="#did" id="toc-did" class="nav-link" data-scroll-target="#did"><span class="header-section-number">10.6</span> DiD</a></li>
+  <li><a href="#synthdid.jl" id="toc-synthdid.jl" class="nav-link" data-scroll-target="#synthdid.jl"><span class="header-section-number">10.7</span> SynthDiD.jl</a></li>
+  <li><a href="#rdrobust.jl" id="toc-rdrobust.jl" class="nav-link" data-scroll-target="#rdrobust.jl"><span class="header-section-number">10.8</span> RDRobust.jl</a></li>
+  <li><a href="#lavaan.jl" id="toc-lavaan.jl" class="nav-link" data-scroll-target="#lavaan.jl"><span class="header-section-number">10.9</span> Lavaan.jl</a></li>
+  <li><a href="#crumble.jl" id="toc-crumble.jl" class="nav-link" data-scroll-target="#crumble.jl"><span class="header-section-number">10.10</span> Crumble.jl</a></li>
+  <li><a href="#practical-advice" id="toc-practical-advice" class="nav-link" data-scroll-target="#practical-advice"><span class="header-section-number">10.11</span> Practical Advice</a></li>
+  <li><a href="#estimation-ra-ipw-aipw-and-ipwra" id="toc-estimation-ra-ipw-aipw-and-ipwra" class="nav-link" data-scroll-target="#estimation-ra-ipw-aipw-and-ipwra"><span class="header-section-number">11</span> Estimation: RA, IPW, AIPW and IPWRA</a>
+  <ul class="collapse">
+  <li><a href="#experimental-data" id="toc-experimental-data" class="nav-link" data-scroll-target="#experimental-data"><span class="header-section-number">11.1</span> Experimental Data</a></li>
+  <li><a href="#adjustment-formula" id="toc-adjustment-formula" class="nav-link" data-scroll-target="#adjustment-formula"><span class="header-section-number">11.2</span> Adjustment Formula</a></li>
+  <li><a href="#regression-adjustment" id="toc-regression-adjustment" class="nav-link" data-scroll-target="#regression-adjustment"><span class="header-section-number">11.3</span> Regression Adjustment</a></li>
+  <li><a href="#linear-ra" id="toc-linear-ra" class="nav-link" data-scroll-target="#linear-ra"><span class="header-section-number">11.4</span> Linear RA</a>
+  <ul class="collapse">
+  <li><a href="#questions-on-ra" id="toc-questions-on-ra" class="nav-link" data-scroll-target="#questions-on-ra"><span class="header-section-number">11.4.1</span> Questions on RA</a></li>
+  </ul></li>
+  <li><a href="#ipw" id="toc-ipw" class="nav-link" data-scroll-target="#ipw"><span class="header-section-number">11.5</span> IPW</a>
+  <ul class="collapse">
+  <li><a href="#ipw-intuition" id="toc-ipw-intuition" class="nav-link" data-scroll-target="#ipw-intuition"><span class="header-section-number">11.5.1</span> IPW Intuition</a></li>
+  </ul></li>
+  <li><a href="#doubly-robust-estimators" id="toc-doubly-robust-estimators" class="nav-link" data-scroll-target="#doubly-robust-estimators"><span class="header-section-number">11.6</span> Doubly Robust Estimators</a>
+  <ul class="collapse">
+  <li><a href="#aipw" id="toc-aipw" class="nav-link" data-scroll-target="#aipw"><span class="header-section-number">11.6.1</span> AIPW</a></li>
+  <li><a href="#ipwra" id="toc-ipwra" class="nav-link" data-scroll-target="#ipwra"><span class="header-section-number">11.6.2</span> IPWRA</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -263,18 +329,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></h1>
+<h1 class="title"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-
-
-
+    
+  
+    
   </div>
-
+  
 
 
 </header>
@@ -282,17 +348,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>This book relies on a small Julia causal econometrics stack developed alongside the examples. The packages live under <code>~/projects/software</code> and are loaded through this book’s local Julia environment. The goal is not to replace the broader Julia ecosystem, but to fill the gaps that matter for the workflows in this text: fixed effects, semiparametric causal estimators, staggered DiD, synthetic DiD, regression discontinuity, SEM, and causal mediation.</p>
 <p>The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as <code>../../software/Panelest.jl</code>, which resolves to <code>~/projects/software/Panelest.jl</code>.</p>
-<section id="working-with-the-environment" class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="working-with-the-environment"><span class="header-section-number">7.1</span> Working With The Environment</h2>
+<section id="working-with-the-environment" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="working-with-the-environment"><span class="header-section-number">10.1</span> Working With The Environment</h2>
 <p>The reproducible workflow is:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/projects/books/causal_econometrics_julia</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">--project</span> <span class="at">-e</span> <span class="st">'using Pkg; Pkg.instantiate()'</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">--project</span> <span class="at">-e</span> <span class="st">'using NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">--project</span> <span class="at">-e</span> <span class="st">'using CausalGraphs, CausalEstimate, Panelest, DiD, SynthDiD, RDRobust, Lavaan, Crumble'</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The standard <code>julia-1.12</code> Jupyter kernel uses <code>--project=@.</code>, so Quarto picks up the book environment when rendering from this directory. A custom sysimage can still be useful for speed, but it is optional and should be rebuilt whenever the local packages change.</p>
 </section>
-<section id="package-map" class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="package-map"><span class="header-section-number">7.2</span> Package Map</h2>
+<section id="package-map" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="package-map"><span class="header-section-number">10.2</span> Package Map</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -313,14 +379,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Estimation, DiD, IV/RDD</td>
 </tr>
 <tr class="even">
-<td><code>NPCausal.jl</code></td>
-<td>Influence-function estimators for ATE, ATT, continuous treatment effects, IV LATE, bounds, and incremental propensity interventions</td>
-<td>Estimation, Nonparametric</td>
+<td><code>CausalGraphs.jl</code></td>
+<td>DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing</td>
+<td>Identification, DAGs/ADMGs, Smoking cessation</td>
 </tr>
 <tr class="odd">
-<td><code>TMLE.jl</code></td>
-<td>Targeted maximum likelihood and one-step AIPW for ATE with MLJ nuisance models</td>
-<td>Nonparametric</td>
+<td><code>CausalEstimate.jl</code></td>
+<td>Unified TMLE and AIPW estimation: <code>estimate(ATE/ATT(...), TMLE/AIPW(...), df)</code> and graph-implied backdoor via <code>GraphID</code></td>
+<td>Estimation, Nonparametric, Smoking cessation</td>
 </tr>
 <tr class="even">
 <td><code>DiD</code></td>
@@ -350,8 +416,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="panelest.jl" class="level2" data-number="7.3">
-<h2 data-number="7.3" class="anchored" data-anchor-id="panelest.jl"><span class="header-section-number">7.3</span> Panelest.jl</h2>
+<section id="panelest.jl" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="panelest.jl"><span class="header-section-number">10.3</span> Panelest.jl</h2>
 <p><code>Panelest.jl</code> is the workhorse for regression models with high-dimensional fixed effects. Its API is intentionally close to the formula style used throughout the book:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span>, <span class="bu">Vcov</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -367,120 +433,387 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The current package also includes <code>feiv</code> for 2SLS-style workflows:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">feiv</span>(df, <span class="pp">@formula</span>(y <span class="op">~</span> x_exo <span class="op">+</span> <span class="fu">fe</span>(id)), endo <span class="op">=</span> <span class="op">:</span>x_endo, inst <span class="op">=</span> <span class="op">:</span>z)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="npcausal.jl" class="level2" data-number="7.4">
-<h2 data-number="7.4" class="anchored" data-anchor-id="npcausal.jl"><span class="header-section-number">7.4</span> NPCausal.jl</h2>
-<p><code>NPCausal.jl</code> provides the nonparametric causal estimators used in the estimation and nonparametric chapters. The core pattern is to pass the outcome, treatment, and covariate <code>DataFrame</code>, then let the package handle cross-fitting and nuisance estimation.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">NPCausal</span>, <span class="bu">DataFrames</span></span>
+<section id="causalestimate.jl" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="causalestimate.jl"><span class="header-section-number">10.4</span> CausalEstimate.jl</h2>
+<p><code>CausalEstimate.jl</code> is the unified estimation front-end used in the estimation, nonparametric, and applied graph chapters. It combines TMLE and AIPW under one <code>estimate(...)</code> call, with cross-fitting and doubly robust inference built in.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span>, <span class="bu">DataFrames</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> <span class="fu">DataFrame</span>(x1 <span class="op">=</span> <span class="fu">randn</span>(<span class="fl">1000</span>), x2 <span class="op">=</span> <span class="fu">randn</span>(<span class="fl">1000</span>))</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> <span class="fu">rand</span>([<span class="fl">0</span>, <span class="fl">1</span>], <span class="fl">1000</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> X.x1 <span class="op">.+</span> X.x2 <span class="op">.*</span> a <span class="op">.+</span> <span class="fu">randn</span>(<span class="fl">1000</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">ate</span>(y, a, X; nsplits <span class="op">=</span> <span class="fl">5</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>result.contrasts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The package exports <code>ate</code>, <code>att</code>, <code>ctseff</code>, <code>ivlate</code>, <code>ivbds</code>, <code>ipsi</code>, and <code>superlearner</code>. In this book, <code>ate</code> and <code>att</code> do most of the work, while <code>superlearner(binary=true/false)</code> provides an MLJ-based ensemble for nuisance functions.</p>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1000</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    Y <span class="op">=</span> <span class="fu">randn</span>(n),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> <span class="fu">rand</span>([<span class="fl">0</span>, <span class="fl">1</span>], n),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> <span class="fu">randn</span>(n),</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># AIPW for ATE</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">estimate</span>(<span class="fu">ATE</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>W]), <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">estimate</span>(result)       <span class="co"># point estimate</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(result)        <span class="co"># (lower, upper) 95% CI</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">pvalue</span>(result)         <span class="co"># two-sided p-value</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># TMLE for ATE</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>result_tmle <span class="op">=</span> <span class="fu">estimate</span>(<span class="fu">ATE</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>W]), <span class="fu">TMLE</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># ATT</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>result_att <span class="op">=</span> <span class="fu">estimate</span>(<span class="fu">ATT</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>W]), <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For graph-identified backdoor (a-fixable) effects, pass a <code>GraphID</code> layer:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span>, <span class="bu">CausalGraphs</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> <span class="fu">make_graph</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>X, <span class="op">:</span>A), (<span class="op">:</span>X, <span class="op">:</span>Y), (<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">estimate</span>(</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ATE</span>(outcome <span class="op">=</span> <span class="op">:</span>Y, treatment <span class="op">=</span> <span class="op">:</span>A),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">GraphID</span>(graph <span class="op">=</span> g),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AIPW</span>(crossfit <span class="op">=</span> <span class="fl">5</span>),</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    df,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>GraphID</code> reads the Markov pillow of the treatment from the graph and uses it as the adjustment set. For p-fixable (front-door), nested-fixable, and general ID-algorithm effects, use <code>CausalGraphs.estimate_causal(...)</code> directly.</p>
 </section>
-<section id="tmle.jl" class="level2" data-number="7.5">
-<h2 data-number="7.5" class="anchored" data-anchor-id="tmle.jl"><span class="header-section-number">7.5</span> TMLE.jl</h2>
-<p><code>TMLE.jl</code> implements targeted maximum likelihood and one-step AIPW estimators for ATEs. It uses an explicit target-parameter object and an explicit nuisance-model specification:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TMLE</span>, <span class="bu">MLJ</span>, <span class="bu">EvoTrees</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">TMLE</span>: estimate, pvalue</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>EvoTreeClassifier <span class="op">=</span> <span class="pp">@load</span> EvoTreeClassifier pkg<span class="op">=</span>EvoTrees verbosity<span class="op">=</span><span class="fl">0</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>Ψ <span class="op">=</span> <span class="fu">ATE</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    target <span class="op">=</span> <span class="op">:</span>Y,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    treatment <span class="op">=</span> (A <span class="op">=</span> (case <span class="op">=</span> <span class="fl">1</span>, control <span class="op">=</span> <span class="fl">0</span>),),</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    confounders <span class="op">=</span> [<span class="op">:</span>W1, <span class="op">:</span>W2],</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>η <span class="op">=</span> <span class="fu">NuisanceSpec</span>(</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">EvoTreeClassifier</span>(max_depth <span class="op">=</span> <span class="fl">4</span>, nrounds <span class="op">=</span> <span class="fl">100</span>),</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">EvoTreeClassifier</span>(max_depth <span class="op">=</span> <span class="fl">4</span>, nrounds <span class="op">=</span> <span class="fl">100</span>),</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">tmle</span>(Ψ, η, df; crossfit <span class="op">=</span> <span class="fl">5</span>, verbosity <span class="op">=</span> <span class="fl">0</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">estimate</span>(result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>When <code>TMLE.jl</code> and <code>MLJ.jl</code> are used together, explicitly importing <code>estimate</code> and <code>pvalue</code> from <code>TMLE</code> avoids a name conflict.</p>
-</section>
-<section id="did" class="level2" data-number="7.6">
-<h2 data-number="7.6" class="anchored" data-anchor-id="did"><span class="header-section-number">7.6</span> DiD</h2>
-<p>The local <code>DiD</code> package is deliberately small. Its main role in this book is ETWFE post-processing:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DiD</span></span>
+<section id="causalgraphs.jl" class="level2" data-number="10.5">
+<h2 data-number="10.5" class="anchored" data-anchor-id="causalgraphs.jl"><span class="header-section-number">10.5</span> CausalGraphs.jl</h2>
+<p><code>CausalGraphs.jl</code> is the graph layer for the DAG/ADMG chapters. It constructs graphs, checks graph properties, runs <code>identify()</code>, and exposes the general Pearl-Shpitser <code>ID_algorithm()</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">emfx</span>(model)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>event_study <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>calendar <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> <span class="fu">make_graph</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>X, <span class="op">:</span>A), (<span class="op">:</span>X, <span class="op">:</span>Y), (<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">identify</span>(g, <span class="op">:</span>A, <span class="op">:</span>Y).strategy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For non-backdoor effects (p-fixable, nested-fixable, ID plug-in), <code>CausalGraphs.estimate_causal(...)</code> provides the full estimation pipeline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> CausalGraphs.<span class="fu">estimate_causal</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> df,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    graph <span class="op">=</span> g,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    treatment <span class="op">=</span> <span class="op">:</span>A,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="op">:</span>Y,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>res[<span class="op">:</span>TMLE].ACE         <span class="co"># front-door NPS TMLE</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>res[<span class="op">:</span>IDPlugin].ACE     <span class="co"># finite-support ID plug-in</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="did" class="level2" data-number="10.6">
+<h2 data-number="10.6" class="anchored" data-anchor-id="did"><span class="header-section-number">10.6</span> DiD</h2>
+<p>The local <code>DiD</code> package is deliberately small. Its main role in this book is ETWFE post-processing:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DiD</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">emfx</span>(model)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>event_study <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>calendar <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>emfx()</code> reads the cohort-by-time interaction coefficients from a <code>Panelest.feols</code> model and aggregates them into an overall ATT, event-time effects, or calendar-time effects. The package also exports <code>dataset("mpdta")</code>, which creates a balanced panel with string cohort and year columns for StatsModels interactions.</p>
 <p>The exported <code>att_gt()</code> function is currently a placeholder API. For the implemented workflow in this book, use <code>Panelest.feols(...)</code> plus <code>DiD.emfx(...)</code>.</p>
 </section>
-<section id="synthdid.jl" class="level2" data-number="7.7">
-<h2 data-number="7.7" class="anchored" data-anchor-id="synthdid.jl"><span class="header-section-number">7.7</span> SynthDiD.jl</h2>
+<section id="synthdid.jl" class="level2" data-number="10.7">
+<h2 data-number="10.7" class="anchored" data-anchor-id="synthdid.jl"><span class="header-section-number">10.7</span> SynthDiD.jl</h2>
 <p><code>SynthDiD.jl</code> implements the comparison among standard DiD, synthetic control, and synthetic DiD. The package exposes a matrix-oriented workflow:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(df, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>τ_sdid <span class="op">=</span> <span class="fu">synthdid_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>τ_sc   <span class="op">=</span> <span class="fu">sc_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>τ_did  <span class="op">=</span> <span class="fu">did_estimate</span>(setup.Y, setup.N0, setup.T0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(df, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>τ_sdid <span class="op">=</span> <span class="fu">synthdid_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>τ_sc   <span class="op">=</span> <span class="fu">sc_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>τ_did  <span class="op">=</span> <span class="fu">did_estimate</span>(setup.Y, setup.N0, setup.T0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The most important functions are <code>panel_matrices</code>, <code>synthdid_estimate</code>, <code>sc_estimate</code>, <code>did_estimate</code>, <code>effect_curve</code>, <code>placebo</code>, <code>vcov</code>, <code>se</code>, <code>california_prop99</code>, and <code>synthdid_controls</code>.</p>
 </section>
-<section id="rdrobust.jl" class="level2" data-number="7.8">
-<h2 data-number="7.8" class="anchored" data-anchor-id="rdrobust.jl"><span class="header-section-number">7.8</span> RDRobust.jl</h2>
+<section id="rdrobust.jl" class="level2" data-number="10.8">
+<h2 data-number="10.8" class="anchored" data-anchor-id="rdrobust.jl"><span class="header-section-number">10.8</span> RDRobust.jl</h2>
 <p><code>RDRobust.jl</code> is the RD layer used in the IV/RDD chapter. It mirrors the familiar <code>rdrobust</code> workflow:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RDRobust</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">rdrobust</span>(y, x; c <span class="op">=</span> <span class="fl">0.0</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>bw <span class="op">=</span> <span class="fu">rdbwselect</span>(y, x; c <span class="op">=</span> <span class="fl">0.0</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> <span class="fu">rdplot</span>(y, x; c <span class="op">=</span> <span class="fl">0.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RDRobust</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">rdrobust</span>(y, x; c <span class="op">=</span> <span class="fl">0.0</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>bw <span class="op">=</span> <span class="fu">rdbwselect</span>(y, x; c <span class="op">=</span> <span class="fl">0.0</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> <span class="fu">rdplot</span>(y, x; c <span class="op">=</span> <span class="fl">0.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>It supports local-polynomial RD estimation, robust bias-corrected intervals, bandwidth selectors, covariate adjustment, clustered inference, multiple kernels, and fuzzy RD designs. In the book, <code>rdrobust</code> is used both for a sharp RD example and for a fuzzy RD comparison with a manual 2SLS specification.</p>
 </section>
-<section id="lavaan.jl" class="level2" data-number="7.9">
-<h2 data-number="7.9" class="anchored" data-anchor-id="lavaan.jl"><span class="header-section-number">7.9</span> Lavaan.jl</h2>
+<section id="lavaan.jl" class="level2" data-number="10.9">
+<h2 data-number="10.9" class="anchored" data-anchor-id="lavaan.jl"><span class="header-section-number">10.9</span> Lavaan.jl</h2>
 <p><code>Lavaan.jl</code> ports the R <code>lavaan</code> modeling style to Julia. It is used for classical SEM-based mediation:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Lavaan</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> <span class="st">"""</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">  m ~ a * x</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ b * m + c * x</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="st">  indirect := a * b</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="st">  total := c + indirect</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">sem</span>(model, df)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">parameterEstimates</span>(fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Lavaan</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">  m ~ a * x</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ b * m + c * x</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">  indirect := a * b</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="st">  total := c + indirect</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">sem</span>(model, df)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">parameterEstimates</span>(fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The public API includes <code>lavaan</code>, <code>cfa</code>, <code>sem</code>, <code>growth</code>, <code>sam</code>, <code>parameterEstimates</code>, <code>fitMeasures</code>, <code>standardizedSolution</code>, <code>lavInspect</code>, <code>lavTestLRT</code>, <code>modindices</code>, <code>rsquare</code>, <code>lavPredict</code>, and <code>simulateData</code>. The package supports the familiar lavaan operators <code>=~</code>, <code>~</code>, <code>~~</code>, <code>~1</code>, and <code>:=</code>.</p>
 </section>
-<section id="crumble.jl" class="level2" data-number="7.10">
-<h2 data-number="7.10" class="anchored" data-anchor-id="crumble.jl"><span class="header-section-number">7.10</span> Crumble.jl</h2>
+<section id="crumble.jl" class="level2" data-number="10.10">
+<h2 data-number="10.10" class="anchored" data-anchor-id="crumble.jl"><span class="header-section-number">10.10</span> Crumble.jl</h2>
 <p><code>Crumble.jl</code> is the causal mediation package used for interventional and recanting-twin estimands. Its entry point is <code>crumble()</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Crumble</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>control <span class="op">=</span> <span class="fu">crumble_control</span>(crossfit_folds <span class="op">=</span> <span class="fl">5</span>, epochs <span class="op">=</span> <span class="fl">50</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">crumble</span>(</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    df,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"A"</span>];</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="st">"Y"</span>,</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    mediators <span class="op">=</span> [<span class="st">"M"</span>],</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    moc <span class="op">=</span> [<span class="st">"Z"</span>],</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    covar <span class="op">=</span> [<span class="st">"W1"</span>, <span class="st">"W2"</span>],</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    effect <span class="op">=</span> <span class="st">"RT"</span>,</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    control <span class="op">=</span> control,</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>result.estimates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Crumble</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>control <span class="op">=</span> <span class="fu">crumble_control</span>(crossfit_folds <span class="op">=</span> <span class="fl">5</span>, epochs <span class="op">=</span> <span class="fl">50</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">crumble</span>(</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    df,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"A"</span>];</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="st">"Y"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    mediators <span class="op">=</span> [<span class="st">"M"</span>],</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    moc <span class="op">=</span> [<span class="st">"Z"</span>],</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    covar <span class="op">=</span> [<span class="st">"W1"</span>, <span class="st">"W2"</span>],</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    effect <span class="op">=</span> <span class="st">"RT"</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    control <span class="op">=</span> control,</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>result.estimates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The package exports <code>crumble</code>, <code>crumble_control</code>, <code>sequential_module</code>, and <code>CrumbleResult</code>. The supported effect families are natural (<code>"N"</code>), organic (<code>"O"</code>), randomized interventional (<code>"RI"</code>), and recanting twin (<code>"RT"</code>). In the mediation chapter, <code>"RT"</code> is used because it handles a mediator-outcome confounder affected by treatment.</p>
 </section>
-<section id="practical-advice" class="level2" data-number="7.11">
-<h2 data-number="7.11" class="anchored" data-anchor-id="practical-advice"><span class="header-section-number">7.11</span> Practical Advice</h2>
+<section id="practical-advice" class="level2" data-number="10.11">
+<h2 data-number="10.11" class="anchored" data-anchor-id="practical-advice"><span class="header-section-number">10.11</span> Practical Advice</h2>
 <p>These packages are best treated as a coherent local research stack. When changing package code, rerun a direct load check from the book directory:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">--project</span> <span class="at">-e</span> <span class="st">'using NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">--project</span> <span class="at">-e</span> <span class="st">'using CausalEstimate, CausalGraphs, Panelest, DiD, SynthDiD, RDRobust, Lavaan, Crumble'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For content changes, render the affected chapter first. For package API changes, render the full book after deleting the relevant <code>_freeze</code> chapter directory so Quarto does not reuse stale cached results.</p>
 
 
+</section>
+<section id="estimation-ra-ipw-aipw-and-ipwra" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> Estimation: RA, IPW, AIPW and IPWRA</h1>
+<pre class="{julia}"><code>#| include: false
+using CausalEstimate
+using Panelest
+using MLJ
+using GLMNet
+using DecisionTree
+using Vcov
+using ReadStatTables
+using DataFrames
+using Statistics
+using GLM
+using Downloads
+using Random
+using Printf
+using RegressionTables
+include("regtable_helpers.jl")</code></pre>
+<p>Once we have identification, which means we can identify the causal effect from the observed data, we can move to estimation. Estimation is to estimate the identified causal effect from the observed data. We have several methods for estimation, including regression adjustment (RA), inverse probability weighting (IPW), augmented inverse probability weighting (AIPW) and inverse probability weighted regression adjustment (IPWRA).</p>
+<section id="experimental-data" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="experimental-data"><span class="header-section-number">11.1</span> Experimental Data</h2>
+<p>If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator. <span class="math display">\[ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 \]</span></p>
+<p>In experimental setting, we can do a t test for the difference in means. We can also do a regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\(W\)</span> and <span class="math inline">\(X\)</span>.</p>
+</section>
+<section id="adjustment-formula" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="adjustment-formula"><span class="header-section-number">11.2</span> Adjustment Formula</h2>
+<p>From causal to estimation: <span class="math display">\[ \small \begin{align}
+E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
+&amp;=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\
+&amp;=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\
+&amp;=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]
+\end{align} \]</span> where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.</p>
+</section>
+<section id="regression-adjustment" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="regression-adjustment"><span class="header-section-number">11.3</span> Regression Adjustment</h2>
+<p>How do we get <span class="math inline">\(E[Y|W=w, X=x]\)</span>? We can use regression adjustment.</p>
+<p>We define a conditional mean function:</p>
+<p><span class="math display">\[  \begin{align}
+\mu_0(X) &amp;\equiv E[Y|W=0, X] \\
+&amp;= E[Y(0)|W=0, X]  \\
+&amp;= E[Y(0)|W=1, X]
+\end{align}  \]</span></p>
+<p>The RA estimators are:</p>
+<p><span class="math display">\[
+\hat \tau_{ATT}
+= \frac{1}{n_1}\sum_{i:W_i=1}\{Y_i-\hat\mu_0(X_i)\}
+\]</span></p>
+<p><span class="math display">\[
+\hat \tau_{ATE}
+= \frac{1}{n}\sum_{i=1}^n\{\hat\mu_1(X_i)-\hat\mu_0(X_i)\}
+\]</span></p>
+<p>where <span class="math inline">\(\hat \mu_0(X_i)\)</span> is the predicted value of <span class="math inline">\(Y_i\)</span> from a regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> for the control group.</p>
+<p>Target: <span class="math display">\[  \begin{align}
+\tau_{ATT} &amp;= E[Y|W=1] - E[Y(0)|W=1] \\
+&amp;= E[Y|W=1, X] - \mu_0(X)  \\
+&amp; = E[Y|W=1, X] - (\alpha_0 + E(X) \beta_0)
+\end{align}
+\]</span></p>
+<p>The last term is a linear form of <span class="math inline">\(\mu_0(X)\)</span>. We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.</p>
+</section>
+<section id="linear-ra" class="level2" data-number="11.4">
+<h2 data-number="11.4" class="anchored" data-anchor-id="linear-ra"><span class="header-section-number">11.4</span> Linear RA</h2>
+<p>Regression Adjustment is basically an imputation estimator. While we observe <span class="math inline">\(E[Y|W=1,X]\)</span>, we model <span class="math inline">\(E[Y(0)|W=1]\)</span>, based on unconfoundedness and a functional form (say linear form). We estimate <span class="math inline">\(\beta_0\)</span> on the control sample, then get the expected values for the treated sample, for each value of <span class="math inline">\(X\)</span>.</p>
+<p>Implementation of linear RA is easy. We regress <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span> and their interaction. It’s shown that we need to de-mean <span class="math inline">\(X\)</span> to get the effect correct.</p>
+<pre class="{julia}"><code>#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using CSV, DataFrames, Statistics, GLM
+
+# Load the pension dataset from the hdm R package (Chernozhukov et al.)
+# Treatment: p401 (eligibility for 401k), Outcome: net_tfa (net total financial assets)
+pension = CSV.read("data/pension.csv", DataFrame)
+
+# Calculate means for de-meaning (treated group means)
+mean_inc_treated = mean(pension[pension.p401 .== 1, :inc])
+mean_age_treated = mean(pension[pension.p401 .== 1, :age])
+
+# For ATT: we de-mean X by deducting the mean of X in the treated group
+# For ATE: we de-mean X by deducting the mean of X in the whole sample
+data = DataFrames.transform(pension,
+    :inc =&gt; (x -&gt; x .- mean_inc_treated) =&gt; :inc_dm,
+    :age =&gt; (x -&gt; x .- mean_age_treated) =&gt; :age_dm
+)
+
+lm_ra = lm(@formula(net_tfa ~ p401 * (inc_dm + age_dm)), data)
+show_regression_html(lm_ra)</code></pre>
+<p>After demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on <span class="math inline">\(W\)</span> is the average treatment effect.</p>
+<section id="questions-on-ra" class="level3" data-number="11.4.1">
+<h3 data-number="11.4.1" class="anchored" data-anchor-id="questions-on-ra"><span class="header-section-number">11.4.1</span> Questions on RA</h3>
+<ol type="1">
+<li>Why do we have to do interaction of <span class="math inline">\(W\)</span> and <span class="math inline">\(X\)</span>? What if we don’t do it?</li>
+<li>What if we don’t de-mean <span class="math inline">\(X\)</span>?</li>
+</ol>
+<p>Answers:</p>
+<ol type="1">
+<li>It has been shown (Słoczyński (2022, REStat)) that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we’ll get biased estimates, for <span class="math inline">\(\tau_{ATT}\)</span> or <span class="math inline">\(\tau_{ATE}\)</span>. The intuition is that we need to model the difference between treated and control, and the difference is not constant across <span class="math inline">\(X\)</span>.</li>
+<li>If we don’t de-mean <span class="math inline">\(X\)</span>, then the coefficient on <span class="math inline">\(W\)</span> is not the average treatment effect. We can still retrieve the ATT or ATE by calculating the marginal effect of <span class="math inline">\(W\)</span> though.</li>
+</ol>
+</section>
+</section>
+<section id="ipw" class="level2" data-number="11.5">
+<h2 data-number="11.5" class="anchored" data-anchor-id="ipw"><span class="header-section-number">11.5</span> IPW</h2>
+<p>Under unconfoundedness and overlap,</p>
+<p><span class="math display">\[ \small \begin{align}
+E[Y(w)] &amp;= E[E[y|W=w,X]] \\
+&amp;= \sum_x (\sum_y P(y|w,x)) P(x) \\
+&amp;= \sum_x \sum_y P(y|w,x)) P(x) {\frac{P(w|x)}{P(w|x)}} \\
+&amp;= \sum_x \sum_y y P(y,w,x) {\frac{1}{P(w|x)}} \\
+&amp;= \sum_x E[\mathbb{1}(W=w,X=x)Y] {\frac{1}{P(w|x)}} \\
+&amp;= E[\frac{\mathbb{1}(W=w)Y} {P(w|X)}]
+\end{align}
+\]</span></p>
+<p>The IPW equation means that the expected value of the potential outcome is the weighted average of the observed outcome, where the weight is the inverse of the propensity score <span class="math inline">\(P(w|x)\)</span>. <span class="math inline">\(\mathbb{1}(W=w)\)</span> is an indicator function, which is 1 if <span class="math inline">\(W=w\)</span> and 0 otherwise.</p>
+<p><span class="math display">\[ \begin{align}
+\tau_{ATE} &amp;= E[Y(1)] - E[Y(0)] \\
+&amp;= E[\frac{W Y} {\pi_1(X)}] - E[\frac{(1-W) Y} {1-\pi_1(X)}] \\
+\end{align}
+\]</span></p>
+<p>The sample estimators are:</p>
+<p><span class="math display">\[ \begin{align}
+\hat \tau_{ATE, IPW} &amp;= \frac{1}{N} \sum_i \frac{W_i Y_i} {\hat\pi(X_i)} - \frac{1}{N} \sum_i \frac{(1-W_i) Y_i} {1-\hat \pi(X_i)}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[ \begin{align}
+\hat \tau_{ATT, IPW} &amp;= \bar Y_1 - \frac{1}{N_1} \sum_i \frac{(1-W_i) Y_i} {1-\hat \pi(X_i)}
+\end{align}
+\]</span></p>
+<section id="ipw-intuition" class="level3" data-number="11.5.1">
+<h3 data-number="11.5.1" class="anchored" data-anchor-id="ipw-intuition"><span class="header-section-number">11.5.1</span> IPW Intuition</h3>
+<p>IPW removes confounding <span class="math inline">\(X\)</span> by creating a pseudo-population in which <span class="math inline">\(X\)</span> is independent of <span class="math inline">\(W\)</span>. The intuition is that we can create a pseudo-population in which <span class="math inline">\(X\)</span> is independent of <span class="math inline">\(W\)</span>, by weighting the observations by the inverse of the propensity score. Once <span class="math inline">\(X\)</span> is independent of <span class="math inline">\(W\)</span>, <span class="math inline">\(X\)</span> is not a confounder anymore. We can then estimate the effect of <span class="math inline">\(W\)</span> on <span class="math inline">\(Y\)</span> by comparing the weighted average of <span class="math inline">\(Y\)</span> for <span class="math inline">\(W=1\)</span> and <span class="math inline">\(W=0\)</span>.</p>
+<p>Suppose there are two types of people, one type has high probability to be treated, the other one has low probability to be treated. Without adjusting for the propensity score, the treated group will be dominated by the first type, and the control group will be dominated by the second type. The difference between the treated and control group will be due to the difference in the composition of the two groups, not due to the treatment effect. By weighting the observations by the inverse of the propensity score, we can create a pseudo-population in which the two groups have the same composition. The difference between the treated and control group will be due to the treatment effect.</p>
+</section>
+</section>
+<section id="doubly-robust-estimators" class="level2" data-number="11.6">
+<h2 data-number="11.6" class="anchored" data-anchor-id="doubly-robust-estimators"><span class="header-section-number">11.6</span> Doubly Robust Estimators</h2>
+<p>We can model both outcome and treatment assignment, and use both models to estimate the treatment effect. The intuition is that if either model is correct, the estimator will be consistent. The estimator is called doubly robust because it is robust to either model being misspecified.</p>
+<section id="aipw" class="level3" data-number="11.6.1">
+<h3 data-number="11.6.1" class="anchored" data-anchor-id="aipw"><span class="header-section-number">11.6.1</span> AIPW</h3>
+<p><span class="math display">\[ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] \]</span></p>
+<p><span class="math display">\[ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] \]</span></p>
+<pre class="{julia}"><code>#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using CSV, DataFrames, GLM, Statistics
+
+# Load Cattaneo (2010) birthweight dataset
+# Treatment: mbsmoke (maternal smoking), Outcome: bweight (birthweight in grams)
+data = CSV.read("data/cattaneo2.csv", DataFrame)
+
+# Outcome Model (mu)
+mu = lm(@formula(bweight ~ mbsmoke * (prenatal1 + mmarried + mage + fbaby)), data)
+
+# Propensity Score Model (pi)
+pi_model = glm(@formula(mbsmoke ~ mmarried + mage + fbaby + medu), data, Binomial(), LogitLink())
+
+# Predict Potential Outcomes for treated and control assignments
+data_treated = copy(data)
+data_treated.mbsmoke .= 1
+mm1 = GLM.predict(mu, data_treated)
+
+data_control = copy(data)
+data_control.mbsmoke .= 0
+mm0 = GLM.predict(mu, data_control)
+
+# Predict Propensity Scores
+pi1 = GLM.predict(pi_model, data)
+
+# Assemble data for final AIPW computation
+data.w = data.mbsmoke
+data.y = data.bweight
+data.m1 = mm1
+data.m0 = mm0
+data.pi1 = pi1
+
+# Compute Doubly Robust potential outcomes
+data.mu1 = @. (data.w * (data.y - data.m1) / data.pi1 + data.m1)
+data.mu0 = @. ((1 - data.w) * (data.y - data.m0) / (1 - data.pi1) + data.m0)
+
+# Calculate treatment effect
+data.tau = data.mu1 .- data.mu0
+tau_aipw = mean(data.tau)
+@printf "ATE (AIPW) = %.4g\n" tau_aipw</code></pre>
+</section>
+<section id="ipwra" class="level3" data-number="11.6.2">
+<h3 data-number="11.6.2" class="anchored" data-anchor-id="ipwra"><span class="header-section-number">11.6.2</span> IPWRA</h3>
+<p>The idea of IPWRA is to combine RA and IPW. Basically RA with IPW weights.</p>
+<p>Implementation:</p>
+<ul>
+<li>Estimate propensity score. Get predicted probability of treated for each observation.</li>
+<li>Estimate outcome model. But cannot use fully interaction of treatment and covariates. Instead, estimate two equations, one for treated and one for control. Use <span class="math inline">\(1/\hat \pi(X)\)</span> as weights for treated group and <span class="math inline">\(1/(1-\hat \pi(X))\)</span> as weights for control group.</li>
+<li>Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.</li>
+<li>Take difference. The average is the ATE.</li>
+</ul>
+<pre class="{julia}"><code>#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+using CSV, DataFrames, GLM, Statistics
+
+# Load Cattaneo (2010) birthweight dataset
+data = CSV.read("data/cattaneo2.csv", DataFrame)
+
+# 1. Estimate propensity score
+pi_model = glm(@formula(mbsmoke ~ mmarried + mage + fbaby + medu), data, Binomial(), LogitLink())
+data.pi1 = GLM.predict(pi_model, data)
+
+# Split data into treated and control
+data1 = subset(data, :mbsmoke =&gt; x -&gt; x .== 1)
+data0 = subset(data, :mbsmoke =&gt; x -&gt; x .== 0)
+
+# 2. Estimate outcome models using inverse probability weights
+wts1 = 1 ./ data1.pi1
+wts0 = 1 ./ (1 .- data0.pi1)
+
+# GLM.jl lm accepts weights via the `wts` keyword argument
+mu1 = lm(@formula(bweight ~ prenatal1 + mmarried + mage + fbaby), data1; wts=wts1)
+mu0 = lm(@formula(bweight ~ prenatal1 + mmarried + mage + fbaby), data0; wts=wts0)
+
+# 3. Predict potential outcomes for the whole sample using the respective models
+data_treated = copy(data)
+data_treated.mbsmoke .= 1
+mm1 = GLM.predict(mu1, data_treated)
+
+data_control = copy(data)
+data_control.mbsmoke .= 0
+mm0 = GLM.predict(mu0, data_control)
+
+# 4. Take the difference
+data.w = data.mbsmoke
+data.y = data.bweight
+data.m1 = mm1
+data.m0 = mm0
+
+data.tau = data.m1 .- data.m0
+tau_ipwra = mean(data.tau)
+@printf "ATE (IPWRA) = %.4g\n" tau_ipwra</code></pre>
+</section>
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -495,7 +828,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {
+        if (clz.startsWith('code-annotation-')) {                     
           return true;
         }
       }
@@ -515,11 +848,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
         button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button,
-          { trigger: "manual",
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
             offset: [0, -8]});
-        tooltip.show();
+        tooltip.show();    
       }
       setTimeout(function() {
         if (tooltip) {
@@ -596,7 +929,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       if (onUntriggerFn) {
         config.onUntrigger = onUntriggerFn;
       }
-      window.tippy(el, config);
+      window.tippy(el, config); 
     }
     const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
     for (var i=0; i<noterefs.length; i++) {
@@ -671,7 +1004,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       tippyHover(xref, undefined, function(instance) {
         instance.disable();
         let url = xref.getAttribute('href');
-        let hash = undefined;
+        let hash = undefined; 
         if (url.startsWith('#')) {
           hash = url;
         } else {
@@ -699,7 +1032,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
               if (note !== null) {
                 const html = processXRef(id, note);
                 instance.setContent(html);
-              }
+              } 
             }).finally(() => {
               instance.enable();
               instance.show();
@@ -723,7 +1056,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
               }
               const html = processXRef(null, note);
               instance.setContent(html);
-            }
+            } 
           }).finally(() => {
             instance.enable();
             instance.show();
@@ -763,7 +1096,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
               height = bottom - top;
             }
             if (top !== null && height !== null && parent !== null) {
-              // cook up a div (if necessary) and position it
+              // cook up a div (if necessary) and position it 
               let div = window.document.getElementById("code-annotation-line-highlight");
               if (div === null) {
                 div = window.document.createElement("div");
@@ -887,8 +1220,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./mediation.html" class="pagination-link" aria-label="Causal Mediation Analysis">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span>
-      </a>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
   </div>
