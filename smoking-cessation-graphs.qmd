@@ -206,7 +206,17 @@ sensitivity_graph = make_graph(
     bi_edges = [(:qsmk, :wt82_71)],
 )
 
-sensitivity_id = identify(sensitivity_graph, :qsmk, :wt82_71)
+sensitivity_id = identify(sensitivity_graph, :qsmk, :wt82_71);
+```
+
+```{julia}
+#| output: asis
+println("```{mermaid}")
+println(to_mermaid(sensitivity_graph; direction = "LR"))
+println("```")
+```
+
+```{julia}
 
 DataFrame(strategy = [string(sensitivity_id.strategy)])
 ```
