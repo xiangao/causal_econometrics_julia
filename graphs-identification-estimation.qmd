@@ -4,6 +4,8 @@
 #| include: false
 using CausalGraphs
 using CausalEstimate
+import CausalGraphs: identify, make_graph, to_mermaid, markov_pillow, is_fix, is_p_fix, ID_algorithm, estimate_causal, estimate_id
+import CausalEstimate: estimate, confint, pvalue
 using DataFrames
 using Random
 using Statistics
@@ -270,7 +272,7 @@ EIF standard error via the `:IDPlugin` key.
 #| message: false
 #| cache: true
 id_res = with_logger(NullLogger()) do
-    CausalGraphs.estimate_causal(
+    estimate_id(
         a = [1.0, 0.0],
         data = df_fd,
         graph = g_fd,

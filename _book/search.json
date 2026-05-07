@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Causal Econometrics with Julia",
     "section": "",
-    "text": "Preface\nThis is an introduction to causal econometrics with observational data. It covers the key frameworks, estimation strategies, and modern methods that allow researchers to make causal claims from non-experimental data.\nThe material progresses from foundational concepts to advanced methods:\n\nFoundations: The potential outcomes framework, identification assumptions, and core estimation strategies (regression adjustment, IPW, doubly robust methods).\nMethods: Nonparametric estimators (influence function methods, TMLE, DoubleML).\nDesigns: Difference-in-differences (including staggered treatment timing), synthetic control, instrumental variables, and regression discontinuity.\nMediation: Classical SEM (via Lavaan.jl) and causal mediation analysis, including CDE, natural effects, and interventional effects estimated with Crumble.jl (recanting twin estimand).\nJulia packages: A brief guide to the local Julia packages developed under ~/projects/software and used throughout the examples.\n\nAll examples use Julia with real and simulated datasets. The code was rewritten in Julia to make the examples fast, reproducible, and close to the estimators being taught. Throughout the book we rely heavily on custom Julia packages developed alongside this text: Lavaan.jl (SEM), Crumble.jl (causal mediation), NPCausal.jl (semiparametric ATE/ATT), TMLE.jl, Panelest.jl (panel regression), DiD.jl, SynthDiD.jl, and RDRobust.jl.",
+    "text": "Preface\nThis is an introduction to causal econometrics with observational data. It covers the key frameworks, estimation strategies, and modern methods that allow researchers to make causal claims from non-experimental data.\nThe material progresses from foundational concepts to advanced methods:\n\nFoundations: The potential outcomes framework, identification assumptions, and core estimation strategies (regression adjustment, IPW, doubly robust methods).\nMethods: Nonparametric estimators (influence function methods, TMLE, DoubleML).\nDesigns: Difference-in-differences (including staggered treatment timing), synthetic control, instrumental variables, and regression discontinuity.\nMediation: Classical SEM (via Lavaan.jl) and causal mediation analysis, including CDE, natural effects, and interventional effects estimated with Crumble.jl (recanting twin estimand).\nJulia packages: A brief guide to the local Julia packages developed under ~/projects/software and used throughout the examples.\n\nAll examples use Julia with real and simulated datasets. The code was rewritten in Julia to make the examples fast, reproducible, and close to the estimators being taught. Throughout the book we rely heavily on custom Julia packages developed alongside this text: Lavaan.jl (SEM), Crumble.jl (causal mediation), CausalEstimate.jl (unified TMLE and AIPW estimation), CausalGraphs.jl (graph-based identification and estimation), Panelest.jl (panel regression), DiD.jl, SynthDiD.jl, and RDRobust.jl.",
     "crumbs": [
       "Preface"
     ]
@@ -102,7 +102,7 @@
     "href": "graphs-identification-estimation.html",
     "title": "2  DAGs, ADMGs, Identification, and Estimation",
     "section": "",
-    "text": "2.1 DAGs and ADMGs\nThe potential-outcomes chapter introduced the question: when can an observed data set tell us about \\(E[Y(1)-Y(0)]\\)? Graphs are one way to make the answer explicit. A graph records which variables are assumed to cause other variables, and whether some observed variables may share unobserved common causes. Once the graph is stated, identification becomes a graph problem. Estimation is the next step: estimate the functional that the graph identified.\nIn this chapter we use CausalGraphs.jl for the graph and identification steps, then call NPCausal.jl for the estimation step when possible.\nA directed acyclic graph, or DAG, has directed arrows such as X -&gt; A. In causal work, an arrow means a direct causal relation is allowed by the model. Absence of an arrow is also a substantive assumption.\nAn acyclic directed mixed graph, or ADMG, adds bidirected arrows such as A &lt;-&gt; Y. A bidirected edge represents an unobserved common cause. This is useful because many econometric applications have variables we cannot measure: ability, preferences, latent health, firm quality, and so on.\nThe graph is not an estimator. It is a compact statement of assumptions. The workflow is:",
+    "text": "2.1 DAGs and ADMGs\nThe potential-outcomes chapter introduced the question: when can an observed data set tell us about \\(E[Y(1)-Y(0)]\\)? Graphs are one way to make the answer explicit. A graph records which variables are assumed to cause other variables, and whether some observed variables may share unobserved common causes. Once the graph is stated, identification becomes a graph problem. Estimation is the next step: estimate the functional that the graph identified.\nIn this chapter we use CausalGraphs.jl for the graph and identification steps, then CausalEstimate.jl for backdoor/a-fixable effects, and CausalGraphs.estimate_causal directly for p-fixable and nested-fixable effects.\nA directed acyclic graph, or DAG, has directed arrows such as X -&gt; A. In causal work, an arrow means a direct causal relation is allowed by the model. Absence of an arrow is also a substantive assumption.\nAn acyclic directed mixed graph, or ADMG, adds bidirected arrows such as A &lt;-&gt; Y. A bidirected edge represents an unobserved common cause. This is useful because many econometric applications have variables we cannot measure: ability, preferences, latent health, firm quality, and so on.\nThe graph is not an estimator. It is a compact statement of assumptions. The workflow is:",
     "crumbs": [
       "Foundations",
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>DAGs, ADMGs, Identification, and Estimation</span>"
@@ -131,11 +131,11 @@
     ]
   },
   {
-    "objectID": "graphs-identification-estimation.html#estimating-the-dag-effect-with-npcausal",
-    "href": "graphs-identification-estimation.html#estimating-the-dag-effect-with-npcausal",
+    "objectID": "graphs-identification-estimation.html#estimating-the-dag-effect-with-causalestimate",
+    "href": "graphs-identification-estimation.html#estimating-the-dag-effect-with-causalestimate",
     "title": "2  DAGs, ADMGs, Identification, and Estimation",
-    "section": "2.3 Estimating the DAG Effect with NPCausal",
-    "text": "2.3 Estimating the DAG Effect with NPCausal\nHere is a small simulated data set where X confounds the treatment-outcome association.\n\nRandom.seed!(2026)\n\nn = 400\nX = randn(n)\npA = logistic.(-0.2 .+ 0.8 .* X)\nA = Float64.(rand(n) .&lt; pA)\nY = 1 .+ 1.5 .* A .+ 0.7 .* X .+ 0.3 .* randn(n)\n\ndf_dag = DataFrame(X = X, A = A, Y = Y)\nfirst(df_dag, 5)\n\n5×3 DataFrame\n\n\n\nRow\nX\nA\nY\n\n\n\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\n-0.91813\n1.0\n1.76741\n\n\n2\n0.313593\n1.0\n2.77638\n\n\n3\n-1.23885\n0.0\n0.130173\n\n\n4\n0.546413\n0.0\n1.43362\n\n\n5\n0.114729\n0.0\n0.906974\n\n\n\n\n\n\nBecause the graph is a-fixable, NPCausal.admg_estimate_causal(...) routes to NPCausal.ate(...). The call below asks for the average contrast \\(E[Y(1)-Y(0)]\\).\n\ndag_res = with_logger(NullLogger()) do\n    NPCausal.admg_estimate_causal(\n        a = [1.0, 0.0],\n        data = df_dag,\n        graph = g_dag,\n        treatment = :A,\n        outcome = :Y,\n        nsplits = 2,\n    )\nend\n\neffect_table(\"Backdoor ACE\", dag_res[:NPCausalOnestep];\n             se = dag_res[:NPCausalOnestep].standard_error)\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\nBackdoor ACE\n1.365\n1.09\n1.639\n0.1401\n\n\n\n\n\n\nThe returned object also contains the raw NPCausal.ate output. The key point is that the graph chose the adjustment set and the estimator used that set.",
+    "section": "2.3 Estimating the DAG Effect with CausalEstimate",
+    "text": "2.3 Estimating the DAG Effect with CausalEstimate\nHere is a small simulated data set where X confounds the treatment-outcome association.\n\nRandom.seed!(2026)\n\nn = 400\nX = randn(n)\npA = logistic.(-0.2 .+ 0.8 .* X)\nA = Float64.(rand(n) .&lt; pA)\nY = 1 .+ 1.5 .* A .+ 0.7 .* X .+ 0.3 .* randn(n)\n\ndf_dag = DataFrame(X = X, A = A, Y = Y)\nfirst(df_dag, 5)\n\n5×3 DataFrame\n\n\n\nRow\nX\nA\nY\n\n\n\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\n-0.91813\n1.0\n1.76741\n\n\n2\n0.313593\n1.0\n2.77638\n\n\n3\n-1.23885\n0.0\n0.130173\n\n\n4\n0.546413\n0.0\n1.43362\n\n\n5\n0.114729\n0.0\n0.906974\n\n\n\n\n\n\nBecause the graph is a-fixable, GraphID routes to AIPW backdoor adjustment. The call below estimates the average contrast \\(E[Y(1)-Y(0)]\\).\n\ndag_res = estimate(\n    ATE(outcome = :Y, treatment = :A),\n    GraphID(graph = g_dag),\n    AIPW(crossfit = 2),\n    df_dag,\n)\n\neffect_table(\"Backdoor ACE\", dag_res)\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\nBackdoor ACE\n1.443\n1.221\n1.665\n0.1134\n\n\n\n\n\n\nThe graph chose the adjustment set (Markov pillow of A) and the estimator used that set. Access it via dag_res.components[:adjustment_set].",
     "crumbs": [
       "Foundations",
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>DAGs, ADMGs, Identification, and Estimation</span>"
@@ -153,11 +153,11 @@
     ]
   },
   {
-    "objectID": "graphs-identification-estimation.html#estimating-the-admg-effect-with-npcausal",
-    "href": "graphs-identification-estimation.html#estimating-the-admg-effect-with-npcausal",
+    "objectID": "graphs-identification-estimation.html#estimating-the-admg-effect-with-causalgraphs",
+    "href": "graphs-identification-estimation.html#estimating-the-admg-effect-with-causalgraphs",
     "title": "2  DAGs, ADMGs, Identification, and Estimation",
-    "section": "2.5 Estimating the ADMG Effect with NPCausal",
-    "text": "2.5 Estimating the ADMG Effect with NPCausal\nSimulate a front-door setting. The latent U is not included in the observed data; it is represented in the graph by A &lt;-&gt; Y.\n\nRandom.seed!(2027)\n\nU = randn(n)\nA_fd = Float64.(rand(n) .&lt; logistic.(-0.1 .+ 0.8 .* U))\nM = Float64.(rand(n) .&lt; logistic.(-0.4 .+ 1.2 .* A_fd))\nY_fd = Float64.(rand(n) .&lt; logistic.(-1 .+ 0.9 .* M .+ 0.7 .* U))\n\ndf_fd = DataFrame(A = A_fd, M = M, Y = Y_fd)\nfirst(df_fd, 5)\n\n5×3 DataFrame\n\n\n\nRow\nA\nM\nY\n\n\n\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\n1.0\n0.0\n0.0\n\n\n2\n0.0\n0.0\n0.0\n\n\n3\n0.0\n0.0\n0.0\n\n\n4\n0.0\n0.0\n1.0\n\n\n5\n0.0\n1.0\n1.0\n\n\n\n\n\n\nThe same NPCausal entry point now routes differently. Since identify() returns :p_fixable, the estimator is the NPS TMLE route rather than backdoor AIPW.\n\nfd_res = with_logger(NullLogger()) do\n    NPCausal.admg_estimate_causal(\n        a = [1.0, 0.0],\n        data = df_fd,\n        graph = g_fd,\n        treatment = :A,\n        outcome = :Y,\n        n_iter = 80,\n        cvg_criteria = 0.02,\n        truncate_lower = 0.01,\n        truncate_upper = 0.99,\n    )\nend\n\neffect_table(\"Front-door ACE\", fd_res[:TMLE])\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nMissing\n\n\n\n\n1\nFront-door ACE\n0.05239\n0.02208\n0.0827\nmissing\n\n\n\n\n\n\nThis is the main practical advantage of separating identification from estimation. The user states the graph once. The software checks the graph and routes the effect to the estimator that matches the identified functional.",
+    "section": "2.5 Estimating the ADMG Effect with CausalGraphs",
+    "text": "2.5 Estimating the ADMG Effect with CausalGraphs\nSimulate a front-door setting. The latent U is not included in the observed data; it is represented in the graph by A &lt;-&gt; Y.\n\nRandom.seed!(2027)\n\nU = randn(n)\nA_fd = Float64.(rand(n) .&lt; logistic.(-0.1 .+ 0.8 .* U))\nM = Float64.(rand(n) .&lt; logistic.(-0.4 .+ 1.2 .* A_fd))\nY_fd = Float64.(rand(n) .&lt; logistic.(-1 .+ 0.9 .* M .+ 0.7 .* U))\n\ndf_fd = DataFrame(A = A_fd, M = M, Y = Y_fd)\nfirst(df_fd, 5)\n\n5×3 DataFrame\n\n\n\nRow\nA\nM\nY\n\n\n\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\n1.0\n0.0\n0.0\n\n\n2\n0.0\n0.0\n0.0\n\n\n3\n0.0\n0.0\n0.0\n\n\n4\n0.0\n0.0\n1.0\n\n\n5\n0.0\n1.0\n1.0\n\n\n\n\n\n\nSince identify() returns :p_fixable, this is a front-door effect. CausalEstimate.jl currently handles backdoor (a-fixable) graphs; for p-fixable effects we call CausalGraphs.estimate_causal directly, which routes to NPS TMLE.\n\nfd_res = with_logger(NullLogger()) do\n    CausalGraphs.estimate_causal(\n        a = [1.0, 0.0],\n        data = df_fd,\n        graph = g_fd,\n        treatment = :A,\n        outcome = :Y,\n        n_iter = 80,\n        cvg_criteria = 0.02,\n        truncate_lower = 0.01,\n        truncate_upper = 0.99,\n    )\nend\n\neffect_table(\"Front-door ACE\", fd_res[:TMLE])\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nMissing\n\n\n\n\n1\nFront-door ACE\n0.05239\n0.02208\n0.0827\nmissing\n\n\n\n\n\n\nThis is the main practical advantage of separating identification from estimation. The user states the graph once. The software checks the graph and routes the effect to the estimator that matches the identified functional.",
     "crumbs": [
       "Foundations",
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>DAGs, ADMGs, Identification, and Estimation</span>"
@@ -168,7 +168,7 @@
     "href": "graphs-identification-estimation.html#general-id-algorithm",
     "title": "2  DAGs, ADMGs, Identification, and Estimation",
     "section": "2.6 General ID Algorithm",
-    "text": "2.6 General ID Algorithm\nThe specialized routes above are useful because they have named estimators: backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more general. The Pearl-Shpitser ID algorithm asks the broader question:\nCan P(Y | do(A)) be written using only the observed joint law P(V)?\nThe algorithm works recursively:\n\nremove variables that are not ancestors of the outcome;\nadd interventions that are irrelevant after graph surgery;\nsplit the remaining graph into bidirected districts;\nidentify each district as a factor of the observed law, if possible;\nreturn a hedge witness when no such reduction is possible.\n\nFor the front-door graph, the general ID algorithm also succeeds:\n\nid_alg_fd = ID_algorithm(g_fd, :A, :Y)\n(identified = id_alg_fd.identified,\n expression = string(id_alg_fd.expression))\n\n(identified = true, expression = \"sum_{M} P(M | A) * sum_{A} P(A) * P(Y | A, M)\")\n\n\nThe expression is symbolic. It is not yet an estimate. For finite-support variables, NPCausal.admg_estimate_id(...) can evaluate the symbolic functional by empirical probabilities and attach a finite-support EIF standard error.\n\nid_res = NPCausal.admg_estimate_id(\n    a = [1.0, 0.0],\n    data = df_fd,\n    graph = g_fd,\n    treatment = :A,\n    outcome = :Y,\n)\n\neffect_table(\"ID plug-in ACE\", id_res[:IDPlugin];\n             se = id_res[:IDPlugin].standard_error)\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\nID plug-in ACE\n0.05346\n0.02278\n0.08413\n0.01565\n\n\n\n\n\n\nThis plug-in estimator is useful for discrete examples and diagnostics. It is not a universal TMLE for every continuous ID functional.",
+    "text": "2.6 General ID Algorithm\nThe specialized routes above are useful because they have named estimators: backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more general. The Pearl-Shpitser ID algorithm asks the broader question:\nCan P(Y | do(A)) be written using only the observed joint law P(V)?\nThe algorithm works recursively:\n\nremove variables that are not ancestors of the outcome;\nadd interventions that are irrelevant after graph surgery;\nsplit the remaining graph into bidirected districts;\nidentify each district as a factor of the observed law, if possible;\nreturn a hedge witness when no such reduction is possible.\n\nFor the front-door graph, the general ID algorithm also succeeds:\n\nid_alg_fd = ID_algorithm(g_fd, :A, :Y)\n(identified = id_alg_fd.identified,\n expression = string(id_alg_fd.expression))\n\n(identified = true, expression = \"sum_{M} P(M | A) * sum_{A} P(A) * P(Y | A, M)\")\n\n\nThe expression is symbolic. It is not yet an estimate. For finite-support variables, CausalGraphs.estimate_causal evaluates the symbolic functional by empirical probabilities and attaches a finite-support EIF standard error via the :IDPlugin key.\n\nid_res = with_logger(NullLogger()) do\n    estimate_id(\n        a = [1.0, 0.0],\n        data = df_fd,\n        graph = g_fd,\n        treatment = :A,\n        outcome = :Y,\n    )\nend\n\neffect_table(\"ID plug-in ACE\", id_res[:IDPlugin];\n             se = id_res[:IDPlugin].standard_error)\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\nID plug-in ACE\n0.05346\n0.02278\n0.08413\n0.01565\n\n\n\n\n\n\nThis plug-in estimator is useful for discrete examples and diagnostics. It is not a universal TMLE for every continuous ID functional.",
     "crumbs": [
       "Foundations",
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>DAGs, ADMGs, Identification, and Estimation</span>"
@@ -190,7 +190,7 @@
     "href": "graphs-identification-estimation.html#practical-workflow",
     "title": "2  DAGs, ADMGs, Identification, and Estimation",
     "section": "2.8 Practical Workflow",
-    "text": "2.8 Practical Workflow\nFor applied work, a useful workflow is:\n\nwrite the graph before looking at estimates;\nuse bidirected edges for latent common causes;\nrun identify(graph, treatment, outcome);\nif identified, call NPCausal.admg_estimate_causal(...);\nreport the graph and the identification route along with the estimate.\n\nCausalGraphs.jl can also be called directly through estimate_causal(...). The combined call through NPCausal.jl is useful when the goal is to treat NPCausal as the estimation package and CausalGraphs as the graph and identification layer.",
+    "text": "2.8 Practical Workflow\nFor applied work, a useful workflow is:\n\nwrite the graph before looking at estimates;\nuse bidirected edges for latent common causes;\nrun identify(graph, treatment, outcome);\nif identified and a-fixable, call estimate(ATE(...), GraphID(graph=...), AIPW(...), df); for p-fixable or nested-fixable effects, call CausalGraphs.estimate_causal(...);\nreport the graph and the identification route along with the estimate.",
     "crumbs": [
       "Foundations",
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>DAGs, ADMGs, Identification, and Estimation</span>"
@@ -230,11 +230,11 @@
     ]
   },
   {
-    "objectID": "smoking-cessation-graphs.html#estimation-with-npcausal",
-    "href": "smoking-cessation-graphs.html#estimation-with-npcausal",
+    "objectID": "smoking-cessation-graphs.html#estimation-with-causalestimate",
+    "href": "smoking-cessation-graphs.html#estimation-with-causalestimate",
     "title": "3  Applied Graph Workflow: Smoking Cessation",
-    "section": "3.4 Estimation with NPCausal",
-    "text": "3.4 Estimation with NPCausal\nThe book keeps identification and estimation as separate steps. Here CausalGraphs supplies the graph result and NPCausal estimates the identified functional. Because the graph is a-fixable, NPCausal.admg_estimate_causal routes to the one-step/AIPW average treatment effect machinery.\n\nRandom.seed!(2026)\n\nnhefs_res = with_logger(NullLogger()) do\n    NPCausal.admg_estimate_causal(\n        a = [1.0, 0.0],\n        data = nhefs,\n        graph = nhefs_graph,\n        treatment = :qsmk,\n        outcome = :wt82_71,\n        nsplits = 2,\n    )\nend\n\neffect_table(\"Quit smoking vs continued smoking\", nhefs_res[:NPCausalOnestep];\n             se = nhefs_res[:NPCausalOnestep].standard_error)\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\nQuit smoking vs continued smoking\n5.536\n1.485\n9.587\n2.067\n\n\n\n\n\n\nInterpreted under the DAG, the estimate is the average effect of quitting smoking versus continuing smoking on weight change in the complete-case NHEFS population. The positive estimate is consistent with weight gain after quitting. The causal interpretation depends on the graph, especially the no unmeasured confounding assumption after adjustment for the baseline variables.",
+    "section": "3.4 Estimation with CausalEstimate",
+    "text": "3.4 Estimation with CausalEstimate\nThe book keeps identification and estimation as separate steps. Here CausalGraphs supplies the graph result and CausalEstimate estimates the identified functional. Because the graph is a-fixable, GraphID routes to the AIPW average treatment effect machinery.\n\nRandom.seed!(2026)\n\nnhefs_result = estimate(\n    ATE(outcome = :wt82_71, treatment = :qsmk),\n    GraphID(graph = nhefs_graph),\n    AIPW(crossfit = 2),\n    nhefs,\n)\n\neffect_table(\"Quit smoking vs continued smoking\", nhefs_result)\n\n1×5 DataFrame\n\n\n\nRow\nestimand\nestimate\nlower_95\nupper_95\nse\n\n\n\nString\nFloat64\nFloat64\nFloat64\nFloat64\n\n\n\n\n1\nQuit smoking vs continued smoking\n3.866\n1.257\n6.475\n1.331\n\n\n\n\n\n\nInterpreted under the DAG, the estimate is the average effect of quitting smoking versus continuing smoking on weight change in the complete-case NHEFS population. The positive estimate is consistent with weight gain after quitting. The causal interpretation depends on the graph, especially the no unmeasured confounding assumption after adjustment for the baseline variables.",
     "crumbs": [
       "Foundations",
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Applied Graph Workflow: Smoking Cessation</span>"
@@ -710,11 +710,11 @@
     ]
   },
   {
-    "objectID": "package-ecosystem.html#npcausal.jl",
-    "href": "package-ecosystem.html#npcausal.jl",
+    "objectID": "package-ecosystem.html#causalestimate.jl",
+    "href": "package-ecosystem.html#causalestimate.jl",
     "title": "10  Julia Packages Used in This Book",
-    "section": "10.4 NPCausal.jl",
-    "text": "10.4 NPCausal.jl\nNPCausal.jl provides the nonparametric causal estimators used in the estimation, nonparametric, and applied graph chapters. The core pattern is to pass the outcome, treatment, and covariate DataFrame, then let the package handle cross-fitting and nuisance estimation.\nusing NPCausal, DataFrames\n\nX = DataFrame(x1 = randn(1000), x2 = randn(1000))\na = rand([0, 1], 1000)\ny = X.x1 .+ X.x2 .* a .+ randn(1000)\n\nresult = ate(y, a, X; nsplits = 5)\nresult.contrasts\nThe package exports ate, att, ctseff, ivlate, ivbds, ipsi, and superlearner. In this book, ate and att do most of the work, while superlearner(binary=true/false) provides an MLJ-based ensemble for nuisance functions.\nWhen loaded together with CausalGraphs.jl, NPCausal.jl also exposes ADMG estimation entry points:\nusing CausalGraphs, NPCausal\n\ng = make_graph(\n    vertices = [:A, :M, :Y],\n    di_edges = [(:A, :M), (:M, :Y)],\n    bi_edges = [(:A, :Y)],\n)\n\nres = NPCausal.admg_estimate_causal(\n    a = [1.0, 0.0],\n    data = df,\n    graph = g,\n    treatment = :A,\n    outcome = :Y,\n)\nThe graph layer identifies the effect and NPCausal routes to the matching estimator: backdoor/a-fixable effects through ate, p-fixable effects through NPS TMLE, nested-fixable effects through ANIPW, and finite-support ID functionals through the ID plug-in.",
+    "section": "10.4 CausalEstimate.jl",
+    "text": "10.4 CausalEstimate.jl\nCausalEstimate.jl is the unified estimation front-end used in the estimation, nonparametric, and applied graph chapters. It combines TMLE and AIPW under one estimate(...) call, with cross-fitting and doubly robust inference built in.\nusing CausalEstimate, DataFrames\n\nn = 1000\ndf = DataFrame(\n    Y = randn(n),\n    A = rand([0, 1], n),\n    W = randn(n),\n)\n\n# AIPW for ATE\nresult = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W]), AIPW(crossfit=5), df)\nestimate(result)       # point estimate\nconfint(result)        # (lower, upper) 95% CI\npvalue(result)         # two-sided p-value\n\n# TMLE for ATE\nresult_tmle = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W]), TMLE(crossfit=5), df)\n\n# ATT\nresult_att = estimate(ATT(outcome=:Y, treatment=:A, confounders=[:W]), AIPW(crossfit=5), df)\nFor graph-identified backdoor (a-fixable) effects, pass a GraphID layer:\nusing CausalEstimate, CausalGraphs\n\ng = make_graph(\n    vertices = [:X, :A, :Y],\n    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],\n)\n\nresult = estimate(\n    ATE(outcome = :Y, treatment = :A),\n    GraphID(graph = g),\n    AIPW(crossfit = 5),\n    df,\n)\nGraphID reads the Markov pillow of the treatment from the graph and uses it as the adjustment set. For p-fixable (front-door), nested-fixable, and general ID-algorithm effects, use CausalGraphs.estimate_causal(...) directly.",
     "crumbs": [
       "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
     ]
@@ -725,16 +725,6 @@
     "title": "10  Julia Packages Used in This Book",
     "section": "10.5 CausalGraphs.jl",
     "text": "10.5 CausalGraphs.jl\nCausalGraphs.jl is the graph layer for the DAG/ADMG chapters. It constructs graphs, checks graph properties, runs identify(), and exposes the general Pearl-Shpitser ID_algorithm():\nusing CausalGraphs\n\ng = make_graph(\n    vertices = [:X, :A, :Y],\n    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],\n)\n\nidentify(g, :A, :Y).strategy\nFor non-backdoor effects (p-fixable, nested-fixable, ID plug-in), CausalGraphs.estimate_causal(...) provides the full estimation pipeline:\nres = CausalGraphs.estimate_causal(\n    a = [1.0, 0.0],\n    data = df,\n    graph = g,\n    treatment = :A,\n    outcome = :Y,\n)\n\nres[:TMLE].ACE         # front-door NPS TMLE\nres[:IDPlugin].ACE     # finite-support ID plug-in",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#tmle.jl",
-    "href": "package-ecosystem.html#tmle.jl",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "10.6 TMLE.jl",
-    "text": "10.6 TMLE.jl\nTMLE.jl implements targeted maximum likelihood and one-step AIPW estimators for ATEs. It uses an explicit target-parameter object and an explicit nuisance-model specification:\nusing TMLE, MLJ, EvoTrees\nimport TMLE: estimate, pvalue\n\nEvoTreeClassifier = @load EvoTreeClassifier pkg=EvoTrees verbosity=0\n\nΨ = ATE(\n    target = :Y,\n    treatment = (A = (case = 1, control = 0),),\n    confounders = [:W1, :W2],\n)\n\nη = NuisanceSpec(\n    EvoTreeClassifier(max_depth = 4, nrounds = 100),\n    EvoTreeClassifier(max_depth = 4, nrounds = 100),\n)\n\nresult = tmle(Ψ, η, df; crossfit = 5, verbosity = 0)\nestimate(result)\nWhen TMLE.jl and MLJ.jl are used together, explicitly importing estimate and pvalue from TMLE avoids a name conflict.",
     "crumbs": [
       "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
     ]
@@ -797,230 +787,6 @@
     "text": "10.11 Practical Advice\nThese packages are best treated as a coherent local research stack. When changing package code, rerun a direct load check from the book directory:\njulia --project -e 'using CausalEstimate, CausalGraphs, Panelest, DiD, SynthDiD, RDRobust, Lavaan, Crumble'\nFor content changes, render the affected chapter first. For package API changes, render the full book after deleting the relevant _freeze chapter directory so Quarto does not reuse stale cached results.",
     "crumbs": [
       "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#causalestimate.jl",
-    "href": "package-ecosystem.html#causalestimate.jl",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "10.4 CausalEstimate.jl",
-    "text": "10.4 CausalEstimate.jl\nCausalEstimate.jl is the unified estimation front-end used in the estimation, nonparametric, and applied graph chapters. It combines TMLE and AIPW under one estimate(...) call, with cross-fitting and doubly robust inference built in.\nusing CausalEstimate, DataFrames\n\nn = 1000\ndf = DataFrame(\n    Y = randn(n),\n    A = rand([0, 1], n),\n    W = randn(n),\n)\n\n# AIPW for ATE\nresult = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W]), AIPW(crossfit=5), df)\nestimate(result)       # point estimate\nconfint(result)        # (lower, upper) 95% CI\npvalue(result)         # two-sided p-value\n\n# TMLE for ATE\nresult_tmle = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W]), TMLE(crossfit=5), df)\n\n# ATT\nresult_att = estimate(ATT(outcome=:Y, treatment=:A, confounders=[:W]), AIPW(crossfit=5), df)\nFor graph-identified backdoor (a-fixable) effects, pass a GraphID layer:\nusing CausalEstimate, CausalGraphs\n\ng = make_graph(\n    vertices = [:X, :A, :Y],\n    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],\n)\n\nresult = estimate(\n    ATE(outcome = :Y, treatment = :A),\n    GraphID(graph = g),\n    AIPW(crossfit = 5),\n    df,\n)\nGraphID reads the Markov pillow of the treatment from the graph and uses it as the adjustment set. For p-fixable (front-door), nested-fixable, and general ID-algorithm effects, use CausalGraphs.estimate_causal(...) directly.",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#experimental-data",
-    "href": "package-ecosystem.html#experimental-data",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "11.1 Experimental Data",
-    "text": "11.1 Experimental Data\nIf we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator. \\[ \\hat{\\tau_{ATT}} = \\bar Y_1 - \\bar Y_0 \\]\nIn experimental setting, we can do a t test for the difference in means. We can also do a regression of \\(Y\\) on \\(W\\) and \\(X\\).",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#adjustment-formula",
-    "href": "package-ecosystem.html#adjustment-formula",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "11.2 Adjustment Formula",
-    "text": "11.2 Adjustment Formula\nFrom causal to estimation: \\[ \\small \\begin{align}\nE[Y(1)-Y(0)] &= E[Y(1)] - E[Y(0)] \\\\\n&=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\\\\n&=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\\\\n&=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]\n\\end{align} \\] where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#regression-adjustment",
-    "href": "package-ecosystem.html#regression-adjustment",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "11.3 Regression Adjustment",
-    "text": "11.3 Regression Adjustment\nHow do we get \\(E[Y|W=w, X=x]\\)? We can use regression adjustment.\nWe define a conditional mean function:\n\\[  \\begin{align}\n\\mu_0(X) &\\equiv E[Y|W=0, X] \\\\\n&= E[Y(0)|W=0, X]  \\\\\n&= E[Y(0)|W=1, X]\n\\end{align}  \\]\nThe RA estimators are:\n\\[\n\\hat \\tau_{ATT}\n= \\frac{1}{n_1}\\sum_{i:W_i=1}\\{Y_i-\\hat\\mu_0(X_i)\\}\n\\]\n\\[\n\\hat \\tau_{ATE}\n= \\frac{1}{n}\\sum_{i=1}^n\\{\\hat\\mu_1(X_i)-\\hat\\mu_0(X_i)\\}\n\\]\nwhere \\(\\hat \\mu_0(X_i)\\) is the predicted value of \\(Y_i\\) from a regression of \\(Y\\) on \\(X\\) for the control group.\nTarget: \\[  \\begin{align}\n\\tau_{ATT} &= E[Y|W=1] - E[Y(0)|W=1] \\\\\n&= E[Y|W=1, X] - \\mu_0(X)  \\\\\n& = E[Y|W=1, X] - (\\alpha_0 + E(X) \\beta_0)\n\\end{align}\n\\]\nThe last term is a linear form of \\(\\mu_0(X)\\). We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#linear-ra",
-    "href": "package-ecosystem.html#linear-ra",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "11.4 Linear RA",
-    "text": "11.4 Linear RA\nRegression Adjustment is basically an imputation estimator. While we observe \\(E[Y|W=1,X]\\), we model \\(E[Y(0)|W=1]\\), based on unconfoundedness and a functional form (say linear form). We estimate \\(\\beta_0\\) on the control sample, then get the expected values for the treated sample, for each value of \\(X\\).\nImplementation of linear RA is easy. We regress \\(Y\\) on \\(X\\) and \\(W\\) and their interaction. It’s shown that we need to de-mean \\(X\\) to get the effect correct.\n#| warning: false\n#| cache: true\n#| message: false\n#| echo: true\nusing CSV, DataFrames, Statistics, GLM\n\n# Load the pension dataset from the hdm R package (Chernozhukov et al.)\n# Treatment: p401 (eligibility for 401k), Outcome: net_tfa (net total financial assets)\npension = CSV.read(\"data/pension.csv\", DataFrame)\n\n# Calculate means for de-meaning (treated group means)\nmean_inc_treated = mean(pension[pension.p401 .== 1, :inc])\nmean_age_treated = mean(pension[pension.p401 .== 1, :age])\n\n# For ATT: we de-mean X by deducting the mean of X in the treated group\n# For ATE: we de-mean X by deducting the mean of X in the whole sample\ndata = DataFrames.transform(pension,\n    :inc =&gt; (x -&gt; x .- mean_inc_treated) =&gt; :inc_dm,\n    :age =&gt; (x -&gt; x .- mean_age_treated) =&gt; :age_dm\n)\n\nlm_ra = lm(@formula(net_tfa ~ p401 * (inc_dm + age_dm)), data)\nshow_regression_html(lm_ra)\nAfter demeaning the covariates, we include all interations of demeaned covariates with treatment. The coefficient on \\(W\\) is the average treatment effect.\n\n11.4.1 Questions on RA\n\nWhy do we have to do interaction of \\(W\\) and \\(X\\)? What if we don’t do it?\nWhat if we don’t de-mean \\(X\\)?\n\nAnswers:\n\nIt has been shown (Słoczyński (2022, REStat)) that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we’ll get biased estimates, for \\(\\tau_{ATT}\\) or \\(\\tau_{ATE}\\). The intuition is that we need to model the difference between treated and control, and the difference is not constant across \\(X\\).\nIf we don’t de-mean \\(X\\), then the coefficient on \\(W\\) is not the average treatment effect. We can still retrieve the ATT or ATE by calculating the marginal effect of \\(W\\) though.",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#ipw",
-    "href": "package-ecosystem.html#ipw",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "11.5 IPW",
-    "text": "11.5 IPW\nUnder unconfoundedness and overlap,\n\\[ \\small \\begin{align}\nE[Y(w)] &= E[E[y|W=w,X]] \\\\\n&= \\sum_x (\\sum_y P(y|w,x)) P(x) \\\\\n&= \\sum_x \\sum_y P(y|w,x)) P(x) {\\frac{P(w|x)}{P(w|x)}} \\\\\n&= \\sum_x \\sum_y y P(y,w,x) {\\frac{1}{P(w|x)}} \\\\\n&= \\sum_x E[\\mathbb{1}(W=w,X=x)Y] {\\frac{1}{P(w|x)}} \\\\\n&= E[\\frac{\\mathbb{1}(W=w)Y} {P(w|X)}]\n\\end{align}\n\\]\nThe IPW equation means that the expected value of the potential outcome is the weighted average of the observed outcome, where the weight is the inverse of the propensity score \\(P(w|x)\\). \\(\\mathbb{1}(W=w)\\) is an indicator function, which is 1 if \\(W=w\\) and 0 otherwise.\n\\[ \\begin{align}\n\\tau_{ATE} &= E[Y(1)] - E[Y(0)] \\\\\n&= E[\\frac{W Y} {\\pi_1(X)}] - E[\\frac{(1-W) Y} {1-\\pi_1(X)}] \\\\\n\\end{align}\n\\]\nThe sample estimators are:\n\\[ \\begin{align}\n\\hat \\tau_{ATE, IPW} &= \\frac{1}{N} \\sum_i \\frac{W_i Y_i} {\\hat\\pi(X_i)} - \\frac{1}{N} \\sum_i \\frac{(1-W_i) Y_i} {1-\\hat \\pi(X_i)}\n\\end{align}\n\\]\n\\[ \\begin{align}\n\\hat \\tau_{ATT, IPW} &= \\bar Y_1 - \\frac{1}{N_1} \\sum_i \\frac{(1-W_i) Y_i} {1-\\hat \\pi(X_i)}\n\\end{align}\n\\]\n\n11.5.1 IPW Intuition\nIPW removes confounding \\(X\\) by creating a pseudo-population in which \\(X\\) is independent of \\(W\\). The intuition is that we can create a pseudo-population in which \\(X\\) is independent of \\(W\\), by weighting the observations by the inverse of the propensity score. Once \\(X\\) is independent of \\(W\\), \\(X\\) is not a confounder anymore. We can then estimate the effect of \\(W\\) on \\(Y\\) by comparing the weighted average of \\(Y\\) for \\(W=1\\) and \\(W=0\\).\nSuppose there are two types of people, one type has high probability to be treated, the other one has low probability to be treated. Without adjusting for the propensity score, the treated group will be dominated by the first type, and the control group will be dominated by the second type. The difference between the treated and control group will be due to the difference in the composition of the two groups, not due to the treatment effect. By weighting the observations by the inverse of the propensity score, we can create a pseudo-population in which the two groups have the same composition. The difference between the treated and control group will be due to the treatment effect.",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "package-ecosystem.html#doubly-robust-estimators",
-    "href": "package-ecosystem.html#doubly-robust-estimators",
-    "title": "10  Julia Packages Used in This Book",
-    "section": "11.6 Doubly Robust Estimators",
-    "text": "11.6 Doubly Robust Estimators\nWe can model both outcome and treatment assignment, and use both models to estimate the treatment effect. The intuition is that if either model is correct, the estimator will be consistent. The estimator is called doubly robust because it is robust to either model being misspecified.\n\n11.6.1 AIPW\n\\[ \\mu_1^{AIPW} = E[\\frac{W(Y-\\mu_1(X))}{\\pi(X)} + \\mu_1(X)] \\]\n\\[ \\mu_0^{AIPW} = E[\\frac{(1-W)(Y-\\mu_0(X))}{1-\\pi(X)} + \\mu_0(X)] \\]\n#| warning: false\n#| cache: true\n#| message: false\n#| echo: true\nusing CSV, DataFrames, GLM, Statistics\n\n# Load Cattaneo (2010) birthweight dataset\n# Treatment: mbsmoke (maternal smoking), Outcome: bweight (birthweight in grams)\ndata = CSV.read(\"data/cattaneo2.csv\", DataFrame)\n\n# Outcome Model (mu)\nmu = lm(@formula(bweight ~ mbsmoke * (prenatal1 + mmarried + mage + fbaby)), data)\n\n# Propensity Score Model (pi)\npi_model = glm(@formula(mbsmoke ~ mmarried + mage + fbaby + medu), data, Binomial(), LogitLink())\n\n# Predict Potential Outcomes for treated and control assignments\ndata_treated = copy(data)\ndata_treated.mbsmoke .= 1\nmm1 = GLM.predict(mu, data_treated)\n\ndata_control = copy(data)\ndata_control.mbsmoke .= 0\nmm0 = GLM.predict(mu, data_control)\n\n# Predict Propensity Scores\npi1 = GLM.predict(pi_model, data)\n\n# Assemble data for final AIPW computation\ndata.w = data.mbsmoke\ndata.y = data.bweight\ndata.m1 = mm1\ndata.m0 = mm0\ndata.pi1 = pi1\n\n# Compute Doubly Robust potential outcomes\ndata.mu1 = @. (data.w * (data.y - data.m1) / data.pi1 + data.m1)\ndata.mu0 = @. ((1 - data.w) * (data.y - data.m0) / (1 - data.pi1) + data.m0)\n\n# Calculate treatment effect\ndata.tau = data.mu1 .- data.mu0\ntau_aipw = mean(data.tau)\n@printf \"ATE (AIPW) = %.4g\\n\" tau_aipw\n\n\n11.6.2 IPWRA\nThe idea of IPWRA is to combine RA and IPW. Basically RA with IPW weights.\nImplementation:\n\nEstimate propensity score. Get predicted probability of treated for each observation.\nEstimate outcome model. But cannot use fully interaction of treatment and covariates. Instead, estimate two equations, one for treated and one for control. Use \\(1/\\hat \\pi(X)\\) as weights for treated group and \\(1/(1-\\hat \\pi(X))\\) as weights for control group.\nGet predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.\nTake difference. The average is the ATE.\n\n#| warning: false\n#| cache: true\n#| message: false\n#| echo: true\nusing CSV, DataFrames, GLM, Statistics\n\n# Load Cattaneo (2010) birthweight dataset\ndata = CSV.read(\"data/cattaneo2.csv\", DataFrame)\n\n# 1. Estimate propensity score\npi_model = glm(@formula(mbsmoke ~ mmarried + mage + fbaby + medu), data, Binomial(), LogitLink())\ndata.pi1 = GLM.predict(pi_model, data)\n\n# Split data into treated and control\ndata1 = subset(data, :mbsmoke =&gt; x -&gt; x .== 1)\ndata0 = subset(data, :mbsmoke =&gt; x -&gt; x .== 0)\n\n# 2. Estimate outcome models using inverse probability weights\nwts1 = 1 ./ data1.pi1\nwts0 = 1 ./ (1 .- data0.pi1)\n\n# GLM.jl lm accepts weights via the `wts` keyword argument\nmu1 = lm(@formula(bweight ~ prenatal1 + mmarried + mage + fbaby), data1; wts=wts1)\nmu0 = lm(@formula(bweight ~ prenatal1 + mmarried + mage + fbaby), data0; wts=wts0)\n\n# 3. Predict potential outcomes for the whole sample using the respective models\ndata_treated = copy(data)\ndata_treated.mbsmoke .= 1\nmm1 = GLM.predict(mu1, data_treated)\n\ndata_control = copy(data)\ndata_control.mbsmoke .= 0\nmm0 = GLM.predict(mu0, data_control)\n\n# 4. Take the difference\ndata.w = data.mbsmoke\ndata.y = data.bweight\ndata.m1 = mm1\ndata.m0 = mm0\n\ndata.tau = data.m1 .- data.m0\ntau_ipwra = mean(data.tau)\n@printf \"ATE (IPWRA) = %.4g\\n\" tau_ipwra",
-    "crumbs": [
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#data",
-    "href": "nonparametric.html#data",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "6.1 Data",
-    "text": "6.1 Data\nFor a focused example, keep the treatment, outcome, and baseline covariates commonly used in the NHEFS smoking cessation examples.\n#| warning: false\n#| message: false\n#| cache: true\nfunction read_rdatasets_csv(url, cols)\n    local_file = Downloads.download(url; timeout = 120)\n    x, header = readdlm(local_file, ',', Any, '\\n'; header = true)\n    raw = DataFrame(x, Symbol.(vec(header)))\n    DataFrame((c =&gt; Float64.(raw[!, c]) for c in cols)...)\nend\n\nnhefs_url = \"https://vincentarelbundock.github.io/Rdatasets/csv/causaldata/nhefs_complete.csv\"\nnhefs_cols = [\n    :qsmk, :wt82_71,\n    :sex, :race, :age, :school,\n    :smokeintensity, :smokeyrs,\n    :exercise, :active, :wt71,\n]\n\nnhefs = read_rdatasets_csv(nhefs_url, nhefs_cols);\n\n(n = nrow(nhefs), variables = ncol(nhefs))\npreview_table(nhefs)",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#adjustment-dag",
-    "href": "nonparametric.html#adjustment-dag",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "6.2 Adjustment DAG",
-    "text": "6.2 Adjustment DAG\nStart with the grouped graph\nX -&gt; A -&gt; Y\nX -----&gt; Y\nwhere X is the baseline covariate set, A is quitting smoking, and Y is later weight change. This graph says the baseline variables may affect both quitting and later weight change, and that there is no unmeasured common cause of quitting and later weight change after conditioning on those baseline variables.\nconceptual_graph = make_graph(\n    vertices = [:X, :A, :Y],\n    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],\n);\n#| output: asis\nprintln(\"```{mermaid}\")\nprintln(to_mermaid(conceptual_graph; direction = \"LR\"))\nprintln(\"```\")\nFor estimation, expand X into the observed NHEFS columns. The expanded graph is still an adjustment DAG: each baseline variable is allowed to point into quitting and into later weight change.\nnhefs_vertices = [\n    :sex, :race, :age, :school,\n    :smokeintensity, :smokeyrs,\n    :exercise, :active, :wt71,\n    :qsmk, :wt82_71,\n]\n\nbaseline = setdiff(nhefs_vertices, [:qsmk, :wt82_71])\n\nnhefs_edges = vcat(\n    [(w, :qsmk) for w in baseline],\n    [(w, :wt82_71) for w in baseline],\n    [(:qsmk, :wt82_71)],\n)\n\nnhefs_graph = make_graph(vertices = nhefs_vertices, di_edges = nhefs_edges);\n\n(vertices = length(nhefs_vertices), directed_edges = length(nhefs_edges))",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#identification",
-    "href": "nonparametric.html#identification",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "6.3 Identification",
-    "text": "6.3 Identification\nCausalGraphs.identify checks the graph before estimation. In this adjustment DAG, the quitting node is a-fixable. The Markov pillow is the sufficient adjustment set:\nnhefs_id = identify(nhefs_graph, :qsmk, :wt82_71)\n\nDataFrame(\n    strategy = [string(nhefs_id.strategy)],\n    markov_pillow = [join(string.(markov_pillow(nhefs_graph, :qsmk; treatment = :qsmk)), \", \")],\n)\nThe graph has therefore identified the causal mean by the adjustment formula\n\\[\nE[Y(a)] = E_X\\{E(Y \\mid A=a, X)\\}.\n\\]\nThis formula is not a modeling claim by itself. It is the observed-data functional implied by the graph. Estimation still requires nuisance models for the outcome regression and treatment mechanism.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#estimation-with-causalestimate",
-    "href": "nonparametric.html#estimation-with-causalestimate",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "6.4 Estimation with CausalEstimate",
-    "text": "6.4 Estimation with CausalEstimate\nThe book keeps identification and estimation as separate steps. Here CausalGraphs supplies the graph result and CausalEstimate estimates the identified functional. Because the graph is a-fixable, GraphID routes to the AIPW average treatment effect machinery.\n#| warning: false\n#| message: false\n#| cache: true\nRandom.seed!(2026)\n\nnhefs_result = estimate(\n    ATE(outcome = :wt82_71, treatment = :qsmk),\n    GraphID(graph = nhefs_graph),\n    AIPW(crossfit = 2),\n    nhefs,\n)\n\neffect_table(\"Quit smoking vs continued smoking\", nhefs_result)\nInterpreted under the DAG, the estimate is the average effect of quitting smoking versus continuing smoking on weight change in the complete-case NHEFS population. The positive estimate is consistent with weight gain after quitting. The causal interpretation depends on the graph, especially the no unmeasured confounding assumption after adjustment for the baseline variables.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#sensitivity-graph",
-    "href": "nonparametric.html#sensitivity-graph",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "6.5 Sensitivity Graph",
-    "text": "6.5 Sensitivity Graph\nNow encode a different assumption: quitting and later weight change share an unobserved common cause even after conditioning on the measured baseline variables. In an ADMG this is a bidirected edge, qsmk &lt;-&gt; wt82_71.\nsensitivity_graph = make_graph(\n    vertices = nhefs_vertices,\n    di_edges = nhefs_edges,\n    bi_edges = [(:qsmk, :wt82_71)],\n)\n\nsensitivity_id = identify(sensitivity_graph, :qsmk, :wt82_71);\n#| output: asis\nprintln(\"```{mermaid}\")\nprintln(to_mermaid(sensitivity_graph; direction = \"LR\"))\nprintln(\"```\")\n\nDataFrame(strategy = [string(sensitivity_id.strategy)])\nThe identifying conclusion changes. Under this graph, the observed NHEFS variables are not enough to identify the effect. This is the practical value of drawing the graph before estimating: the same data can support different causal answers under different assumptions.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#structured-baseline-graph",
-    "href": "nonparametric.html#structured-baseline-graph",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "6.6 Structured Baseline Graph",
-    "text": "6.6 Structured Baseline Graph\nThe simple adjustment graph is often the clearest starting point. A richer DAG can record more assumptions about baseline temporal ordering and relationships: demographics may precede education, smoking history, activity, and baseline weight; those variables may then affect quitting and later weight change.\nstructured_edges = [\n    (:age, :school), (:age, :smokeyrs), (:age, :wt71),\n    (:age, :active), (:age, :exercise), (:age, :qsmk), (:age, :wt82_71),\n\n    (:sex, :smokeintensity), (:sex, :smokeyrs), (:sex, :wt71),\n    (:sex, :qsmk), (:sex, :wt82_71),\n\n    (:race, :school), (:race, :smokeintensity),\n    (:race, :qsmk), (:race, :wt82_71),\n\n    (:school, :smokeintensity), (:school, :qsmk), (:school, :wt82_71),\n\n    (:smokeyrs, :smokeintensity), (:smokeyrs, :qsmk), (:smokeyrs, :wt82_71),\n    (:smokeintensity, :qsmk), (:smokeintensity, :wt82_71),\n\n    (:exercise, :wt71), (:exercise, :qsmk), (:exercise, :wt82_71),\n    (:active, :wt71), (:active, :qsmk), (:active, :wt82_71),\n    (:wt71, :qsmk), (:wt71, :wt82_71),\n\n    (:qsmk, :wt82_71),\n]\n\nstructured_graph = make_graph(vertices = nhefs_vertices, di_edges = structured_edges);\nstructured_id = identify(structured_graph, :qsmk, :wt82_71)\n\nDataFrame(\n    strategy = [string(structured_id.strategy)],\n    same_adjustment_set = [\n        Set(markov_pillow(structured_graph, :qsmk; treatment = :qsmk)) == Set(baseline)\n    ],\n)\nFor this treatment effect, the richer baseline DAG is adjustment-equivalent to the simpler expanded DAG: it gives the same measured parents for qsmk and therefore the same identifying functional. The extra arrows among baseline variables may be useful for documentation, but they are additional causal assumptions. If those extra assumptions are not needed for the estimand, the grouped adjustment graph is usually easier to defend.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#dags-and-admgs",
-    "href": "nonparametric.html#dags-and-admgs",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.1 DAGs and ADMGs",
-    "text": "7.1 DAGs and ADMGs\nA directed acyclic graph, or DAG, has directed arrows such as X -&gt; A. In causal work, an arrow means a direct causal relation is allowed by the model. Absence of an arrow is also a substantive assumption.\nAn acyclic directed mixed graph, or ADMG, adds bidirected arrows such as A &lt;-&gt; Y. A bidirected edge represents an unobserved common cause. This is useful because many econometric applications have variables we cannot measure: ability, preferences, latent health, firm quality, and so on.\nThe graph is not an estimator. It is a compact statement of assumptions. The workflow is:\n\nwrite down a DAG or ADMG;\nask whether the target effect is identified;\nestimate the identified functional from data.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#a-dag-backdoor-adjustment",
-    "href": "nonparametric.html#a-dag-backdoor-adjustment",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.2 A DAG: Backdoor Adjustment",
-    "text": "7.2 A DAG: Backdoor Adjustment\nStart with a simple observational study. A is treatment, Y is the outcome, and X is an observed confounder:\ng_dag = make_graph(\n    vertices = [:X, :A, :Y],\n    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],\n)\n#| output: asis\nprintln(\"```{mermaid}\")\nprintln(to_mermaid(g_dag; direction = \"LR\"))\nprintln(\"```\")\nThe graph says X affects both treatment and outcome. It also says there is no unobserved common cause between A and Y after we condition on X. In this case the treatment is a-fixable, which corresponds to backdoor-style identification.\nid_dag = identify(g_dag, :A, :Y)\n(strategy = id_dag.strategy,\n markov_pillow = markov_pillow(g_dag, :A; treatment = :A))\nThe Markov pillow is the adjustment set used by the estimator. Under this graph,\n\\[\nE[Y(a)] = E_X\\{E(Y \\mid A=a, X)\\}.\n\\]\nSo the graph has translated a causal query into a regression-style observed data functional.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#estimating-the-dag-effect-with-causalestimate",
-    "href": "nonparametric.html#estimating-the-dag-effect-with-causalestimate",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.3 Estimating the DAG Effect with CausalEstimate",
-    "text": "7.3 Estimating the DAG Effect with CausalEstimate\nHere is a small simulated data set where X confounds the treatment-outcome association.\n#| warning: false\n#| message: false\n#| cache: true\nRandom.seed!(2026)\n\nn = 400\nX = randn(n)\npA = logistic.(-0.2 .+ 0.8 .* X)\nA = Float64.(rand(n) .&lt; pA)\nY = 1 .+ 1.5 .* A .+ 0.7 .* X .+ 0.3 .* randn(n)\n\ndf_dag = DataFrame(X = X, A = A, Y = Y)\nfirst(df_dag, 5)\nBecause the graph is a-fixable, GraphID routes to AIPW backdoor adjustment. The call below estimates the average contrast \\(E[Y(1)-Y(0)]\\).\n#| warning: false\n#| message: false\n#| cache: true\ndag_res = estimate(\n    ATE(outcome = :Y, treatment = :A),\n    GraphID(graph = g_dag),\n    AIPW(crossfit = 2),\n    df_dag,\n)\n\neffect_table(\"Backdoor ACE\", dag_res)\nThe graph chose the adjustment set (Markov pillow of A) and the estimator used that set. Access it via dag_res.components[:adjustment_set].",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#an-admg-front-door-identification",
-    "href": "nonparametric.html#an-admg-front-door-identification",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.4 An ADMG: Front-Door Identification",
-    "text": "7.4 An ADMG: Front-Door Identification\nNow suppose treatment and outcome share an unobserved common cause. A simple DAG adjustment argument no longer works. The front-door ADMG has a mediator M that transmits the effect of A to Y, while A and Y are hidden-confounded:\ng_fd = make_graph(\n    vertices = [:A, :M, :Y],\n    di_edges = [(:A, :M), (:M, :Y)],\n    bi_edges = [(:A, :Y)],\n)\n#| output: asis\nprintln(\"```{mermaid}\")\nprintln(to_mermaid(g_fd; direction = \"LR\"))\nprintln(\"```\")\nThe bidirected edge A &lt;-&gt; Y means that ordinary backdoor adjustment is not available. But the graph is p-fixable, the ADMG generalization that includes front-door identification.\nid_fd = identify(g_fd, :A, :Y)\n(strategy = id_fd.strategy,\n a_fixable = is_fix(g_fd, :A),\n p_fixable = is_p_fix(g_fd, :A))\nThe intuition is that M carries the causal effect of A, and M is not itself hidden-confounded with A. The graph lets us use mediator information to recover the causal effect even though A and Y are confounded.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#estimating-the-admg-effect-with-causalgraphs",
-    "href": "nonparametric.html#estimating-the-admg-effect-with-causalgraphs",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.5 Estimating the ADMG Effect with CausalGraphs",
-    "text": "7.5 Estimating the ADMG Effect with CausalGraphs\nSimulate a front-door setting. The latent U is not included in the observed data; it is represented in the graph by A &lt;-&gt; Y.\n#| warning: false\n#| message: false\n#| cache: true\nRandom.seed!(2027)\n\nU = randn(n)\nA_fd = Float64.(rand(n) .&lt; logistic.(-0.1 .+ 0.8 .* U))\nM = Float64.(rand(n) .&lt; logistic.(-0.4 .+ 1.2 .* A_fd))\nY_fd = Float64.(rand(n) .&lt; logistic.(-1 .+ 0.9 .* M .+ 0.7 .* U))\n\ndf_fd = DataFrame(A = A_fd, M = M, Y = Y_fd)\nfirst(df_fd, 5)\nSince identify() returns :p_fixable, this is a front-door effect. CausalEstimate.jl currently handles backdoor (a-fixable) graphs; for p-fixable effects we call CausalGraphs.estimate_causal directly, which routes to NPS TMLE.\n#| warning: false\n#| message: false\n#| cache: true\nfd_res = with_logger(NullLogger()) do\n    CausalGraphs.estimate_causal(\n        a = [1.0, 0.0],\n        data = df_fd,\n        graph = g_fd,\n        treatment = :A,\n        outcome = :Y,\n        n_iter = 80,\n        cvg_criteria = 0.02,\n        truncate_lower = 0.01,\n        truncate_upper = 0.99,\n    )\nend\n\neffect_table(\"Front-door ACE\", fd_res[:TMLE])\nThis is the main practical advantage of separating identification from estimation. The user states the graph once. The software checks the graph and routes the effect to the estimator that matches the identified functional.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#general-id-algorithm",
-    "href": "nonparametric.html#general-id-algorithm",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.6 General ID Algorithm",
-    "text": "7.6 General ID Algorithm\nThe specialized routes above are useful because they have named estimators: backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more general. The Pearl-Shpitser ID algorithm asks the broader question:\nCan P(Y | do(A)) be written using only the observed joint law P(V)?\nThe algorithm works recursively:\n\nremove variables that are not ancestors of the outcome;\nadd interventions that are irrelevant after graph surgery;\nsplit the remaining graph into bidirected districts;\nidentify each district as a factor of the observed law, if possible;\nreturn a hedge witness when no such reduction is possible.\n\nFor the front-door graph, the general ID algorithm also succeeds:\nid_alg_fd = ID_algorithm(g_fd, :A, :Y)\n(identified = id_alg_fd.identified,\n expression = string(id_alg_fd.expression))\nThe expression is symbolic. It is not yet an estimate. For finite-support variables, CausalGraphs.estimate_causal evaluates the symbolic functional by empirical probabilities and attaches a finite-support EIF standard error via the :IDPlugin key.\n#| warning: false\n#| message: false\n#| cache: true\nid_res = with_logger(NullLogger()) do\n    CausalGraphs.estimate_causal(\n        a = [1.0, 0.0],\n        data = df_fd,\n        graph = g_fd,\n        treatment = :A,\n        outcome = :Y,\n    )\nend\n\neffect_table(\"ID plug-in ACE\", id_res[:IDPlugin];\n             se = id_res[:IDPlugin].standard_error)\nThis plug-in estimator is useful for discrete examples and diagnostics. It is not a universal TMLE for every continuous ID functional.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#when-the-graph-says-no",
-    "href": "nonparametric.html#when-the-graph-says-no",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.7 When the Graph Says No",
-    "text": "7.7 When the Graph Says No\nThe bow graph has both a direct causal edge and unobserved confounding between the same two variables:\ng_bow = make_graph(\n    vertices = [:A, :Y],\n    di_edges = [(:A, :Y)],\n    bi_edges = [(:A, :Y)],\n)\n#| output: asis\nprintln(\"```{mermaid}\")\nprintln(to_mermaid(g_bow; direction = \"LR\"))\nprintln(\"```\")\nThe effect of A on Y is not identified in this ADMG. The observed association mixes the direct causal effect with the latent common cause.\nid_bow = identify(g_bow, :A, :Y)\nid_alg_bow = ID_algorithm(g_bow, :A, :Y)\n\n(route = id_bow.strategy,\n id_algorithm_identified = id_alg_bow.identified,\n hedge = id_alg_bow.hedge)\nThis is a feature, not a failure. If the graph does not justify the causal effect, the estimator should not manufacture one.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
-    ]
-  },
-  {
-    "objectID": "nonparametric.html#practical-workflow",
-    "href": "nonparametric.html#practical-workflow",
-    "title": "5  Nonparametric Causal Methods",
-    "section": "7.8 Practical Workflow",
-    "text": "7.8 Practical Workflow\nFor applied work, a useful workflow is:\n\nwrite the graph before looking at estimates;\nuse bidirected edges for latent common causes;\nrun identify(graph, treatment, outcome);\nif identified and a-fixable, call estimate(ATE(...), GraphID(graph=...), AIPW(...), df); for p-fixable or nested-fixable effects, call CausalGraphs.estimate_causal(...);\nreport the graph and the identification route along with the estimate.",
-    "crumbs": [
-      "Methods",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Nonparametric Causal Methods</span>"
     ]
   }
 ]

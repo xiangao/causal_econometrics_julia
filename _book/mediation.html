@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>6&nbsp; Causal Mediation Analysis – Causal Econometrics with Julia</title>
+<title>9&nbsp; Causal Mediation Analysis – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -17,7 +17,7 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
 /* CSS for syntax highlighting */
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./package-ecosystem.html" rel="next">
-<link href="./iv-rdd.html" rel="prev">
+<link href="./poisson-iv.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -150,8 +150,8 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./mediation.html">Mediation</a></li><li class="breadcrumb-item"><a href="./mediation.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></a></li></ol></nav>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./mediation.html">Mediation</a></li><li class="breadcrumb-item"><a href="./mediation.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
@@ -165,7 +165,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Causal Econometrics with Julia</a>
+      <a href="./">Causal Econometrics with Julia</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -173,98 +173,116 @@ window.Quarto = {
         <div id="quarto-search" class="" title="Search"></div>
         </div>
         </div>
-    <div class="sidebar-menu-container">
+    <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Foundations</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./identification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Methods</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Designs</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./mediation.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
     </ul>
@@ -275,32 +293,32 @@ window.Quarto = {
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
-
+   
   <ul>
-  <li><a href="#classical-mediation" id="toc-classical-mediation" class="nav-link active" data-scroll-target="#classical-mediation"><span class="header-section-number">6.1</span> Classical Mediation</a>
+  <li><a href="#classical-mediation" id="toc-classical-mediation" class="nav-link active" data-scroll-target="#classical-mediation"><span class="header-section-number">9.1</span> Classical Mediation</a>
   <ul class="collapse">
-  <li><a href="#problems-with-classical-mediation" id="toc-problems-with-classical-mediation" class="nav-link" data-scroll-target="#problems-with-classical-mediation"><span class="header-section-number">6.1.1</span> Problems with Classical Mediation</a></li>
+  <li><a href="#problems-with-classical-mediation" id="toc-problems-with-classical-mediation" class="nav-link" data-scroll-target="#problems-with-classical-mediation"><span class="header-section-number">9.1.1</span> Problems with Classical Mediation</a></li>
   </ul></li>
-  <li><a href="#causal-mediation" id="toc-causal-mediation" class="nav-link" data-scroll-target="#causal-mediation"><span class="header-section-number">6.2</span> Causal Mediation</a>
+  <li><a href="#causal-mediation" id="toc-causal-mediation" class="nav-link" data-scroll-target="#causal-mediation"><span class="header-section-number">9.2</span> Causal Mediation</a>
   <ul class="collapse">
-  <li><a href="#cde" id="toc-cde" class="nav-link" data-scroll-target="#cde"><span class="header-section-number">6.2.1</span> CDE</a></li>
-  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions"><span class="header-section-number">6.2.2</span> Assumptions</a></li>
-  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation"><span class="header-section-number">6.2.3</span> Estimation</a></li>
-  <li><a href="#g-computation" id="toc-g-computation" class="nav-link" data-scroll-target="#g-computation"><span class="header-section-number">6.2.4</span> G-computation</a></li>
-  <li><a href="#ipw" id="toc-ipw" class="nav-link" data-scroll-target="#ipw"><span class="header-section-number">6.2.5</span> IPW</a></li>
-  <li><a href="#aipw" id="toc-aipw" class="nav-link" data-scroll-target="#aipw"><span class="header-section-number">6.2.6</span> AIPW</a></li>
-  <li><a href="#example-g-computation" id="toc-example-g-computation" class="nav-link" data-scroll-target="#example-g-computation"><span class="header-section-number">6.2.7</span> Example: G-computation</a></li>
-  <li><a href="#example-ipw" id="toc-example-ipw" class="nav-link" data-scroll-target="#example-ipw"><span class="header-section-number">6.2.8</span> Example: IPW</a></li>
-  <li><a href="#example-aipw" id="toc-example-aipw" class="nav-link" data-scroll-target="#example-aipw"><span class="header-section-number">6.2.9</span> Example: AIPW</a></li>
+  <li><a href="#cde" id="toc-cde" class="nav-link" data-scroll-target="#cde"><span class="header-section-number">9.2.1</span> CDE</a></li>
+  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions"><span class="header-section-number">9.2.2</span> Assumptions</a></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation"><span class="header-section-number">9.2.3</span> Estimation</a></li>
+  <li><a href="#g-computation" id="toc-g-computation" class="nav-link" data-scroll-target="#g-computation"><span class="header-section-number">9.2.4</span> G-computation</a></li>
+  <li><a href="#ipw" id="toc-ipw" class="nav-link" data-scroll-target="#ipw"><span class="header-section-number">9.2.5</span> IPW</a></li>
+  <li><a href="#aipw" id="toc-aipw" class="nav-link" data-scroll-target="#aipw"><span class="header-section-number">9.2.6</span> AIPW</a></li>
+  <li><a href="#example-g-computation" id="toc-example-g-computation" class="nav-link" data-scroll-target="#example-g-computation"><span class="header-section-number">9.2.7</span> Example: G-computation</a></li>
+  <li><a href="#example-ipw" id="toc-example-ipw" class="nav-link" data-scroll-target="#example-ipw"><span class="header-section-number">9.2.8</span> Example: IPW</a></li>
+  <li><a href="#example-aipw" id="toc-example-aipw" class="nav-link" data-scroll-target="#example-aipw"><span class="header-section-number">9.2.9</span> Example: AIPW</a></li>
   </ul></li>
-  <li><a href="#nie-and-nde-natural-direct-and-indirect-effects" id="toc-nie-and-nde-natural-direct-and-indirect-effects" class="nav-link" data-scroll-target="#nie-and-nde-natural-direct-and-indirect-effects"><span class="header-section-number">6.3</span> NIE and NDE: Natural Direct and Indirect Effects</a>
+  <li><a href="#nie-and-nde-natural-direct-and-indirect-effects" id="toc-nie-and-nde-natural-direct-and-indirect-effects" class="nav-link" data-scroll-target="#nie-and-nde-natural-direct-and-indirect-effects"><span class="header-section-number">9.3</span> NIE and NDE: Natural Direct and Indirect Effects</a>
   <ul class="collapse">
-  <li><a href="#additional-assumption" id="toc-additional-assumption" class="nav-link" data-scroll-target="#additional-assumption"><span class="header-section-number">6.3.1</span> Additional Assumption</a></li>
-  <li><a href="#estimation-1" id="toc-estimation-1" class="nav-link" data-scroll-target="#estimation-1"><span class="header-section-number">6.3.2</span> Estimation</a></li>
+  <li><a href="#additional-assumption" id="toc-additional-assumption" class="nav-link" data-scroll-target="#additional-assumption"><span class="header-section-number">9.3.1</span> Additional Assumption</a></li>
+  <li><a href="#estimation-1" id="toc-estimation-1" class="nav-link" data-scroll-target="#estimation-1"><span class="header-section-number">9.3.2</span> Estimation</a></li>
   </ul></li>
-  <li><a href="#iie-and-ide-interventional-direct-and-indirect-effects" id="toc-iie-and-ide-interventional-direct-and-indirect-effects" class="nav-link" data-scroll-target="#iie-and-ide-interventional-direct-and-indirect-effects"><span class="header-section-number">6.4</span> IIE and IDE: Interventional Direct and Indirect Effects</a>
+  <li><a href="#iie-and-ide-interventional-direct-and-indirect-effects" id="toc-iie-and-ide-interventional-direct-and-indirect-effects" class="nav-link" data-scroll-target="#iie-and-ide-interventional-direct-and-indirect-effects"><span class="header-section-number">9.4</span> IIE and IDE: Interventional Direct and Indirect Effects</a>
   <ul class="collapse">
-  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">6.4.1</span> Example</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">9.4.1</span> Example</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -308,20 +326,20 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./mediation.html">Mediation</a></li><li class="breadcrumb-item"><a href="./mediation.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./mediation.html">Mediation</a></li><li class="breadcrumb-item"><a href="./mediation.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></h1>
+<h1 class="title"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-
-
-
+    
+  
+    
   </div>
-
+  
 
 
 </header>
@@ -336,8 +354,8 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<section id="classical-mediation" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="classical-mediation"><span class="header-section-number">6.1</span> Classical Mediation</h2>
+<section id="classical-mediation" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="classical-mediation"><span class="header-section-number">9.1</span> Classical Mediation</h2>
 <p>Traditionally mediation model can be represented in the following equations:</p>
 <p><span class="math display">\[ Y = a W + b M + \epsilon_1 \]</span> <span class="math display">\[ M = c W + \epsilon_2 \]</span></p>
 <p>That is, we’d like to study the effect of <span class="math inline">\(W\)</span> on <span class="math inline">\(Y\)</span>, and we see the effect can be a direct effect, and an indirect effect, through <span class="math inline">\(M\)</span>.</p>
@@ -379,23 +397,23 @@ window.Quarto = {
   Call summary() for full output.</code></pre>
 </div>
 </div>
-<section id="problems-with-classical-mediation" class="level3" data-number="6.1.1">
-<h3 data-number="6.1.1" class="anchored" data-anchor-id="problems-with-classical-mediation"><span class="header-section-number">6.1.1</span> Problems with Classical Mediation</h3>
+<section id="problems-with-classical-mediation" class="level3" data-number="9.1.1">
+<h3 data-number="9.1.1" class="anchored" data-anchor-id="problems-with-classical-mediation"><span class="header-section-number">9.1.1</span> Problems with Classical Mediation</h3>
 <ul>
 <li>Lack of causal claim. We have to assume that there is no unmeasured confounder between <span class="math inline">\(M\)</span> and <span class="math inline">\(Y\)</span>. This is a strong assumption.</li>
 <li>Assumption of homogeneous effect.</li>
 </ul>
 </section>
 </section>
-<section id="causal-mediation" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="causal-mediation"><span class="header-section-number">6.2</span> Causal Mediation</h2>
-<section id="cde" class="level3" data-number="6.2.1">
-<h3 data-number="6.2.1" class="anchored" data-anchor-id="cde"><span class="header-section-number">6.2.1</span> CDE</h3>
+<section id="causal-mediation" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="causal-mediation"><span class="header-section-number">9.2</span> Causal Mediation</h2>
+<section id="cde" class="level3" data-number="9.2.1">
+<h3 data-number="9.2.1" class="anchored" data-anchor-id="cde"><span class="header-section-number">9.2.1</span> CDE</h3>
 <p>Suppose we can set <span class="math inline">\(W\)</span> and <span class="math inline">\(M\)</span> at will to any <span class="math inline">\((w, m)\)</span>, then we have the potential outcome <span class="math inline">\(Y(w,m)\)</span>.</p>
 <p>Conditional direct effect (CDE) is defined as <span class="math display">\[ CDE(m) = E[Y(1,m)-Y(0,m)] \]</span> That is, setting <span class="math inline">\(M\)</span> to <span class="math inline">\(m\)</span>, what is the effect of <span class="math inline">\(W\)</span> on <span class="math inline">\(Y\)</span>?</p>
 </section>
-<section id="assumptions" class="level3" data-number="6.2.2">
-<h3 data-number="6.2.2" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">6.2.2</span> Assumptions</h3>
+<section id="assumptions" class="level3" data-number="9.2.2">
+<h3 data-number="9.2.2" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">9.2.2</span> Assumptions</h3>
 <ul>
 <li>Conditional treatment randomization. Suppose we observe confounders X, which can be a joint set of confounders for the W to Y pathway, or the M to Y pathway.</li>
 </ul>
@@ -412,12 +430,12 @@ window.Quarto = {
 <p><span class="math display">\[  P(W=w | X=x) &gt; 0  \]</span> for all <span class="math inline">\(x\)</span>. This is the usual positivity assumption.</p>
 <p><span class="math display">\[  P(M=m | X=x, W=w) &gt; 0   \]</span> for all <span class="math inline">\(w\)</span>. This is the mediator positivity.</p>
 </section>
-<section id="estimation" class="level3" data-number="6.2.3">
-<h3 data-number="6.2.3" class="anchored" data-anchor-id="estimation"><span class="header-section-number">6.2.3</span> Estimation</h3>
+<section id="estimation" class="level3" data-number="9.2.3">
+<h3 data-number="9.2.3" class="anchored" data-anchor-id="estimation"><span class="header-section-number">9.2.3</span> Estimation</h3>
 <p>CDE can be estimated using G-computation method, or IPW, or the doubly-robust methods, one of them is AIPW (augmented IPW).</p>
 </section>
-<section id="g-computation" class="level3" data-number="6.2.4">
-<h3 data-number="6.2.4" class="anchored" data-anchor-id="g-computation"><span class="header-section-number">6.2.4</span> G-computation</h3>
+<section id="g-computation" class="level3" data-number="9.2.4">
+<h3 data-number="9.2.4" class="anchored" data-anchor-id="g-computation"><span class="header-section-number">9.2.4</span> G-computation</h3>
 <p>G-computation is to model the outcome equation: <span class="math display">\[ \small
 \begin{eqnarray*}
 CDE_G(m) &amp;=&amp; E[ E[Y(W=1, M=m, X=x)] - \\
@@ -427,8 +445,8 @@ CDE_G(m) &amp;=&amp; E[ E[Y(W=1, M=m, X=x)] - \\
 \end{eqnarray*}
 \]</span></p>
 </section>
-<section id="ipw" class="level3" data-number="6.2.5">
-<h3 data-number="6.2.5" class="anchored" data-anchor-id="ipw"><span class="header-section-number">6.2.5</span> IPW</h3>
+<section id="ipw" class="level3" data-number="9.2.5">
+<h3 data-number="9.2.5" class="anchored" data-anchor-id="ipw"><span class="header-section-number">9.2.5</span> IPW</h3>
 <p>IPW is to model the treatment assignment equation and the mediator assignment equation:</p>
 <p><span class="math display">\[ \small
 E[Y(w,m)] = E[{\frac{I(W=w, M=m)}{P(W=w, M=m | X)}} Y]
@@ -439,8 +457,8 @@ CDE_{ipw}(m) = E[{\frac{I(W=1,M=m)}{g_M(m|1,X)g_W(1,X)} Y - \frac{I(W=0,M=m)}{g_
 \]</span></p>
 <p>where <span class="math inline">\(g_M\)</span> is the probability of mediator, <span class="math inline">\(g_W\)</span> is the probability of treatment.</p>
 </section>
-<section id="aipw" class="level3" data-number="6.2.6">
-<h3 data-number="6.2.6" class="anchored" data-anchor-id="aipw"><span class="header-section-number">6.2.6</span> AIPW</h3>
+<section id="aipw" class="level3" data-number="9.2.6">
+<h3 data-number="9.2.6" class="anchored" data-anchor-id="aipw"><span class="header-section-number">9.2.6</span> AIPW</h3>
 <p><span class="math display">\[ CDE_{AIPW} = CDE_G(m) + B(\bar Q, g_M, g_W) \]</span> where <span class="math inline">\(\bar Q\)</span> is the mean outcome function.</p>
 <p><span class="math display">\[ \small
 \begin{eqnarray*}
@@ -449,8 +467,8 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 \end{eqnarray*}
 \]</span></p>
 </section>
-<section id="example-g-computation" class="level3" data-number="6.2.7">
-<h3 data-number="6.2.7" class="anchored" data-anchor-id="example-g-computation"><span class="header-section-number">6.2.7</span> Example: G-computation</h3>
+<section id="example-g-computation" class="level3" data-number="9.2.7">
+<h3 data-number="9.2.7" class="anchored" data-anchor-id="example-g-computation"><span class="header-section-number">9.2.7</span> Example: G-computation</h3>
 <div id="med3" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
@@ -492,8 +510,8 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 </div>
 </div>
 </section>
-<section id="example-ipw" class="level3" data-number="6.2.8">
-<h3 data-number="6.2.8" class="anchored" data-anchor-id="example-ipw"><span class="header-section-number">6.2.8</span> Example: IPW</h3>
+<section id="example-ipw" class="level3" data-number="9.2.8">
+<h3 data-number="9.2.8" class="anchored" data-anchor-id="example-ipw"><span class="header-section-number">9.2.8</span> Example: IPW</h3>
 <div id="med4" class="cell" data-cache="true" data-message="false" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># model for P(A = 1 | W)</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ps_fit1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A <span class="op">~</span> W1 <span class="op">+</span> W2), full_data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
@@ -520,8 +538,8 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 </div>
 </div>
 </section>
-<section id="example-aipw" class="level3" data-number="6.2.9">
-<h3 data-number="6.2.9" class="anchored" data-anchor-id="example-aipw"><span class="header-section-number">6.2.9</span> Example: AIPW</h3>
+<section id="example-aipw" class="level3" data-number="9.2.9">
+<h3 data-number="9.2.9" class="anchored" data-anchor-id="example-aipw"><span class="header-section-number">9.2.9</span> Example: AIPW</h3>
 <div id="med5" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># aipw estimate of E[Y(1,0)]</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>aiptw_EY_A1_M0 <span class="op">=</span> <span class="fu">mean</span>(Qbar_A1_M0) <span class="op">+</span></span>
@@ -540,8 +558,8 @@ B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, 
 </div>
 </section>
 </section>
-<section id="nie-and-nde-natural-direct-and-indirect-effects" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="nie-and-nde-natural-direct-and-indirect-effects"><span class="header-section-number">6.3</span> NIE and NDE: Natural Direct and Indirect Effects</h2>
+<section id="nie-and-nde-natural-direct-and-indirect-effects" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="nie-and-nde-natural-direct-and-indirect-effects"><span class="header-section-number">9.3</span> NIE and NDE: Natural Direct and Indirect Effects</h2>
 <p>CDE is to study the effect of treatment, given the level of mediator. Instead, Natural Effect is to set mediator to its natural value with the value of treatment, that is, <span class="math inline">\(M=M(w)\)</span>.</p>
 <p><span class="math display">\[
 \begin{eqnarray*}
@@ -552,13 +570,13 @@ ATE &amp;=&amp; NIE + NDE \\
 \]</span></p>
 <p>The advantage of NDE and NIE comparing to CDE is that it’s more “natural”; that is, you don’t set the level of mediator deterministically. And it can decompose the ATE into direct and indirect effects.</p>
 <p>However, there is an additional assumption for NDE and NIE identified.</p>
-<section id="additional-assumption" class="level3" data-number="6.3.1">
-<h3 data-number="6.3.1" class="anchored" data-anchor-id="additional-assumption"><span class="header-section-number">6.3.1</span> Additional Assumption</h3>
+<section id="additional-assumption" class="level3" data-number="9.3.1">
+<h3 data-number="9.3.1" class="anchored" data-anchor-id="additional-assumption"><span class="header-section-number">9.3.1</span> Additional Assumption</h3>
 <p><span class="math display">\[ Y(w, m) \perp M(w^*) | X\]</span></p>
 <p>This is the “cross-world” condition: the outcome under <span class="math inline">\((w,m)\)</span> is independent of <span class="math inline">\(M\)</span> under <span class="math inline">\(w^*\)</span>. These two situations cannot happen in the same world; you cannot set <span class="math inline">\(W\)</span> to both <span class="math inline">\(w\)</span> and <span class="math inline">\(w^*\)</span>. There is no experiment can implement it.</p>
 </section>
-<section id="estimation-1" class="level3" data-number="6.3.2">
-<h3 data-number="6.3.2" class="anchored" data-anchor-id="estimation-1"><span class="header-section-number">6.3.2</span> Estimation</h3>
+<section id="estimation-1" class="level3" data-number="9.3.2">
+<h3 data-number="9.3.2" class="anchored" data-anchor-id="estimation-1"><span class="header-section-number">9.3.2</span> Estimation</h3>
 <div id="med6" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit outcome regression (include interaction because we can)</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>or_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A <span class="op">+</span> M <span class="op">+</span> W1 <span class="op">+</span> W2 <span class="op">+</span> A<span class="op">&amp;</span>M <span class="op">+</span> M<span class="op">&amp;</span>W1), full_data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
@@ -626,8 +644,8 @@ ATE = 0.2077</code></pre>
 </div>
 </section>
 </section>
-<section id="iie-and-ide-interventional-direct-and-indirect-effects" class="level2" data-number="6.4">
-<h2 data-number="6.4" class="anchored" data-anchor-id="iie-and-ide-interventional-direct-and-indirect-effects"><span class="header-section-number">6.4</span> IIE and IDE: Interventional Direct and Indirect Effects</h2>
+<section id="iie-and-ide-interventional-direct-and-indirect-effects" class="level2" data-number="9.4">
+<h2 data-number="9.4" class="anchored" data-anchor-id="iie-and-ide-interventional-direct-and-indirect-effects"><span class="header-section-number">9.4</span> IIE and IDE: Interventional Direct and Indirect Effects</h2>
 <p>People are not happy with the cross-world assumption in general. Interventional direct and indirect effects are introduced to avoid this assumption and still be able to decompose the <span class="math inline">\(ATE\)</span>.</p>
 <p><span class="math display">\[
 \begin{eqnarray*}
@@ -638,8 +656,8 @@ ATE &amp;=&amp; IIE + IDE \\
 \]</span></p>
 <p>The different point here is to set <span class="math inline">\(M=M^*\)</span>, where <span class="math inline">\(M^*\)</span> is a random draw from <span class="math inline">\(M(w^*) | X=x\)</span>. That is, there is a distribution of <span class="math inline">\(M\)</span> in the strata that <span class="math inline">\(X=x\)</span>. We take a random draw, instead of setting to a specific value.</p>
 <p>The advantage of this is that it does not need cross-world assumption to identify <span class="math inline">\(IIE\)</span> and <span class="math inline">\(IDE\)</span>.</p>
-<section id="example" class="level3" data-number="6.4.1">
-<h3 data-number="6.4.1" class="anchored" data-anchor-id="example"><span class="header-section-number">6.4.1</span> Example</h3>
+<section id="example" class="level3" data-number="9.4.1">
+<h3 data-number="9.4.1" class="anchored" data-anchor-id="example"><span class="header-section-number">9.4.1</span> Example</h3>
 <div id="cell-med7" class="cell" data-cache="true" data-message="false" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
@@ -833,7 +851,7 @@ ATE            = -0.0005372</code></pre>
     anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {
+        if (clz.startsWith('code-annotation-')) {                     
           return true;
         }
       }
@@ -853,11 +871,11 @@ ATE            = -0.0005372</code></pre>
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
         button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button,
-          { trigger: "manual",
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
             offset: [0, -8]});
-        tooltip.show();
+        tooltip.show();    
       }
       setTimeout(function() {
         if (tooltip) {
@@ -934,7 +952,7 @@ ATE            = -0.0005372</code></pre>
       if (onUntriggerFn) {
         config.onUntrigger = onUntriggerFn;
       }
-      window.tippy(el, config);
+      window.tippy(el, config); 
     }
     const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
     for (var i=0; i<noterefs.length; i++) {
@@ -1009,7 +1027,7 @@ ATE            = -0.0005372</code></pre>
       tippyHover(xref, undefined, function(instance) {
         instance.disable();
         let url = xref.getAttribute('href');
-        let hash = undefined;
+        let hash = undefined; 
         if (url.startsWith('#')) {
           hash = url;
         } else {
@@ -1037,7 +1055,7 @@ ATE            = -0.0005372</code></pre>
               if (note !== null) {
                 const html = processXRef(id, note);
                 instance.setContent(html);
-              }
+              } 
             }).finally(() => {
               instance.enable();
               instance.show();
@@ -1061,7 +1079,7 @@ ATE            = -0.0005372</code></pre>
               }
               const html = processXRef(null, note);
               instance.setContent(html);
-            }
+            } 
           }).finally(() => {
             instance.enable();
             instance.show();
@@ -1101,7 +1119,7 @@ ATE            = -0.0005372</code></pre>
               height = bottom - top;
             }
             if (top !== null && height !== null && parent !== null) {
-              // cook up a div (if necessary) and position it
+              // cook up a div (if necessary) and position it 
               let div = window.document.getElementById("code-annotation-line-highlight");
               if (div === null) {
                 div = window.document.createElement("div");
@@ -1224,13 +1242,13 @@ ATE            = -0.0005372</code></pre>
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./iv-rdd.html" class="pagination-link" aria-label="IV &amp; Regression Discontinuity">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span>
-      </a>
+      <a href="./poisson-iv.html" class="pagination-link" aria-label="IV in Poisson with Fixed Effects">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./package-ecosystem.html" class="pagination-link" aria-label="Julia Packages Used in This Book">
-        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>5&nbsp; IV &amp; Regression Discontinuity – Causal Econometrics with Julia</title>
+<title>7&nbsp; IV &amp; Regression Discontinuity – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -17,7 +17,7 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
 /* CSS for syntax highlighting */
@@ -65,7 +65,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./mediation.html" rel="next">
+<link href="./poisson-iv.html" rel="next">
 <link href="./did.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -150,8 +150,8 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
@@ -165,7 +165,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Causal Econometrics with Julia</a>
+      <a href="./">Causal Econometrics with Julia</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -173,98 +173,116 @@ window.Quarto = {
         <div id="quarto-search" class="" title="Search"></div>
         </div>
         </div>
-    <div class="sidebar-menu-container">
+    <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Foundations</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./identification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Methods</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Designs</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container">
+      <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
-          </a>
+          </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item">
-  <div class="sidebar-item-container">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
     </ul>
@@ -275,26 +293,27 @@ window.Quarto = {
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
-
+   
   <ul>
-  <li><a href="#instrumental-variables" id="toc-instrumental-variables" class="nav-link active" data-scroll-target="#instrumental-variables"><span class="header-section-number">5.1</span> Instrumental Variables</a>
+  <li><a href="#instrumental-variables" id="toc-instrumental-variables" class="nav-link active" data-scroll-target="#instrumental-variables"><span class="header-section-number">7.1</span> Instrumental Variables</a>
   <ul class="collapse">
-  <li><a href="#uncontrolled-confounder" id="toc-uncontrolled-confounder" class="nav-link" data-scroll-target="#uncontrolled-confounder"><span class="header-section-number">5.1.1</span> Uncontrolled Confounder</a></li>
-  <li><a href="#why-does-iv-work" id="toc-why-does-iv-work" class="nav-link" data-scroll-target="#why-does-iv-work"><span class="header-section-number">5.1.2</span> Why Does IV Work?</a></li>
-  <li><a href="#iv-under-potential-outcomes" id="toc-iv-under-potential-outcomes" class="nav-link" data-scroll-target="#iv-under-potential-outcomes"><span class="header-section-number">5.1.3</span> IV Under Potential Outcomes</a></li>
-  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions"><span class="header-section-number">5.1.4</span> Assumptions</a></li>
-  <li><a href="#late-identification" id="toc-late-identification" class="nav-link" data-scroll-target="#late-identification"><span class="header-section-number">5.1.5</span> LATE Identification</a></li>
-  <li><a href="#parametric-models" id="toc-parametric-models" class="nav-link" data-scroll-target="#parametric-models"><span class="header-section-number">5.1.6</span> Parametric Models</a></li>
-  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">5.1.7</span> Example</a></li>
+  <li><a href="#uncontrolled-confounder" id="toc-uncontrolled-confounder" class="nav-link" data-scroll-target="#uncontrolled-confounder"><span class="header-section-number">7.1.1</span> Uncontrolled Confounder</a></li>
+  <li><a href="#why-does-iv-work" id="toc-why-does-iv-work" class="nav-link" data-scroll-target="#why-does-iv-work"><span class="header-section-number">7.1.2</span> Why Does IV Work?</a></li>
+  <li><a href="#iv-under-potential-outcomes" id="toc-iv-under-potential-outcomes" class="nav-link" data-scroll-target="#iv-under-potential-outcomes"><span class="header-section-number">7.1.3</span> IV Under Potential Outcomes</a></li>
+  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions"><span class="header-section-number">7.1.4</span> Assumptions</a></li>
+  <li><a href="#late-identification" id="toc-late-identification" class="nav-link" data-scroll-target="#late-identification"><span class="header-section-number">7.1.5</span> LATE Identification</a></li>
+  <li><a href="#parametric-models" id="toc-parametric-models" class="nav-link" data-scroll-target="#parametric-models"><span class="header-section-number">7.1.6</span> Parametric Models</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">7.1.7</span> Example</a></li>
+  <li><a href="#control-function-approach" id="toc-control-function-approach" class="nav-link" data-scroll-target="#control-function-approach"><span class="header-section-number">7.1.8</span> Control Function Approach</a></li>
   </ul></li>
-  <li><a href="#regression-discontinuity-design" id="toc-regression-discontinuity-design" class="nav-link" data-scroll-target="#regression-discontinuity-design"><span class="header-section-number">5.2</span> Regression Discontinuity Design</a>
+  <li><a href="#regression-discontinuity-design" id="toc-regression-discontinuity-design" class="nav-link" data-scroll-target="#regression-discontinuity-design"><span class="header-section-number">7.2</span> Regression Discontinuity Design</a>
   <ul class="collapse">
-  <li><a href="#sharp-rdd" id="toc-sharp-rdd" class="nav-link" data-scroll-target="#sharp-rdd"><span class="header-section-number">5.2.1</span> Sharp RDD</a></li>
-  <li><a href="#identification-of-srdd" id="toc-identification-of-srdd" class="nav-link" data-scroll-target="#identification-of-srdd"><span class="header-section-number">5.2.2</span> Identification of SRDD</a></li>
-  <li><a href="#estimation-of-srdd" id="toc-estimation-of-srdd" class="nav-link" data-scroll-target="#estimation-of-srdd"><span class="header-section-number">5.2.3</span> Estimation of SRDD</a></li>
-  <li><a href="#nonparametric-estimation" id="toc-nonparametric-estimation" class="nav-link" data-scroll-target="#nonparametric-estimation"><span class="header-section-number">5.2.4</span> Nonparametric Estimation</a></li>
-  <li><a href="#fuzzy-rdd" id="toc-fuzzy-rdd" class="nav-link" data-scroll-target="#fuzzy-rdd"><span class="header-section-number">5.2.5</span> Fuzzy RDD</a></li>
-  <li><a href="#frdd-example" id="toc-frdd-example" class="nav-link" data-scroll-target="#frdd-example"><span class="header-section-number">5.2.6</span> FRDD Example</a></li>
+  <li><a href="#sharp-rdd" id="toc-sharp-rdd" class="nav-link" data-scroll-target="#sharp-rdd"><span class="header-section-number">7.2.1</span> Sharp RDD</a></li>
+  <li><a href="#identification-of-srdd" id="toc-identification-of-srdd" class="nav-link" data-scroll-target="#identification-of-srdd"><span class="header-section-number">7.2.2</span> Identification of SRDD</a></li>
+  <li><a href="#estimation-of-srdd" id="toc-estimation-of-srdd" class="nav-link" data-scroll-target="#estimation-of-srdd"><span class="header-section-number">7.2.3</span> Estimation of SRDD</a></li>
+  <li><a href="#nonparametric-estimation" id="toc-nonparametric-estimation" class="nav-link" data-scroll-target="#nonparametric-estimation"><span class="header-section-number">7.2.4</span> Nonparametric Estimation</a></li>
+  <li><a href="#fuzzy-rdd" id="toc-fuzzy-rdd" class="nav-link" data-scroll-target="#fuzzy-rdd"><span class="header-section-number">7.2.5</span> Fuzzy RDD</a></li>
+  <li><a href="#frdd-example" id="toc-frdd-example" class="nav-link" data-scroll-target="#frdd-example"><span class="header-section-number">7.2.6</span> FRDD Example</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -302,31 +321,31 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></h1>
+<h1 class="title"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-
-
-
+    
+  
+    
   </div>
-
+  
 
 
 </header>
 
 
 <p>If we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.</p>
-<section id="instrumental-variables" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="instrumental-variables"><span class="header-section-number">5.1</span> Instrumental Variables</h2>
-<section id="uncontrolled-confounder" class="level3" data-number="5.1.1">
-<h3 data-number="5.1.1" class="anchored" data-anchor-id="uncontrolled-confounder"><span class="header-section-number">5.1.1</span> Uncontrolled Confounder</h3>
-<div id="4fefd408" class="cell" data-message="false" data-execution_count="2">
+<section id="instrumental-variables" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="instrumental-variables"><span class="header-section-number">7.1</span> Instrumental Variables</h2>
+<section id="uncontrolled-confounder" class="level3" data-number="7.1.1">
+<h3 data-number="7.1.1" class="anchored" data-anchor-id="uncontrolled-confounder"><span class="header-section-number">7.1.1</span> Uncontrolled Confounder</h3>
+<div id="4ac2626c" class="cell" data-message="false" data-execution_count="2">
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 <figure class="figure">
@@ -336,9 +355,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="why-does-iv-work" class="level3" data-number="5.1.2">
-<h3 data-number="5.1.2" class="anchored" data-anchor-id="why-does-iv-work"><span class="header-section-number">5.1.2</span> Why Does IV Work?</h3>
-<div id="dd01ecb6" class="cell" data-message="false" data-execution_count="3">
+<section id="why-does-iv-work" class="level3" data-number="7.1.2">
+<h3 data-number="7.1.2" class="anchored" data-anchor-id="why-does-iv-work"><span class="header-section-number">7.1.2</span> Why Does IV Work?</h3>
+<div id="15179958" class="cell" data-message="false" data-execution_count="3">
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div>
 <figure class="figure">
@@ -348,8 +367,8 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="iv-under-potential-outcomes" class="level3" data-number="5.1.3">
-<h3 data-number="5.1.3" class="anchored" data-anchor-id="iv-under-potential-outcomes"><span class="header-section-number">5.1.3</span> IV Under Potential Outcomes</h3>
+<section id="iv-under-potential-outcomes" class="level3" data-number="7.1.3">
+<h3 data-number="7.1.3" class="anchored" data-anchor-id="iv-under-potential-outcomes"><span class="header-section-number">7.1.3</span> IV Under Potential Outcomes</h3>
 <ul>
 <li>W has two potential outcomes W(1) and W(0), as a function of Z.</li>
 <li>Y has two potential outcomes Y(1) and Y(0), as a function of W.</li>
@@ -418,16 +437,16 @@ window.Quarto = {
 </tbody>
 </table>
 </section>
-<section id="assumptions" class="level3" data-number="5.1.4">
-<h3 data-number="5.1.4" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">5.1.4</span> Assumptions</h3>
+<section id="assumptions" class="level3" data-number="7.1.4">
+<h3 data-number="7.1.4" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">7.1.4</span> Assumptions</h3>
 <ul>
 <li>Exclusion restriction: <span class="math inline">\(Y(w, 1) = Y(w,0)\)</span></li>
 <li>Exogeneity of instrument: <span class="math inline">\(Z \perp [W(0),W(1), Y(0), Y(1)]\)</span></li>
 <li>Monotonicity (no defiers): <span class="math inline">\(W(0) \leq W(1)\)</span></li>
 </ul>
 </section>
-<section id="late-identification" class="level3" data-number="5.1.5">
-<h3 data-number="5.1.5" class="anchored" data-anchor-id="late-identification"><span class="header-section-number">5.1.5</span> LATE Identification</h3>
+<section id="late-identification" class="level3" data-number="7.1.5">
+<h3 data-number="7.1.5" class="anchored" data-anchor-id="late-identification"><span class="header-section-number">7.1.5</span> LATE Identification</h3>
 <p>Since we excluded defiers, and the other two groups (always-takers and never-takers) are not affected by the treatment assignment Z. The only effect we can identify is the treatment effect on the compliers. This is called the Local Average Treatment Effect (LATE).</p>
 <p><span class="math display">\[ \small
 \begin{aligned}
@@ -439,8 +458,8 @@ window.Quarto = {
 \end{aligned}
 \]</span></p>
 </section>
-<section id="parametric-models" class="level3" data-number="5.1.6">
-<h3 data-number="5.1.6" class="anchored" data-anchor-id="parametric-models"><span class="header-section-number">5.1.6</span> Parametric Models</h3>
+<section id="parametric-models" class="level3" data-number="7.1.6">
+<h3 data-number="7.1.6" class="anchored" data-anchor-id="parametric-models"><span class="header-section-number">7.1.6</span> Parametric Models</h3>
 <p>If we assume linearity, then this becomes the ratio of two OLS coefficients, sometimes called the Wald estimator.</p>
 <p><span class="math display">\[
 \begin{aligned}
@@ -450,9 +469,9 @@ window.Quarto = {
 \]</span></p>
 <p>Why do covariates help? Because we hope even if we don’t have exogeneity or exclusion assumption held, we would have those assumptions held within each level of <span class="math inline">\(X\)</span>.</p>
 </section>
-<section id="example" class="level3" data-number="5.1.7">
-<h3 data-number="5.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">5.1.7</span> Example</h3>
-<div id="b48dc7bc" class="cell" data-message="false" data-execution_count="4">
+<section id="example" class="level3" data-number="7.1.7">
+<h3 data-number="7.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">7.1.7</span> Example</h3>
+<div id="3e3be137" class="cell" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">66</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nobs <span class="op">=</span> <span class="fl">10000</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -486,7 +505,7 @@ window.Quarto = {
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: Regress outcome y on predicted w_hat</span></span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>tsls_manual <span class="op">=</span> <span class="fu">feols</span>(data, <span class="pp">@formula</span>(y <span class="op">~</span> w_hat));</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="4814d9f9" class="cell" data-message="false" data-execution_count="5">
+<div id="bbd676b7" class="cell" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Biased OLS</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"── Biased OLS (w only) ──────────────────────"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(lm_biased)</span>
@@ -641,72 +660,87 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </section>
+<section id="control-function-approach" class="level3" data-number="7.1.8">
+<h3 data-number="7.1.8" class="anchored" data-anchor-id="control-function-approach"><span class="header-section-number">7.1.8</span> Control Function Approach</h3>
+<p>The manual 2SLS above <em>implicitly</em> implements the <strong>control function (CF)</strong> approach. Understanding why makes the extension to nonlinear models (next chapter) transparent.</p>
+<p><strong>Algebraic motivation.</strong> Because <code>w</code> is endogenous, decompose the structural error:</p>
+<p><span class="math display">\[\varepsilon = \rho v + \eta, \qquad v \equiv w - E[w \mid z], \qquad E(z\eta)=0,\; E(zv)=0.\]</span></p>
+<p>If we <em>knew</em> <span class="math inline">\(v\)</span>, controlling for it directly would eliminate the confounding channel. We don’t know <span class="math inline">\(v\)</span>, but the first-stage residual <span class="math inline">\(\hat{v} = w - \hat{w}\)</span> is a consistent estimate. Substituting into the structural equation:</p>
+<p><span class="math display">\[y = \alpha + \beta w + \rho\,\hat{v} + \text{error}.\]</span></p>
+<p>OLS on this <strong>augmented</strong> second stage gives a consistent <span class="math inline">\(\hat\beta\)</span> — identical to 2SLS by the Frisch–Waugh–Lovell (FWL) theorem. The coefficient <span class="math inline">\(\hat\rho\)</span> on <span class="math inline">\(\hat{v}\)</span> doubles as a <strong>Durbin–Wu–Hausman (DWH) endogeneity test</strong>: under <span class="math inline">\(H_0\)</span> (w is exogenous), <span class="math inline">\(\rho = 0\)</span>.</p>
+<div id="47ec6220" class="cell" data-message="false" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">StatsBase</span>: coef, stderror, coefnames</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Control function: add first-stage residual v̂ to the second stage OLS</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>data.v_hat <span class="op">=</span> stage1.residuals</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>lm_cf <span class="op">=</span> <span class="fu">feols</span>(data, <span class="pp">@formula</span>(y <span class="op">~</span> w <span class="op">+</span> v_hat))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare point estimates from manual 2SLS and CF — should be identical by FWL</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>coef_tsls <span class="op">=</span> <span class="fu">coef</span>(tsls_manual)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"w_hat"</span>), <span class="fu">coefnames</span>(tsls_manual))]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>coef_cf   <span class="op">=</span> <span class="fu">coef</span>(lm_cf)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"w"</span>),     <span class="fu">coefnames</span>(lm_cf))]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Manual 2SLS   β̂_w = %.8f</span><span class="sc">\n</span><span class="st">"</span>, coef_tsls)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Control funct β̂_w = %.8f</span><span class="sc">\n</span><span class="st">"</span>, coef_cf)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># DWH test: t-statistic on v̂</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>rho_hat <span class="op">=</span> <span class="fu">coef</span>(lm_cf)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"v_hat"</span>), <span class="fu">coefnames</span>(lm_cf))]</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>rho_se  <span class="op">=</span> <span class="fu">stderror</span>(lm_cf)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"v_hat"</span>), <span class="fu">coefnames</span>(lm_cf))]</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">DWH endogeneity test (ρ̂ on v̂): coef = %.4f  se = %.4f  t = %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        rho_hat, rho_se, rho_hat <span class="op">/</span> rho_se)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Manual 2SLS   β̂_w = 0.99987086
+Control funct β̂_w = 0.99987086
+
+DWH endogeneity test (ρ̂ on v̂): coef = 0.6100  se = 0.0203  t = 30.077</code></pre>
+</div>
+</div>
+<p>The two <span class="math inline">\(\hat\beta_w\)</span> values agree to machine precision, confirming FWL. The large <span class="math inline">\(|t|\)</span> on <span class="math inline">\(\hat{v}\)</span> rejects <span class="math inline">\(H_0 : \rho = 0\)</span>, confirming that <code>w</code> is endogenous.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Why FWL fails in nonlinear models.</strong> FWL relies on the residual-maker matrix being idempotent and the second stage being linear — both fail once we replace OLS with Poisson or Probit. In a nonlinear second stage, <span class="math inline">\(\hat{v}\)</span> must enter <em>inside</em> the link function (e.g.&nbsp;<span class="math inline">\(\exp(\mathbf{x}\boldsymbol\beta + \rho\hat{v})\)</span>), which requires a structural assumption beyond instrument exogeneity. This is the subject of the next chapter.</p>
+</div>
+</div>
 </section>
-<section id="regression-discontinuity-design" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="regression-discontinuity-design"><span class="header-section-number">5.2</span> Regression Discontinuity Design</h2>
+</section>
+<section id="regression-discontinuity-design" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="regression-discontinuity-design"><span class="header-section-number">7.2</span> Regression Discontinuity Design</h2>
 <p>RDD (regression discontinuity design) is a quasi-experimental design that is used to estimate causal effects of interventions when assignment to the intervention is determined by whether a subject’s value on an observed covariate exceeds a threshold. The idea is that the assignment is as good as random, so we can estimate the causal effect of the intervention by comparing the outcomes of subjects who are just above and just below the threshold.</p>
-<section id="sharp-rdd" class="level3" data-number="5.2.1">
-<h3 data-number="5.2.1" class="anchored" data-anchor-id="sharp-rdd"><span class="header-section-number">5.2.1</span> Sharp RDD</h3>
+<section id="sharp-rdd" class="level3" data-number="7.2.1">
+<h3 data-number="7.2.1" class="anchored" data-anchor-id="sharp-rdd"><span class="header-section-number">7.2.1</span> Sharp RDD</h3>
 <p>We have a continuous variable <span class="math inline">\(X\)</span>, called the running variable, which determines the binary treatment <span class="math inline">\(W\)</span>. The treatment is assigned according to a threshold <span class="math inline">\(c\)</span>. The outcome variable <span class="math inline">\(Y\)</span> is a function of <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span>.</p>
 <p><span class="math display">\[ W=\mathbb{1}(X&gt;c)\]</span></p>
 <p>Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable <span class="math inline">\(X_i\)</span> is the difference in vote share between the Democratic and Republican parties in one election, with the threshold <span class="math inline">\(c = 0\)</span>. The outcome variable <span class="math inline">\(Y_i\)</span> is vote share at the second election.</p>
-<div id="6c1127b2" class="cell" data-message="false" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>senate <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/rdrobust_senate.csv"</span>, DataFrame)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate RD plot data</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> <span class="fu">rdplot</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span><span class="st">"Margin"</span>, ylabel<span class="op">=</span><span class="st">"Vote"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, plot_data.vars_bins.rdplot_mean_x, plot_data.vars_bins.rdplot_mean_y, </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>         color<span class="op">=:</span>gray, markersize<span class="op">=</span><span class="fl">6</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot polynomial fit for left side</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>poly_l <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&lt;</span> <span class="fl">0.0</span>, plot_data.vars_poly)</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, poly_l.rdplot_x, poly_l.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot polynomial fit for right side</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>poly_r <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&gt;=</span> <span class="fl">0.0</span>, plot_data.vars_poly)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, poly_r.rdplot_x, poly_r.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [<span class="fl">0.0</span>], color<span class="op">=:</span>black, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="7">
-<div>
-<figure class="figure">
-<p><img src="iv-rdd_files/figure-html/cell-7-output-1.svg" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="identification-of-srdd" class="level3" data-number="5.2.2">
-<h3 data-number="5.2.2" class="anchored" data-anchor-id="identification-of-srdd"><span class="header-section-number">5.2.2</span> Identification of SRDD</h3>
-<p><span class="math display">\[ \tau_{RD} = \lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x] \]</span></p>
-<p>In words, the treatment effect is the difference in the outcome from the right side and from the left side. This is the same as the difference in the outcome at the threshold, as if the treatment is assigned randomly.</p>
-</section>
-<section id="estimation-of-srdd" class="level3" data-number="5.2.3">
-<h3 data-number="5.2.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">5.2.3</span> Estimation of SRDD</h3>
-<div id="6a60fb46" class="cell" data-message="false" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>GPA <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">4</span>), <span class="fl">1000</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>future_success <span class="op">=</span> <span class="fl">10</span> <span class="op">.+</span> <span class="fl">1.5</span> <span class="op">.*</span> GPA <span class="op">.+</span> <span class="fl">2</span> <span class="op">.*</span> (GPA <span class="op">.&lt;=</span> <span class="fl">3</span>) <span class="op">.+</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), <span class="fl">1000</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>plot_data_gpa <span class="op">=</span> <span class="fu">rdplot</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>fig2 <span class="op">=</span> <span class="fu">Figure</span>()</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig2[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span><span class="st">"GPA"</span>, ylabel<span class="op">=</span><span class="st">"Future Success"</span>)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax2, plot_data_gpa.vars_bins.rdplot_mean_x, plot_data_gpa.vars_bins.rdplot_mean_y, </span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>         color<span class="op">=:</span>gray, markersize<span class="op">=</span><span class="fl">6</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>poly_gpa_l <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&lt;</span> <span class="fl">3.0</span>, plot_data_gpa.vars_poly)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, poly_gpa_l.rdplot_x, poly_gpa_l.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>poly_gpa_r <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&gt;=</span> <span class="fl">3.0</span>, plot_data_gpa.vars_poly)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, poly_gpa_r.rdplot_x, poly_gpa_r.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax2, [<span class="fl">3.0</span>], color<span class="op">=:</span>black, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>fig2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="7d50a409" class="cell" data-message="false" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>senate <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/rdrobust_senate.csv"</span>, DataFrame)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate RD plot data</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> <span class="fu">rdplot</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span><span class="st">"Margin"</span>, ylabel<span class="op">=</span><span class="st">"Vote"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, plot_data.vars_bins.rdplot_mean_x, plot_data.vars_bins.rdplot_mean_y, </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>         color<span class="op">=:</span>gray, markersize<span class="op">=</span><span class="fl">6</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot polynomial fit for left side</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>poly_l <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&lt;</span> <span class="fl">0.0</span>, plot_data.vars_poly)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, poly_l.rdplot_x, poly_l.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot polynomial fit for right side</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>poly_r <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&gt;=</span> <span class="fl">0.0</span>, plot_data.vars_poly)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, poly_r.rdplot_x, poly_r.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [<span class="fl">0.0</span>], color<span class="op">=:</span>black, linestyle<span class="op">=:</span>dash)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <div>
 <figure class="figure">
@@ -715,71 +749,106 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="540467ef" class="cell" data-message="false" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the sharp RDD model</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>rdd_gpa <span class="op">=</span> <span class="fu">rdrobust</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.Estimate.tau_us[<span class="fl">1</span>]</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="identification-of-srdd" class="level3" data-number="7.2.2">
+<h3 data-number="7.2.2" class="anchored" data-anchor-id="identification-of-srdd"><span class="header-section-number">7.2.2</span> Identification of SRDD</h3>
+<p><span class="math display">\[ \tau_{RD} = \lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x] \]</span></p>
+<p>In words, the treatment effect is the difference in the outcome from the right side and from the left side. This is the same as the difference in the outcome at the threshold, as if the treatment is assigned randomly.</p>
+</section>
+<section id="estimation-of-srdd" class="level3" data-number="7.2.3">
+<h3 data-number="7.2.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">7.2.3</span> Estimation of SRDD</h3>
+<div id="c327821d" class="cell" data-message="false" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>GPA <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">4</span>), <span class="fl">1000</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>future_success <span class="op">=</span> <span class="fl">10</span> <span class="op">.+</span> <span class="fl">1.5</span> <span class="op">.*</span> GPA <span class="op">.+</span> <span class="fl">2</span> <span class="op">.*</span> (GPA <span class="op">.&lt;=</span> <span class="fl">3</span>) <span class="op">.+</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), <span class="fl">1000</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>plot_data_gpa <span class="op">=</span> <span class="fu">rdplot</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>fig2 <span class="op">=</span> <span class="fu">Figure</span>()</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig2[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span><span class="st">"GPA"</span>, ylabel<span class="op">=</span><span class="st">"Future Success"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax2, plot_data_gpa.vars_bins.rdplot_mean_x, plot_data_gpa.vars_bins.rdplot_mean_y, </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>         color<span class="op">=:</span>gray, markersize<span class="op">=</span><span class="fl">6</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>poly_gpa_l <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&lt;</span> <span class="fl">3.0</span>, plot_data_gpa.vars_poly)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, poly_gpa_l.rdplot_x, poly_gpa_l.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>poly_gpa_r <span class="op">=</span> <span class="fu">filter</span>(r <span class="op">-&gt;</span> r.rdplot_x <span class="op">&gt;=</span> <span class="fl">3.0</span>, plot_data_gpa.vars_poly)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, poly_gpa_r.rdplot_x, poly_gpa_r.rdplot_y, color<span class="op">=:</span>blue, linewidth<span class="op">=</span><span class="fl">2</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax2, [<span class="fl">3.0</span>], color<span class="op">=:</span>black, linestyle<span class="op">=:</span>dash)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>fig2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div>
+<figure class="figure">
+<p><img src="iv-rdd_files/figure-html/cell-9-output-1.svg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="b35743e2" class="cell" data-message="false" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the sharp RDD model</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>rdd_gpa <span class="op">=</span> <span class="fu">rdrobust</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.Estimate.tau_us[<span class="fl">1</span>]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Tau (bias-corrected) = -1.657
 P-value (robust)     = 0.0000</code></pre>
 </div>
 </div>
 </section>
-<section id="nonparametric-estimation" class="level3" data-number="5.2.4">
-<h3 data-number="5.2.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">5.2.4</span> Nonparametric Estimation</h3>
-<div id="287ddaaa" class="cell" data-message="false" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rdd_house <span class="op">=</span> <span class="fu">rdrobust</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_house.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="nonparametric-estimation" class="level3" data-number="7.2.4">
+<h3 data-number="7.2.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">7.2.4</span> Nonparametric Estimation</h3>
+<div id="22b01b63" class="cell" data-message="false" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>rdd_house <span class="op">=</span> <span class="fu">rdrobust</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_house.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Tau (bias-corrected) = 7.414
 P-value (robust)     = 0.0000</code></pre>
 </div>
 </div>
 </section>
-<section id="fuzzy-rdd" class="level3" data-number="5.2.5">
-<h3 data-number="5.2.5" class="anchored" data-anchor-id="fuzzy-rdd"><span class="header-section-number">5.2.5</span> Fuzzy RDD</h3>
+<section id="fuzzy-rdd" class="level3" data-number="7.2.5">
+<h3 data-number="7.2.5" class="anchored" data-anchor-id="fuzzy-rdd"><span class="header-section-number">7.2.5</span> Fuzzy RDD</h3>
 <p>In fuzzy RDD, the treatment is assigned according to a threshold <span class="math inline">\(c\)</span>, but there exist non-compliance. This is similar to IV case.</p>
 <p><span class="math display">\[ \tau_{FRD} = \frac{\lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x]}{\lim_{x \to c^+} E[W|X=x] - \lim_{x \to c^-} E[W|X=x]} \]</span></p>
 <p>For example, if food stamp eligibility is given to all households below a certain income, but not all households receive the food stamps. In other words, income does not solely determine the assignment. Cutoff point increases the probability of treatment but doesn’t completely determine treatment.</p>
 <p>FRDD is IV.</p>
 </section>
-<section id="frdd-example" class="level3" data-number="5.2.6">
-<h3 data-number="5.2.6" class="anchored" data-anchor-id="frdd-example"><span class="header-section-number">5.2.6</span> FRDD Example</h3>
+<section id="frdd-example" class="level3" data-number="7.2.6">
+<h3 data-number="7.2.6" class="anchored" data-anchor-id="frdd-example"><span class="header-section-number">7.2.6</span> FRDD Example</h3>
 <p>Fetter (2013)’s main question of interest is how much of the increase in the home ownership rate in the midcentury US was due to mortgage subsidies given out by the government.</p>
 <p>We’re using the running variable quarter of birth (qob), which has been centered on the quarter of birth you’d need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).</p>
-<div id="9297617f" class="cell" data-cache="true" data-message="false" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the real mortgages dataset (Fetter 2013) from causaldata R package</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>vet <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mortgages.csv"</span>, DataFrame)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an "above-cutoff" variable as the instrument</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>vet.above <span class="op">=</span> vet.qob_minus_kw <span class="op">.&gt;</span> <span class="fl">0</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Impose a bandwidth of 12 quarters on either side</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>vet <span class="op">=</span> vet[<span class="fu">abs</span>.(vet.qob_minus_kw) <span class="op">.&lt;</span> <span class="fl">12</span>, <span class="op">:</span>]</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Manual 2SLS explicitly (educational)</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># We have Fixed Effects for state (bpl) and quarter of birth (qob).</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Endogenous variable: vet_wwko and qob_minus_kw * vet_wwko</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Instruments: above and qob_minus_kw * above</span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>vet.vet_inter <span class="op">=</span> vet.qob_minus_kw <span class="op">.*</span> vet.vet_wwko</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>vet.above_inter <span class="op">=</span> vet.qob_minus_kw <span class="op">.*</span> vet.above</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 1a: Predict vet_wwko</span></span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>stage1a <span class="op">=</span> <span class="fu">feols</span>(vet, <span class="pp">@formula</span>(vet_wwko <span class="op">~</span> nonwhite <span class="op">+</span> qob_minus_kw <span class="op">+</span> above <span class="op">+</span> above_inter <span class="op">+</span> <span class="fu">fe</span>(bpl) <span class="op">+</span> <span class="fu">fe</span>(qob)))</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>vet.vet_wwko_hat <span class="op">=</span> vet.vet_wwko <span class="op">.-</span> stage1a.residuals</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 1b: Predict vet_inter</span></span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>stage1b <span class="op">=</span> <span class="fu">feols</span>(vet, <span class="pp">@formula</span>(vet_inter <span class="op">~</span> nonwhite <span class="op">+</span> qob_minus_kw <span class="op">+</span> above <span class="op">+</span> above_inter <span class="op">+</span> <span class="fu">fe</span>(bpl) <span class="op">+</span> <span class="fu">fe</span>(qob)))</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>vet.vet_inter_hat <span class="op">=</span> vet.vet_inter <span class="op">.-</span> stage1b.residuals</span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: Regress home_ownership on fitted endogenous variables</span></span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: we use RobustVcov for heteroskedasticity-robust SEs</span></span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>m_iv <span class="op">=</span> <span class="fu">feols</span>(vet, <span class="pp">@formula</span>(home_ownership <span class="op">~</span> nonwhite <span class="op">+</span> qob_minus_kw <span class="op">+</span> vet_wwko_hat <span class="op">+</span> vet_inter_hat <span class="op">+</span> <span class="fu">fe</span>(bpl) <span class="op">+</span> <span class="fu">fe</span>(qob)), vcov<span class="op">=</span>Vcov.<span class="fu">robust</span>())</span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(m_iv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="45cf96ca" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the real mortgages dataset (Fetter 2013) from causaldata R package</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>vet <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mortgages.csv"</span>, DataFrame)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an "above-cutoff" variable as the instrument</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>vet.above <span class="op">=</span> vet.qob_minus_kw <span class="op">.&gt;</span> <span class="fl">0</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Impose a bandwidth of 12 quarters on either side</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>vet <span class="op">=</span> vet[<span class="fu">abs</span>.(vet.qob_minus_kw) <span class="op">.&lt;</span> <span class="fl">12</span>, <span class="op">:</span>]</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Manual 2SLS explicitly (educational)</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co"># We have Fixed Effects for state (bpl) and quarter of birth (qob).</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Endogenous variable: vet_wwko and qob_minus_kw * vet_wwko</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Instruments: above and qob_minus_kw * above</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>vet.vet_inter <span class="op">=</span> vet.qob_minus_kw <span class="op">.*</span> vet.vet_wwko</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>vet.above_inter <span class="op">=</span> vet.qob_minus_kw <span class="op">.*</span> vet.above</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 1a: Predict vet_wwko</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>stage1a <span class="op">=</span> <span class="fu">feols</span>(vet, <span class="pp">@formula</span>(vet_wwko <span class="op">~</span> nonwhite <span class="op">+</span> qob_minus_kw <span class="op">+</span> above <span class="op">+</span> above_inter <span class="op">+</span> <span class="fu">fe</span>(bpl) <span class="op">+</span> <span class="fu">fe</span>(qob)))</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>vet.vet_wwko_hat <span class="op">=</span> vet.vet_wwko <span class="op">.-</span> stage1a.residuals</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 1b: Predict vet_inter</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>stage1b <span class="op">=</span> <span class="fu">feols</span>(vet, <span class="pp">@formula</span>(vet_inter <span class="op">~</span> nonwhite <span class="op">+</span> qob_minus_kw <span class="op">+</span> above <span class="op">+</span> above_inter <span class="op">+</span> <span class="fu">fe</span>(bpl) <span class="op">+</span> <span class="fu">fe</span>(qob)))</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>vet.vet_inter_hat <span class="op">=</span> vet.vet_inter <span class="op">.-</span> stage1b.residuals</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: Regress home_ownership on fitted endogenous variables</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: we use RobustVcov for heteroskedasticity-robust SEs</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>m_iv <span class="op">=</span> <span class="fu">feols</span>(vet, <span class="pp">@formula</span>(home_ownership <span class="op">~</span> nonwhite <span class="op">+</span> qob_minus_kw <span class="op">+</span> vet_wwko_hat <span class="op">+</span> vet_inter_hat <span class="op">+</span> <span class="fu">fe</span>(bpl) <span class="op">+</span> <span class="fu">fe</span>(qob)), vcov<span class="op">=</span>Vcov.<span class="fu">robust</span>())</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(m_iv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -835,15 +904,15 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="956b2b09" class="cell" data-cache="true" data-message="false" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: rdrobust uses a data-driven bandwidth — no global FE needed</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>m_rdd <span class="op">=</span> <span class="fu">rdrobust</span>(vet.home_ownership,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                 vet.qob_minus_kw,</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                 fuzzy <span class="op">=</span> vet.vet_wwko,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                 c <span class="op">=</span> <span class="fl">0.0</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Manual 2SLS     tau = %.4g</span><span class="sc">\n</span><span class="st">"</span> m_iv.beta[<span class="fl">3</span>]</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"RDRobust (FRDD) tau = %.4g</span><span class="sc">\n</span><span class="st">"</span> m_rdd.Estimate.tau_us[<span class="fl">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="a4b0645f" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: rdrobust uses a data-driven bandwidth — no global FE needed</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>m_rdd <span class="op">=</span> <span class="fu">rdrobust</span>(vet.home_ownership,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                 vet.qob_minus_kw,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                 fuzzy <span class="op">=</span> vet.vet_wwko,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                 c <span class="op">=</span> <span class="fl">0.0</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Manual 2SLS     tau = %.4g</span><span class="sc">\n</span><span class="st">"</span> m_iv.beta[<span class="fl">3</span>]</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"RDRobust (FRDD) tau = %.4g</span><span class="sc">\n</span><span class="st">"</span> m_rdd.Estimate.tau_us[<span class="fl">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Manual 2SLS     tau = 0.1702
 RDRobust (FRDD) tau = 1.879</code></pre>
@@ -867,7 +936,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
     anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {
+        if (clz.startsWith('code-annotation-')) {                     
           return true;
         }
       }
@@ -887,11 +956,11 @@ RDRobust (FRDD) tau = 1.879</code></pre>
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
         button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button,
-          { trigger: "manual",
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
             offset: [0, -8]});
-        tooltip.show();
+        tooltip.show();    
       }
       setTimeout(function() {
         if (tooltip) {
@@ -968,7 +1037,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
       if (onUntriggerFn) {
         config.onUntrigger = onUntriggerFn;
       }
-      window.tippy(el, config);
+      window.tippy(el, config); 
     }
     const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
     for (var i=0; i<noterefs.length; i++) {
@@ -1043,7 +1112,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
       tippyHover(xref, undefined, function(instance) {
         instance.disable();
         let url = xref.getAttribute('href');
-        let hash = undefined;
+        let hash = undefined; 
         if (url.startsWith('#')) {
           hash = url;
         } else {
@@ -1071,7 +1140,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
               if (note !== null) {
                 const html = processXRef(id, note);
                 instance.setContent(html);
-              }
+              } 
             }).finally(() => {
               instance.enable();
               instance.show();
@@ -1095,7 +1164,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
               }
               const html = processXRef(null, note);
               instance.setContent(html);
-            }
+            } 
           }).finally(() => {
             instance.enable();
             instance.show();
@@ -1135,7 +1204,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
               height = bottom - top;
             }
             if (top !== null && height !== null && parent !== null) {
-              // cook up a div (if necessary) and position it
+              // cook up a div (if necessary) and position it 
               let div = window.document.getElementById("code-annotation-line-highlight");
               if (div === null) {
                 div = window.document.createElement("div");
@@ -1259,12 +1328,12 @@ RDRobust (FRDD) tau = 1.879</code></pre>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./did.html" class="pagination-link" aria-label="Difference-in-Differences">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span>
-      </a>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./mediation.html" class="pagination-link" aria-label="Causal Mediation Analysis">
-        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./poisson-iv.html" class="pagination-link" aria-label="IV in Poisson with Fixed Effects">
+        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

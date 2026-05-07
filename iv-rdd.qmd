@@ -188,6 +188,61 @@ println("\n── Manual 2SLS ────────────────�
 show_regression_html(tsls_manual)
 ```
 
+### Control Function Approach
+
+The manual 2SLS above *implicitly* implements the **control function (CF)** approach.
+Understanding why makes the extension to nonlinear models (next chapter) transparent.
+
+**Algebraic motivation.** Because `w` is endogenous, decompose the structural error:
+
+$$\varepsilon = \rho v + \eta, \qquad v \equiv w - E[w \mid z], \qquad E(z\eta)=0,\; E(zv)=0.$$
+
+If we *knew* $v$, controlling for it directly would eliminate the confounding channel.
+We don't know $v$, but the first-stage residual $\hat{v} = w - \hat{w}$ is a consistent estimate.
+Substituting into the structural equation:
+
+$$y = \alpha + \beta w + \rho\,\hat{v} + \text{error}.$$
+
+OLS on this **augmented** second stage gives a consistent $\hat\beta$ — identical to 2SLS by the
+Frisch–Waugh–Lovell (FWL) theorem.  The coefficient $\hat\rho$ on $\hat{v}$ doubles as a
+**Durbin–Wu–Hausman (DWH) endogeneity test**: under $H_0$ (w is exogenous), $\rho = 0$.
+
+```{julia}
+#| warning: false
+#| message: false
+#| echo: true
+import StatsBase: coef, stderror, coefnames
+
+# Control function: add first-stage residual v̂ to the second stage OLS
+data.v_hat = stage1.residuals
+
+lm_cf = feols(data, @formula(y ~ w + v_hat))
+
+# Compare point estimates from manual 2SLS and CF — should be identical by FWL
+coef_tsls = coef(tsls_manual)[findfirst(==("w_hat"), coefnames(tsls_manual))]
+coef_cf   = coef(lm_cf)[findfirst(==("w"),     coefnames(lm_cf))]
+
+@printf("Manual 2SLS   β̂_w = %.8f\n", coef_tsls)
+@printf("Control funct β̂_w = %.8f\n", coef_cf)
+
+# DWH test: t-statistic on v̂
+rho_hat = coef(lm_cf)[findfirst(==("v_hat"), coefnames(lm_cf))]
+rho_se  = stderror(lm_cf)[findfirst(==("v_hat"), coefnames(lm_cf))]
+@printf("\nDWH endogeneity test (ρ̂ on v̂): coef = %.4f  se = %.4f  t = %.3f\n",
+        rho_hat, rho_se, rho_hat / rho_se)
+```
+
+The two $\hat\beta_w$ values agree to machine precision, confirming FWL.
+The large $|t|$ on $\hat{v}$ rejects $H_0 : \rho = 0$, confirming that `w` is endogenous.
+
+::: {.callout-note}
+**Why FWL fails in nonlinear models.**  FWL relies on the residual-maker matrix being idempotent
+and the second stage being linear — both fail once we replace OLS with Poisson or Probit.
+In a nonlinear second stage, $\hat{v}$ must enter *inside* the link function
+(e.g. $\exp(\mathbf{x}\boldsymbol\beta + \rho\hat{v})$), which requires a structural assumption
+beyond instrument exogeneity.  This is the subject of the next chapter.
+:::
+
 ## Regression Discontinuity Design
 
 RDD (regression discontinuity design) is a quasi-experimental design that is used to estimate causal effects of interventions when assignment to the intervention is determined by whether a subject's value on an observed covariate exceeds a threshold. The idea is that the assignment is as good as random, so we can estimate the causal effect of the intervention by comparing the outcomes of subjects who are just above and just below the threshold.

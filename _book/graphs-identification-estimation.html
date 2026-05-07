@@ -300,9 +300,9 @@ window.Quarto = {
   <ul>
   <li><a href="#dags-and-admgs" id="toc-dags-and-admgs" class="nav-link active" data-scroll-target="#dags-and-admgs"><span class="header-section-number">2.1</span> DAGs and ADMGs</a></li>
   <li><a href="#a-dag-backdoor-adjustment" id="toc-a-dag-backdoor-adjustment" class="nav-link" data-scroll-target="#a-dag-backdoor-adjustment"><span class="header-section-number">2.2</span> A DAG: Backdoor Adjustment</a></li>
-  <li><a href="#estimating-the-dag-effect-with-npcausal" id="toc-estimating-the-dag-effect-with-npcausal" class="nav-link" data-scroll-target="#estimating-the-dag-effect-with-npcausal"><span class="header-section-number">2.3</span> Estimating the DAG Effect with NPCausal</a></li>
+  <li><a href="#estimating-the-dag-effect-with-causalestimate" id="toc-estimating-the-dag-effect-with-causalestimate" class="nav-link" data-scroll-target="#estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">2.3</span> Estimating the DAG Effect with CausalEstimate</a></li>
   <li><a href="#an-admg-front-door-identification" id="toc-an-admg-front-door-identification" class="nav-link" data-scroll-target="#an-admg-front-door-identification"><span class="header-section-number">2.4</span> An ADMG: Front-Door Identification</a></li>
-  <li><a href="#estimating-the-admg-effect-with-npcausal" id="toc-estimating-the-admg-effect-with-npcausal" class="nav-link" data-scroll-target="#estimating-the-admg-effect-with-npcausal"><span class="header-section-number">2.5</span> Estimating the ADMG Effect with NPCausal</a></li>
+  <li><a href="#estimating-the-admg-effect-with-causalgraphs" id="toc-estimating-the-admg-effect-with-causalgraphs" class="nav-link" data-scroll-target="#estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">2.5</span> Estimating the ADMG Effect with CausalGraphs</a></li>
   <li><a href="#general-id-algorithm" id="toc-general-id-algorithm" class="nav-link" data-scroll-target="#general-id-algorithm"><span class="header-section-number">2.6</span> General ID Algorithm</a></li>
   <li><a href="#when-the-graph-says-no" id="toc-when-the-graph-says-no" class="nav-link" data-scroll-target="#when-the-graph-says-no"><span class="header-section-number">2.7</span> When the Graph Says No</a></li>
   <li><a href="#practical-workflow" id="toc-practical-workflow" class="nav-link" data-scroll-target="#practical-workflow"><span class="header-section-number">2.8</span> Practical Workflow</a></li>
@@ -332,7 +332,7 @@ window.Quarto = {
 
 
 <p>The potential-outcomes chapter introduced the question: when can an observed data set tell us about <span class="math inline">\(E[Y(1)-Y(0)]\)</span>? Graphs are one way to make the answer explicit. A graph records which variables are assumed to cause other variables, and whether some observed variables may share unobserved common causes. Once the graph is stated, identification becomes a graph problem. Estimation is the next step: estimate the functional that the graph identified.</p>
-<p>In this chapter we use <code>CausalGraphs.jl</code> for the graph and identification steps, then call <code>NPCausal.jl</code> for the estimation step when possible.</p>
+<p>In this chapter we use <code>CausalGraphs.jl</code> for the graph and identification steps, then <code>CausalEstimate.jl</code> for backdoor/a-fixable effects, and <code>CausalGraphs.estimate_causal</code> directly for p-fixable and nested-fixable effects.</p>
 <section id="dags-and-admgs" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="dags-and-admgs"><span class="header-section-number">2.1</span> DAGs and ADMGs</h2>
 <p>A directed acyclic graph, or DAG, has directed arrows such as <code>X -&gt; A</code>. In causal work, an arrow means a direct causal relation is allowed by the model. Absence of an arrow is also a substantive assumption.</p>
@@ -347,7 +347,7 @@ window.Quarto = {
 <section id="a-dag-backdoor-adjustment" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="a-dag-backdoor-adjustment"><span class="header-section-number">2.2</span> A DAG: Backdoor Adjustment</h2>
 <p>Start with a simple observational study. <code>A</code> is treatment, <code>Y</code> is the outcome, and <code>X</code> is an observed confounder:</p>
-<div id="9d40b7ab" class="cell" data-execution_count="3">
+<div id="36066448" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>g_dag <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>X, <span class="op">:</span>A), (<span class="op">:</span>X, <span class="op">:</span>Y), (<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
@@ -382,7 +382,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The graph says <code>X</code> affects both treatment and outcome. It also says there is no unobserved common cause between <code>A</code> and <code>Y</code> after we condition on <code>X</code>. In this case the treatment is a-fixable, which corresponds to backdoor-style identification.</p>
-<div id="eb58fbc0" class="cell" data-execution_count="5">
+<div id="cbc14e7d" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>id_dag <span class="op">=</span> <span class="fu">identify</span>(g_dag, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>(strategy <span class="op">=</span> id_dag.strategy,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> markov_pillow <span class="op">=</span> <span class="fu">markov_pillow</span>(g_dag, <span class="op">:</span>A; treatment <span class="op">=</span> <span class="op">:</span>A))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -396,10 +396,10 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 \]</span></p>
 <p>So the graph has translated a causal query into a regression-style observed data functional.</p>
 </section>
-<section id="estimating-the-dag-effect-with-npcausal" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="estimating-the-dag-effect-with-npcausal"><span class="header-section-number">2.3</span> Estimating the DAG Effect with NPCausal</h2>
+<section id="estimating-the-dag-effect-with-causalestimate" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">2.3</span> Estimating the DAG Effect with CausalEstimate</h2>
 <p>Here is a small simulated data set where <code>X</code> confounds the treatment-outcome association.</p>
-<div id="45064f0f" class="cell" data-cache="true" data-message="false" data-execution_count="6">
+<div id="9beb2daa" class="cell" data-cache="true" data-message="false" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">400</span></span>
@@ -463,21 +463,16 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 </div>
-<p>Because the graph is a-fixable, <code>NPCausal.admg_estimate_causal(...)</code> routes to <code>NPCausal.ate(...)</code>. The call below asks for the average contrast <span class="math inline">\(E[Y(1)-Y(0)]\)</span>.</p>
-<div id="ef8dc862" class="cell" data-cache="true" data-message="false" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dag_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    NPCausal.<span class="fu">admg_estimate_causal</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> df_dag,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        graph <span class="op">=</span> g_dag,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        treatment <span class="op">=</span> <span class="op">:</span>A,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        outcome <span class="op">=</span> <span class="op">:</span>Y,</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        nsplits <span class="op">=</span> <span class="fl">2</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">effect_table</span>(<span class="st">"Backdoor ACE"</span>, dag_res[<span class="op">:</span>NPCausalOnestep];</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>             se <span class="op">=</span> dag_res[<span class="op">:</span>NPCausalOnestep].standard_error)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Because the graph is a-fixable, <code>GraphID</code> routes to AIPW backdoor adjustment. The call below estimates the average contrast <span class="math inline">\(E[Y(1)-Y(0)]\)</span>.</p>
+<div id="26e43456" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dag_res <span class="op">=</span> <span class="fu">estimate</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ATE</span>(outcome <span class="op">=</span> <span class="op">:</span>Y, treatment <span class="op">=</span> <span class="op">:</span>A),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">GraphID</span>(graph <span class="op">=</span> g_dag),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AIPW</span>(crossfit <span class="op">=</span> <span class="fl">2</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    df_dag,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">effect_table</span>(<span class="st">"Backdoor ACE"</span>, dag_res)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -503,22 +498,22 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
 <td style="text-align: left;">Backdoor ACE</td>
-<td style="text-align: right;">1.365</td>
-<td style="text-align: right;">1.09</td>
-<td style="text-align: right;">1.639</td>
-<td style="text-align: right;">0.1401</td>
+<td style="text-align: right;">1.443</td>
+<td style="text-align: right;">1.221</td>
+<td style="text-align: right;">1.665</td>
+<td style="text-align: right;">0.1134</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<p>The returned object also contains the raw <code>NPCausal.ate</code> output. The key point is that the graph chose the adjustment set and the estimator used that set.</p>
+<p>The graph chose the adjustment set (Markov pillow of <code>A</code>) and the estimator used that set. Access it via <code>dag_res.components[:adjustment_set]</code>.</p>
 </section>
 <section id="an-admg-front-door-identification" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="an-admg-front-door-identification"><span class="header-section-number">2.4</span> An ADMG: Front-Door Identification</h2>
 <p>Now suppose treatment and outcome share an unobserved common cause. A simple DAG adjustment argument no longer works. The front-door ADMG has a mediator <code>M</code> that transmits the effect of <code>A</code> to <code>Y</code>, while <code>A</code> and <code>Y</code> are hidden-confounded:</p>
-<div id="dda81d30" class="cell" data-execution_count="8">
+<div id="4c23b2cd" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>g_fd <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>M, <span class="op">:</span>Y],</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>M), (<span class="op">:</span>M, <span class="op">:</span>Y)],</span>
@@ -554,7 +549,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>The bidirected edge <code>A &lt;-&gt; Y</code> means that ordinary backdoor adjustment is not available. But the graph is p-fixable, the ADMG generalization that includes front-door identification.</p>
-<div id="20bf2458" class="cell" data-execution_count="10">
+<div id="a7371157" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>id_fd <span class="op">=</span> <span class="fu">identify</span>(g_fd, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>(strategy <span class="op">=</span> id_fd.strategy,</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a> a_fixable <span class="op">=</span> <span class="fu">is_fix</span>(g_fd, <span class="op">:</span>A),</span>
@@ -565,10 +560,10 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 <p>The intuition is that <code>M</code> carries the causal effect of <code>A</code>, and <code>M</code> is not itself hidden-confounded with <code>A</code>. The graph lets us use mediator information to recover the causal effect even though <code>A</code> and <code>Y</code> are confounded.</p>
 </section>
-<section id="estimating-the-admg-effect-with-npcausal" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="estimating-the-admg-effect-with-npcausal"><span class="header-section-number">2.5</span> Estimating the ADMG Effect with NPCausal</h2>
+<section id="estimating-the-admg-effect-with-causalgraphs" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">2.5</span> Estimating the ADMG Effect with CausalGraphs</h2>
 <p>Simulate a front-door setting. The latent <code>U</code> is not included in the observed data; it is represented in the graph by <code>A &lt;-&gt; Y</code>.</p>
-<div id="96e86606" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<div id="ecb6a187" class="cell" data-cache="true" data-message="false" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2027</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>U <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -631,10 +626,10 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 </div>
-<p>The same NPCausal entry point now routes differently. Since <code>identify()</code> returns <code>:p_fixable</code>, the estimator is the NPS TMLE route rather than backdoor AIPW.</p>
-<div id="92f5d87e" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<p>Since <code>identify()</code> returns <code>:p_fixable</code>, this is a front-door effect. <code>CausalEstimate.jl</code> currently handles backdoor (a-fixable) graphs; for p-fixable effects we call <code>CausalGraphs.estimate_causal</code> directly, which routes to NPS TMLE.</p>
+<div id="88769134" class="cell" data-cache="true" data-message="false" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fd_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    NPCausal.<span class="fu">admg_estimate_causal</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    CausalGraphs.<span class="fu">estimate_causal</span>(</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> df_fd,</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        graph <span class="op">=</span> g_fd,</span>
@@ -698,7 +693,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <li>return a hedge witness when no such reduction is possible.</li>
 </ol>
 <p>For the front-door graph, the general ID algorithm also succeeds:</p>
-<div id="77881d7f" class="cell" data-execution_count="13">
+<div id="d9b51349" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>id_alg_fd <span class="op">=</span> <span class="fu">ID_algorithm</span>(g_fd, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>(identified <span class="op">=</span> id_alg_fd.identified,</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a> expression <span class="op">=</span> <span class="fu">string</span>(id_alg_fd.expression))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -706,18 +701,20 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <pre><code>(identified = true, expression = "sum_{M} P(M | A) * sum_{A} P(A) * P(Y | A, M)")</code></pre>
 </div>
 </div>
-<p>The expression is symbolic. It is not yet an estimate. For finite-support variables, <code>NPCausal.admg_estimate_id(...)</code> can evaluate the symbolic functional by empirical probabilities and attach a finite-support EIF standard error.</p>
-<div id="921b52e1" class="cell" data-cache="true" data-message="false" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>id_res <span class="op">=</span> NPCausal.<span class="fu">admg_estimate_id</span>(</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> df_fd,</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    graph <span class="op">=</span> g_fd,</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    treatment <span class="op">=</span> <span class="op">:</span>A,</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="op">:</span>Y,</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="fu">effect_table</span>(<span class="st">"ID plug-in ACE"</span>, id_res[<span class="op">:</span>IDPlugin];</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>             se <span class="op">=</span> id_res[<span class="op">:</span>IDPlugin].standard_error)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The expression is symbolic. It is not yet an estimate. For finite-support variables, <code>CausalGraphs.estimate_causal</code> evaluates the symbolic functional by empirical probabilities and attaches a finite-support EIF standard error via the <code>:IDPlugin</code> key.</p>
+<div id="51f30d20" class="cell" data-cache="true" data-message="false" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>id_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">estimate_id</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> df_fd,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        graph <span class="op">=</span> g_fd,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        treatment <span class="op">=</span> <span class="op">:</span>A,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        outcome <span class="op">=</span> <span class="op">:</span>Y,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="fu">effect_table</span>(<span class="st">"ID plug-in ACE"</span>, id_res[<span class="op">:</span>IDPlugin];</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>             se <span class="op">=</span> id_res[<span class="op">:</span>IDPlugin].standard_error)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -758,7 +755,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="when-the-graph-says-no" class="level2" data-number="2.7">
 <h2 data-number="2.7" class="anchored" data-anchor-id="when-the-graph-says-no"><span class="header-section-number">2.7</span> When the Graph Says No</h2>
 <p>The bow graph has both a direct causal edge and unobserved confounding between the same two variables:</p>
-<div id="6c543ad4" class="cell" data-execution_count="15">
+<div id="3ab59023" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>g_bow <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>Y],</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
@@ -791,7 +788,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>The effect of <code>A</code> on <code>Y</code> is not identified in this ADMG. The observed association mixes the direct causal effect with the latent common cause.</p>
-<div id="061ef391" class="cell" data-execution_count="17">
+<div id="e0e019dd" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>id_bow <span class="op">=</span> <span class="fu">identify</span>(g_bow, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>id_alg_bow <span class="op">=</span> <span class="fu">ID_algorithm</span>(g_bow, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -811,10 +808,9 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <li>write the graph before looking at estimates;</li>
 <li>use bidirected edges for latent common causes;</li>
 <li>run <code>identify(graph, treatment, outcome)</code>;</li>
-<li>if identified, call <code>NPCausal.admg_estimate_causal(...)</code>;</li>
+<li>if identified and a-fixable, call <code>estimate(ATE(...), GraphID(graph=...), AIPW(...), df)</code>; for p-fixable or nested-fixable effects, call <code>CausalGraphs.estimate_causal(...)</code>;</li>
 <li>report the graph and the identification route along with the estimate.</li>
 </ol>
-<p><code>CausalGraphs.jl</code> can also be called directly through <code>estimate_causal(...)</code>. The combined call through <code>NPCausal.jl</code> is useful when the goal is to treat <code>NPCausal</code> as the estimation package and <code>CausalGraphs</code> as the graph and identification layer.</p>
 
 
 </section>
