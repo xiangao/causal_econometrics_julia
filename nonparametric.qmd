@@ -10,8 +10,7 @@ using MLJ
 using EvoTrees
 using MLJLinearModels
 using DecisionTree
-using NPCausal
-using TMLE
+using CausalEstimate
 using Printf
 ```
 
@@ -160,21 +159,25 @@ res_manual_aipw = [aipw_manual, ci_lb, ci_ub]
 @printf "95%% CI       = [%.4g, %.4g]\n" ci_lb ci_ub
 ```
 
-### AIPW ATE Using NPCausal.jl
+### AIPW ATE Using CausalEstimate.jl
 
 ```{julia}
 #| warning: false
 #| cache: true
 #| message: false
 #| echo: true
-using NPCausal
+using CausalEstimate
 
-# SuperLearner ensemble for nuisance estimation
-mu_model = superlearner(binary=false)
-pi_model = superlearner(binary=true)
+r(x) = round(x, sigdigits=4)
 
-aipw = ate(df.Y, df.A, W; nsplits=5, mu_model=mu_model, pi_model=pi_model)
-aipw.contrasts
+psi_ate = ATE(outcome=:Y, treatment=:A, confounders=[:w1, :w2, :w3, :w4])
+aipw_result = estimate(psi_ate, AIPW(crossfit=5), df)
+
+(
+    ATE    = r(estimate(aipw_result)),
+    CI     = r.(confint(aipw_result)),
+    pvalue = r(pvalue(aipw_result)),
+)
 ```
 
 ### AIPW ATT
@@ -211,43 +214,47 @@ res_manual_aipw_att = [aipw_manual_att, ci_lb_att, ci_ub_att]
 res_manual_aipw_att
 ```
 
-### AIPW ATT Using NPCausal.jl
+### AIPW ATT Using CausalEstimate.jl
 
 ```{julia}
 #| warning: false
 #| cache: true
 #| message: false
 #| echo: true
-using NPCausal
-aipw_att_est = att(df.Y, df.A, W; nsplits=5, mu_model=mu_model, pi_model=pi_model)
+psi_att = ATT(outcome=:Y, treatment=:A, confounders=[:w1, :w2, :w3, :w4])
+att_result = estimate(psi_att, AIPW(crossfit=5), df)
+
+(
+    ATT    = r(estimate(att_result)),
+    CI     = r.(confint(att_result)),
+    pvalue = r(pvalue(att_result)),
+)
 ```
 
 ## TMLE
 
 TMLE is a variant of IF based estimator. It is also a doubly robust estimator. See Mark van der Laan and his coauthors for the recent development of TMLE.
 
-We should expect NPCausal and TMLE to give similar answers.
+We should expect AIPW and TMLE to give similar answers.
 
 ```{julia}
 #| warning: false
 #| cache: true
 #| message: false
 #| echo: true
-using TMLE
-
 Random.seed!(42)
-Ψ = ATE(target      = :Y,
-         treatment   = (A = (case=1, control=0),),
-         confounders = [:w1, :w2, :w3, :w4])
+tmle_result = estimate(psi_ate, TMLE(crossfit=5), df)
 
-η = NuisanceSpec(
-    EvoTreeClassifier(max_depth=4, nrounds=100),  # Q: E(Y | A, W)
-    EvoTreeClassifier(max_depth=4, nrounds=100)   # g: P(A=1 | W)
+(
+    TMLE   = r(estimate(tmle_result)),
+    CI     = r.(confint(tmle_result)),
+    pvalue = r(pvalue(tmle_result)),
 )
+```
 
-tmle_result = tmle(Ψ, η, df; crossfit=5, verbosity=0)
-show(stdout, MIME("text/plain"), tmle_result)
-@printf "\nTrue ATE: %.4g\n" True_Psi
+```{julia}
+#| echo: true
+@printf "True ATE: %.4g\n" True_Psi
 ```
 
 ## DoubleML

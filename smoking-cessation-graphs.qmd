@@ -3,7 +3,7 @@
 ```{julia}
 #| include: false
 using CausalGraphs
-using NPCausal
+using CausalEstimate
 using DataFrames
 using DelimitedFiles
 using Downloads
@@ -36,13 +36,14 @@ function preview_table(df, n = 5)
     DataFrame((name => r4.(df[1:n, name]) for name in names(df))...)
 end
 
-function effect_table(name, estimate; se = missing)
+function effect_table(name, result)
+    ci = confint(result)
     DataFrame(
         estimand = [name],
-        estimate = [r4(estimate.ACE)],
-        lower_95 = [r4(estimate.lower_ci)],
-        upper_95 = [r4(estimate.upper_ci)],
-        se = [ismissing(se) ? missing : r4(se)],
+        estimate = [r4(estimate(result))],
+        lower_95 = [r4(ci[1])],
+        upper_95 = [r4(ci[2])],
+        se       = [r4(result.primary.standard_error)],
     )
 end
 ```
@@ -159,12 +160,12 @@ This formula is not a modeling claim by itself. It is the observed-data
 functional implied by the graph. Estimation still requires nuisance models for
 the outcome regression and treatment mechanism.
 
-## Estimation with NPCausal
+## Estimation with CausalEstimate
 
 The book keeps identification and estimation as separate steps. Here
-`CausalGraphs` supplies the graph result and `NPCausal` estimates the identified
-functional. Because the graph is a-fixable, `NPCausal.admg_estimate_causal`
-routes to the one-step/AIPW average treatment effect machinery.
+`CausalGraphs` supplies the graph result and `CausalEstimate` estimates the
+identified functional. Because the graph is a-fixable, `GraphID` routes to
+the AIPW average treatment effect machinery.
 
 ```{julia}
 #| warning: false
@@ -172,19 +173,14 @@ routes to the one-step/AIPW average treatment effect machinery.
 #| cache: true
 Random.seed!(2026)
 
-nhefs_res = with_logger(NullLogger()) do
-    NPCausal.admg_estimate_causal(
-        a = [1.0, 0.0],
-        data = nhefs,
-        graph = nhefs_graph,
-        treatment = :qsmk,
-        outcome = :wt82_71,
-        nsplits = 2,
-    )
-end
+nhefs_result = estimate(
+    ATE(outcome = :wt82_71, treatment = :qsmk),
+    GraphID(graph = nhefs_graph),
+    AIPW(crossfit = 2),
+    nhefs,
+)
 
-effect_table("Quit smoking vs continued smoking", nhefs_res[:NPCausalOnestep];
-             se = nhefs_res[:NPCausalOnestep].standard_error)
+effect_table("Quit smoking vs continued smoking", nhefs_result)
 ```
 
 Interpreted under the DAG, the estimate is the average effect of quitting

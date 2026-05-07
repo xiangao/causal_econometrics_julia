@@ -3,7 +3,7 @@
 ```{julia}
 #| include: false
 using CausalGraphs
-using NPCausal
+using CausalEstimate
 using DataFrames
 using Random
 using Statistics
@@ -18,20 +18,34 @@ the graph is stated, identification becomes a graph problem. Estimation is the
 next step: estimate the functional that the graph identified.
 
 In this chapter we use `CausalGraphs.jl` for the graph and identification
-steps, then call `NPCausal.jl` for the estimation step when possible.
+steps, then `CausalEstimate.jl` for backdoor/a-fixable effects, and
+`CausalGraphs.estimate_causal` directly for p-fixable and nested-fixable effects.
 
 ```{julia}
 #| include: false
 r4(x) = round(x, sigdigits = 4)
 logistic(x) = 1 / (1 + exp(-x))
 
-function effect_table(name, estimate; se = missing)
+# For CausalEstimate results (ATE/ATT with AIPW/TMLE/GraphID)
+function effect_table(name, result::CausalEstimateResult)
+    ci = confint(result)
     DataFrame(
         estimand = [name],
-        estimate = [r4(estimate.ACE)],
-        lower_95 = [r4(estimate.lower_ci)],
-        upper_95 = [r4(estimate.upper_ci)],
-        se = [ismissing(se) ? missing : r4(se)],
+        estimate = [r4(estimate(result))],
+        lower_95 = [r4(ci[1])],
+        upper_95 = [r4(ci[2])],
+        se       = [r4(result.primary.standard_error)],
+    )
+end
+
+# For CausalGraphs results (p-fixable, nested, ID plug-in) with .ACE/.lower_ci/.upper_ci
+function effect_table(name, cg_result; se = missing)
+    DataFrame(
+        estimand = [name],
+        estimate = [r4(cg_result.ACE)],
+        lower_95 = [r4(cg_result.lower_ci)],
+        upper_95 = [r4(cg_result.upper_ci)],
+        se       = [ismissing(se) ? missing : r4(se)],
     )
 end
 ```
@@ -94,7 +108,7 @@ $$
 So the graph has translated a causal query into a regression-style observed
 data functional.
 
-## Estimating the DAG Effect with NPCausal
+## Estimating the DAG Effect with CausalEstimate
 
 Here is a small simulated data set where `X` confounds the treatment-outcome
 association.
@@ -115,31 +129,25 @@ df_dag = DataFrame(X = X, A = A, Y = Y)
 first(df_dag, 5)
 ```
 
-Because the graph is a-fixable, `NPCausal.admg_estimate_causal(...)` routes to
-`NPCausal.ate(...)`. The call below asks for the average contrast
-$E[Y(1)-Y(0)]$.
+Because the graph is a-fixable, `GraphID` routes to AIPW backdoor adjustment.
+The call below estimates the average contrast $E[Y(1)-Y(0)]$.
 
 ```{julia}
 #| warning: false
 #| message: false
 #| cache: true
-dag_res = with_logger(NullLogger()) do
-    NPCausal.admg_estimate_causal(
-        a = [1.0, 0.0],
-        data = df_dag,
-        graph = g_dag,
-        treatment = :A,
-        outcome = :Y,
-        nsplits = 2,
-    )
-end
+dag_res = estimate(
+    ATE(outcome = :Y, treatment = :A),
+    GraphID(graph = g_dag),
+    AIPW(crossfit = 2),
+    df_dag,
+)
 
-effect_table("Backdoor ACE", dag_res[:NPCausalOnestep];
-             se = dag_res[:NPCausalOnestep].standard_error)
+effect_table("Backdoor ACE", dag_res)
 ```
 
-The returned object also contains the raw `NPCausal.ate` output. The key point
-is that the graph chose the adjustment set and the estimator used that set.
+The graph chose the adjustment set (Markov pillow of `A`) and the estimator
+used that set. Access it via `dag_res.components[:adjustment_set]`.
 
 ## An ADMG: Front-Door Identification
 
@@ -177,7 +185,7 @@ The intuition is that `M` carries the causal effect of `A`, and `M` is not
 itself hidden-confounded with `A`. The graph lets us use mediator information
 to recover the causal effect even though `A` and `Y` are confounded.
 
-## Estimating the ADMG Effect with NPCausal
+## Estimating the ADMG Effect with CausalGraphs
 
 Simulate a front-door setting. The latent `U` is not included in the observed
 data; it is represented in the graph by `A <-> Y`.
@@ -197,15 +205,17 @@ df_fd = DataFrame(A = A_fd, M = M, Y = Y_fd)
 first(df_fd, 5)
 ```
 
-The same NPCausal entry point now routes differently. Since `identify()` returns
-`:p_fixable`, the estimator is the NPS TMLE route rather than backdoor AIPW.
+Since `identify()` returns `:p_fixable`, this is a front-door effect.
+`CausalEstimate.jl` currently handles backdoor (a-fixable) graphs; for
+p-fixable effects we call `CausalGraphs.estimate_causal` directly, which
+routes to NPS TMLE.
 
 ```{julia}
 #| warning: false
 #| message: false
 #| cache: true
 fd_res = with_logger(NullLogger()) do
-    NPCausal.admg_estimate_causal(
+    CausalGraphs.estimate_causal(
         a = [1.0, 0.0],
         data = df_fd,
         graph = g_fd,
@@ -251,21 +261,23 @@ id_alg_fd = ID_algorithm(g_fd, :A, :Y)
  expression = string(id_alg_fd.expression))
 ```
 
-The expression is symbolic. It is not yet an estimate. For finite-support
-variables, `NPCausal.admg_estimate_id(...)` can evaluate the symbolic functional
-by empirical probabilities and attach a finite-support EIF standard error.
+The expression is symbolic. It is not yet an estimate. For finite-support variables, `CausalGraphs.estimate_causal` evaluates the
+symbolic functional by empirical probabilities and attaches a finite-support
+EIF standard error via the `:IDPlugin` key.
 
 ```{julia}
 #| warning: false
 #| message: false
 #| cache: true
-id_res = NPCausal.admg_estimate_id(
-    a = [1.0, 0.0],
-    data = df_fd,
-    graph = g_fd,
-    treatment = :A,
-    outcome = :Y,
-)
+id_res = with_logger(NullLogger()) do
+    CausalGraphs.estimate_causal(
+        a = [1.0, 0.0],
+        data = df_fd,
+        graph = g_fd,
+        treatment = :A,
+        outcome = :Y,
+    )
+end
 
 effect_table("ID plug-in ACE", id_res[:IDPlugin];
              se = id_res[:IDPlugin].standard_error)
@@ -316,10 +328,6 @@ For applied work, a useful workflow is:
 1. write the graph before looking at estimates;
 2. use bidirected edges for latent common causes;
 3. run `identify(graph, treatment, outcome)`;
-4. if identified, call `NPCausal.admg_estimate_causal(...)`;
+4. if identified and a-fixable, call `estimate(ATE(...), GraphID(graph=...), AIPW(...), df)`;
+   for p-fixable or nested-fixable effects, call `CausalGraphs.estimate_causal(...)`;
 5. report the graph and the identification route along with the estimate.
-
-`CausalGraphs.jl` can also be called directly through
-`estimate_causal(...)`. The combined call through `NPCausal.jl` is useful when
-the goal is to treat `NPCausal` as the estimation package and `CausalGraphs` as
-the graph and identification layer.

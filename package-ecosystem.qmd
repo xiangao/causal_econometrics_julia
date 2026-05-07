@@ -11,7 +11,7 @@ The reproducible workflow is:
 ```bash
 cd ~/projects/books/causal_econometrics_julia
 julia --project -e 'using Pkg; Pkg.instantiate()'
-julia --project -e 'using CausalGraphs, NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'
+julia --project -e 'using CausalGraphs, CausalEstimate, Panelest, DiD, SynthDiD, RDRobust, Lavaan, Crumble'
 quarto render
 ```
 
@@ -23,8 +23,7 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 |---|---|---|
 | `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, and IV/2SLS support | Estimation, DiD, IV/RDD |
 | `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs, Smoking cessation |
-| `NPCausal.jl` | Influence-function estimators for ATE, ATT, continuous treatment effects, IV LATE, bounds, incremental propensity interventions, and graph-routed effects | Estimation, Nonparametric, Smoking cessation |
-| `TMLE.jl` | Targeted maximum likelihood and one-step AIPW for ATE with MLJ nuisance models | Nonparametric |
+| `CausalEstimate.jl` | Unified TMLE and AIPW estimation: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` and graph-implied backdoor via `GraphID` | Estimation, Nonparametric, Smoking cessation |
 | `DiD` | ETWFE helper layer, `emfx()` aggregation, and a local `mpdta`-style dataset helper | DiD |
 | `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
 | `RDRobust.jl` | Local-polynomial RD estimation, bandwidth selection, RD plot data, and fuzzy RD | IV/RDD |
@@ -59,48 +58,56 @@ The current package also includes `feiv` for 2SLS-style workflows:
 feiv(df, @formula(y ~ x_exo + fe(id)), endo = :x_endo, inst = :z)
 ```
 
-## NPCausal.jl
+## CausalEstimate.jl
 
-`NPCausal.jl` provides the nonparametric causal estimators used in the estimation, nonparametric, and applied graph chapters. The core pattern is to pass the outcome, treatment, and covariate `DataFrame`, then let the package handle cross-fitting and nuisance estimation.
+`CausalEstimate.jl` is the unified estimation front-end used in the estimation,
+nonparametric, and applied graph chapters. It combines TMLE and AIPW under one
+`estimate(...)` call, with cross-fitting and doubly robust inference built in.
 
 ```julia
-using NPCausal, DataFrames
+using CausalEstimate, DataFrames
 
-X = DataFrame(x1 = randn(1000), x2 = randn(1000))
-a = rand([0, 1], 1000)
-y = X.x1 .+ X.x2 .* a .+ randn(1000)
+n = 1000
+df = DataFrame(
+    Y = randn(n),
+    A = rand([0, 1], n),
+    W = randn(n),
+)
 
-result = ate(y, a, X; nsplits = 5)
-result.contrasts
+# AIPW for ATE
+result = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W]), AIPW(crossfit=5), df)
+estimate(result)       # point estimate
+confint(result)        # (lower, upper) 95% CI
+pvalue(result)         # two-sided p-value
+
+# TMLE for ATE
+result_tmle = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W]), TMLE(crossfit=5), df)
+
+# ATT
+result_att = estimate(ATT(outcome=:Y, treatment=:A, confounders=[:W]), AIPW(crossfit=5), df)
 ```
 
-The package exports `ate`, `att`, `ctseff`, `ivlate`, `ivbds`, `ipsi`, and `superlearner`. In this book, `ate` and `att` do most of the work, while `superlearner(binary=true/false)` provides an MLJ-based ensemble for nuisance functions.
-
-When loaded together with `CausalGraphs.jl`, `NPCausal.jl` also exposes ADMG
-estimation entry points:
+For graph-identified backdoor (a-fixable) effects, pass a `GraphID` layer:
 
 ```julia
-using CausalGraphs, NPCausal
+using CausalEstimate, CausalGraphs
 
 g = make_graph(
-    vertices = [:A, :M, :Y],
-    di_edges = [(:A, :M), (:M, :Y)],
-    bi_edges = [(:A, :Y)],
+    vertices = [:X, :A, :Y],
+    di_edges = [(:X, :A), (:X, :Y), (:A, :Y)],
 )
 
-res = NPCausal.admg_estimate_causal(
-    a = [1.0, 0.0],
-    data = df,
-    graph = g,
-    treatment = :A,
-    outcome = :Y,
+result = estimate(
+    ATE(outcome = :Y, treatment = :A),
+    GraphID(graph = g),
+    AIPW(crossfit = 5),
+    df,
 )
 ```
 
-The graph layer identifies the effect and `NPCausal` routes to the matching
-estimator: backdoor/a-fixable effects through `ate`, p-fixable effects through
-NPS TMLE, nested-fixable effects through ANIPW, and finite-support ID
-functionals through the ID plug-in.
+`GraphID` reads the Markov pillow of the treatment from the graph and uses it
+as the adjustment set. For p-fixable (front-door), nested-fixable, and general
+ID-algorithm effects, use `CausalGraphs.estimate_causal(...)` directly.
 
 ## CausalGraphs.jl
 
@@ -119,36 +126,21 @@ g = make_graph(
 identify(g, :A, :Y).strategy
 ```
 
-The key distinction is that `CausalGraphs.jl` handles assumptions and
-identification, while `NPCausal.jl` is the estimation namespace used in the
-combined graph-to-estimate workflow.
-
-## TMLE.jl
-
-`TMLE.jl` implements targeted maximum likelihood and one-step AIPW estimators for ATEs. It uses an explicit target-parameter object and an explicit nuisance-model specification:
+For non-backdoor effects (p-fixable, nested-fixable, ID plug-in),
+`CausalGraphs.estimate_causal(...)` provides the full estimation pipeline:
 
 ```julia
-using TMLE, MLJ, EvoTrees
-import TMLE: estimate, pvalue
-
-EvoTreeClassifier = @load EvoTreeClassifier pkg=EvoTrees verbosity=0
-
-Ψ = ATE(
-    target = :Y,
-    treatment = (A = (case = 1, control = 0),),
-    confounders = [:W1, :W2],
+res = CausalGraphs.estimate_causal(
+    a = [1.0, 0.0],
+    data = df,
+    graph = g,
+    treatment = :A,
+    outcome = :Y,
 )
 
-η = NuisanceSpec(
-    EvoTreeClassifier(max_depth = 4, nrounds = 100),
-    EvoTreeClassifier(max_depth = 4, nrounds = 100),
-)
-
-result = tmle(Ψ, η, df; crossfit = 5, verbosity = 0)
-estimate(result)
+res[:TMLE].ACE         # front-door NPS TMLE
+res[:IDPlugin].ACE     # finite-support ID plug-in
 ```
-
-When `TMLE.jl` and `MLJ.jl` are used together, explicitly importing `estimate` and `pvalue` from `TMLE` avoids a name conflict.
 
 ## DiD
 
@@ -247,7 +239,7 @@ The package exports `crumble`, `crumble_control`, `sequential_module`, and `Crum
 These packages are best treated as a coherent local research stack. When changing package code, rerun a direct load check from the book directory:
 
 ```bash
-julia --project -e 'using NPCausal, Panelest, DiD, SynthDiD, RDRobust, TMLE, Lavaan, Crumble'
+julia --project -e 'using CausalEstimate, CausalGraphs, Panelest, DiD, SynthDiD, RDRobust, Lavaan, Crumble'
 ```
 
 For content changes, render the affected chapter first. For package API changes, render the full book after deleting the relevant `_freeze` chapter directory so Quarto does not reuse stale cached results.

@@ -34,8 +34,7 @@ julia --project build_sysimage.jl
 
 All custom packages live at `~/projects/software/` and are referenced via relative paths in `Manifest.toml`:
 
-- `TMLE.jl` — TMLE and AIPW estimators
-- `NPCausal.jl` — Doubly-robust nonparametric estimation
+- `CausalEstimate.jl` — Unified TMLE and AIPW estimation
 - `Panelest.jl` — Fixed-effects panel models
 - `DiD.jl` — ETWFE difference-in-differences
 - `SynthDiD.jl` — Synthetic DiD

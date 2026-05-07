@@ -5,7 +5,7 @@
 - **Render**: `quarto render` (uses the standard `julia-1.12` kernel with `--project=@.`)
 - **Render one chapter**: `quarto render nonparametric.qmd`
 - **Optional fast kernel**: `julia --project build_sysimage.jl` (~20 min; do this when packages change)
-- **Run tests for packages**: `cd ~/projects/software/TMLE.jl && julia --project -e 'using Pkg; Pkg.test()'`
+- **Run tests for packages**: `cd ~/projects/software/CausalEstimate.jl && julia --project -e 'using Pkg; Pkg.test()'`
 
 ## Project structure
 
@@ -26,27 +26,37 @@
 | `RDRobust.jl` | RD estimation: `rdrobust`, `rdbwselect`, `rdplot` |
 | `Panelest.jl` | FE panel OLS/GLM: `feols`, `feiv` |
 | `CausalGraphs.jl` | DAG/ADMG construction, identification, and ID algorithm |
-| `NPCausal.jl` | Doubly-robust ATE/ATT via cross-fitting: `ate`, `att` |
+| `CausalEstimate.jl` | Unified TMLE/AIPW: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` |
 | `SynthDiD.jl` | Synthetic DiD: `synthdid_estimate`, `sc_estimate`, `did_estimate` |
 | `DiD.jl` | ETWFE + `emfx()` aggregation; `dataset("mpdta")` |
-| `TMLE.jl` | Full TMLE/AIPW: `ATE`, `NuisanceSpec`, `tmle()` — see below |
+| `CausalGraphs.jl` | DAG/ADMG identification + p-fixable/nested estimation |
 | `Lavaan.jl` | SEM: `sem()` |
 | `Crumble.jl` | Causal mediation analysis |
 
-## TMLE.jl API
+## CausalEstimate.jl API
 
 ```julia
-using TMLE
-import TMLE: estimate, pvalue  # REQUIRED when also using MLJ (name conflict)
+using CausalEstimate
 
-Ψ = ATE(target = :Y, treatment = (A = (case=1, control=0),), confounders = [:W])
-η = NuisanceSpec(EvoTreeClassifier(...), EvoTreeClassifier(...))
-result = tmle(Ψ, η, df; crossfit=5, verbosity=0)
-println(result)         # formatted table
+# ATE with TMLE
+result = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W1,:W2]), TMLE(crossfit=5), df)
+
+# ATE with AIPW
+result = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W1,:W2]), AIPW(crossfit=5), df)
+
+# ATT
+result = estimate(ATT(outcome=:Y, treatment=:A, confounders=[:W1,:W2]), AIPW(crossfit=5), df)
+
+# Graph-identified (backdoor/a-fixable)
+result = estimate(ATE(outcome=:Y, treatment=:A), GraphID(graph=g), AIPW(crossfit=5), df)
+
 estimate(result)        # point estimate
-pvalue(result)          # p-value
 confint(result)         # (lb, ub) tuple
+pvalue(result)          # p-value
+result.primary.standard_error
 ```
+
+For p-fixable / front-door / nested-fixable / ID plug-in effects, use `CausalGraphs.estimate_causal(...)` directly.
 
 ## Sysimage notes
 
@@ -54,15 +64,6 @@ confint(result)         # (lb, ub) tuple
 - If you switch `_quarto.yml` to `jupyter: julia-_book_-1.12`, rebuild the sysimage whenever custom packages change (paths in Manifest.toml).
 - HypothesisTests must be in Project.toml as a **direct** dependency (not just transitive via TMLE.jl)
 - The `julia-_book_-1.12` IJulia kernel is installed by `build_sysimage.jl`
-
-## Name conflict: estimate / pvalue
-
-MLJ and TMLE.jl both export `estimate` and `pvalue`. In any script or .qmd cell that uses both:
-```julia
-using MLJ
-using TMLE
-import TMLE: estimate, pvalue  # force TMLE's versions
-```
 
 ## ETWFE / emfx design (critical)
 
