@@ -24,7 +24,7 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 | `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, and IV/2SLS support | Estimation, DiD, IV/RDD |
 | `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs, Smoking cessation |
 | `CausalEstimate.jl` | Unified TMLE and AIPW estimation: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` and graph-implied backdoor via `GraphID` | Estimation, Nonparametric, Smoking cessation |
-| `ETWFE` | ETWFE helper layer, `emfx()` aggregation, and a local `mpdta`-style dataset helper | DiD |
+| `Panelest.jl` | Also exports `emfx()` and `dataset()` for ETWFE post-processing | DiD |
 | `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
 | `RDRobust.jl` | Local-polynomial RD estimation, bandwidth selection, RD plot data, and fuzzy RD | IV/RDD |
 | `Lavaan.jl` | SEM, CFA, defined parameters, fit measures, and lavaan-style mediation syntax | Mediation |
@@ -142,21 +142,19 @@ res[:TMLE].ACE         # front-door NPS TMLE
 res[:IDPlugin].ACE     # finite-support ID plug-in
 ```
 
-## ETWFE
+## ETWFE helpers in Panelest
 
-The `ETWFE` package is deliberately small. Its main role in this book is ETWFE post-processing:
+`Panelest` also exports `emfx()` and `dataset()` for ETWFE post-processing:
 
 ```julia
-using ETWFE
+using Panelest
 
 att = emfx(model)
 event_study = emfx(model, type = "event")
-calendar = emfx(model, type = "calendar")
+calendar    = emfx(model, type = "calendar")
 ```
 
-`emfx()` reads the cohort-by-time interaction coefficients from a `Panelest.feols` model and aggregates them into an overall ATT, event-time effects, or calendar-time effects. The package also exports `dataset("mpdta")`, which creates a balanced panel with string cohort and year columns for StatsModels interactions.
-
-The exported `att_gt()` function is currently a placeholder API. For the implemented workflow in this book, use `Panelest.feols(...)` plus `ETWFE.emfx(...)`.
+`emfx()` reads the cohort-by-time interaction coefficients from a `feols` model and aggregates them into an overall ATT, event-time effects, or calendar-time effects. `dataset("mpdta")` returns a synthetic balanced panel with string cohort and year columns ready for StatsModels ETWFE interactions.
 
 ## SynthDiD.jl
 
@@ -239,7 +237,7 @@ The package exports `crumble`, `crumble_control`, `sequential_module`, and `Crum
 These packages are best treated as a coherent local research stack. When changing package code, rerun a direct load check from the book directory:
 
 ```bash
-julia --project -e 'using CausalEstimate, CausalGraphs, Panelest, ETWFE, SynthDiD, RDRobust, Lavaan, Crumble'
+julia --project -e 'using CausalEstimate, CausalGraphs, Panelest, SynthDiD, RDRobust, Lavaan, Crumble'
 ```
 
 For content changes, render the affected chapter first. For package API changes, render the full book after deleting the relevant `_freeze` chapter directory so Quarto does not reuse stale cached results.
