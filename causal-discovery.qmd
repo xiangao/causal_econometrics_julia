@@ -1,0 +1,221 @@
+# Causal Discovery: Observed Variables
+
+```{julia}
+#| include: false
+using CausalInference
+using RecursiveCausalDiscovery
+using Graphs
+using GraphMakie
+using CairoMakie
+using Statistics
+using LinearAlgebra
+using Random
+using Printf
+using DataFrames
+using Distributions: Normal, quantile
+```
+
+In earlier chapters we assumed the causal graph was known, or at least that a defensible DAG could be drawn from domain knowledge. But what if we want to *learn* the causal structure from observational data? This is the **causal discovery** problem.
+
+## The Problem
+
+Given $n$ i.i.d. observations of $p$ variables $(X_1, \ldots, X_p)$, we want to recover the directed acyclic graph (DAG) $G$ that generated the data.
+
+There is a fundamental limit: observational data alone cannot distinguish between DAGs that encode the same conditional independence (CI) structure. The set of DAGs that are observationally equivalent is called a **Markov equivalence class** (MEC). The best we can do from data is to identify the MEC, represented as a **Completed Partially Directed Acyclic Graph (CPDAG)**.
+
+A CPDAG has the same skeleton (undirected edges) as all DAGs in its MEC. Some edges can be oriented (they have the same direction in every member of the MEC); others remain undirected because both directions are consistent with the CI structure.
+
+## Simulation
+
+We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge $j \to i$ generates a structural equation
+
+$$X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)$$
+
+where coefficients $\beta_{ji}$ are drawn uniformly from $[-1, -0.25] \cup [0.25, 1]$.
+
+```{julia}
+Random.seed!(2025)
+
+n_vars    = 8
+n_samples = 2000
+edge_prob = 0.35
+
+adj_mat   = gen_er_dag_adj_mat(n_vars, edge_prob)
+data_mat  = gen_gaussian_data(adj_mat, n_samples)
+
+true_dag  = SimpleDiGraph(adj_mat)
+true_skel = SimpleGraph(true_dag)
+
+@printf "Variables: %d   Samples: %d   True edges: %d\n" n_vars n_samples ne(true_skel)
+```
+
+```{julia}
+#| label: fig-true-dag
+#| fig-cap: "True DAG used for simulation. Directed edges point from cause to effect."
+#| fig-width: 5
+#| fig-height: 4
+let
+    node_labels = ["X$i" for i in 1:n_vars]
+    fig, ax, p = graphplot(true_dag;
+        kwargs_pdag_graphmakie(true_dag; ilabels=node_labels)...)
+    ax.title = "True DAG"
+    hidedecorations!(ax); hidespines!(ax)
+    fig
+end
+```
+
+## CI Test Infrastructure
+
+Both algorithms use a **Fisher-Z conditional independence test** appropriate for Gaussian data. Given the partial correlation $\hat\rho_{XY \mid Z}$, the test statistic is
+
+$$T = \sqrt{n - |Z| - 3} \cdot \operatorname{atanh}(\hat\rho_{XY \mid Z}) \;\sim\; N(0,1) \quad \text{under } H_0: X \perp\!\!\!\perp Y \mid Z$$
+
+We wrap `fisher_z` in a counter to track exactly how many CI tests each algorithm calls:
+
+```{julia}
+function make_counted_ci(data, sig)
+    count = Ref(0)
+    function ci(x, y, S, d)
+        count[] += 1
+        fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)
+    end
+    ci, count
+end
+```
+
+## PC Algorithm
+
+The **PC algorithm** (Spirtes & Glymour, 1991) starts from a complete undirected graph and removes edges whenever a conditional independence is found. It searches for separating sets $Z$ of increasing size, conditioning on subsets of the current neighbors. After skeleton discovery, Meek's rules orient as many edges as possible.
+
+```{julia}
+sig_level = 0.01
+
+ci_pc, ctr_pc = make_counted_ci(data_mat, sig_level)
+cpdag_pc = pcalg(n_vars, ci_pc, data_mat)
+skel_pc  = SimpleGraph(cpdag_pc)
+
+f1_skel_pc  = f1_score(true_skel, skel_pc)
+f1_cpdag_pc = f1_score(true_dag,  cpdag_pc)
+
+@printf "PC:    skeleton F1 = %.3f   CPDAG F1 = %.3f   CI tests = %d\n" f1_skel_pc f1_cpdag_pc ctr_pc[]
+```
+
+## RSL-D Algorithm
+
+**RSL-D** (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by *recursively removing* variables that satisfy a **removability** criterion. Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
+
+$$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W$$
+
+(Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.
+
+The key efficiency advantage: RSL-D uses at most $O(p \cdot d \cdot |\text{MB}|^2)$ CI tests (where $d$ is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.
+
+```{julia}
+ci_rsl, ctr_rsl = make_counted_ci(data_mat, sig_level)
+cpdag_rsl = rsld(data_mat, ci_rsl)
+skel_rsl  = SimpleGraph(cpdag_rsl)
+
+f1_skel_rsl  = f1_score(true_skel, skel_rsl)
+f1_cpdag_rsl = f1_score(true_dag,  cpdag_rsl)
+
+@printf "RSL-D: skeleton F1 = %.3f   CPDAG F1 = %.3f   CI tests = %d\n" f1_skel_rsl f1_cpdag_rsl ctr_rsl[]
+```
+
+## Comparison
+
+```{julia}
+#| label: tbl-comparison
+#| tbl-cap: "Algorithm comparison on the simulated 8-node DAG (n = 2000, p = 0.01 significance)"
+DataFrame(
+    Algorithm   = ["PC",              "RSL-D"],
+    Skeleton_F1 = round.([f1_skel_pc,  f1_skel_rsl],  digits=3),
+    CPDAG_F1    = round.([f1_cpdag_pc, f1_cpdag_rsl], digits=3),
+    CI_Tests    = [ctr_pc[],           ctr_rsl[]],
+)
+```
+
+```{julia}
+#| label: fig-cpdags
+#| fig-cap: "True DAG vs. estimated CPDAGs. Directed edges are oriented; undirected edges reflect unresolvable equivalences."
+#| fig-width: 11
+#| fig-height: 4
+let
+    node_labels = ["X$i" for i in 1:n_vars]
+    fig = Figure(size=(1000, 380))
+
+    for (col, (g, title)) in enumerate([
+        (true_dag,  "True DAG"),
+        (cpdag_pc,  "PC — estimated CPDAG"),
+        (cpdag_rsl, "RSL-D — estimated CPDAG"),
+    ])
+        ax = Axis(fig[1, col]; title)
+        graphplot!(ax, g; kwargs_pdag_graphmakie(g; ilabels=node_labels)...)
+        hidedecorations!(ax); hidespines!(ax)
+    end
+    fig
+end
+```
+
+## Monte Carlo Evaluation
+
+A single dataset can be lucky. We average over 100 replications to get stable estimates.
+
+```{julia}
+#| cache: true
+function evaluate_once(seed; n_vars=8, n_samples=2000, edge_prob=0.35, sig=0.01)
+    Random.seed!(seed)
+    adj  = gen_er_dag_adj_mat(n_vars, edge_prob)
+    data = gen_gaussian_data(adj, n_samples)
+    skel = SimpleGraph(SimpleDiGraph(adj))
+
+    ci_pc,  ctr_pc  = make_counted_ci(data, sig)
+    ci_rsl, ctr_rsl = make_counted_ci(data, sig)
+
+    cp_pc  = pcalg(n_vars, ci_pc,  data)
+    cp_rsl = rsld(data, ci_rsl)
+
+    (
+        f1_pc  = f1_score(skel, SimpleGraph(cp_pc)),
+        f1_rsl = f1_score(skel, SimpleGraph(cp_rsl)),
+        ci_pc  = ctr_pc[],
+        ci_rsl = ctr_rsl[],
+    )
+end
+
+mc = [evaluate_once(s) for s in 1:100]
+
+@printf "\nMonte Carlo averages (100 replications, n=%d, p=%d)\n" n_samples n_vars
+@printf "%-8s  Skeleton F1  CI tests\n" "Method"
+@printf "%-8s  %10.3f  %8.1f\n" "PC"    mean(r.f1_pc  for r in mc) mean(r.ci_pc  for r in mc)
+@printf "%-8s  %10.3f  %8.1f\n" "RSL-D" mean(r.f1_rsl for r in mc) mean(r.ci_rsl for r in mc)
+```
+
+```{julia}
+#| label: fig-mc-ci
+#| fig-cap: "Distribution of CI test counts over 100 replications. RSL-D consistently uses fewer CI tests."
+#| fig-width: 7
+#| fig-height: 4
+let
+    fig = Figure(size=(650, 380))
+    ax  = Axis(fig[1,1];
+        xlabel = "CI tests",
+        ylabel = "Frequency",
+        title  = "CI Test Counts: PC vs RSL-D (100 replications)")
+    hist!(ax, [r.ci_pc  for r in mc]; bins=20, color=(:steelblue, 0.65), label="PC")
+    hist!(ax, [r.ci_rsl for r in mc]; bins=20, color=(:tomato, 0.65),    label="RSL-D")
+    axislegend(ax)
+    fig
+end
+```
+
+## Summary
+
+Both PC and RSL-D recover the Markov equivalence class from Gaussian observational data. The key practical difference is **CI-test efficiency**: RSL-D's recursive removal approach uses far fewer tests than PC's growing-set search, especially as $p$ and graph density increase.
+
+::: {.callout-note}
+**What cannot be recovered from observational data alone**
+
+Both algorithms identify the CPDAG — the equivalence class — not the true DAG. Certain edge orientations are fundamentally unidentifiable without additional assumptions such as non-Gaussian errors, temporal ordering, or interventional data.
+
+The next chapter addresses a harder problem: recovering the causal skeleton when some variables are *unobserved*.
+:::

@@ -788,5 +788,181 @@
     "crumbs": [
       "<span class='chapter-number'>10</span>  <span class='chapter-title'>Julia Packages Used in This Book</span>"
     ]
+  },
+  {
+    "objectID": "causal-discovery.html",
+    "href": "causal-discovery.html",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "",
+    "text": "6.1 The Problem\nIn earlier chapters we assumed the causal graph was known, or at least that a defensible DAG could be drawn from domain knowledge. But what if we want to learn the causal structure from observational data? This is the causal discovery problem.\nGiven \\(n\\) i.i.d. observations of \\(p\\) variables \\((X_1, \\ldots, X_p)\\), we want to recover the directed acyclic graph (DAG) \\(G\\) that generated the data.\nThere is a fundamental limit: observational data alone cannot distinguish between DAGs that encode the same conditional independence (CI) structure. The set of DAGs that are observationally equivalent is called a Markov equivalence class (MEC). The best we can do from data is to identify the MEC, represented as a Completed Partially Directed Acyclic Graph (CPDAG).\nA CPDAG has the same skeleton (undirected edges) as all DAGs in its MEC. Some edges can be oriented (they have the same direction in every member of the MEC); others remain undirected because both directions are consistent with the CI structure.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#simulation",
+    "href": "causal-discovery.html#simulation",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.2 Simulation",
+    "text": "6.2 Simulation\nWe generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge \\(j \\to i\\) generates a structural equation\n\\[X_i = \\sum_{j \\in \\text{pa}(i)} \\beta_{ji} X_j + \\varepsilon_i, \\quad \\varepsilon_i \\sim N(0,1)\\]\nwhere coefficients \\(\\beta_{ji}\\) are drawn uniformly from \\([-1, -0.25] \\cup [0.25, 1]\\).\n\nRandom.seed!(2025)\n\nn_vars    = 8\nn_samples = 2000\nedge_prob = 0.35\n\nadj_mat   = gen_er_dag_adj_mat(n_vars, edge_prob)\ndata_mat  = gen_gaussian_data(adj_mat, n_samples)\n\ntrue_dag  = SimpleDiGraph(adj_mat)\ntrue_skel = SimpleGraph(true_dag)\n\n@printf \"Variables: %d   Samples: %d   True edges: %d\\n\" n_vars n_samples ne(true_skel)\n\nVariables: 8   Samples: 2000   True edges: 9\n\n\n\nlet\n    node_labels = [\"X$i\" for i in 1:n_vars]\n    fig, ax, p = graphplot(true_dag;\n        kwargs_pdag_graphmakie(true_dag; ilabels=node_labels)...)\n    ax.title = \"True DAG\"\n    hidedecorations!(ax); hidespines!(ax)\n    fig\nend\n\n\n┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.\n\n└ @ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238\n\n\n\n\n\n\n\n\n\n\nFigure 6.1: True DAG used for simulation. Directed edges point from cause to effect.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#ci-test-infrastructure",
+    "href": "causal-discovery.html#ci-test-infrastructure",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.3 CI Test Infrastructure",
+    "text": "6.3 CI Test Infrastructure\nBoth algorithms use a Fisher-Z conditional independence test appropriate for Gaussian data. Given the partial correlation \\(\\hat\\rho_{XY \\mid Z}\\), the test statistic is\n\\[T = \\sqrt{n - |Z| - 3} \\cdot \\operatorname{atanh}(\\hat\\rho_{XY \\mid Z}) \\;\\sim\\; N(0,1) \\quad \\text{under } H_0: X \\perp\\!\\!\\!\\perp Y \\mid Z\\]\nWe wrap fisher_z in a counter to track exactly how many CI tests each algorithm calls:\n\nfunction make_counted_ci(data, sig)\n    count = Ref(0)\n    function ci(x, y, S, d)\n        count[] += 1\n        fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)\n    end\n    ci, count\nend\n\nmake_counted_ci (generic function with 1 method)",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#pc-algorithm",
+    "href": "causal-discovery.html#pc-algorithm",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.4 PC Algorithm",
+    "text": "6.4 PC Algorithm\nThe PC algorithm (Spirtes & Glymour, 1991) starts from a complete undirected graph and removes edges whenever a conditional independence is found. It searches for separating sets \\(Z\\) of increasing size, conditioning on subsets of the current neighbors. After skeleton discovery, Meek’s rules orient as many edges as possible.\n\nsig_level = 0.01\n\nci_pc, ctr_pc = make_counted_ci(data_mat, sig_level)\ncpdag_pc = pcalg(n_vars, ci_pc, data_mat)\nskel_pc  = SimpleGraph(cpdag_pc)\n\nf1_skel_pc  = f1_score(true_skel, skel_pc)\nf1_cpdag_pc = f1_score(true_dag,  cpdag_pc)\n\n@printf \"PC:    skeleton F1 = %.3f   CPDAG F1 = %.3f   CI tests = %d\\n\" f1_skel_pc f1_cpdag_pc ctr_pc[]\n\nPC:    skeleton F1 = 0.750   CPDAG F1 = 0.500   CI tests = 205",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#rsl-d-algorithm",
+    "href": "causal-discovery.html#rsl-d-algorithm",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.5 RSL-D Algorithm",
+    "text": "6.5 RSL-D Algorithm\nRSL-D (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by recursively removing variables that satisfy a removability criterion. Variable \\(X\\) is removable if, for every pair \\(Y \\in \\text{Mb}(X)\\), \\(Z \\in \\text{Ne}(X)\\):\n\\[\\exists\\, W \\subseteq \\text{Mb}(X) \\setminus \\{Y, Z\\} \\text{ such that } Y \\perp\\!\\!\\!\\perp Z \\mid W\\]\n(Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.\nThe key efficiency advantage: RSL-D uses at most \\(O(p \\cdot d \\cdot |\\text{MB}|^2)\\) CI tests (where \\(d\\) is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.\n\nci_rsl, ctr_rsl = make_counted_ci(data_mat, sig_level)\ncpdag_rsl = rsld(data_mat, ci_rsl)\nskel_rsl  = SimpleGraph(cpdag_rsl)\n\nf1_skel_rsl  = f1_score(true_skel, skel_rsl)\nf1_cpdag_rsl = f1_score(true_dag,  cpdag_rsl)\n\n@printf \"RSL-D: skeleton F1 = %.3f   CPDAG F1 = %.3f   CI tests = %d\\n\" f1_skel_rsl f1_cpdag_rsl ctr_rsl[]\n\nRSL-D: skeleton F1 = 1.000   CPDAG F1 = 0.947   CI tests = 43",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#comparison",
+    "href": "causal-discovery.html#comparison",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.6 Comparison",
+    "text": "6.6 Comparison\n\nDataFrame(\n    Algorithm   = [\"PC\",              \"RSL-D\"],\n    Skeleton_F1 = round.([f1_skel_pc,  f1_skel_rsl],  digits=3),\n    CPDAG_F1    = round.([f1_cpdag_pc, f1_cpdag_rsl], digits=3),\n    CI_Tests    = [ctr_pc[],           ctr_rsl[]],\n)\n\n\n\nTable 6.1: Algorithm comparison on the simulated 8-node DAG (n = 2000, p = 0.01 significance)\n\n\n\n2×4 DataFrame\n\n\n\nRow\nAlgorithm\nSkeleton_F1\nCPDAG_F1\nCI_Tests\n\n\n\nString\nFloat64\nFloat64\nInt64\n\n\n\n\n1\nPC\n0.75\n0.5\n205\n\n\n2\nRSL-D\n1.0\n0.947\n43\n\n\n\n\n\n\n\n\n\n\nlet\n    node_labels = [\"X$i\" for i in 1:n_vars]\n    fig = Figure(size=(1000, 380))\n\n    for (col, (g, title)) in enumerate([\n        (true_dag,  \"True DAG\"),\n        (cpdag_pc,  \"PC — estimated CPDAG\"),\n        (cpdag_rsl, \"RSL-D — estimated CPDAG\"),\n    ])\n        ax = Axis(fig[1, col]; title)\n        graphplot!(ax, g; kwargs_pdag_graphmakie(g; ilabels=node_labels)...)\n        hidedecorations!(ax); hidespines!(ax)\n    end\n    fig\nend\n\n\n┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.\n\n└ @ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238\n\n\n\n\n\n\n\n\n\n\nFigure 6.2: True DAG vs. estimated CPDAGs. Directed edges are oriented; undirected edges reflect unresolvable equivalences.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#monte-carlo-evaluation",
+    "href": "causal-discovery.html#monte-carlo-evaluation",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.7 Monte Carlo Evaluation",
+    "text": "6.7 Monte Carlo Evaluation\nA single dataset can be lucky. We average over 100 replications to get stable estimates.\n\nfunction evaluate_once(seed; n_vars=8, n_samples=2000, edge_prob=0.35, sig=0.01)\n    Random.seed!(seed)\n    adj  = gen_er_dag_adj_mat(n_vars, edge_prob)\n    data = gen_gaussian_data(adj, n_samples)\n    skel = SimpleGraph(SimpleDiGraph(adj))\n\n    ci_pc,  ctr_pc  = make_counted_ci(data, sig)\n    ci_rsl, ctr_rsl = make_counted_ci(data, sig)\n\n    cp_pc  = pcalg(n_vars, ci_pc,  data)\n    cp_rsl = rsld(data, ci_rsl)\n\n    (\n        f1_pc  = f1_score(skel, SimpleGraph(cp_pc)),\n        f1_rsl = f1_score(skel, SimpleGraph(cp_rsl)),\n        ci_pc  = ctr_pc[],\n        ci_rsl = ctr_rsl[],\n    )\nend\n\nmc = [evaluate_once(s) for s in 1:100]\n\n@printf \"\\nMonte Carlo averages (100 replications, n=%d, p=%d)\\n\" n_samples n_vars\n@printf \"%-8s  Skeleton F1  CI tests\\n\" \"Method\"\n@printf \"%-8s  %10.3f  %8.1f\\n\" \"PC\"    mean(r.f1_pc  for r in mc) mean(r.ci_pc  for r in mc)\n@printf \"%-8s  %10.3f  %8.1f\\n\" \"RSL-D\" mean(r.f1_rsl for r in mc) mean(r.ci_rsl for r in mc)\n\n\nMonte Carlo averages (100 replications, n=2000, p=8)\nMethod    Skeleton F1  CI tests\nPC             0.894     237.2\nRSL-D          0.946      57.2\n\n\n\nlet\n    fig = Figure(size=(650, 380))\n    ax  = Axis(fig[1,1];\n        xlabel = \"CI tests\",\n        ylabel = \"Frequency\",\n        title  = \"CI Test Counts: PC vs RSL-D (100 replications)\")\n    hist!(ax, [r.ci_pc  for r in mc]; bins=20, color=(:steelblue, 0.65), label=\"PC\")\n    hist!(ax, [r.ci_rsl for r in mc]; bins=20, color=(:tomato, 0.65),    label=\"RSL-D\")\n    axislegend(ax)\n    fig\nend\n\n\n┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.\n\n└ @ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238\n\n\n\n\n\n\n\n\n\n\nFigure 6.3: Distribution of CI test counts over 100 replications. RSL-D consistently uses fewer CI tests.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery.html#summary",
+    "href": "causal-discovery.html#summary",
+    "title": "6  Causal Discovery: Observed Variables",
+    "section": "6.8 Summary",
+    "text": "6.8 Summary\nBoth PC and RSL-D recover the Markov equivalence class from Gaussian observational data. The key practical difference is CI-test efficiency: RSL-D’s recursive removal approach uses far fewer tests than PC’s growing-set search, especially as \\(p\\) and graph density increase.\n\n\n\n\n\n\nNote\n\n\n\nWhat cannot be recovered from observational data alone\nBoth algorithms identify the CPDAG — the equivalence class — not the true DAG. Certain edge orientations are fundamentally unidentifiable without additional assumptions such as non-Gaussian errors, temporal ordering, or interventional data.\nThe next chapter addresses a harder problem: recovering the causal skeleton when some variables are unobserved.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Causal Discovery: Observed Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html",
+    "href": "causal-discovery-latent.html",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "",
+    "text": "7.1 Maximal Ancestral Graphs and PAGs\nIn the previous chapter we assumed all causally relevant variables were observed. This assumption — called causal sufficiency — rarely holds in economics: unobserved ability confounds wage regressions, unobserved demand shocks confound price–quantity relationships, unobserved peer effects confound social network studies.\nWhen latent confounders exist, constraint-based discovery algorithms like PC and RSL-D return incorrect results. This chapter introduces two algorithms that handle the latent variable case.\nWith latent variables, the appropriate representation is a Maximal Ancestral Graph (MAG). Over a set of observed variables \\(\\mathbf{O}\\), a MAG encodes:\nJust as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have equivalence classes represented by Partial Ancestral Graphs (PAGs). In a PAG, the mark \\(\\circ\\) on an edge endpoint means “could be arrowhead or tail in some member of the equivalence class.”",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#maximal-ancestral-graphs-and-pags",
+    "href": "causal-discovery-latent.html#maximal-ancestral-graphs-and-pags",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "",
+    "text": "\\(X \\to Y\\): \\(X\\) is an ancestor of \\(Y\\) in the full DAG\n\\(X \\leftrightarrow Y\\): \\(X\\) and \\(Y\\) have a common hidden ancestor (hidden confounder)\nNo edge: \\(X \\perp\\!\\!\\!\\perp Y \\mid Z\\) for some \\(Z \\subseteq \\mathbf{O} \\setminus \\{X, Y\\}\\)\n\n\n\n\n\n\n\n\n\nPAG mark\nMeaning\n\n\n\n\n\\(X \\to Y\\)\n\\(X\\) causes \\(Y\\) in every equivalent MAG\n\n\n\\(X \\leftarrow\\!\\!\\!\\!\\circ\\; Y\\)\nSome MAGs have \\(X \\to Y\\), others have \\(X \\leftarrow Y\\)\n\n\n\\(X \\leftrightarrow Y\\)\nHidden common cause in every equivalent MAG\n\n\n\\(X \\;\\circ\\!\\!\\!\\!-\\!\\!\\!\\!\\circ\\; Y\\)\nCould be \\(\\to\\), \\(\\leftarrow\\), or \\(\\leftrightarrow\\)",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#simulation-with-hidden-variables",
+    "href": "causal-discovery-latent.html#simulation-with-hidden-variables",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "7.2 Simulation with Hidden Variables",
+    "text": "7.2 Simulation with Hidden Variables\nWe reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.\n\nRandom.seed!(2025)\n\nn_vars    = 8\nn_samples = 2000\nedge_prob = 0.35\nlatent    = [3, 6]          # nodes treated as hidden\nobs_idx   = setdiff(1:n_vars, latent)  # observed node indices\n\nadj_mat      = gen_er_dag_adj_mat(n_vars, edge_prob)\ndata_full    = gen_gaussian_data(adj_mat, n_samples)\ndata_obs     = data_full[:, obs_idx]   # only observed columns\nn_obs        = length(obs_idx)\n\n@printf \"Total variables: %d   Hidden: %s   Observed: %d\\n\" n_vars latent n_obs\n\nTotal variables: 8   Hidden: [3, 6]   Observed: 6\n\n\n\n7.2.1 True structure over observed variables\nWe can compute the true skeleton over observed variables using oracle d-separation: two observed variables are adjacent in the MAG iff no subset of the observed variables d-separates them in the full DAG.\n\ntrue_dag = SimpleDiGraph(adj_mat)\n\n# True MAG skeleton: edge (i,j) iff no observed subset d-separates obs_idx[i] from obs_idx[j]\nfunction true_mag_skeleton(dag, observed)\n    p = length(observed)\n    skel = SimpleGraph(p)\n    for i in 1:(p-1), j in (i+1):p\n        u, v = observed[i], observed[j]\n        other_obs = setdiff(observed, [u, v])\n        # Check all subsets of other observed variables\n        separated = any(dsep(dag, u, v, S) for S in powerset(other_obs))\n        if !separated\n            add_edge!(skel, i, j)\n        end\n    end\n    return skel\nend\n\ntrue_obs_skel = true_mag_skeleton(true_dag, obs_idx)\n@printf \"True MAG skeleton edges (over %d observed nodes): %d\\n\" n_obs ne(true_obs_skel)\n\nTrue MAG skeleton edges (over 6 observed nodes): 5\n\n\nWe can visualize the full DAG with hidden nodes highlighted, alongside the true MAG skeleton:\n\nlet\n    node_labels = [\"X$i\" for i in 1:n_vars]\n    obs_labels  = [\"X$(obs_idx[i])\" for i in 1:n_obs]\n    node_colors = [i ∈ latent ? :tomato : :steelblue for i in 1:n_vars]\n\n    fig = Figure(size=(850, 380))\n\n    ax1 = Axis(fig[1,1]; title=\"Full DAG (red = hidden)\")\n    graphplot!(ax1, true_dag;\n        kwargs_pdag_graphmakie(true_dag; ilabels=node_labels)...,\n        node_color=node_colors)\n    hidedecorations!(ax1); hidespines!(ax1)\n\n    ax2 = Axis(fig[1,2]; title=\"True MAG skeleton (observed only)\")\n    graphplot!(ax2, true_obs_skel;\n        ilabels=obs_labels, ilabels_fontsize=18,\n        node_color=fill(:steelblue, n_obs))\n    hidedecorations!(ax2); hidespines!(ax2)\n\n    fig\nend\n\n\n┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.\n\n└ @ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238\n\n\n\n\n\n\n\n\n\n\nFigure 7.1: Left: full DAG (red = latent, blue = observed). Right: true MAG skeleton over observed variables — edges include both direct causal paths and confounding via hidden nodes.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#fci-algorithm",
+    "href": "causal-discovery-latent.html#fci-algorithm",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "7.3 FCI Algorithm",
+    "text": "7.3 FCI Algorithm\nThe FCI algorithm (Fast Causal Inference; Spirtes, Meek & Richardson, 1995) is the standard extension of PC to the latent variable case. Like PC, it starts from a complete graph and removes edges via CI tests. After skeleton discovery, it applies a richer set of orientation rules that can produce bidirected edges \\(X \\leftrightarrow Y\\) indicating hidden common causes.\n\nsig_level = 0.01\n\n# Count CI tests\ncount_fci = Ref(0)\nci_fci = (x, y, S, d) -&gt; begin\n    count_fci[] += 1\n    fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig_level)\nend\n\npag_fci  = fcialg(n_obs, ci_fci, data_obs)\nskel_fci = SimpleGraph(pag_fci)   # undirected skeleton of the PAG\n\nf1_fci = f1_score(true_obs_skel, skel_fci)\n@printf \"FCI:     skeleton F1 = %.3f   CI tests = %d\\n\" f1_fci count_fci[]\n\nFCI:     skeleton F1 = 0.889   CI tests = 82\n\n\n\n\n\nprintln(plot_fci_graph_text(pag_fci, [\"X$(obs_idx[i])\" for i in 1:n_obs]))\n\nX1&lt;-X2   X1&lt;-X7   X2o-oX5  X5o-oX7                                      nothing\n\n\n\nFigure 7.2",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#l-marvel-algorithm",
+    "href": "causal-discovery-latent.html#l-marvel-algorithm",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "7.4 L-MARVEL Algorithm",
+    "text": "7.4 L-MARVEL Algorithm\nL-MARVEL (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of the exhaustive conditional independence approach to Markov boundary discovery used by PC/FCI, L-MARVEL uses a Gaussian precision matrix estimator:\n\\[\\widehat{\\text{Mb}}(X) = \\left\\{Y : \\frac{|\\hat P_{XY}|}{\\sqrt{\\hat P_{XX} \\hat P_{YY}}} &gt; \\tau\\right\\}\\]\nwhere \\(\\hat P = \\hat\\Sigma^{-1}\\) is the precision matrix and \\(\\tau\\) is a threshold from the Fisher-Z distribution. This is both faster and more stable in the latent variable setting.\nThe removability criterion changes for the latent case (Theorem 32): variable \\(X\\) is removable iff for every \\(Y \\in \\text{Mb}(X)\\) and \\(Z \\in \\text{Ne}(X)\\):\n\\[\\underbrace{\\exists\\, W \\subseteq \\text{Mb}(X) \\setminus \\{Y,Z\\}: Y \\perp\\!\\!\\!\\perp Z \\mid W}_{\\text{Condition 1}} \\quad\\text{or}\\quad \\underbrace{\\forall\\, W \\subseteq \\text{Mb}(X) \\setminus \\{Y,Z\\}: Y \\not\\!\\perp\\!\\!\\!\\perp Z \\mid W \\cup \\{X\\}}_{\\text{Condition 2}}\\]\nL-MARVEL learns only the skeleton (not orientations), but does so correctly even when hidden confounders exist.\n\ncount_lm = Ref(0)\nci_lm = (x, y, S, d) -&gt; begin\n    count_lm[] += 1\n    fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig_level)\nend\n\nlm_skel = l_marvel(data_obs, ci_lm)\n\nf1_lm = f1_score(true_obs_skel, lm_skel)\n@printf \"L-MARVEL: skeleton F1 = %.3f   CI tests = %d\\n\" f1_lm count_lm[]\n\nL-MARVEL: skeleton F1 = 1.000   CI tests = 14",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#comparison",
+    "href": "causal-discovery-latent.html#comparison",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "7.5 Comparison",
+    "text": "7.5 Comparison\n\nDataFrame(\n    Algorithm   = [\"FCI\", \"L-MARVEL\"],\n    Output      = [\"PAG (orientations + skeleton)\", \"Skeleton only\"],\n    Skeleton_F1 = round.([f1_fci, f1_lm], digits=3),\n    CI_Tests    = [count_fci[], count_lm[]],\n)\n\n\n\nTable 7.1: Algorithm comparison on the latent-variable scenario (2 hidden nodes, n = 2000)\n\n\n\n2×4 DataFrame\n\n\n\nRow\nAlgorithm\nOutput\nSkeleton_F1\nCI_Tests\n\n\n\nString\nString\nFloat64\nInt64\n\n\n\n\n1\nFCI\nPAG (orientations + skeleton)\n0.889\n82\n\n\n2\nL-MARVEL\nSkeleton only\n1.0\n14\n\n\n\n\n\n\n\n\n\n\nlet\n    obs_labels = [\"X$(obs_idx[i])\" for i in 1:n_obs]\n    fig = Figure(size=(1000, 380))\n\n    for (col, (g, title)) in enumerate([\n        (true_obs_skel, \"True MAG skeleton\"),\n        (skel_fci,      \"FCI — estimated skeleton\"),\n        (lm_skel,       \"L-MARVEL — estimated skeleton\"),\n    ])\n        ax = Axis(fig[1, col]; title)\n        graphplot!(ax, g; ilabels=obs_labels, ilabels_fontsize=16,\n            node_color=fill(:steelblue, n_obs))\n        hidedecorations!(ax); hidespines!(ax)\n    end\n    fig\nend\n\n\n┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.\n\n└ @ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238\n\n\n\n\n\n\n\n\n\n\nFigure 7.3: Skeleton comparison. True MAG skeleton vs. estimated skeletons from FCI and L-MARVEL.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#monte-carlo-evaluation",
+    "href": "causal-discovery-latent.html#monte-carlo-evaluation",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "7.6 Monte Carlo Evaluation",
+    "text": "7.6 Monte Carlo Evaluation\n\nfunction evaluate_latent(seed; n_vars=8, n_samples=2000, edge_prob=0.35, n_latent=2, sig=0.01)\n    Random.seed!(seed)\n    adj  = gen_er_dag_adj_mat(n_vars, edge_prob)\n    data_full = gen_gaussian_data(adj, n_samples)\n    dag  = SimpleDiGraph(adj)\n\n    # randomly pick which variables are latent (no StatsBase dependency needed)\n    latent_vars = sort(randperm(n_vars)[1:n_latent])\n    obs_vars    = setdiff(1:n_vars, latent_vars)\n    data_obs    = data_full[:, obs_vars]\n    n_obs       = length(obs_vars)\n\n    true_skel = true_mag_skeleton(dag, obs_vars)\n\n    # FCI\n    cnt_fci = Ref(0)\n    ci_fci = (x, y, S, d) -&gt; begin\n        cnt_fci[] += 1\n        fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)\n    end\n    pag  = fcialg(n_obs, ci_fci, data_obs)\n    f1f  = f1_score(true_skel, SimpleGraph(pag))\n\n    # L-MARVEL\n    cnt_lm = Ref(0)\n    ci_lm = (x, y, S, d) -&gt; begin\n        cnt_lm[] += 1\n        fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)\n    end\n    skel_lm = l_marvel(data_obs, ci_lm)\n    f1l     = f1_score(true_skel, skel_lm)\n\n    (f1_fci=f1f, f1_lm=f1l, ci_fci=cnt_fci[], ci_lm=cnt_lm[])\nend\n\nmc = [evaluate_latent(s) for s in 1:100]\n\n@printf \"\\nMonte Carlo averages (100 replications, n=%d, p=%d, %d latent)\\n\" n_samples n_vars 2\n@printf \"%-10s  Skeleton F1  CI tests\\n\" \"Method\"\n@printf \"%-10s  %10.3f  %8.1f\\n\" \"FCI\"      mean(r.f1_fci for r in mc) mean(r.ci_fci for r in mc)\n@printf \"%-10s  %10.3f  %8.1f\\n\" \"L-MARVEL\" mean(r.f1_lm  for r in mc) mean(r.ci_lm  for r in mc)\n\n\nMonte Carlo averages (100 replications, n=2000, p=8, 2 latent)\nMethod      Skeleton F1  CI tests\nFCI              0.912     171.8\nL-MARVEL         0.934      80.9\n\n\n\nlet\n    fig = Figure(size=(650, 380))\n    ax  = Axis(fig[1,1];\n        xlabel = \"CI tests\",\n        ylabel = \"Frequency\",\n        title  = \"CI Test Counts: FCI vs L-MARVEL (100 replications)\")\n    hist!(ax, [r.ci_fci for r in mc]; bins=20, color=(:steelblue, 0.65), label=\"FCI\")\n    hist!(ax, [r.ci_lm  for r in mc]; bins=20, color=(:tomato, 0.65),    label=\"L-MARVEL\")\n    axislegend(ax)\n    fig\nend\n\n\n┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.\n\n└ @ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238\n\n\n\n\n\n\n\n\n\n\nFigure 7.4: CI test count distributions across 100 replications. L-MARVEL’s Gaussian MB estimator reduces the number of CI tests needed.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
+  },
+  {
+    "objectID": "causal-discovery-latent.html#summary",
+    "href": "causal-discovery-latent.html#summary",
+    "title": "7  Causal Discovery: Latent Variables",
+    "section": "7.7 Summary",
+    "text": "7.7 Summary\n\n\n\n\n\n\n\n\n\nProperty\nPC / RSL-D\nFCI\nL-MARVEL\n\n\n\n\nLatent confounders\n✗ assumes none\n✓ handles\n✓ handles\n\n\nOutput\nCPDAG\nPAG\nSkeleton\n\n\nOrientations\n✓\n✓\n✗\n\n\nMB estimation\nCI tests\nCI tests\nPrecision matrix\n\n\nCI complexity\nPC: \\(O(p^2 2^p)\\) worst case; RSL-D: \\(O(p \\cdot d \\cdot |\\text{MB}|^2)\\)\nSame as PC\nFewer (Gaussian MB pre-filters)\n\n\n\nFCI and L-MARVEL address complementary needs. If you need to orient edges (identify which variable causes which), use FCI. If you only need the skeleton and efficiency matters, L-MARVEL’s precision-matrix Markov boundary estimator reduces the CI test burden.\n\n\n\n\n\n\nWarning\n\n\n\nSample size requirements\nL-MARVEL’s Gaussian MB estimator requires \\(n &gt; p + 1\\) samples (to invert the precision matrix). With many variables and limited data, this can fail. In that case, fall back to using CI tests for MB estimation by passing a custom mb_estimator argument to l_marvel.\n\n\n\n\n\n\n\n\nNote\n\n\n\nGoing further: orientation in the latent case\nFCI’s PAG output is rich: it distinguishes definite causes (\\(\\to\\)), definite hidden common causes (\\(\\leftrightarrow\\)), and uncertain cases (\\(\\circ\\)). For policy analysis, the distinction between a direct causal effect and a confounded association is critical. The PAG can be combined with background knowledge (e.g., temporal ordering) to further orient edges.",
+    "crumbs": [
+      "Causal Discovery",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Causal Discovery: Latent Variables</span>"
+    ]
   }
 ]
