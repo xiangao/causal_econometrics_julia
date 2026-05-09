@@ -13,6 +13,19 @@ using Logging
 using Random
 ```
 
+```{julia}
+#| eval: false
+using CausalGraphs
+using CausalEstimate
+import CausalGraphs: identify, make_graph, to_mermaid, markov_pillow
+import CausalEstimate: estimate, confint, pvalue
+using DataFrames
+using DelimitedFiles
+using Downloads
+using Logging
+using Random
+```
+
 The previous chapter introduced the graph-identification-estimation workflow
 with small examples. This chapter applies the same workflow to a real data set:
 the complete-case National Health and Nutrition Examination Survey I

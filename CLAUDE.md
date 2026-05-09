@@ -21,17 +21,23 @@
 
 ## Custom packages (all at ~/projects/software/)
 
-| Package | Purpose |
-|---------|---------|
-| `RDRobust.jl` | RD estimation: `rdrobust`, `rdbwselect`, `rdplot` |
-| `Panelest.jl` | FE panel OLS/GLM: `feols`, `feiv` |
-| `CausalGraphs.jl` | DAG/ADMG construction, identification, and ID algorithm |
-| `CausalEstimate.jl` | Unified TMLE/AIPW: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` |
-| `SynthDiD.jl` | Synthetic DiD: `synthdid_estimate`, `sc_estimate`, `did_estimate` |
-| `DiD.jl` | ETWFE + `emfx()` aggregation; `dataset("mpdta")` |
-| `CausalGraphs.jl` | DAG/ADMG identification + p-fixable/nested estimation |
-| `Lavaan.jl` | SEM: `sem()` |
-| `Crumble.jl` | Causal mediation analysis |
+| Package | Version | Purpose | Julia General PR |
+|---------|---------|---------|---------|
+| `RDRobust.jl` | 0.1.0 | RD estimation: `rdrobust`, `rdbwselect`, `rdplot` | [#155054](https://github.com/JuliaRegistries/General/pull/155054) |
+| `Panelest.jl` | 0.1.1 | FE panel OLS/GLM: `feols`, `feiv` | [#155060](https://github.com/JuliaRegistries/General/pull/155060) |
+| `CausalGraphs.jl` | 0.1.1 | DAG/ADMG construction, identification, and ID algorithm | [#155059](https://github.com/JuliaRegistries/General/pull/155059) |
+| `CausalEstimate.jl` | 0.1.0 | Unified TMLE/AIPW: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` | pending CausalGraphs merge |
+| `SynthDiD.jl` | 0.1.0 | Synthetic DiD: `synthdid_estimate`, `sc_estimate`, `did_estimate` | [#155055](https://github.com/JuliaRegistries/General/pull/155055) |
+| `DiD.jl` | 0.1.0 | ETWFE + `emfx()` aggregation; `dataset("mpdta")` | [#155056](https://github.com/JuliaRegistries/General/pull/155056) |
+| `Lavaan.jl` | 0.1.0 | SEM: `sem()` | [#155057](https://github.com/JuliaRegistries/General/pull/155057) |
+| `Crumble.jl` | 0.1.0 | Causal mediation analysis | [#155058](https://github.com/JuliaRegistries/General/pull/155058) |
+
+**Registration notes:**
+- All 8 packages submitted to Julia General Registry (JuliaRegistrator app installed on all repos)
+- CausalEstimate registration blocked until CausalGraphs PR merges — re-trigger with `@JuliaRegistrator register` on the v0.1.0 tagged commit once CausalGraphs is merged
+- CausalGraphs and Panelest are v0.1.1 (v0.1.0 had unregistered weakdeps that were removed: NPCausal from CausalGraphs, DuckDB/DBInterface from Panelest)
+- `RecursiveCausalDiscovery` is still a local path dep (`~/projects/repo_cloned/`) — not our package, upstream registration pending
+- UUID fixes applied: CausalGraphs, Crumble, Lavaan had placeholder UUIDs replaced with valid UUID4 values
 
 ## CausalEstimate.jl API
 
@@ -57,6 +63,11 @@ result.primary.standard_error
 ```
 
 For p-fixable / front-door / nested-fixable / ID plug-in effects, use `CausalGraphs.estimate_causal(...)` directly.
+
+## Chapter structure notes
+
+- Each chapter has a **hidden setup block** (`#| include: false`) loading all packages and helper functions, followed immediately by a **visible display block** (`#| eval: false`) showing only the `using`/`import` lines. Edit both if adding new packages.
+- Causal discovery chapters (`causal-discovery.qmd`, `causal-discovery-latent.qmd`) use `gen_er_dag_adj_mat` and `gen_gaussian_data` from `RecursiveCausalDiscovery` (local clone at `~/projects/repo_cloned/RecursiveCausalDiscovery.jl`).
 
 ## Sysimage notes
 

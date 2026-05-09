@@ -4,8 +4,67 @@
 #| include: false
 using CausalInference
 using RecursiveCausalDiscovery
+using CausalGraphs
 using Graphs
-using GraphMakie
+using CairoMakie
+using Statistics
+using LinearAlgebra
+using Random
+using Printf
+using DataFrames
+using Combinatorics: powerset
+using Distributions: Normal, quantile
+
+# ── Graph helpers (shared with chapter 1) ────────────────────────────────────
+
+function adjmat_to_admg(adj::AbstractMatrix, labels::Vector{String})
+    n = size(adj, 1)
+    vs = Symbol.(labels)
+    di = [(vs[i], vs[j]) for i in 1:n, j in 1:n if adj[i,j] == 1]
+    make_graph(vertices=vs, di_edges=di)
+end
+
+function skeleton_to_admg(g::SimpleGraph, labels::Vector{String})
+    vs = Symbol.(labels)
+    bi = [(vs[e.src], vs[e.dst]) for e in edges(g)]
+    make_graph(vertices=vs, bi_edges=bi)
+end
+
+struct MultiSVG; html::String; end
+Base.show(io::IO, ::MIME"text/html", m::MultiSVG) = print(io, m.html)
+
+function side_by_side(graphs_titles; direction="TB", note="")
+    items = String[]
+    for (g, title) in graphs_titles
+        svg = to_svg(g; direction=direction)
+        svg === nothing && continue
+        push!(items, """<div style="text-align:center;flex:1">
+            <p style="margin:0 0 4px;font-weight:600">$title</p>$svg</div>""")
+    end
+    note_html = isempty(note) ? "" : """<p style="font-size:.85em;color:#666;margin-top:6px">$note</p>"""
+    MultiSVG("""<div style="display:flex;gap:20px;flex-wrap:wrap;
+        justify-content:center;align-items:flex-start">$(join(items))</div>$note_html""")
+end
+
+# Full DAG via CausalGraphs — latent nodes shown as squares (fixed=true), observed as plaintext
+function admg_with_latent(adj::AbstractMatrix, all_labels, latent_idx)
+    n = size(adj, 1)
+    vs = Symbol.(all_labels)
+    di = [(vs[i], vs[j]) for i in 1:n, j in 1:n if adj[i,j] == 1]
+    g = make_graph(vertices=vs, di_edges=di)
+    for i in latent_idx
+        g.fixed[vs[i]] = true   # square shape marks hidden nodes
+    end
+    g
+end
+```
+
+```{julia}
+#| eval: false
+using CausalInference
+using RecursiveCausalDiscovery
+using CausalGraphs
+using Graphs
 using CairoMakie
 using Statistics
 using LinearAlgebra
@@ -20,6 +79,12 @@ In the previous chapter we assumed all causally relevant variables were observed
 
 When latent confounders exist, constraint-based discovery algorithms like PC and RSL-D return incorrect results. This chapter introduces two algorithms that handle the latent variable case.
 
+### Why PC fails with latent variables
+
+Suppose the true graph is $X \leftarrow U \rightarrow Y$ where $U$ is unobserved. In the observed data, $X$ and $Y$ are marginally correlated (through $U$) and no observed conditioning set separates them. PC will incorrectly draw an edge $X - Y$ and may orient it as $X \to Y$ or $X \leftarrow Y$, neither of which exists in the truth.
+
+More subtly, conditioning on a collider that is a descendant of $U$ can *open* a path between $X$ and $Y$, further distorting the CI structure that PC observes. With even a single hidden common cause, the d-separation statements in the observed data no longer correspond to those of any DAG over just the observed variables — they require the richer MAG representation.
+
 ## Maximal Ancestral Graphs and PAGs
 
 With latent variables, the appropriate representation is a **Maximal Ancestral Graph (MAG)**. Over a set of *observed* variables $\mathbf{O}$, a MAG encodes:
@@ -28,14 +93,22 @@ With latent variables, the appropriate representation is a **Maximal Ancestral G
 - $X \leftrightarrow Y$: $X$ and $Y$ have a common hidden ancestor (hidden confounder)
 - No edge: $X \perp\!\!\!\perp Y \mid Z$ for some $Z \subseteq \mathbf{O} \setminus \{X, Y\}$
 
+The MAG over observed variables is the "shadow" of the full DAG: it summarizes all causal and confounding relationships that are visible in the observed data, without requiring us to know or name the latent variables.
+
 Just as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have equivalence classes represented by **Partial Ancestral Graphs (PAGs)**. In a PAG, the mark $\circ$ on an edge endpoint means "could be arrowhead or tail in some member of the equivalence class."
 
-| PAG mark | Meaning |
-|---|---|
-| $X \to Y$ | $X$ causes $Y$ in every equivalent MAG |
-| $X \leftarrow\!\!\!\!\circ\; Y$ | Some MAGs have $X \to Y$, others have $X \leftarrow Y$ |
-| $X \leftrightarrow Y$ | Hidden common cause in every equivalent MAG |
-| $X \;\circ\!\!\!\!-\!\!\!\!\circ\; Y$ | Could be $\to$, $\leftarrow$, or $\leftrightarrow$ |
+| PAG mark | Meaning | Economic interpretation |
+|---|---|---|
+| $X \to Y$ | $X$ causes $Y$ in every equivalent MAG | Robust causal direction |
+| $X \leftarrow\!\!\!\!\circ\; Y$ | Some MAGs have $X \to Y$, others $X \leftarrow Y$ | Direction uncertain |
+| $X \leftrightarrow Y$ | Hidden common cause in every equivalent MAG | Definite unmeasured confounder |
+| $X \;\circ\!\!\!\!-\!\!\!\!\circ\; Y$ | Could be $\to$, $\leftarrow$, or $\leftrightarrow$ | Maximally uncertain |
+
+**Reading a PAG for policy purposes:**
+
+- A definite $X \to Y$ edge is the most useful finding: it means any intervention on $X$ propagates to $Y$ regardless of which specific MAG the data came from.
+- A definite $X \leftrightarrow Y$ edge is a warning: before using regression of $Y$ on $X$ to estimate a causal effect, you must address the hidden confounder — through an instrument, a proxy, or a natural experiment.
+- $\circ$ marks indicate what you *don't* know. Additional data, temporal ordering, or experimental variation can resolve them.
 
 ## Simulation with Hidden Variables
 
@@ -47,36 +120,34 @@ Random.seed!(2025)
 n_vars    = 8
 n_samples = 2000
 edge_prob = 0.35
-latent    = [3, 6]          # nodes treated as hidden
-obs_idx   = setdiff(1:n_vars, latent)  # observed node indices
+latent    = [3, 6]
+obs_idx   = setdiff(1:n_vars, latent)
+all_labels = ["X$i" for i in 1:n_vars]
+obs_labels = ["X$(obs_idx[i])" for i in 1:length(obs_idx)]
 
-adj_mat      = gen_er_dag_adj_mat(n_vars, edge_prob)
-data_full    = gen_gaussian_data(adj_mat, n_samples)
-data_obs     = data_full[:, obs_idx]   # only observed columns
-n_obs        = length(obs_idx)
+adj_mat   = gen_er_dag_adj_mat(n_vars, edge_prob)
+data_full = gen_gaussian_data(adj_mat, n_samples)
+data_obs  = data_full[:, obs_idx]
+n_obs     = length(obs_idx)
 
 @printf "Total variables: %d   Hidden: %s   Observed: %d\n" n_vars latent n_obs
 ```
 
 ### True structure over observed variables
 
-We can compute the true skeleton over observed variables using oracle d-separation: two observed variables are adjacent in the MAG iff no subset of the *observed* variables d-separates them in the full DAG.
+Two observed variables are adjacent in the MAG iff no subset of the *observed* variables d-separates them in the full DAG.
 
 ```{julia}
 true_dag = SimpleDiGraph(adj_mat)
 
-# True MAG skeleton: edge (i,j) iff no observed subset d-separates obs_idx[i] from obs_idx[j]
 function true_mag_skeleton(dag, observed)
     p = length(observed)
     skel = SimpleGraph(p)
     for i in 1:(p-1), j in (i+1):p
         u, v = observed[i], observed[j]
         other_obs = setdiff(observed, [u, v])
-        # Check all subsets of other observed variables
         separated = any(dsep(dag, u, v, S) for S in powerset(other_obs))
-        if !separated
-            add_edge!(skel, i, j)
-        end
+        !separated && add_edge!(skel, i, j)
     end
     return skel
 end
@@ -85,44 +156,31 @@ true_obs_skel = true_mag_skeleton(true_dag, obs_idx)
 @printf "True MAG skeleton edges (over %d observed nodes): %d\n" n_obs ne(true_obs_skel)
 ```
 
-We can visualize the full DAG with hidden nodes highlighted, alongside the true MAG skeleton:
-
 ```{julia}
 #| label: fig-latent-dag
-#| fig-cap: "Left: full DAG (red = latent, blue = observed). Right: true MAG skeleton over observed variables — edges include both direct causal paths and confounding via hidden nodes."
-#| fig-width: 9
-#| fig-height: 4
-let
-    node_labels = ["X$i" for i in 1:n_vars]
-    obs_labels  = ["X$(obs_idx[i])" for i in 1:n_obs]
-    node_colors = [i ∈ latent ? :tomato : :steelblue for i in 1:n_vars]
-
-    fig = Figure(size=(850, 380))
-
-    ax1 = Axis(fig[1,1]; title="Full DAG (red = hidden)")
-    graphplot!(ax1, true_dag;
-        kwargs_pdag_graphmakie(true_dag; ilabels=node_labels)...,
-        node_color=node_colors)
-    hidedecorations!(ax1); hidespines!(ax1)
-
-    ax2 = Axis(fig[1,2]; title="True MAG skeleton (observed only)")
-    graphplot!(ax2, true_obs_skel;
-        ilabels=obs_labels, ilabels_fontsize=18,
-        node_color=fill(:steelblue, n_obs))
-    hidedecorations!(ax2); hidespines!(ax2)
-
-    fig
-end
+#| fig-cap: "Full DAG (square nodes are hidden) and true MAG skeleton over observed variables. Skeleton edges include both direct paths and paths through hidden variables."
+side_by_side([
+    (admg_with_latent(adj_mat, all_labels, latent), "Full DAG (square = hidden)"),
+    (skeleton_to_admg(true_obs_skel, obs_labels),   "True MAG skeleton (observed)"),
+]; note="Square nodes are unobserved (latent). Plaintext nodes are observed.")
 ```
 
 ## FCI Algorithm
 
 The **FCI algorithm** (Fast Causal Inference; Spirtes, Meek & Richardson, 1995) is the standard extension of PC to the latent variable case. Like PC, it starts from a complete graph and removes edges via CI tests. After skeleton discovery, it applies a richer set of orientation rules that can produce bidirected edges $X \leftrightarrow Y$ indicating hidden common causes.
 
+**How FCI extends PC:**
+
+1. **Phase 1 (skeleton):** Same as PC — remove edges via CI tests with growing conditioning sets.
+2. **Phase 2 (initial orientation):** Mark all edge endpoints as $\circ$ (uncertain).
+3. **Phase 3 (collider detection):** For each unshielded triple $X \circ\!-\!\circ Z \circ\!-\!\circ Y$ where $X, Y$ non-adjacent: orient as $X \circ\!\to Z \leftarrow\!\circ Y$ if $Z$ is not in the separating set of $X$ and $Y$.
+4. **Phase 4 (rule propagation):** Apply 10 orientation rules that propagate known marks without creating contradictions, including rules that can produce definite $\to$ and $\leftrightarrow$ edges.
+
+The richer mark set ($\to$, $\leftarrow$, $\circ$, $\leftrightarrow$) allows FCI to express what is known vs. unknown — at the cost of more complex output to interpret.
+
 ```{julia}
 sig_level = 0.01
 
-# Count CI tests
 count_fci = Ref(0)
 ci_fci = (x, y, S, d) -> begin
     count_fci[] += 1
@@ -130,7 +188,7 @@ ci_fci = (x, y, S, d) -> begin
 end
 
 pag_fci  = fcialg(n_obs, ci_fci, data_obs)
-skel_fci = SimpleGraph(pag_fci)   # undirected skeleton of the PAG
+skel_fci = SimpleGraph(pag_fci)
 
 f1_fci = f1_score(true_obs_skel, skel_fci)
 @printf "FCI:     skeleton F1 = %.3f   CI tests = %d\n" f1_fci count_fci[]
@@ -138,23 +196,45 @@ f1_fci = f1_score(true_obs_skel, skel_fci)
 
 ```{julia}
 #| label: fig-fci-pag
-#| fig-cap: "PAG estimated by FCI. The `o` marks at edge endpoints indicate uncertainty about orientation. A bidirected edge `↔` identifies a definite hidden common cause."
+#| fig-cap: "PAG estimated by FCI. The `o` marks indicate uncertainty about orientation. A bidirected `↔` edge identifies a definite hidden common cause."
 println(plot_fci_graph_text(pag_fci, ["X$(obs_idx[i])" for i in 1:n_obs]))
 ```
 
+::: {.callout-note}
+**Reading the FCI text output**
+
+The text representation uses ASCII edge marks:
+
+- `X1 --> X2`: definite direct cause ($X_1 \to X_2$ in every equivalent MAG)
+- `X1 <-> X2`: definite hidden common cause ($X_1 \leftrightarrow X_2$)
+- `X1 o-> X2`: the $X_1$ endpoint is uncertain; $X_2$ endpoint is definitely an arrowhead
+- `X1 o-o X2`: both endpoints uncertain; could be any of $\to$, $\leftarrow$, $\leftrightarrow$
+
+In practice for economic research: focus first on `<->` edges — these flag definite confounding and tell you where IV or proxy strategies are needed. Then examine `-->` edges — these are causal claims that survive across all statistically equivalent structures.
+:::
+
+**When FCI gives wrong answers:** FCI assumes the CI tests are perfectly accurate (no finite-sample error). In practice, with small $n$ or many variables, some false CI decisions propagate through the orientation rules. The skeleton quality (F1) is generally more reliable than the orientation quality.
+
 ## L-MARVEL Algorithm
 
-**L-MARVEL** (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of the exhaustive conditional independence approach to Markov boundary discovery used by PC/FCI, L-MARVEL uses a **Gaussian precision matrix** estimator:
+**L-MARVEL** (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of exhaustive CI-test-based Markov boundary discovery, L-MARVEL uses a **Gaussian precision matrix** estimator:
 
 $$\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} > \tau\right\}$$
 
-where $\hat P = \hat\Sigma^{-1}$ is the precision matrix and $\tau$ is a threshold from the Fisher-Z distribution. This is both faster and more stable in the latent variable setting.
+where $\hat P = \hat\Sigma^{-1}$ is the precision matrix and $\tau$ is a threshold from the Fisher-Z distribution.
+
+**Why the precision matrix?** In a Gaussian linear model, the $(i,j)$ entry of the precision matrix $P = \Sigma^{-1}$ is zero if and only if $X_i \perp\!\!\!\perp X_j \mid \text{all other variables}$. The partial correlation $P_{ij}/\sqrt{P_{ii}P_{jj}}$ is therefore a one-shot test for Markov boundary membership, replacing the many conditioning-set CI tests that PC or FCI require to find the same information. This is the key computational saving.
 
 The removability criterion changes for the latent case (Theorem 32): variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X)$:
 
 $$\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\!\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}$$
 
-L-MARVEL learns only the **skeleton** (not orientations), but does so correctly even when hidden confounders exist.
+**Intuition for the two conditions:**
+
+- **Condition 1** is the same as the observed-variable (RSL-D) removability criterion: $Y$ and $Z$ can be separated by some subset of the Markov boundary.
+- **Condition 2** is new and handles latent variables: if $Y$ and $Z$ are connected through a hidden common cause, conditioning on *any* subset of Mb$(X)$ won't separate them — but conditioning on $X$ itself would (because $X$ may block the latent path). Condition 2 catches this case.
+
+Together, the two conditions ensure that removing $X$ does not destroy information about the latent structure connecting its neighbours.
 
 ```{julia}
 count_lm = Ref(0)
@@ -168,6 +248,16 @@ lm_skel = l_marvel(data_obs, ci_lm)
 f1_lm = f1_score(true_obs_skel, lm_skel)
 @printf "L-MARVEL: skeleton F1 = %.3f   CI tests = %d\n" f1_lm count_lm[]
 ```
+
+::: {.callout-note}
+**L-MARVEL output: skeleton only**
+
+Unlike FCI, L-MARVEL returns only the **skeleton** — undirected edges with no arrowhead or bidirected marks. This is a deliberate design choice: the recursive removal procedure identifies *adjacencies* efficiently but does not run the full PAG orientation phase.
+
+This is still valuable. Knowing which pairs of variables are adjacent tells you which potential causal relationships to investigate further (with instruments, experiments, or domain knowledge). Variables with no edge are conditionally independent given some observed set — no causal relationship need be posited between them.
+
+If you need orientations as well as skeleton, run FCI. If you only need to screen out non-adjacent pairs (the most common use case in large-$p$ problems), L-MARVEL's precision matrix approach is substantially faster.
+:::
 
 ## Comparison
 
@@ -184,25 +274,12 @@ DataFrame(
 
 ```{julia}
 #| label: fig-latent-skeletons
-#| fig-cap: "Skeleton comparison. True MAG skeleton vs. estimated skeletons from FCI and L-MARVEL."
-#| fig-width: 11
-#| fig-height: 4
-let
-    obs_labels = ["X$(obs_idx[i])" for i in 1:n_obs]
-    fig = Figure(size=(1000, 380))
-
-    for (col, (g, title)) in enumerate([
-        (true_obs_skel, "True MAG skeleton"),
-        (skel_fci,      "FCI — estimated skeleton"),
-        (lm_skel,       "L-MARVEL — estimated skeleton"),
-    ])
-        ax = Axis(fig[1, col]; title)
-        graphplot!(ax, g; ilabels=obs_labels, ilabels_fontsize=16,
-            node_color=fill(:steelblue, n_obs))
-        hidedecorations!(ax); hidespines!(ax)
-    end
-    fig
-end
+#| fig-cap: "True MAG skeleton vs. skeletons recovered by FCI and L-MARVEL over the 6 observed nodes."
+side_by_side([
+    (skeleton_to_admg(true_obs_skel, obs_labels), "True MAG skeleton"),
+    (skeleton_to_admg(skel_fci,      obs_labels), "FCI — estimated skeleton"),
+    (skeleton_to_admg(lm_skel,       obs_labels), "L-MARVEL — estimated skeleton"),
+]; note="All edges shown as undirected (skeleton comparison only).")
 ```
 
 ## Monte Carlo Evaluation
@@ -211,11 +288,10 @@ end
 #| cache: true
 function evaluate_latent(seed; n_vars=8, n_samples=2000, edge_prob=0.35, n_latent=2, sig=0.01)
     Random.seed!(seed)
-    adj  = gen_er_dag_adj_mat(n_vars, edge_prob)
+    adj       = gen_er_dag_adj_mat(n_vars, edge_prob)
     data_full = gen_gaussian_data(adj, n_samples)
-    dag  = SimpleDiGraph(adj)
+    dag       = SimpleDiGraph(adj)
 
-    # randomly pick which variables are latent (no StatsBase dependency needed)
     latent_vars = sort(randperm(n_vars)[1:n_latent])
     obs_vars    = setdiff(1:n_vars, latent_vars)
     data_obs    = data_full[:, obs_vars]
@@ -223,21 +299,13 @@ function evaluate_latent(seed; n_vars=8, n_samples=2000, edge_prob=0.35, n_laten
 
     true_skel = true_mag_skeleton(dag, obs_vars)
 
-    # FCI
     cnt_fci = Ref(0)
-    ci_fci = (x, y, S, d) -> begin
-        cnt_fci[] += 1
-        fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)
-    end
-    pag  = fcialg(n_obs, ci_fci, data_obs)
-    f1f  = f1_score(true_skel, SimpleGraph(pag))
+    ci_fci  = (x, y, S, d) -> begin cnt_fci[] += 1; fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig) end
+    pag     = fcialg(n_obs, ci_fci, data_obs)
+    f1f     = f1_score(true_skel, SimpleGraph(pag))
 
-    # L-MARVEL
-    cnt_lm = Ref(0)
-    ci_lm = (x, y, S, d) -> begin
-        cnt_lm[] += 1
-        fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)
-    end
+    cnt_lm  = Ref(0)
+    ci_lm   = (x, y, S, d) -> begin cnt_lm[] += 1; fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig) end
     skel_lm = l_marvel(data_obs, ci_lm)
     f1l     = f1_score(true_skel, skel_lm)
 
@@ -254,7 +322,7 @@ mc = [evaluate_latent(s) for s in 1:100]
 
 ```{julia}
 #| label: fig-latent-mc
-#| fig-cap: "CI test count distributions across 100 replications. L-MARVEL's Gaussian MB estimator reduces the number of CI tests needed."
+#| fig-cap: "CI test count distributions across 100 replications."
 #| fig-width: 7
 #| fig-height: 4
 let
@@ -280,16 +348,44 @@ end
 | MB estimation | CI tests | CI tests | Precision matrix |
 | CI complexity | PC: $O(p^2 2^p)$ worst case; RSL-D: $O(p \cdot d \cdot |\text{MB}|^2)$ | Same as PC | Fewer (Gaussian MB pre-filters) |
 
-FCI and L-MARVEL address complementary needs. If you need to orient edges (identify which variable causes which), use FCI. If you only need the skeleton and efficiency matters, L-MARVEL's precision-matrix Markov boundary estimator reduces the CI test burden.
+FCI and L-MARVEL address complementary needs. If you need to orient edges, use FCI. If you only need the skeleton and efficiency matters, L-MARVEL's precision-matrix Markov boundary estimator reduces the CI test burden.
+
+### Practical decision guide
+
+**Use PC or RSL-D when:**
+- You are confident in causal sufficiency (all relevant variables are measured)
+- You want a CPDAG that you can orient further with background knowledge
+- RSL-D is preferred over PC when $p > 10$ or the graph may be moderately dense
+
+**Use FCI when:**
+- You suspect hidden confounders but don't know where
+- You need edge orientations and $\leftrightarrow$ marks to guide IV or proxy strategies
+- Sample size is large enough that CI-test errors don't cascade badly through orientation rules
+
+**Use L-MARVEL when:**
+- You suspect latent confounders and have many variables ($p > 20$)
+- The goal is to prune the adjacency graph before applying domain knowledge or estimation
+- Gaussian data is appropriate (precision matrix estimator requires this)
+
+### From discovery to estimation
+
+Causal discovery is a first step, not a final answer. The typical research workflow is:
+
+1. **Discover** — run FCI or L-MARVEL to get candidate adjacencies and, if using FCI, some edge marks
+2. **Refine** — apply temporal ordering, institutional knowledge, and exclusion restrictions to orient remaining edges
+3. **Identify** — check whether the effect of interest is identified given the refined graph (backdoor, front-door, ID algorithm)
+4. **Estimate** — use TMLE, AIPW, or the estimators in earlier chapters
+
+Causal discovery narrows the space of possible structures; domain knowledge finishes the job.
 
 ::: {.callout-warning}
 **Sample size requirements**
 
-L-MARVEL's Gaussian MB estimator requires $n > p + 1$ samples (to invert the precision matrix). With many variables and limited data, this can fail. In that case, fall back to using CI tests for MB estimation by passing a custom `mb_estimator` argument to `l_marvel`.
+L-MARVEL's Gaussian MB estimator requires $n > p + 1$ samples. With many variables and limited data, fall back to CI-test-based MB estimation by passing a custom `mb_estimator` to `l_marvel`.
 :::
 
 ::: {.callout-note}
 **Going further: orientation in the latent case**
 
-FCI's PAG output is rich: it distinguishes definite causes ($\to$), definite hidden common causes ($\leftrightarrow$), and uncertain cases ($\circ$). For policy analysis, the distinction between a direct causal effect and a confounded association is critical. The PAG can be combined with background knowledge (e.g., temporal ordering) to further orient edges.
+FCI's PAG output distinguishes definite causes ($\to$), definite hidden common causes ($\leftrightarrow$), and uncertain cases ($\circ$). The PAG can be combined with background knowledge such as temporal ordering to further orient edges before estimation.
 :::

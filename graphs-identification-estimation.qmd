@@ -12,6 +12,18 @@ using Statistics
 using Logging
 ```
 
+```{julia}
+#| eval: false
+using CausalGraphs
+using CausalEstimate
+import CausalGraphs: identify, make_graph, to_mermaid, markov_pillow, is_fix, is_p_fix, ID_algorithm, estimate_causal, estimate_id
+import CausalEstimate: estimate, confint, pvalue
+using DataFrames
+using Random
+using Statistics
+using Logging
+```
+
 The potential-outcomes chapter introduced the question: when can an observed
 data set tell us about $E[Y(1)-Y(0)]$? Graphs are one way to make the answer
 explicit. A graph records which variables are assumed to cause other variables,

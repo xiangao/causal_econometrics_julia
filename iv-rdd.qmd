@@ -16,6 +16,21 @@ using RegressionTables
 include("regtable_helpers.jl")
 ```
 
+```{julia}
+#| eval: false
+using CairoMakie
+using GraphMakie, Graphs
+using Distributions, Random, LinearAlgebra
+using RDRobust
+using Panelest
+using Vcov
+using DataFrames
+using StatsModels, DataFramesMeta
+import StatsAPI: coeftable
+using Printf
+using RegressionTables
+```
+
 If we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.
 
 ## Instrumental Variables

@@ -20,6 +20,24 @@ include("regtable_helpers.jl")
 
 ```
 
+```{julia}
+#| eval: false
+using DataFrames
+using DataFramesMeta
+using DiD
+using Panelest
+using Vcov
+using StatsModels
+import StatsAPI: coeftable
+using ReadStatTables
+using CSV
+using SynthDiD
+using CairoMakie
+using Statistics
+using Printf
+using RegressionTables
+```
+
 What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.
 
 ## $T=2$ Panel Data

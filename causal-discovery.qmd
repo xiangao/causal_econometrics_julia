@@ -4,8 +4,68 @@
 #| include: false
 using CausalInference
 using RecursiveCausalDiscovery
+using CausalGraphs
 using Graphs
-using GraphMakie
+using CairoMakie
+using Statistics
+using LinearAlgebra
+using Random
+using Printf
+using DataFrames
+using Distributions: Normal, quantile
+
+# ── Graph conversion helpers ──────────────────────────────────────────────────
+
+# adj_mat (Int matrix, adj[i,j]=1 means i→j) → ADMG
+function adjmat_to_admg(adj::AbstractMatrix, labels::Vector{String})
+    n = size(adj, 1)
+    vs = Symbol.(labels)
+    di = [(vs[i], vs[j]) for i in 1:n, j in 1:n if adj[i,j] == 1]
+    make_graph(vertices=vs, di_edges=di)
+end
+
+# SimpleDiGraph CPDAG → ADMG
+# Edges present both ways become bidirected (undirected in CPDAG),
+# edges present one way only become directed.
+function cpdag_to_admg(g::SimpleDiGraph, labels::Vector{String})
+    n = nv(g)
+    vs = Symbol.(labels)
+    di = Tuple{Symbol,Symbol}[]
+    bi = Tuple{Symbol,Symbol}[]
+    for e in edges(g)
+        if has_edge(g, e.dst, e.src)
+            e.src < e.dst && push!(bi, (vs[e.src], vs[e.dst]))
+        else
+            push!(di, (vs[e.src], vs[e.dst]))
+        end
+    end
+    make_graph(vertices=vs, di_edges=di, bi_edges=bi)
+end
+
+# ── Side-by-side SVG display ──────────────────────────────────────────────────
+struct MultiSVG; html::String; end
+Base.show(io::IO, ::MIME"text/html", m::MultiSVG) = print(io, m.html)
+
+function side_by_side(graphs_titles; direction="TB", note="")
+    items = String[]
+    for (g, title) in graphs_titles
+        svg = to_svg(g; direction=direction)
+        svg === nothing && continue
+        push!(items, """<div style="text-align:center;flex:1">
+            <p style="margin:0 0 4px;font-weight:600">$title</p>$svg</div>""")
+    end
+    note_html = isempty(note) ? "" : """<p style="font-size:.85em;color:#666;margin-top:6px">$note</p>"""
+    MultiSVG("""<div style="display:flex;gap:20px;flex-wrap:wrap;
+        justify-content:center;align-items:flex-start">$(join(items))</div>$note_html""")
+end
+```
+
+```{julia}
+#| eval: false
+using CausalInference
+using RecursiveCausalDiscovery
+using CausalGraphs
+using Graphs
 using CairoMakie
 using Statistics
 using LinearAlgebra
@@ -25,6 +85,22 @@ There is a fundamental limit: observational data alone cannot distinguish betwee
 
 A CPDAG has the same skeleton (undirected edges) as all DAGs in its MEC. Some edges can be oriented (they have the same direction in every member of the MEC); others remain undirected because both directions are consistent with the CI structure.
 
+### Why some edges cannot be oriented
+
+Three DAGs are observationally equivalent — they produce the same set of conditional independences — and therefore indistinguishable from data:
+
+$$X \to Y \to Z \qquad X \leftarrow Y \leftarrow Z \qquad X \leftarrow Y \to Z$$
+
+All three imply $X \perp\!\!\!\perp Z \mid Y$ and no other CI. Their CPDAG shows $X - Y - Z$ with no arrowheads.
+
+The structure $X \to Y \leftarrow Z$ (a **collider** at $Y$) is *not* equivalent: here $X \perp\!\!\!\perp Z$ but $X \not\!\perp\!\!\!\perp Z \mid Y$. Because it has a unique CI signature, the $\to Y \leftarrow$ orientation is identifiable from data. Algorithms orient these colliders; non-collider edges often remain undirected.
+
+### What a CPDAG tells you
+
+A directed edge $X \to Y$ in the CPDAG means: in *every* DAG consistent with the data, $X$ causes $Y$. An undirected edge $X - Y$ means some consistent DAGs have $X \to Y$ and others have $X \leftarrow Y$ — data alone cannot decide.
+
+For causal estimation: once you have a CPDAG, you can use background knowledge (temporal ordering, experimental context) to orient the remaining undirected edges, and then apply identification strategies from earlier chapters.
+
 ## Simulation
 
 We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge $j \to i$ generates a structural equation
@@ -39,6 +115,7 @@ Random.seed!(2025)
 n_vars    = 8
 n_samples = 2000
 edge_prob = 0.35
+labels    = ["X$i" for i in 1:n_vars]
 
 adj_mat   = gen_er_dag_adj_mat(n_vars, edge_prob)
 data_mat  = gen_gaussian_data(adj_mat, n_samples)
@@ -51,17 +128,8 @@ true_skel = SimpleGraph(true_dag)
 
 ```{julia}
 #| label: fig-true-dag
-#| fig-cap: "True DAG used for simulation. Directed edges point from cause to effect."
-#| fig-width: 5
-#| fig-height: 4
-let
-    node_labels = ["X$i" for i in 1:n_vars]
-    fig, ax, p = graphplot(true_dag;
-        kwargs_pdag_graphmakie(true_dag; ilabels=node_labels)...)
-    ax.title = "True DAG"
-    hidedecorations!(ax); hidespines!(ax)
-    fig
-end
+#| fig-cap: "True DAG used for simulation."
+draw_graph(adjmat_to_admg(adj_mat, labels); direction="TB")
 ```
 
 ## CI Test Infrastructure
@@ -69,6 +137,13 @@ end
 Both algorithms use a **Fisher-Z conditional independence test** appropriate for Gaussian data. Given the partial correlation $\hat\rho_{XY \mid Z}$, the test statistic is
 
 $$T = \sqrt{n - |Z| - 3} \cdot \operatorname{atanh}(\hat\rho_{XY \mid Z}) \;\sim\; N(0,1) \quad \text{under } H_0: X \perp\!\!\!\perp Y \mid Z$$
+
+**Choosing the significance level** $\alpha$ involves a bias-variance tradeoff on the skeleton:
+
+- **Low $\alpha$ (e.g., 0.001)**: conservative, keeps more edges. Fewer false removals (false negatives) but may retain spurious edges (false positives). Produces a denser skeleton.
+- **High $\alpha$ (e.g., 0.05)**: liberal, removes more edges. Fewer spurious edges but may discard real ones. Produces a sparser skeleton.
+
+With $n = 2000$ and $p = 8$ we use $\alpha = 0.01$, a common default. With smaller $n$ or larger $p$, consider lowering $\alpha$ to avoid over-pruning.
 
 We wrap `fisher_z` in a counter to track exactly how many CI tests each algorithm calls:
 
@@ -87,6 +162,14 @@ end
 
 The **PC algorithm** (Spirtes & Glymour, 1991) starts from a complete undirected graph and removes edges whenever a conditional independence is found. It searches for separating sets $Z$ of increasing size, conditioning on subsets of the current neighbors. After skeleton discovery, Meek's rules orient as many edges as possible.
 
+**How it works, step by step:**
+
+1. Start with a complete undirected graph (every pair connected).
+2. For each pair $(X, Y)$, test $X \perp\!\!\!\perp Y \mid Z$ for all $Z \subseteq \text{neighbors}(X) \setminus \{Y\}$, starting with $|Z|=0$. Remove the edge if any such test passes.
+3. Repeat with conditioning sets of increasing size until no new edges are removed.
+4. Identify colliders: if $X - Z - Y$ and $X, Y$ non-adjacent, orient as $X \to Z \leftarrow Y$ only if $Z$ was not in the separating set of $X$ and $Y$.
+5. Apply Meek's orientation rules to propagate orientations without creating new colliders or cycles.
+
 ```{julia}
 sig_level = 0.01
 
@@ -100,6 +183,19 @@ f1_cpdag_pc = f1_score(true_dag,  cpdag_pc)
 @printf "PC:    skeleton F1 = %.3f   CPDAG F1 = %.3f   CI tests = %d\n" f1_skel_pc f1_cpdag_pc ctr_pc[]
 ```
 
+::: {.callout-note}
+**Reading the output: F1 scores**
+
+The **F1 score** is the harmonic mean of precision and recall, ranging from 0 (worst) to 1 (perfect).
+
+- **Skeleton F1** measures whether the algorithm found the right edges regardless of direction. An edge is a true positive if it exists in both the estimated skeleton and the true one.
+- **CPDAG F1** is stricter: a directed edge $X \to Y$ is only a true positive if the true DAG also has $X \to Y$; an undirected edge $X - Y$ counts as correct if the true DAG has *either* direction.
+
+A high skeleton F1 with lower CPDAG F1 means the algorithm found the right adjacencies but left some edges unoriented — the typical case when the MEC contains many equivalent DAGs.
+:::
+
+**Computational complexity:** In the worst case, PC tests all subsets of neighbors, giving exponential growth with the maximum degree. In sparse graphs this is manageable; in dense graphs it becomes prohibitive.
+
 ## RSL-D Algorithm
 
 **RSL-D** (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by *recursively removing* variables that satisfy a **removability** criterion. Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
@@ -107,6 +203,16 @@ f1_cpdag_pc = f1_score(true_dag,  cpdag_pc)
 $$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W$$
 
 (Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.
+
+**The intuition behind removability:** a variable $X$ is "removable" if its local neighbourhood structure can be fully characterized without creating ambiguity in the remaining graph. Think of it as peeling off leaf-like variables one at a time — each removal simplifies the problem rather than complicating it.
+
+**How it works, step by step:**
+
+1. Estimate the Markov boundary $\text{Mb}(X)$ of each variable (all variables that, conditioned on, make $X$ independent of everything else).
+2. Find a removable variable $X$ — one whose neighbourhood satisfies the criterion above.
+3. Record the local skeleton structure around $X$, then remove $X$ from the graph.
+4. Repeat on the reduced variable set until all variables have been processed.
+5. Reconstruct the full CPDAG from the recorded local structures.
 
 The key efficiency advantage: RSL-D uses at most $O(p \cdot d \cdot |\text{MB}|^2)$ CI tests (where $d$ is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.
 
@@ -123,9 +229,21 @@ f1_cpdag_rsl = f1_score(true_dag,  cpdag_rsl)
 
 ## Comparison
 
+::: {.callout-note}
+**Reading the CPDAG figure**
+
+In the side-by-side graph display:
+
+- A **directed edge** $X_i \to X_j$ means this orientation is invariant across all equivalent DAGs — the algorithm is confident about the direction.
+- A **bidirected (red) edge** $X_i \leftrightarrow X_j$ in the CPDAG display represents an *unoriented* edge: both $X_i \to X_j$ and $X_i \leftarrow X_j$ are statistically equivalent. This is **not** a hidden common cause — it means the data cannot determine direction. (Hidden common causes are a latent-variable concept, covered in the next chapter.)
+- A **missing edge** means the algorithm found a conditional independence separating those two variables.
+
+Compare the estimated CPDAG to the true DAG: extra edges are false positives (the algorithm wrongly retained a spurious association); missing edges are false negatives (a true relationship was incorrectly removed by a CI test).
+:::
+
 ```{julia}
 #| label: tbl-comparison
-#| tbl-cap: "Algorithm comparison on the simulated 8-node DAG (n = 2000, p = 0.01 significance)"
+#| tbl-cap: "Algorithm comparison on the simulated 8-node DAG (n = 2000, significance 0.01)"
 DataFrame(
     Algorithm   = ["PC",              "RSL-D"],
     Skeleton_F1 = round.([f1_skel_pc,  f1_skel_rsl],  digits=3),
@@ -136,29 +254,33 @@ DataFrame(
 
 ```{julia}
 #| label: fig-cpdags
-#| fig-cap: "True DAG vs. estimated CPDAGs. Directed edges are oriented; undirected edges reflect unresolvable equivalences."
-#| fig-width: 11
-#| fig-height: 4
-let
-    node_labels = ["X$i" for i in 1:n_vars]
-    fig = Figure(size=(1000, 380))
-
-    for (col, (g, title)) in enumerate([
-        (true_dag,  "True DAG"),
-        (cpdag_pc,  "PC — estimated CPDAG"),
-        (cpdag_rsl, "RSL-D — estimated CPDAG"),
-    ])
-        ax = Axis(fig[1, col]; title)
-        graphplot!(ax, g; kwargs_pdag_graphmakie(g; ilabels=node_labels)...)
-        hidedecorations!(ax); hidespines!(ax)
-    end
-    fig
-end
+#| fig-cap: "True DAG vs. estimated CPDAGs. Blue directed edges are oriented; red double-headed edges are unoriented (both directions are CI-equivalent)."
+side_by_side([
+    (adjmat_to_admg(adj_mat, labels),  "True DAG"),
+    (cpdag_to_admg(cpdag_pc,  labels), "PC — estimated CPDAG"),
+    (cpdag_to_admg(cpdag_rsl, labels), "RSL-D — estimated CPDAG"),
+]; note="Red ↔ edges in the CPDAGs are unoriented (not confounded) — both directions are statistically equivalent.")
 ```
+
+::: {.callout-note}
+**Interpreting the comparison table**
+
+- **Skeleton F1** is the primary metric for comparing algorithms: it measures edge recovery independent of orientation, since orientation accuracy is bounded by the MEC.
+- **CPDAG F1** rewards correctly oriented edges and penalizes leaving orientable edges undirected.
+- **CI tests** is the computational cost metric. Fewer tests means faster runtime, especially important when $n$ is large and each test involves inverting covariance matrices.
+
+On this dataset RSL-D typically matches or exceeds PC's accuracy while using substantially fewer CI tests — the advantage grows with $p$ and graph density.
+:::
 
 ## Monte Carlo Evaluation
 
 A single dataset can be lucky. We average over 100 replications to get stable estimates.
+
+**What to look for in the MC results:**
+
+- The **mean skeleton F1** is the headline: how often does each algorithm recover the true adjacencies?
+- The **distribution of CI test counts** (shown in @fig-mc-ci) shows whether the efficiency advantage is consistent or only appears on average.
+- High variance in F1 across replications suggests the algorithms are sensitive to the particular random graph — denser or sparser graphs drawn from the same Erdős–Rényi model can be very different problems.
 
 ```{julia}
 #| cache: true
@@ -211,6 +333,14 @@ end
 ## Summary
 
 Both PC and RSL-D recover the Markov equivalence class from Gaussian observational data. The key practical difference is **CI-test efficiency**: RSL-D's recursive removal approach uses far fewer tests than PC's growing-set search, especially as $p$ and graph density increase.
+
+**From CPDAG to causal estimation:** Once a CPDAG is in hand, the workflow continues as follows:
+
+1. **Use background knowledge to orient undirected edges.** Temporal ordering is the most common source: if $X$ is measured before $Y$, the edge must be $X \to Y$. Domain expertise, experimental context, or exclusion restrictions can orient others.
+2. **Check identifiability.** With a fully oriented DAG, apply the backdoor, front-door, or ID algorithm (Chapter 3) to determine whether the effect of interest is identifiable.
+3. **Estimate.** Use the identified functional with the estimators from Chapter 4 (RA, IPW, AIPW).
+
+If some edges remain undirected after exhausting background knowledge, you can either report the CPDAG and bound the estimand over the equivalence class, or collect additional interventional data to break the remaining equivalences.
 
 ::: {.callout-note}
 **What cannot be recovered from observational data alone**

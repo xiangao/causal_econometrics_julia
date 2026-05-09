@@ -12,6 +12,17 @@ using Printf
 include("regtable_helpers.jl")
 ```
 
+```{julia}
+#| eval: false
+using Panelest
+using Distributions
+using DataFrames, DataFramesMeta
+using StatsModels
+import StatsAPI: coeftable
+using Random, StatsBase, LinearAlgebra
+using Printf
+```
+
 Poisson regression handles count and non-negative outcomes by specifying the conditional mean as an exponential function.  Because it is a quasi-MLE, it requires only the mean to be correct — no distributional assumption on the count.  When an explanatory variable is endogenous, we need an IV strategy adapted to the nonlinear mean.  This chapter covers two cases: a continuous endogenous variable (where the control function works exactly) and a binary endogenous variable (where three CF/IV approaches are available with different trade-offs).
 
 
