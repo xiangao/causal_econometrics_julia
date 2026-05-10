@@ -225,7 +225,7 @@ where $\hat P = \hat\Sigma^{-1}$ is the precision matrix and $\tau$ is a thresho
 
 **Why the precision matrix?** In a Gaussian linear model, the $(i,j)$ entry of the precision matrix $P = \Sigma^{-1}$ is zero if and only if $X_i \perp\!\!\!\perp X_j \mid \text{all other variables}$. The partial correlation $P_{ij}/\sqrt{P_{ii}P_{jj}}$ is therefore a one-shot test for Markov boundary membership, replacing the many conditioning-set CI tests that PC or FCI require to find the same information. This is the key computational saving.
 
-The removability criterion changes for the latent case (Theorem 32): variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X)$:
+The removability criterion changes for the latent case (Theorem 32). Recall: $\text{Mb}(X)$ is the Markov boundary of $X$ — the minimal conditioning set that screens $X$ off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and $\text{Ne}(X)$ is the set of variables directly adjacent to $X$ in the current skeleton. Variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X)$:
 
 $$\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\!\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}$$
 

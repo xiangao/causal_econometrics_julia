@@ -370,10 +370,10 @@ window.Quarto = {
 </header>
 
 
-<div id="c679a9a4" class="cell" data-execution_count="2">
+<div id="2050fe67" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFramesMeta</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DiD</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">ETWFE</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Vcov</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
@@ -469,7 +469,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="example-1-us-teen-employment" class="level2" data-number="6.10">
 <h2 data-number="6.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">6.10</span> Example 1: US Teen Employment</h2>
 <p>We’ll use the mpdta dataset on US teen employment from the did package. “Treatment” in this dataset refers to an increase in the minimum wage rate. Our goal is to estimate the effect of this minimum wage treatment (treat) on the log of teen employment (lemp). Notice that the panel ID is at the county level (countyreal), but treatment was staggered across cohorts (first_treat) so that a group of counties were treated at the same time. In addition to these staggered treatment effects, we also observe log population (lpop) as a potential control variable.</p>
-<div id="a4e68223" class="cell" data-cache="true" data-execution_count="3">
+<div id="f5710303" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load mpdta dataset from the did R package (Callaway &amp; Sant'Anna 2021)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># US teen employment data; treatment = minimum wage increase</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mpdta <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mpdta.csv"</span>, DataFrame)</span>
@@ -558,7 +558,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="b5700acd" class="cell" data-cache="true" data-execution_count="4">
+<div id="ddb5b994" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>year), nrow)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>treat), nrow)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -603,7 +603,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="74377bba" class="cell" data-cache="true" data-execution_count="5">
+<div id="c0c9f3f0" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns enable StatsModels to generate cohort×time dummies (ETWFE)</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mpdta.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.first_treat)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mpdta.year_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.year)</span>
@@ -617,7 +617,7 @@ Iterations: 1
 StatsBase.CoefTable(Any[[-3.4135316702287624e-33, -0.016068364858818695, 0.047730936400964666, -0.0104701478480778, -0.02119242369406829, -0.022699245305459644, 0.0305968097333614, -0.01058091587048539, 0.0026833514425835467, -0.00635008942575461  …  0.0030174212587004232, 0.016306614436172342, 0.01927923735644746, -0.054180200273172406, 0.02405214108803968, 0.010848821828685481, 0.02583846223358552, -0.011173599592035538, -0.006018498628176904, -0.008646364013373136], [2.693734919824209e-33, 0.010078316236422944, 0.01595288409731988, 0.017137025099277562, 0.011759676186809464, 0.007612886466273422, 0.013915644744225132, 0.00989279226068868, 0.008805267304217107, 0.006488322802137784  …  0.009240983616431102, 0.007952522630443234, 0.008259811231470142, 0.013273467701922963, 0.010176640147651453, 0.009275934764944458, 0.009151011027330144, 0.015526030036024176, 0.012651681503127534, 0.011287368047456251], [-1.2672114264500558, -1.5943501356652978, 2.991994181728154, -0.6109664768197828, -1.802126466529691, -2.9816870914891145, 2.198734610989462, -1.0695580774025883, 0.30474389361222565, -0.9786950525430658  …  0.3265259829413875, 2.050495823017041, 2.334101448104886, -4.081842174921869, 2.363465813772573, 1.1695664214549315, 2.823563664869064, -0.7196688120601379, -0.47570740906567344, -0.7660212705938744], [0.20507970114688281, 0.11085763425089842, 0.0027716154538513574, 0.5412217737289009, 0.07152551052359446, 0.0028666482948026565, 0.02789679840386153, 0.28481827388510017, 0.7605612164012949, 0.32773067736526  …  0.7440264340669105, 0.04031607098319924, 0.019590410497807256, 4.4680135143972516e-5, 0.01810489696348593, 0.24217549685092654, 0.004749299250498021, 0.4717289331182837, 0.6342828417802775, 0.4436636459744491]], ["Estimate", "Std. Error", "z value", "Pr(&gt;|z|)"], ["lpop", "first_treat_str: 0 &amp; year_str: 2003", "first_treat_str: 2004 &amp; year_str: 2003", "first_treat_str: 2006 &amp; year_str: 2003", "first_treat_str: 2007 &amp; year_str: 2003", "first_treat_str: 0 &amp; year_str: 2004", "first_treat_str: 2004 &amp; year_str: 2004", "first_treat_str: 2006 &amp; year_str: 2004", "first_treat_str: 2007 &amp; year_str: 2004", "first_treat_str: 0 &amp; year_str: 2005"  …  "first_treat_str: 2006 &amp; year_str: 2005", "first_treat_str: 2007 &amp; year_str: 2005", "first_treat_str: 0 &amp; year_str: 2006", "first_treat_str: 2004 &amp; year_str: 2006", "first_treat_str: 2006 &amp; year_str: 2006", "first_treat_str: 2007 &amp; year_str: 2006", "first_treat_str: 0 &amp; year_str: 2007", "first_treat_str: 2004 &amp; year_str: 2007", "first_treat_str: 2006 &amp; year_str: 2007", "first_treat_str: 2007 &amp; year_str: 2007"], 4, 3)</code></pre>
 </div>
 </div>
-<div id="8b3a04b5" class="cell" data-cache="true" data-execution_count="6">
+<div id="d6427add" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -793,7 +793,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="c3f85c99" class="cell" data-cache="true" data-execution_count="7">
+<div id="a7a6dfcb" class="cell" data-cache="true" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -830,7 +830,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="9a375210" class="cell" data-cache="true" data-execution_count="8">
+<div id="5afa2988" class="cell" data-cache="true" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -892,7 +892,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="aeca7fd1" class="cell" data-cache="true" data-execution_count="9">
+<div id="63f578c6" class="cell" data-cache="true" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
@@ -919,7 +919,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="example-2-staggered-did" class="level2" data-number="6.11">
 <h2 data-number="6.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">6.11</span> Example 2: Staggered DiD</h2>
-<div id="84208b36" class="cell" data-cache="true" data-execution_count="10">
+<div id="c2b12322" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>did_data <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">readstat</span>(<span class="st">"data/did_staggered_6.dta"</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>first_treat <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span></span>
@@ -1057,7 +1057,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="6339f064" class="cell" data-cache="true" data-execution_count="11">
+<div id="e4c003d5" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(did_data, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div><div style="float: left;"><span>4×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -1100,7 +1100,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="91acee0a" class="cell" data-cache="true" data-execution_count="12">
+<div id="15abce64" class="cell" data-cache="true" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>treated_cohort1 <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="op">:</span>f04 <span class="op">==</span> <span class="fl">1</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"d4f04"</span></span>
@@ -1168,7 +1168,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="22673955" class="cell" data-cache="true" data-execution_count="13">
+<div id="61cf0bd2" class="cell" data-cache="true" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort2), <span class="op">:</span>treated_cohort2), <span class="op">:</span>te5 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean5)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort3), <span class="op">:</span>treated_cohort3), <span class="op">:</span>te6 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
@@ -1197,7 +1197,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="6fe00454" class="cell" data-cache="true" data-execution_count="14">
+<div id="33452432" class="cell" data-cache="true" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns needed for cohort×time ETWFE dummies</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>did_data.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(did_data.first_treat)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>did_data.year_str <span class="op">=</span> <span class="fu">string</span>.(did_data.year)</span>
@@ -1407,7 +1407,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="998c53be" class="cell" data-cache="true" data-execution_count="15">
+<div id="e8db9df4" class="cell" data-cache="true" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -1444,7 +1444,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="4f68579b" class="cell" data-cache="true" data-execution_count="16">
+<div id="04028d47" class="cell" data-cache="true" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -1498,7 +1498,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="0c8e273e" class="cell" data-cache="true" data-execution_count="17">
+<div id="c53b6cd9" class="cell" data-cache="true" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mod_es2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
@@ -1570,7 +1570,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p>SDiD sets another weight in addition to SC weights, which changes over time. The SC weights are trying to construct a control unit that is close to the treated unit; the SDiD weights are trying to put more weights on pre-treatment periods that are more similar to post-treatment periods.</p>
 <section id="example-california-proposition-99" class="level3" data-number="6.13.1">
 <h3 data-number="6.13.1" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">6.13.1</span> Example: California Proposition 99</h3>
-<div id="874c03f7" class="cell" data-cache="true" data-execution_count="18">
+<div id="7cdd30c9" class="cell" data-cache="true" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>tau_hat <span class="op">=</span> <span class="fu">synthdid_estimate</span>(setup.Y, setup.N0, setup.T0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1583,7 +1583,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
   N₀_eff = 16.4,  T₀_eff = 2.8</code></pre>
 </div>
 </div>
-<div id="2c2ed248" class="cell" data-cache="true" data-execution_count="19">
+<div id="33a0a1fc" class="cell" data-cache="true" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>tau_sc  <span class="op">=</span> <span class="fu">sc_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>tau_did <span class="op">=</span> <span class="fu">did_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>

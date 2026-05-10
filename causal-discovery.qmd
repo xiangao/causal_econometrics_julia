@@ -198,7 +198,16 @@ A high skeleton F1 with lower CPDAG F1 means the algorithm found the right adjac
 
 ## RSL-D Algorithm
 
-**RSL-D** (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by *recursively removing* variables that satisfy a **removability** criterion. Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
+**RSL-D** (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by *recursively removing* variables that satisfy a **removability** criterion.
+
+Two sets are central to the criterion:
+
+- **Markov boundary** $\text{Mb}(X)$: the minimal set $S$ such that $X \perp\!\!\!\perp (\text{all other variables}) \mid S$. Conditioning on $\text{Mb}(X)$ screens $X$ off from everything else in the graph. In a Gaussian DAG with no hidden variables, $\text{Mb}(X)$ consists of $X$'s parents, children, and co-parents (other parents of $X$'s children) — equivalently, all variables directly adjacent to $X$ in the skeleton.
+- **Neighbourhood** $\text{Ne}(X)$: the set of variables directly adjacent to $X$ in the *current* skeleton (connected by an undirected edge at this stage of the algorithm).
+
+Under causal sufficiency and faithfulness, $\text{Mb}(X) = \text{Ne}(X)$; the distinction arises during the algorithm's recursive steps as variables are removed one by one.
+
+Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
 
 $$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W$$
 

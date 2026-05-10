@@ -5,19 +5,15 @@ book:
   title: "Causal Econometrics with Julia"
   chapters:
     - index.qmd
-    - part: "Foundations"
+    - part: "Identification"
       chapters:
         - identification.qmd
         - graphs-identification-estimation.qmd
         - smoking-cessation-graphs.qmd
+    - part: "Estimation"
+      chapters:
         - estimation.qmd
-    - part: "Methods"
-      chapters:
         - nonparametric.qmd
-    - part: "Causal Discovery"
-      chapters:
-        - causal-discovery.qmd
-        - causal-discovery-latent.qmd
     - part: "Designs"
       chapters:
         - did.qmd
@@ -26,7 +22,13 @@ book:
     - part: "Mediation"
       chapters:
         - mediation.qmd
-    - package-ecosystem.qmd
+    - part: "Causal Discovery"
+      chapters:
+        - causal-discovery.qmd
+        - causal-discovery-latent.qmd
+    - part: "Appendix"
+      chapters:
+        - package-ecosystem.qmd
 
 execute:
   freeze: auto
