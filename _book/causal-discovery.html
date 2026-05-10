@@ -609,7 +609,14 @@ Note
 </section>
 <section id="rsl-d-algorithm" class="level2" data-number="10.5">
 <h2 data-number="10.5" class="anchored" data-anchor-id="rsl-d-algorithm"><span class="header-section-number">10.5</span> RSL-D Algorithm</h2>
-<p><strong>RSL-D</strong> (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by <em>recursively removing</em> variables that satisfy a <strong>removability</strong> criterion. Variable <span class="math inline">\(X\)</span> is removable if, for every pair <span class="math inline">\(Y \in \text{Mb}(X)\)</span>, <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
+<p><strong>RSL-D</strong> (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by <em>recursively removing</em> variables that satisfy a <strong>removability</strong> criterion.</p>
+<p>Two sets are central to the criterion:</p>
+<ul>
+<li><p><strong>Markov boundary</strong> <span class="math inline">\(\text{Mb}(X)\)</span>: the minimal set <span class="math inline">\(S\)</span> such that <span class="math inline">\(X \perp\!\!\!\perp (\text{all other variables}) \mid S\)</span>. Conditioning on <span class="math inline">\(\text{Mb}(X)\)</span> screens <span class="math inline">\(X\)</span> off from everything else in the graph. In a Gaussian DAG with no hidden variables, <span class="math inline">\(\text{Mb}(X)\)</span> consists of <span class="math inline">\(X\)</span>'s parents, children, and co-parents (other parents of <span class="math inline">\(X\)</span>'s children) — equivalently, all variables directly adjacent to <span class="math inline">\(X\)</span> in the skeleton.</p></li>
+<li><p><strong>Neighbourhood</strong> <span class="math inline">\(\text{Ne}(X)\)</span>: the set of variables directly adjacent to <span class="math inline">\(X\)</span> in the <em>current</em> skeleton (connected by an undirected edge at this stage of the algorithm).</p></li>
+</ul>
+<p>Under causal sufficiency and faithfulness, <span class="math inline">\(\text{Mb}(X) = \text{Ne}(X)\)</span>; the distinction arises during the algorithm's recursive steps as variables are removed one by one.</p>
+<p>Variable <span class="math inline">\(X\)</span> is removable if, for every pair <span class="math inline">\(Y \in \text{Mb}(X)\)</span>, <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
 <p><span class="math display">\[\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W\]</span></p>
 <p>(Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.</p>
 <p><strong>The intuition behind removability:</strong> a variable <span class="math inline">\(X\)</span> is “removable” if its local neighbourhood structure can be fully characterized without creating ambiguity in the remaining graph. Think of it as peeling off leaf-like variables one at a time — each removal simplifies the problem rather than complicating it.</p>
