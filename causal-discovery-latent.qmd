@@ -389,3 +389,28 @@ L-MARVEL's Gaussian MB estimator requires $n > p + 1$ samples. With many variabl
 
 FCI's PAG output distinguishes definite causes ($\to$), definite hidden common causes ($\leftrightarrow$), and uncertain cases ($\circ$). The PAG can be combined with background knowledge such as temporal ordering to further orient edges before estimation.
 :::
+
+## How Much Does Causal Discovery Help in Economics?
+
+An honest assessment: recovering even the true MAG skeleton is far from recovering the full DAG. Several layers of information remain missing:
+
+| What is recovered | What is still missing |
+|---|---|
+| L-MARVEL skeleton | Edge directions; direct cause vs. hidden common cause; latent nodes |
+| FCI PAG | Unique MAG; latent nodes; most edges still carry $\circ$ marks |
+| True MAG | Latent nodes and their connections |
+| Full DAG | Nothing — this is the goal |
+
+The core econometric question is almost always "what is the causal effect of $X$ on $Y$?" Causal discovery with latent variables does not answer this directly. A definite $X \leftrightarrow Y$ in a PAG tells you confounding exists — but not how to remove it. Without oriented edges you cannot even check whether the effect is identified, let alone estimate it.
+
+**Where these methods do add value in economics:**
+
+1. **Falsifying structural models.** If your model implies $X \perp\!\!\!\perp Z \mid W$, test it. A rejection means the model's independence assumptions are inconsistent with the data — discovery tells you *which* assumptions fail before you commit to a full structural estimation.
+
+2. **Flagging where instruments are needed.** A definite $X \leftrightarrow Y$ in the PAG is a data-driven diagnostic: OLS of $Y$ on $X$ is biased, and you need an instrument, proxy, or natural experiment. Discovery does not supply the instrument but tells you where to look for one.
+
+3. **High-dimensional variable selection.** With many candidate controls, knowing which pairs are conditionally independent prunes the problem before applying identification strategies. This is most useful in settings with $p > 20$ variables where theory does not specify the full graph.
+
+4. **Hypothesis generation when theory is silent.** For new economic phenomena — platform markets, fintech, peer effects in novel settings — where theory does not give a strong causal ordering, discovery algorithms generate hypotheses worth investigating with better-powered research designs.
+
+**The bottom line:** causal discovery is a complement to the standard econometric toolkit — IV, RD, DiD, synthetic control — not a substitute. It is most useful as a diagnostic and hypothesis-generating tool early in a research project, before the hard work of finding credible identifying variation begins.
