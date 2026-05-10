@@ -341,24 +341,6 @@ window.Quarto = {
   <li><a href="#comparison" id="toc-comparison" class="nav-link" data-scroll-target="#comparison"><span class="header-section-number">10.6</span> Comparison</a></li>
   <li><a href="#monte-carlo-evaluation" id="toc-monte-carlo-evaluation" class="nav-link" data-scroll-target="#monte-carlo-evaluation"><span class="header-section-number">10.7</span> Monte Carlo Evaluation</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">10.8</span> Summary</a></li>
-  <li><a href="#causal-discovery-latent-variables" id="toc-causal-discovery-latent-variables" class="nav-link" data-scroll-target="#causal-discovery-latent-variables"><span class="header-section-number">11</span> Causal Discovery: Latent Variables</a>
-  <ul class="collapse">
-  <li><a href="#why-pc-fails-with-latent-variables" id="toc-why-pc-fails-with-latent-variables" class="nav-link" data-scroll-target="#why-pc-fails-with-latent-variables"><span class="header-section-number">11.0.1</span> Why PC fails with latent variables</a></li>
-  <li><a href="#maximal-ancestral-graphs-and-pags" id="toc-maximal-ancestral-graphs-and-pags" class="nav-link" data-scroll-target="#maximal-ancestral-graphs-and-pags"><span class="header-section-number">11.1</span> Maximal Ancestral Graphs and PAGs</a></li>
-  <li><a href="#simulation-with-hidden-variables" id="toc-simulation-with-hidden-variables" class="nav-link" data-scroll-target="#simulation-with-hidden-variables"><span class="header-section-number">11.2</span> Simulation with Hidden Variables</a>
-  <ul class="collapse">
-  <li><a href="#true-structure-over-observed-variables" id="toc-true-structure-over-observed-variables" class="nav-link" data-scroll-target="#true-structure-over-observed-variables"><span class="header-section-number">11.2.1</span> True structure over observed variables</a></li>
-  </ul></li>
-  <li><a href="#fci-algorithm" id="toc-fci-algorithm" class="nav-link" data-scroll-target="#fci-algorithm"><span class="header-section-number">11.3</span> FCI Algorithm</a></li>
-  <li><a href="#l-marvel-algorithm" id="toc-l-marvel-algorithm" class="nav-link" data-scroll-target="#l-marvel-algorithm"><span class="header-section-number">11.4</span> L-MARVEL Algorithm</a></li>
-  <li><a href="#comparison-1" id="toc-comparison-1" class="nav-link" data-scroll-target="#comparison-1"><span class="header-section-number">11.5</span> Comparison</a></li>
-  <li><a href="#monte-carlo-evaluation-1" id="toc-monte-carlo-evaluation-1" class="nav-link" data-scroll-target="#monte-carlo-evaluation-1"><span class="header-section-number">11.6</span> Monte Carlo Evaluation</a></li>
-  <li><a href="#summary-1" id="toc-summary-1" class="nav-link" data-scroll-target="#summary-1"><span class="header-section-number">11.7</span> Summary</a>
-  <ul class="collapse">
-  <li><a href="#practical-decision-guide" id="toc-practical-decision-guide" class="nav-link" data-scroll-target="#practical-decision-guide"><span class="header-section-number">11.7.1</span> Practical decision guide</a></li>
-  <li><a href="#from-discovery-to-estimation" id="toc-from-discovery-to-estimation" class="nav-link" data-scroll-target="#from-discovery-to-estimation"><span class="header-section-number">11.7.2</span> From discovery to estimation</a></li>
-  </ul></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -384,7 +366,7 @@ window.Quarto = {
 </header>
 
 
-<div id="6a0d6dbf" class="cell" data-execution_count="2">
+<div id="722a899e" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -421,7 +403,7 @@ window.Quarto = {
 <p>We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge <span class="math inline">\(j \to i\)</span> generates a structural equation</p>
 <p><span class="math display">\[X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)\]</span></p>
 <p>where coefficients <span class="math inline">\(\beta_{ji}\)</span> are drawn uniformly from <span class="math inline">\([-1, -0.25] \cup [0.25, 1]\)</span>.</p>
-<div id="71ffbf01" class="cell" data-execution_count="3">
+<div id="9201c786" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -564,7 +546,7 @@ Figure&nbsp;10.1: True DAG used for simulation.
 </ul>
 <p>With <span class="math inline">\(n = 2000\)</span> and <span class="math inline">\(p = 8\)</span> we use <span class="math inline">\(\alpha = 0.01\)</span>, a common default. With smaller <span class="math inline">\(n\)</span> or larger <span class="math inline">\(p\)</span>, consider lowering <span class="math inline">\(\alpha\)</span> to avoid over-pruning.</p>
 <p>We wrap <code>fisher_z</code> in a counter to track exactly how many CI tests each algorithm calls:</p>
-<div id="7457303e" class="cell" data-execution_count="5">
+<div id="d48cbbe4" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">make_counted_ci</span>(data, sig)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">ci</span>(x, y, S, d)</span>
@@ -589,7 +571,7 @@ Figure&nbsp;10.1: True DAG used for simulation.
 <li>Identify colliders: if <span class="math inline">\(X - Z - Y\)</span> and <span class="math inline">\(X, Y\)</span> non-adjacent, orient as <span class="math inline">\(X \to Z \leftarrow Y\)</span> only if <span class="math inline">\(Z\)</span> was not in the separating set of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
 <li>Apply Meek’s orientation rules to propagate orientations without creating new colliders or cycles.</li>
 </ol>
-<div id="8c929bb9" class="cell" data-execution_count="6">
+<div id="fd09b0c9" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ci_pc, ctr_pc <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
@@ -647,7 +629,7 @@ Note
 <li>Reconstruct the full CPDAG from the recorded local structures.</li>
 </ol>
 <p>The key efficiency advantage: RSL-D uses at most <span class="math inline">\(O(p \cdot d \cdot |\text{MB}|^2)\)</span> CI tests (where <span class="math inline">\(d\)</span> is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.</p>
-<div id="61424209" class="cell" data-execution_count="7">
+<div id="2665bdca" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ci_rsl, ctr_rsl <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cpdag_rsl <span class="op">=</span> <span class="fu">rsld</span>(data_mat, ci_rsl)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>skel_rsl  <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_rsl)</span>
@@ -1078,7 +1060,7 @@ Note
 <li>The <strong>distribution of CI test counts</strong> (shown in <a href="#fig-mc-ci" class="quarto-xref">Figure&nbsp;<span>10.3</span></a>) shows whether the efficiency advantage is consistent or only appears on average.</li>
 <li>High variance in F1 across replications suggests the algorithms are sensitive to the particular random graph — denser or sparser graphs drawn from the same Erdős–Rényi model can be very different problems.</li>
 </ul>
-<div id="acc3d837" class="cell" data-cache="true" data-execution_count="10">
+<div id="b3150410" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_once</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    adj  <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1174,441 +1156,6 @@ Note
 </div>
 
 
-</section>
-<section id="causal-discovery-latent-variables" class="level1" data-number="11">
-<h1 data-number="11"><span class="header-section-number">11</span> Causal Discovery: Latent Variables</h1>
-<pre class="{julia}"><code>#| include: false
-using CausalInference
-using RecursiveCausalDiscovery
-using CausalGraphs
-using Graphs
-using CairoMakie
-using Statistics
-using LinearAlgebra
-using Random
-using Printf
-using DataFrames
-using Combinatorics: powerset
-using Distributions: Normal, quantile
-
-# ── Graph helpers (shared with chapter 1) ────────────────────────────────────
-
-function adjmat_to_admg(adj::AbstractMatrix, labels::Vector{String})
-    n = size(adj, 1)
-    vs = Symbol.(labels)
-    di = [(vs[i], vs[j]) for i in 1:n, j in 1:n if adj[i,j] == 1]
-    make_graph(vertices=vs, di_edges=di)
-end
-
-function skeleton_to_admg(g::SimpleGraph, labels::Vector{String})
-    vs = Symbol.(labels)
-    bi = [(vs[e.src], vs[e.dst]) for e in edges(g)]
-    make_graph(vertices=vs, bi_edges=bi)
-end
-
-struct MultiSVG; html::String; end
-Base.show(io::IO, ::MIME"text/html", m::MultiSVG) = print(io, m.html)
-
-function side_by_side(graphs_titles; direction="TB", note="")
-    items = String[]
-    for (g, title) in graphs_titles
-        svg = to_svg(g; direction=direction)
-        svg === nothing &amp;&amp; continue
-        push!(items, """&lt;div style="text-align:center;flex:1"&gt;
-            &lt;p style="margin:0 0 4px;font-weight:600"&gt;$title&lt;/p&gt;$svg&lt;/div&gt;""")
-    end
-    note_html = isempty(note) ? "" : """&lt;p style="font-size:.85em;color:#666;margin-top:6px"&gt;$note&lt;/p&gt;"""
-    MultiSVG("""&lt;div style="display:flex;gap:20px;flex-wrap:wrap;
-        justify-content:center;align-items:flex-start"&gt;$(join(items))&lt;/div&gt;$note_html""")
-end
-
-# Full DAG via CausalGraphs — latent nodes shown as squares (fixed=true), observed as plaintext
-function admg_with_latent(adj::AbstractMatrix, all_labels, latent_idx)
-    n = size(adj, 1)
-    vs = Symbol.(all_labels)
-    di = [(vs[i], vs[j]) for i in 1:n, j in 1:n if adj[i,j] == 1]
-    g = make_graph(vertices=vs, di_edges=di)
-    for i in latent_idx
-        g.fixed[vs[i]] = true   # square shape marks hidden nodes
-    end
-    g
-end</code></pre>
-<pre class="{julia}"><code>#| eval: false
-using CausalInference
-using RecursiveCausalDiscovery
-using CausalGraphs
-using Graphs
-using CairoMakie
-using Statistics
-using LinearAlgebra
-using Random
-using Printf
-using DataFrames
-using Combinatorics: powerset
-using Distributions: Normal, quantile</code></pre>
-<p>In the previous chapter we assumed all causally relevant variables were observed. This assumption — called <strong>causal sufficiency</strong> — rarely holds in economics: unobserved ability confounds wage regressions, unobserved demand shocks confound price–quantity relationships, unobserved peer effects confound social network studies.</p>
-<p>When latent confounders exist, constraint-based discovery algorithms like PC and RSL-D return incorrect results. This chapter introduces two algorithms that handle the latent variable case.</p>
-<section id="why-pc-fails-with-latent-variables" class="level3" data-number="11.0.1">
-<h3 data-number="11.0.1" class="anchored" data-anchor-id="why-pc-fails-with-latent-variables"><span class="header-section-number">11.0.1</span> Why PC fails with latent variables</h3>
-<p>Suppose the true graph is <span class="math inline">\(X \leftarrow U \rightarrow Y\)</span> where <span class="math inline">\(U\)</span> is unobserved. In the observed data, <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are marginally correlated (through <span class="math inline">\(U\)</span>) and no observed conditioning set separates them. PC will incorrectly draw an edge <span class="math inline">\(X - Y\)</span> and may orient it as <span class="math inline">\(X \to Y\)</span> or <span class="math inline">\(X \leftarrow Y\)</span>, neither of which exists in the truth.</p>
-<p>More subtly, conditioning on a collider that is a descendant of <span class="math inline">\(U\)</span> can <em>open</em> a path between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>, further distorting the CI structure that PC observes. With even a single hidden common cause, the d-separation statements in the observed data no longer correspond to those of any DAG over just the observed variables — they require the richer MAG representation.</p>
-</section>
-<section id="maximal-ancestral-graphs-and-pags" class="level2" data-number="11.1">
-<h2 data-number="11.1" class="anchored" data-anchor-id="maximal-ancestral-graphs-and-pags"><span class="header-section-number">11.1</span> Maximal Ancestral Graphs and PAGs</h2>
-<p>With latent variables, the appropriate representation is a <strong>Maximal Ancestral Graph (MAG)</strong>. Over a set of <em>observed</em> variables <span class="math inline">\(\mathbf{O}\)</span>, a MAG encodes:</p>
-<ul>
-<li><span class="math inline">\(X \to Y\)</span>: <span class="math inline">\(X\)</span> is an ancestor of <span class="math inline">\(Y\)</span> in the full DAG</li>
-<li><span class="math inline">\(X \leftrightarrow Y\)</span>: <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> have a common hidden ancestor (hidden confounder)</li>
-<li>No edge: <span class="math inline">\(X \perp\!\!\!\perp Y \mid Z\)</span> for some <span class="math inline">\(Z \subseteq \mathbf{O} \setminus \{X, Y\}\)</span></li>
-</ul>
-<p>The MAG over observed variables is the “shadow” of the full DAG: it summarizes all causal and confounding relationships that are visible in the observed data, without requiring us to know or name the latent variables.</p>
-<p>Just as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have equivalence classes represented by <strong>Partial Ancestral Graphs (PAGs)</strong>. In a PAG, the mark <span class="math inline">\(\circ\)</span> on an edge endpoint means “could be arrowhead or tail in some member of the equivalence class.”</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>PAG mark</th>
-<th>Meaning</th>
-<th>Economic interpretation</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><span class="math inline">\(X \to Y\)</span></td>
-<td><span class="math inline">\(X\)</span> causes <span class="math inline">\(Y\)</span> in every equivalent MAG</td>
-<td>Robust causal direction</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(X \leftarrow\!\!\!\!\circ\; Y\)</span></td>
-<td>Some MAGs have <span class="math inline">\(X \to Y\)</span>, others <span class="math inline">\(X \leftarrow Y\)</span></td>
-<td>Direction uncertain</td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(X \leftrightarrow Y\)</span></td>
-<td>Hidden common cause in every equivalent MAG</td>
-<td>Definite unmeasured confounder</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(X \;\circ\!\!\!\!-\!\!\!\!\circ\; Y\)</span></td>
-<td>Could be <span class="math inline">\(\to\)</span>, <span class="math inline">\(\leftarrow\)</span>, or <span class="math inline">\(\leftrightarrow\)</span></td>
-<td>Maximally uncertain</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Reading a PAG for policy purposes:</strong></p>
-<ul>
-<li>A definite <span class="math inline">\(X \to Y\)</span> edge is the most useful finding: it means any intervention on <span class="math inline">\(X\)</span> propagates to <span class="math inline">\(Y\)</span> regardless of which specific MAG the data came from.</li>
-<li>A definite <span class="math inline">\(X \leftrightarrow Y\)</span> edge is a warning: before using regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> to estimate a causal effect, you must address the hidden confounder — through an instrument, a proxy, or a natural experiment.</li>
-<li><span class="math inline">\(\circ\)</span> marks indicate what you <em>don’t</em> know. Additional data, temporal ordering, or experimental variation can resolve them.</li>
-</ul>
-</section>
-<section id="simulation-with-hidden-variables" class="level2" data-number="11.2">
-<h2 data-number="11.2" class="anchored" data-anchor-id="simulation-with-hidden-variables"><span class="header-section-number">11.2</span> Simulation with Hidden Variables</h2>
-<p>We reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.</p>
-<pre class="{julia}"><code>Random.seed!(2025)
-
-n_vars    = 8
-n_samples = 2000
-edge_prob = 0.35
-latent    = [3, 6]
-obs_idx   = setdiff(1:n_vars, latent)
-all_labels = ["X$i" for i in 1:n_vars]
-obs_labels = ["X$(obs_idx[i])" for i in 1:length(obs_idx)]
-
-adj_mat   = gen_er_dag_adj_mat(n_vars, edge_prob)
-data_full = gen_gaussian_data(adj_mat, n_samples)
-data_obs  = data_full[:, obs_idx]
-n_obs     = length(obs_idx)
-
-@printf "Total variables: %d   Hidden: %s   Observed: %d\n" n_vars latent n_obs</code></pre>
-<section id="true-structure-over-observed-variables" class="level3" data-number="11.2.1">
-<h3 data-number="11.2.1" class="anchored" data-anchor-id="true-structure-over-observed-variables"><span class="header-section-number">11.2.1</span> True structure over observed variables</h3>
-<p>Two observed variables are adjacent in the MAG iff no subset of the <em>observed</em> variables d-separates them in the full DAG.</p>
-<pre class="{julia}"><code>true_dag = SimpleDiGraph(adj_mat)
-
-function true_mag_skeleton(dag, observed)
-    p = length(observed)
-    skel = SimpleGraph(p)
-    for i in 1:(p-1), j in (i+1):p
-        u, v = observed[i], observed[j]
-        other_obs = setdiff(observed, [u, v])
-        separated = any(dsep(dag, u, v, S) for S in powerset(other_obs))
-        !separated &amp;&amp; add_edge!(skel, i, j)
-    end
-    return skel
-end
-
-true_obs_skel = true_mag_skeleton(true_dag, obs_idx)
-@printf "True MAG skeleton edges (over %d observed nodes): %d\n" n_obs ne(true_obs_skel)</code></pre>
-<pre class="{julia}"><code>#| label: fig-latent-dag
-#| fig-cap: "Full DAG (square nodes are hidden) and true MAG skeleton over observed variables. Skeleton edges include both direct paths and paths through hidden variables."
-side_by_side([
-    (admg_with_latent(adj_mat, all_labels, latent), "Full DAG (square = hidden)"),
-    (skeleton_to_admg(true_obs_skel, obs_labels),   "True MAG skeleton (observed)"),
-]; note="Square nodes are unobserved (latent). Plaintext nodes are observed.")</code></pre>
-</section>
-</section>
-<section id="fci-algorithm" class="level2" data-number="11.3">
-<h2 data-number="11.3" class="anchored" data-anchor-id="fci-algorithm"><span class="header-section-number">11.3</span> FCI Algorithm</h2>
-<p>The <strong>FCI algorithm</strong> (Fast Causal Inference; Spirtes, Meek &amp; Richardson, 1995) is the standard extension of PC to the latent variable case. Like PC, it starts from a complete graph and removes edges via CI tests. After skeleton discovery, it applies a richer set of orientation rules that can produce bidirected edges <span class="math inline">\(X \leftrightarrow Y\)</span> indicating hidden common causes.</p>
-<p><strong>How FCI extends PC:</strong></p>
-<ol type="1">
-<li><strong>Phase 1 (skeleton):</strong> Same as PC — remove edges via CI tests with growing conditioning sets.</li>
-<li><strong>Phase 2 (initial orientation):</strong> Mark all edge endpoints as <span class="math inline">\(\circ\)</span> (uncertain).</li>
-<li><strong>Phase 3 (collider detection):</strong> For each unshielded triple <span class="math inline">\(X \circ\!-\!\circ Z \circ\!-\!\circ Y\)</span> where <span class="math inline">\(X, Y\)</span> non-adjacent: orient as <span class="math inline">\(X \circ\!\to Z \leftarrow\!\circ Y\)</span> if <span class="math inline">\(Z\)</span> is not in the separating set of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
-<li><strong>Phase 4 (rule propagation):</strong> Apply 10 orientation rules that propagate known marks without creating contradictions, including rules that can produce definite <span class="math inline">\(\to\)</span> and <span class="math inline">\(\leftrightarrow\)</span> edges.</li>
-</ol>
-<p>The richer mark set (<span class="math inline">\(\to\)</span>, <span class="math inline">\(\leftarrow\)</span>, <span class="math inline">\(\circ\)</span>, <span class="math inline">\(\leftrightarrow\)</span>) allows FCI to express what is known vs.&nbsp;unknown — at the cost of more complex output to interpret.</p>
-<pre class="{julia}"><code>sig_level = 0.01
-
-count_fci = Ref(0)
-ci_fci = (x, y, S, d) -&gt; begin
-    count_fci[] += 1
-    fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig_level)
-end
-
-pag_fci  = fcialg(n_obs, ci_fci, data_obs)
-skel_fci = SimpleGraph(pag_fci)
-
-f1_fci = f1_score(true_obs_skel, skel_fci)
-@printf "FCI:     skeleton F1 = %.3f   CI tests = %d\n" f1_fci count_fci[]</code></pre>
-<pre class="{julia}"><code>#| label: fig-fci-pag
-#| fig-cap: "PAG estimated by FCI. The `o` marks indicate uncertainty about orientation. A bidirected `↔` edge identifies a definite hidden common cause."
-println(plot_fci_graph_text(pag_fci, ["X$(obs_idx[i])" for i in 1:n_obs]))</code></pre>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Reading the FCI text output</strong></p>
-<p>The text representation uses ASCII edge marks:</p>
-<ul>
-<li><code>X1 --&gt; X2</code>: definite direct cause (<span class="math inline">\(X_1 \to X_2\)</span> in every equivalent MAG)</li>
-<li><code>X1 &lt;-&gt; X2</code>: definite hidden common cause (<span class="math inline">\(X_1 \leftrightarrow X_2\)</span>)</li>
-<li><code>X1 o-&gt; X2</code>: the <span class="math inline">\(X_1\)</span> endpoint is uncertain; <span class="math inline">\(X_2\)</span> endpoint is definitely an arrowhead</li>
-<li><code>X1 o-o X2</code>: both endpoints uncertain; could be any of <span class="math inline">\(\to\)</span>, <span class="math inline">\(\leftarrow\)</span>, <span class="math inline">\(\leftrightarrow\)</span></li>
-</ul>
-<p>In practice for economic research: focus first on <code>&lt;-&gt;</code> edges — these flag definite confounding and tell you where IV or proxy strategies are needed. Then examine <code>--&gt;</code> edges — these are causal claims that survive across all statistically equivalent structures.</p>
-</div>
-</div>
-<p><strong>When FCI gives wrong answers:</strong> FCI assumes the CI tests are perfectly accurate (no finite-sample error). In practice, with small <span class="math inline">\(n\)</span> or many variables, some false CI decisions propagate through the orientation rules. The skeleton quality (F1) is generally more reliable than the orientation quality.</p>
-</section>
-<section id="l-marvel-algorithm" class="level2" data-number="11.4">
-<h2 data-number="11.4" class="anchored" data-anchor-id="l-marvel-algorithm"><span class="header-section-number">11.4</span> L-MARVEL Algorithm</h2>
-<p><strong>L-MARVEL</strong> (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of exhaustive CI-test-based Markov boundary discovery, L-MARVEL uses a <strong>Gaussian precision matrix</strong> estimator:</p>
-<p><span class="math display">\[\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} &gt; \tau\right\}\]</span></p>
-<p>where <span class="math inline">\(\hat P = \hat\Sigma^{-1}\)</span> is the precision matrix and <span class="math inline">\(\tau\)</span> is a threshold from the Fisher-Z distribution.</p>
-<p><strong>Why the precision matrix?</strong> In a Gaussian linear model, the <span class="math inline">\((i,j)\)</span> entry of the precision matrix <span class="math inline">\(P = \Sigma^{-1}\)</span> is zero if and only if <span class="math inline">\(X_i \perp\!\!\!\perp X_j \mid \text{all other variables}\)</span>. The partial correlation <span class="math inline">\(P_{ij}/\sqrt{P_{ii}P_{jj}}\)</span> is therefore a one-shot test for Markov boundary membership, replacing the many conditioning-set CI tests that PC or FCI require to find the same information. This is the key computational saving.</p>
-<p>The removability criterion changes for the latent case (Theorem 32). Recall: <span class="math inline">\(\text{Mb}(X)\)</span> is the Markov boundary of <span class="math inline">\(X\)</span> — the minimal conditioning set that screens <span class="math inline">\(X\)</span> off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and <span class="math inline">\(\text{Ne}(X)\)</span> is the set of variables directly adjacent to <span class="math inline">\(X\)</span> in the current skeleton. Variable <span class="math inline">\(X\)</span> is removable iff for every <span class="math inline">\(Y \in \text{Mb}(X)\)</span> and <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
-<p><span class="math display">\[\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\!\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}\]</span></p>
-<p><strong>Intuition for the two conditions:</strong></p>
-<ul>
-<li><strong>Condition 1</strong> is the same as the observed-variable (RSL-D) removability criterion: <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> can be separated by some subset of the Markov boundary.</li>
-<li><strong>Condition 2</strong> is new and handles latent variables: if <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> are connected through a hidden common cause, conditioning on <em>any</em> subset of Mb<span class="math inline">\((X)\)</span> won’t separate them — but conditioning on <span class="math inline">\(X\)</span> itself would (because <span class="math inline">\(X\)</span> may block the latent path). Condition 2 catches this case.</li>
-</ul>
-<p>Together, the two conditions ensure that removing <span class="math inline">\(X\)</span> does not destroy information about the latent structure connecting its neighbours.</p>
-<pre class="{julia}"><code>count_lm = Ref(0)
-ci_lm = (x, y, S, d) -&gt; begin
-    count_lm[] += 1
-    fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig_level)
-end
-
-lm_skel = l_marvel(data_obs, ci_lm)
-
-f1_lm = f1_score(true_obs_skel, lm_skel)
-@printf "L-MARVEL: skeleton F1 = %.3f   CI tests = %d\n" f1_lm count_lm[]</code></pre>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>L-MARVEL output: skeleton only</strong></p>
-<p>Unlike FCI, L-MARVEL returns only the <strong>skeleton</strong> — undirected edges with no arrowhead or bidirected marks. This is a deliberate design choice: the recursive removal procedure identifies <em>adjacencies</em> efficiently but does not run the full PAG orientation phase.</p>
-<p>This is still valuable. Knowing which pairs of variables are adjacent tells you which potential causal relationships to investigate further (with instruments, experiments, or domain knowledge). Variables with no edge are conditionally independent given some observed set — no causal relationship need be posited between them.</p>
-<p>If you need orientations as well as skeleton, run FCI. If you only need to screen out non-adjacent pairs (the most common use case in large-<span class="math inline">\(p\)</span> problems), L-MARVEL’s precision matrix approach is substantially faster.</p>
-</div>
-</div>
-</section>
-<section id="comparison-1" class="level2" data-number="11.5">
-<h2 data-number="11.5" class="anchored" data-anchor-id="comparison-1"><span class="header-section-number">11.5</span> Comparison</h2>
-<pre class="{julia}"><code>#| label: tbl-latent-comparison
-#| tbl-cap: "Algorithm comparison on the latent-variable scenario (2 hidden nodes, n = 2000)"
-DataFrame(
-    Algorithm   = ["FCI", "L-MARVEL"],
-    Output      = ["PAG (orientations + skeleton)", "Skeleton only"],
-    Skeleton_F1 = round.([f1_fci, f1_lm], digits=3),
-    CI_Tests    = [count_fci[], count_lm[]],
-)</code></pre>
-<pre class="{julia}"><code>#| label: fig-latent-skeletons
-#| fig-cap: "True MAG skeleton vs. skeletons recovered by FCI and L-MARVEL over the 6 observed nodes."
-side_by_side([
-    (skeleton_to_admg(true_obs_skel, obs_labels), "True MAG skeleton"),
-    (skeleton_to_admg(skel_fci,      obs_labels), "FCI — estimated skeleton"),
-    (skeleton_to_admg(lm_skel,       obs_labels), "L-MARVEL — estimated skeleton"),
-]; note="All edges shown as undirected (skeleton comparison only).")</code></pre>
-</section>
-<section id="monte-carlo-evaluation-1" class="level2" data-number="11.6">
-<h2 data-number="11.6" class="anchored" data-anchor-id="monte-carlo-evaluation-1"><span class="header-section-number">11.6</span> Monte Carlo Evaluation</h2>
-<pre class="{julia}"><code>#| cache: true
-function evaluate_latent(seed; n_vars=8, n_samples=2000, edge_prob=0.35, n_latent=2, sig=0.01)
-    Random.seed!(seed)
-    adj       = gen_er_dag_adj_mat(n_vars, edge_prob)
-    data_full = gen_gaussian_data(adj, n_samples)
-    dag       = SimpleDiGraph(adj)
-
-    latent_vars = sort(randperm(n_vars)[1:n_latent])
-    obs_vars    = setdiff(1:n_vars, latent_vars)
-    data_obs    = data_full[:, obs_vars]
-    n_obs       = length(obs_vars)
-
-    true_skel = true_mag_skeleton(dag, obs_vars)
-
-    cnt_fci = Ref(0)
-    ci_fci  = (x, y, S, d) -&gt; begin cnt_fci[] += 1; fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig) end
-    pag     = fcialg(n_obs, ci_fci, data_obs)
-    f1f     = f1_score(true_skel, SimpleGraph(pag))
-
-    cnt_lm  = Ref(0)
-    ci_lm   = (x, y, S, d) -&gt; begin cnt_lm[] += 1; fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig) end
-    skel_lm = l_marvel(data_obs, ci_lm)
-    f1l     = f1_score(true_skel, skel_lm)
-
-    (f1_fci=f1f, f1_lm=f1l, ci_fci=cnt_fci[], ci_lm=cnt_lm[])
-end
-
-mc = [evaluate_latent(s) for s in 1:100]
-
-@printf "\nMonte Carlo averages (100 replications, n=%d, p=%d, %d latent)\n" n_samples n_vars 2
-@printf "%-10s  Skeleton F1  CI tests\n" "Method"
-@printf "%-10s  %10.3f  %8.1f\n" "FCI"      mean(r.f1_fci for r in mc) mean(r.ci_fci for r in mc)
-@printf "%-10s  %10.3f  %8.1f\n" "L-MARVEL" mean(r.f1_lm  for r in mc) mean(r.ci_lm  for r in mc)</code></pre>
-<pre class="{julia}"><code>#| label: fig-latent-mc
-#| fig-cap: "CI test count distributions across 100 replications."
-#| fig-width: 7
-#| fig-height: 4
-let
-    fig = Figure(size=(650, 380))
-    ax  = Axis(fig[1,1];
-        xlabel = "CI tests",
-        ylabel = "Frequency",
-        title  = "CI Test Counts: FCI vs L-MARVEL (100 replications)")
-    hist!(ax, [r.ci_fci for r in mc]; bins=20, color=(:steelblue, 0.65), label="FCI")
-    hist!(ax, [r.ci_lm  for r in mc]; bins=20, color=(:tomato, 0.65),    label="L-MARVEL")
-    axislegend(ax)
-    fig
-end</code></pre>
-</section>
-<section id="summary-1" class="level2" data-number="11.7">
-<h2 data-number="11.7" class="anchored" data-anchor-id="summary-1"><span class="header-section-number">11.7</span> Summary</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Property</th>
-<th>PC / RSL-D</th>
-<th>FCI</th>
-<th>L-MARVEL</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Latent confounders</td>
-<td>✗ assumes none</td>
-<td>✓ handles</td>
-<td>✓ handles</td>
-</tr>
-<tr class="even">
-<td>Output</td>
-<td>CPDAG</td>
-<td>PAG</td>
-<td>Skeleton</td>
-</tr>
-<tr class="odd">
-<td>Orientations</td>
-<td>✓</td>
-<td>✓</td>
-<td>✗</td>
-</tr>
-<tr class="even">
-<td>MB estimation</td>
-<td>CI tests</td>
-<td>CI tests</td>
-<td>Precision matrix</td>
-</tr>
-<tr class="odd">
-<td>CI complexity</td>
-<td>PC: <span class="math inline">\(O(p^2 2^p)\)</span> worst case; RSL-D: <span class="math inline">\(O(p \cdot d \cdot |\text{MB}|^2)\)</span></td>
-<td>Same as PC</td>
-<td>Fewer (Gaussian MB pre-filters)</td>
-</tr>
-</tbody>
-</table>
-<p>FCI and L-MARVEL address complementary needs. If you need to orient edges, use FCI. If you only need the skeleton and efficiency matters, L-MARVEL’s precision-matrix Markov boundary estimator reduces the CI test burden.</p>
-<section id="practical-decision-guide" class="level3" data-number="11.7.1">
-<h3 data-number="11.7.1" class="anchored" data-anchor-id="practical-decision-guide"><span class="header-section-number">11.7.1</span> Practical decision guide</h3>
-<p><strong>Use PC or RSL-D when:</strong> - You are confident in causal sufficiency (all relevant variables are measured) - You want a CPDAG that you can orient further with background knowledge - RSL-D is preferred over PC when <span class="math inline">\(p &gt; 10\)</span> or the graph may be moderately dense</p>
-<p><strong>Use FCI when:</strong> - You suspect hidden confounders but don’t know where - You need edge orientations and <span class="math inline">\(\leftrightarrow\)</span> marks to guide IV or proxy strategies - Sample size is large enough that CI-test errors don’t cascade badly through orientation rules</p>
-<p><strong>Use L-MARVEL when:</strong> - You suspect latent confounders and have many variables (<span class="math inline">\(p &gt; 20\)</span>) - The goal is to prune the adjacency graph before applying domain knowledge or estimation - Gaussian data is appropriate (precision matrix estimator requires this)</p>
-</section>
-<section id="from-discovery-to-estimation" class="level3" data-number="11.7.2">
-<h3 data-number="11.7.2" class="anchored" data-anchor-id="from-discovery-to-estimation"><span class="header-section-number">11.7.2</span> From discovery to estimation</h3>
-<p>Causal discovery is a first step, not a final answer. The typical research workflow is:</p>
-<ol type="1">
-<li><strong>Discover</strong> — run FCI or L-MARVEL to get candidate adjacencies and, if using FCI, some edge marks</li>
-<li><strong>Refine</strong> — apply temporal ordering, institutional knowledge, and exclusion restrictions to orient remaining edges</li>
-<li><strong>Identify</strong> — check whether the effect of interest is identified given the refined graph (backdoor, front-door, ID algorithm)</li>
-<li><strong>Estimate</strong> — use TMLE, AIPW, or the estimators in earlier chapters</li>
-</ol>
-<p>Causal discovery narrows the space of possible structures; domain knowledge finishes the job.</p>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warning
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Sample size requirements</strong></p>
-<p>L-MARVEL’s Gaussian MB estimator requires <span class="math inline">\(n &gt; p + 1\)</span> samples. With many variables and limited data, fall back to CI-test-based MB estimation by passing a custom <code>mb_estimator</code> to <code>l_marvel</code>.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Going further: orientation in the latent case</strong></p>
-<p>FCI’s PAG output distinguishes definite causes (<span class="math inline">\(\to\)</span>), definite hidden common causes (<span class="math inline">\(\leftrightarrow\)</span>), and uncertain cases (<span class="math inline">\(\circ\)</span>). The PAG can be combined with background knowledge such as temporal ordering to further orient edges before estimation.</p>
-</div>
-</div>
-</section>
-</section>
 </section>
 
 </main> <!-- /main -->
