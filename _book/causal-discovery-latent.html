@@ -369,7 +369,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2c18e6e3" class="cell" data-execution_count="2">
+<div id="eeb4a769" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -446,7 +446,7 @@ window.Quarto = {
 <section id="simulation-with-hidden-variables" class="level2" data-number="11.2">
 <h2 data-number="11.2" class="anchored" data-anchor-id="simulation-with-hidden-variables"><span class="header-section-number">11.2</span> Simulation with Hidden Variables</h2>
 <p>We reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.</p>
-<div id="a65b3767" class="cell" data-execution_count="3">
+<div id="18381b72" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -470,7 +470,7 @@ window.Quarto = {
 <section id="true-structure-over-observed-variables" class="level3" data-number="11.2.1">
 <h3 data-number="11.2.1" class="anchored" data-anchor-id="true-structure-over-observed-variables"><span class="header-section-number">11.2.1</span> True structure over observed variables</h3>
 <p>Two observed variables are adjacent in the MAG iff no subset of the <em>observed</em> variables d-separates them in the full DAG.</p>
-<div id="1230467d" class="cell" data-execution_count="4">
+<div id="46228e83" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>true_dag <span class="op">=</span> <span class="fu">SimpleDiGraph</span>(adj_mat)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">true_mag_skeleton</span>(dag, observed)</span>
@@ -694,7 +694,7 @@ Figure&nbsp;11.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 <li><strong>Phase 4 (rule propagation):</strong> Apply 10 orientation rules that propagate known marks without creating contradictions, including rules that can produce definite <span class="math inline">\(\to\)</span> and <span class="math inline">\(\leftrightarrow\)</span> edges.</li>
 </ol>
 <p>The richer mark set (<span class="math inline">\(\to\)</span>, <span class="math inline">\(\leftarrow\)</span>, <span class="math inline">\(\circ\)</span>, <span class="math inline">\(\leftrightarrow\)</span>) allows FCI to express what is known vs.&nbsp;unknown — at the cost of more complex output to interpret.</p>
-<div id="190705d3" class="cell" data-execution_count="6">
+<div id="d952d032" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>count_fci <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
@@ -754,7 +754,7 @@ Note
 <p><span class="math display">\[\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} &gt; \tau\right\}\]</span></p>
 <p>where <span class="math inline">\(\hat P = \hat\Sigma^{-1}\)</span> is the precision matrix and <span class="math inline">\(\tau\)</span> is a threshold from the Fisher-Z distribution.</p>
 <p><strong>Why the precision matrix?</strong> In a Gaussian linear model, the <span class="math inline">\((i,j)\)</span> entry of the precision matrix <span class="math inline">\(P = \Sigma^{-1}\)</span> is zero if and only if <span class="math inline">\(X_i \perp\!\!\!\perp X_j \mid \text{all other variables}\)</span>. The partial correlation <span class="math inline">\(P_{ij}/\sqrt{P_{ii}P_{jj}}\)</span> is therefore a one-shot test for Markov boundary membership, replacing the many conditioning-set CI tests that PC or FCI require to find the same information. This is the key computational saving.</p>
-<p>The removability criterion changes for the latent case (Theorem 32): variable <span class="math inline">\(X\)</span> is removable iff for every <span class="math inline">\(Y \in \text{Mb}(X)\)</span> and <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
+<p>The removability criterion changes for the latent case (Theorem 32). Recall: <span class="math inline">\(\text{Mb}(X)\)</span> is the Markov boundary of <span class="math inline">\(X\)</span> — the minimal conditioning set that screens <span class="math inline">\(X\)</span> off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and <span class="math inline">\(\text{Ne}(X)\)</span> is the set of variables directly adjacent to <span class="math inline">\(X\)</span> in the current skeleton. Variable <span class="math inline">\(X\)</span> is removable iff for every <span class="math inline">\(Y \in \text{Mb}(X)\)</span> and <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
 <p><span class="math display">\[\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\!\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}\]</span></p>
 <p><strong>Intuition for the two conditions:</strong></p>
 <ul>
@@ -762,7 +762,7 @@ Note
 <li><strong>Condition 2</strong> is new and handles latent variables: if <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> are connected through a hidden common cause, conditioning on <em>any</em> subset of Mb<span class="math inline">\((X)\)</span> won’t separate them — but conditioning on <span class="math inline">\(X\)</span> itself would (because <span class="math inline">\(X\)</span> may block the latent path). Condition 2 catches this case.</li>
 </ul>
 <p>Together, the two conditions ensure that removing <span class="math inline">\(X\)</span> does not destroy information about the latent structure connecting its neighbours.</p>
-<div id="7e62e2d4" class="cell" data-execution_count="8">
+<div id="c30c0187" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>count_lm <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ci_lm <span class="op">=</span> (x, y, S, d) <span class="op">-&gt;</span> <span class="cf">begin</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    count_lm[] <span class="op">+=</span> <span class="fl">1</span></span>
@@ -1078,7 +1078,7 @@ Figure&nbsp;11.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 </section>
 <section id="monte-carlo-evaluation" class="level2" data-number="11.6">
 <h2 data-number="11.6" class="anchored" data-anchor-id="monte-carlo-evaluation"><span class="header-section-number">11.6</span> Monte Carlo Evaluation</h2>
-<div id="4c9fb515" class="cell" data-cache="true" data-execution_count="11">
+<div id="8cd1838e" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_latent</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, n_latent<span class="op">=</span><span class="fl">2</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    adj       <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
