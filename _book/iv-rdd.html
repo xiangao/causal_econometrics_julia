@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>7&nbsp; IV &amp; Regression Discontinuity – Causal Econometrics with Julia</title>
+<title>8&nbsp; IV &amp; Regression Discontinuity – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./poisson-iv.html" rel="next">
-<link href="./did.html" rel="prev">
+<link href="./synthetic-control-did-tasc.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -150,7 +150,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -166,6 +166,10 @@ window.Quarto = {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -250,14 +254,20 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -274,7 +284,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
   </div>
 </li>
       </ul>
@@ -291,13 +301,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
   </div>
 </li>
       </ul>
@@ -314,7 +324,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
       </ul>
@@ -329,25 +339,25 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#instrumental-variables" id="toc-instrumental-variables" class="nav-link active" data-scroll-target="#instrumental-variables"><span class="header-section-number">7.1</span> Instrumental Variables</a>
+  <li><a href="#instrumental-variables" id="toc-instrumental-variables" class="nav-link active" data-scroll-target="#instrumental-variables"><span class="header-section-number">8.1</span> Instrumental Variables</a>
   <ul class="collapse">
-  <li><a href="#uncontrolled-confounder" id="toc-uncontrolled-confounder" class="nav-link" data-scroll-target="#uncontrolled-confounder"><span class="header-section-number">7.1.1</span> Uncontrolled Confounder</a></li>
-  <li><a href="#why-does-iv-work" id="toc-why-does-iv-work" class="nav-link" data-scroll-target="#why-does-iv-work"><span class="header-section-number">7.1.2</span> Why Does IV Work?</a></li>
-  <li><a href="#iv-under-potential-outcomes" id="toc-iv-under-potential-outcomes" class="nav-link" data-scroll-target="#iv-under-potential-outcomes"><span class="header-section-number">7.1.3</span> IV Under Potential Outcomes</a></li>
-  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions"><span class="header-section-number">7.1.4</span> Assumptions</a></li>
-  <li><a href="#late-identification" id="toc-late-identification" class="nav-link" data-scroll-target="#late-identification"><span class="header-section-number">7.1.5</span> LATE Identification</a></li>
-  <li><a href="#parametric-models" id="toc-parametric-models" class="nav-link" data-scroll-target="#parametric-models"><span class="header-section-number">7.1.6</span> Parametric Models</a></li>
-  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">7.1.7</span> Example</a></li>
-  <li><a href="#control-function-approach" id="toc-control-function-approach" class="nav-link" data-scroll-target="#control-function-approach"><span class="header-section-number">7.1.8</span> Control Function Approach</a></li>
+  <li><a href="#uncontrolled-confounder" id="toc-uncontrolled-confounder" class="nav-link" data-scroll-target="#uncontrolled-confounder"><span class="header-section-number">8.1.1</span> Uncontrolled Confounder</a></li>
+  <li><a href="#why-does-iv-work" id="toc-why-does-iv-work" class="nav-link" data-scroll-target="#why-does-iv-work"><span class="header-section-number">8.1.2</span> Why Does IV Work?</a></li>
+  <li><a href="#iv-under-potential-outcomes" id="toc-iv-under-potential-outcomes" class="nav-link" data-scroll-target="#iv-under-potential-outcomes"><span class="header-section-number">8.1.3</span> IV Under Potential Outcomes</a></li>
+  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions"><span class="header-section-number">8.1.4</span> Assumptions</a></li>
+  <li><a href="#late-identification" id="toc-late-identification" class="nav-link" data-scroll-target="#late-identification"><span class="header-section-number">8.1.5</span> LATE Identification</a></li>
+  <li><a href="#parametric-models" id="toc-parametric-models" class="nav-link" data-scroll-target="#parametric-models"><span class="header-section-number">8.1.6</span> Parametric Models</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">8.1.7</span> Example</a></li>
+  <li><a href="#control-function-approach" id="toc-control-function-approach" class="nav-link" data-scroll-target="#control-function-approach"><span class="header-section-number">8.1.8</span> Control Function Approach</a></li>
   </ul></li>
-  <li><a href="#regression-discontinuity-design" id="toc-regression-discontinuity-design" class="nav-link" data-scroll-target="#regression-discontinuity-design"><span class="header-section-number">7.2</span> Regression Discontinuity Design</a>
+  <li><a href="#regression-discontinuity-design" id="toc-regression-discontinuity-design" class="nav-link" data-scroll-target="#regression-discontinuity-design"><span class="header-section-number">8.2</span> Regression Discontinuity Design</a>
   <ul class="collapse">
-  <li><a href="#sharp-rdd" id="toc-sharp-rdd" class="nav-link" data-scroll-target="#sharp-rdd"><span class="header-section-number">7.2.1</span> Sharp RDD</a></li>
-  <li><a href="#identification-of-srdd" id="toc-identification-of-srdd" class="nav-link" data-scroll-target="#identification-of-srdd"><span class="header-section-number">7.2.2</span> Identification of SRDD</a></li>
-  <li><a href="#estimation-of-srdd" id="toc-estimation-of-srdd" class="nav-link" data-scroll-target="#estimation-of-srdd"><span class="header-section-number">7.2.3</span> Estimation of SRDD</a></li>
-  <li><a href="#nonparametric-estimation" id="toc-nonparametric-estimation" class="nav-link" data-scroll-target="#nonparametric-estimation"><span class="header-section-number">7.2.4</span> Nonparametric Estimation</a></li>
-  <li><a href="#fuzzy-rdd" id="toc-fuzzy-rdd" class="nav-link" data-scroll-target="#fuzzy-rdd"><span class="header-section-number">7.2.5</span> Fuzzy RDD</a></li>
-  <li><a href="#frdd-example" id="toc-frdd-example" class="nav-link" data-scroll-target="#frdd-example"><span class="header-section-number">7.2.6</span> FRDD Example</a></li>
+  <li><a href="#sharp-rdd" id="toc-sharp-rdd" class="nav-link" data-scroll-target="#sharp-rdd"><span class="header-section-number">8.2.1</span> Sharp RDD</a></li>
+  <li><a href="#identification-of-srdd" id="toc-identification-of-srdd" class="nav-link" data-scroll-target="#identification-of-srdd"><span class="header-section-number">8.2.2</span> Identification of SRDD</a></li>
+  <li><a href="#estimation-of-srdd" id="toc-estimation-of-srdd" class="nav-link" data-scroll-target="#estimation-of-srdd"><span class="header-section-number">8.2.3</span> Estimation of SRDD</a></li>
+  <li><a href="#nonparametric-estimation" id="toc-nonparametric-estimation" class="nav-link" data-scroll-target="#nonparametric-estimation"><span class="header-section-number">8.2.4</span> Nonparametric Estimation</a></li>
+  <li><a href="#fuzzy-rdd" id="toc-fuzzy-rdd" class="nav-link" data-scroll-target="#fuzzy-rdd"><span class="header-section-number">8.2.5</span> Fuzzy RDD</a></li>
+  <li><a href="#frdd-example" id="toc-frdd-example" class="nav-link" data-scroll-target="#frdd-example"><span class="header-section-number">8.2.6</span> FRDD Example</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -355,9 +365,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./iv-rdd.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></h1>
+<h1 class="title"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></h1>
 </div>
 
 
@@ -388,10 +398,10 @@ window.Quarto = {
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RegressionTables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>If we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.</p>
-<section id="instrumental-variables" class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="instrumental-variables"><span class="header-section-number">7.1</span> Instrumental Variables</h2>
-<section id="uncontrolled-confounder" class="level3" data-number="7.1.1">
-<h3 data-number="7.1.1" class="anchored" data-anchor-id="uncontrolled-confounder"><span class="header-section-number">7.1.1</span> Uncontrolled Confounder</h3>
+<section id="instrumental-variables" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="instrumental-variables"><span class="header-section-number">8.1</span> Instrumental Variables</h2>
+<section id="uncontrolled-confounder" class="level3" data-number="8.1.1">
+<h3 data-number="8.1.1" class="anchored" data-anchor-id="uncontrolled-confounder"><span class="header-section-number">8.1.1</span> Uncontrolled Confounder</h3>
 <div id="3c02562e" class="cell" data-message="false" data-execution_count="3">
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
@@ -402,8 +412,8 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="why-does-iv-work" class="level3" data-number="7.1.2">
-<h3 data-number="7.1.2" class="anchored" data-anchor-id="why-does-iv-work"><span class="header-section-number">7.1.2</span> Why Does IV Work?</h3>
+<section id="why-does-iv-work" class="level3" data-number="8.1.2">
+<h3 data-number="8.1.2" class="anchored" data-anchor-id="why-does-iv-work"><span class="header-section-number">8.1.2</span> Why Does IV Work?</h3>
 <div id="7f8727a9" class="cell" data-message="false" data-execution_count="4">
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div>
@@ -414,8 +424,8 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="iv-under-potential-outcomes" class="level3" data-number="7.1.3">
-<h3 data-number="7.1.3" class="anchored" data-anchor-id="iv-under-potential-outcomes"><span class="header-section-number">7.1.3</span> IV Under Potential Outcomes</h3>
+<section id="iv-under-potential-outcomes" class="level3" data-number="8.1.3">
+<h3 data-number="8.1.3" class="anchored" data-anchor-id="iv-under-potential-outcomes"><span class="header-section-number">8.1.3</span> IV Under Potential Outcomes</h3>
 <ul>
 <li>W has two potential outcomes W(1) and W(0), as a function of Z.</li>
 <li>Y has two potential outcomes Y(1) and Y(0), as a function of W.</li>
@@ -484,16 +494,16 @@ window.Quarto = {
 </tbody>
 </table>
 </section>
-<section id="assumptions" class="level3" data-number="7.1.4">
-<h3 data-number="7.1.4" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">7.1.4</span> Assumptions</h3>
+<section id="assumptions" class="level3" data-number="8.1.4">
+<h3 data-number="8.1.4" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">8.1.4</span> Assumptions</h3>
 <ul>
 <li>Exclusion restriction: <span class="math inline">\(Y(w, 1) = Y(w,0)\)</span></li>
 <li>Exogeneity of instrument: <span class="math inline">\(Z \perp [W(0),W(1), Y(0), Y(1)]\)</span></li>
 <li>Monotonicity (no defiers): <span class="math inline">\(W(0) \leq W(1)\)</span></li>
 </ul>
 </section>
-<section id="late-identification" class="level3" data-number="7.1.5">
-<h3 data-number="7.1.5" class="anchored" data-anchor-id="late-identification"><span class="header-section-number">7.1.5</span> LATE Identification</h3>
+<section id="late-identification" class="level3" data-number="8.1.5">
+<h3 data-number="8.1.5" class="anchored" data-anchor-id="late-identification"><span class="header-section-number">8.1.5</span> LATE Identification</h3>
 <p>Since we excluded defiers, and the other two groups (always-takers and never-takers) are not affected by the treatment assignment Z. The only effect we can identify is the treatment effect on the compliers. This is called the Local Average Treatment Effect (LATE).</p>
 <p><span class="math display">\[ \small
 \begin{aligned}
@@ -505,8 +515,8 @@ window.Quarto = {
 \end{aligned}
 \]</span></p>
 </section>
-<section id="parametric-models" class="level3" data-number="7.1.6">
-<h3 data-number="7.1.6" class="anchored" data-anchor-id="parametric-models"><span class="header-section-number">7.1.6</span> Parametric Models</h3>
+<section id="parametric-models" class="level3" data-number="8.1.6">
+<h3 data-number="8.1.6" class="anchored" data-anchor-id="parametric-models"><span class="header-section-number">8.1.6</span> Parametric Models</h3>
 <p>If we assume linearity, then this becomes the ratio of two OLS coefficients, sometimes called the Wald estimator.</p>
 <p><span class="math display">\[
 \begin{aligned}
@@ -516,8 +526,8 @@ window.Quarto = {
 \]</span></p>
 <p>Why do covariates help? Because we hope even if we don’t have exogeneity or exclusion assumption held, we would have those assumptions held within each level of <span class="math inline">\(X\)</span>.</p>
 </section>
-<section id="example" class="level3" data-number="7.1.7">
-<h3 data-number="7.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">7.1.7</span> Example</h3>
+<section id="example" class="level3" data-number="8.1.7">
+<h3 data-number="8.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">8.1.7</span> Example</h3>
 <div id="40ce782a" class="cell" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">66</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>nobs <span class="op">=</span> <span class="fl">10000</span></span>
@@ -707,8 +717,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </section>
-<section id="control-function-approach" class="level3" data-number="7.1.8">
-<h3 data-number="7.1.8" class="anchored" data-anchor-id="control-function-approach"><span class="header-section-number">7.1.8</span> Control Function Approach</h3>
+<section id="control-function-approach" class="level3" data-number="8.1.8">
+<h3 data-number="8.1.8" class="anchored" data-anchor-id="control-function-approach"><span class="header-section-number">8.1.8</span> Control Function Approach</h3>
 <p>The manual 2SLS above <em>implicitly</em> implements the <strong>control function (CF)</strong> approach. Understanding why makes the extension to nonlinear models (next chapter) transparent.</p>
 <p><strong>Algebraic motivation.</strong> Because <code>w</code> is endogenous, decompose the structural error:</p>
 <p><span class="math display">\[\varepsilon = \rho v + \eta, \qquad v \equiv w - E[w \mid z], \qquad E(z\eta)=0,\; E(zv)=0.\]</span></p>
@@ -758,11 +768,11 @@ Note
 </div>
 </section>
 </section>
-<section id="regression-discontinuity-design" class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="regression-discontinuity-design"><span class="header-section-number">7.2</span> Regression Discontinuity Design</h2>
+<section id="regression-discontinuity-design" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="regression-discontinuity-design"><span class="header-section-number">8.2</span> Regression Discontinuity Design</h2>
 <p>RDD (regression discontinuity design) is a quasi-experimental design that is used to estimate causal effects of interventions when assignment to the intervention is determined by whether a subject’s value on an observed covariate exceeds a threshold. The idea is that the assignment is as good as random, so we can estimate the causal effect of the intervention by comparing the outcomes of subjects who are just above and just below the threshold.</p>
-<section id="sharp-rdd" class="level3" data-number="7.2.1">
-<h3 data-number="7.2.1" class="anchored" data-anchor-id="sharp-rdd"><span class="header-section-number">7.2.1</span> Sharp RDD</h3>
+<section id="sharp-rdd" class="level3" data-number="8.2.1">
+<h3 data-number="8.2.1" class="anchored" data-anchor-id="sharp-rdd"><span class="header-section-number">8.2.1</span> Sharp RDD</h3>
 <p>We have a continuous variable <span class="math inline">\(X\)</span>, called the running variable, which determines the binary treatment <span class="math inline">\(W\)</span>. The treatment is assigned according to a threshold <span class="math inline">\(c\)</span>. The outcome variable <span class="math inline">\(Y\)</span> is a function of <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span>.</p>
 <p><span class="math display">\[ W=\mathbb{1}(X&gt;c)\]</span></p>
 <p>Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable <span class="math inline">\(X_i\)</span> is the difference in vote share between the Democratic and Republican parties in one election, with the threshold <span class="math inline">\(c = 0\)</span>. The outcome variable <span class="math inline">\(Y_i\)</span> is vote share at the second election.</p>
@@ -797,13 +807,13 @@ Note
 </div>
 </div>
 </section>
-<section id="identification-of-srdd" class="level3" data-number="7.2.2">
-<h3 data-number="7.2.2" class="anchored" data-anchor-id="identification-of-srdd"><span class="header-section-number">7.2.2</span> Identification of SRDD</h3>
+<section id="identification-of-srdd" class="level3" data-number="8.2.2">
+<h3 data-number="8.2.2" class="anchored" data-anchor-id="identification-of-srdd"><span class="header-section-number">8.2.2</span> Identification of SRDD</h3>
 <p><span class="math display">\[ \tau_{RD} = \lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x] \]</span></p>
 <p>In words, the treatment effect is the difference in the outcome from the right side and from the left side. This is the same as the difference in the outcome at the threshold, as if the treatment is assigned randomly.</p>
 </section>
-<section id="estimation-of-srdd" class="level3" data-number="7.2.3">
-<h3 data-number="7.2.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">7.2.3</span> Estimation of SRDD</h3>
+<section id="estimation-of-srdd" class="level3" data-number="8.2.3">
+<h3 data-number="8.2.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">8.2.3</span> Estimation of SRDD</h3>
 <div id="c33b5a97" class="cell" data-message="false" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>GPA <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">4</span>), <span class="fl">1000</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>future_success <span class="op">=</span> <span class="fl">10</span> <span class="op">.+</span> <span class="fl">1.5</span> <span class="op">.*</span> GPA <span class="op">.+</span> <span class="fl">2</span> <span class="op">.*</span> (GPA <span class="op">.&lt;=</span> <span class="fl">3</span>) <span class="op">.+</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), <span class="fl">1000</span>)</span>
@@ -842,8 +852,8 @@ P-value (robust)     = 0.0000</code></pre>
 </div>
 </div>
 </section>
-<section id="nonparametric-estimation" class="level3" data-number="7.2.4">
-<h3 data-number="7.2.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">7.2.4</span> Nonparametric Estimation</h3>
+<section id="nonparametric-estimation" class="level3" data-number="8.2.4">
+<h3 data-number="8.2.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">8.2.4</span> Nonparametric Estimation</h3>
 <div id="a5fa168e" class="cell" data-message="false" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>rdd_house <span class="op">=</span> <span class="fu">rdrobust</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
@@ -854,15 +864,15 @@ P-value (robust)     = 0.0000</code></pre>
 </div>
 </div>
 </section>
-<section id="fuzzy-rdd" class="level3" data-number="7.2.5">
-<h3 data-number="7.2.5" class="anchored" data-anchor-id="fuzzy-rdd"><span class="header-section-number">7.2.5</span> Fuzzy RDD</h3>
+<section id="fuzzy-rdd" class="level3" data-number="8.2.5">
+<h3 data-number="8.2.5" class="anchored" data-anchor-id="fuzzy-rdd"><span class="header-section-number">8.2.5</span> Fuzzy RDD</h3>
 <p>In fuzzy RDD, the treatment is assigned according to a threshold <span class="math inline">\(c\)</span>, but there exist non-compliance. This is similar to IV case.</p>
 <p><span class="math display">\[ \tau_{FRD} = \frac{\lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x]}{\lim_{x \to c^+} E[W|X=x] - \lim_{x \to c^-} E[W|X=x]} \]</span></p>
 <p>For example, if food stamp eligibility is given to all households below a certain income, but not all households receive the food stamps. In other words, income does not solely determine the assignment. Cutoff point increases the probability of treatment but doesn’t completely determine treatment.</p>
 <p>FRDD is IV.</p>
 </section>
-<section id="frdd-example" class="level3" data-number="7.2.6">
-<h3 data-number="7.2.6" class="anchored" data-anchor-id="frdd-example"><span class="header-section-number">7.2.6</span> FRDD Example</h3>
+<section id="frdd-example" class="level3" data-number="8.2.6">
+<h3 data-number="8.2.6" class="anchored" data-anchor-id="frdd-example"><span class="header-section-number">8.2.6</span> FRDD Example</h3>
 <p>Fetter (2013)’s main question of interest is how much of the increase in the home ownership rate in the midcentury US was due to mortgage subsidies given out by the government.</p>
 <p>We’re using the running variable quarter of birth (qob), which has been centered on the quarter of birth you’d need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).</p>
 <div id="b8804ae2" class="cell" data-cache="true" data-message="false" data-execution_count="12">
@@ -1045,7 +1055,7 @@ RDRobust (FRDD) tau = 1.879</code></pre>
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
@@ -1374,13 +1384,13 @@ RDRobust (FRDD) tau = 1.879</code></pre>
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./did.html" class="pagination-link" aria-label="Difference-in-Differences">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span>
+      <a href="./synthetic-control-did-tasc.html" class="pagination-link" aria-label="Synthetic Control, DiD, and TASC">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./poisson-iv.html" class="pagination-link" aria-label="IV in Poisson with Fixed Effects">
-        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

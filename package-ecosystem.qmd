@@ -1,6 +1,6 @@
 # Julia Packages Used in This Book
 
-This book relies on a small Julia causal econometrics stack developed alongside the examples. The packages live under `~/projects/software` and are loaded through this book's local Julia environment. The goal is not to replace the broader Julia ecosystem, but to fill the gaps that matter for the workflows in this text: fixed effects, semiparametric causal estimators, staggered DiD, synthetic DiD, regression discontinuity, SEM, and causal mediation.
+This book relies on a small Julia causal econometrics stack developed alongside the examples. The packages live under `~/projects/software` and are loaded through this book's local Julia environment. The goal is not to replace the broader Julia ecosystem, but to fill the gaps that matter for the workflows in this text: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.
 
 The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as `../../software/Panelest.jl`, which resolves to `~/projects/software/Panelest.jl`.
 
@@ -26,6 +26,7 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 | `CausalEstimate.jl` | Unified TMLE and AIPW estimation: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` and graph-implied backdoor via `GraphID` | Estimation, Nonparametric, Smoking cessation |
 | `Panelest.jl` | Also exports `emfx()` and `dataset()` for ETWFE post-processing | DiD |
 | `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
+| `TASC.jl` | Time-Aware Synthetic Control with Kalman filtering, RTS smoothing, EM fitting, SC/RSC utilities, and TASC plot recipes | Synthetic control, DiD, and TASC |
 | `RDRobust.jl` | Local-polynomial RD estimation, bandwidth selection, RD plot data, and fuzzy RD | IV/RDD |
 | `Lavaan.jl` | SEM, CFA, defined parameters, fit measures, and lavaan-style mediation syntax | Mediation |
 | `Crumble.jl` | Flexible causal mediation using cross-fitting, Riesz representers, and neural-network nuisance estimation | Mediation |
@@ -172,6 +173,20 @@ setup = panel_matrices(df, :State, :Year, :PacksPerCapita, :treated)
 ```
 
 The most important functions are `panel_matrices`, `synthdid_estimate`, `sc_estimate`, `did_estimate`, `effect_curve`, `placebo`, `vcov`, `se`, `california_prop99`, and `synthdid_controls`.
+
+## TASC.jl
+
+`TASC.jl` implements Time-Aware Synthetic Control. It keeps the same panel-data spirit as synthetic control, but models the untreated outcome panel with a low-rank linear Gaussian state-space model:
+
+```julia
+include("../../software/TASC.jl/src/TASC.jl")
+using .TASC
+
+model = fit_tasc(Y; d = 2, T0 = 19)
+pred = predict_counterfactual(model, Y)
+```
+
+The package exports `fit_tasc`, `predict_counterfactual`, `predict_post_intervention`, `tasc_plot`, classical synthetic-control baselines, HSVT/RSC-style denoising helpers, and synthetic data generators. In the synthetic-control chapter, the package is included from source so that the new local package can be used without forcing a full resolver update of the book environment.
 
 ## RDRobust.jl
 

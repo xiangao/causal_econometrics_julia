@@ -65,7 +65,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./iv-rdd.html" rel="next">
+<link href="./synthetic-control-did-tasc.html" rel="next">
 <link href="./nonparametric.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -166,6 +166,10 @@ window.Quarto = {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -250,14 +254,20 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -274,7 +284,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
   </div>
 </li>
       </ul>
@@ -291,13 +301,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
   </div>
 </li>
       </ul>
@@ -314,7 +324,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
       </ul>
@@ -340,11 +350,6 @@ window.Quarto = {
   <li><a href="#wooldridges-etwfe" id="toc-wooldridges-etwfe" class="nav-link" data-scroll-target="#wooldridges-etwfe"><span class="header-section-number">6.9</span> Wooldridge’s ETWFE</a></li>
   <li><a href="#example-1-us-teen-employment" id="toc-example-1-us-teen-employment" class="nav-link" data-scroll-target="#example-1-us-teen-employment"><span class="header-section-number">6.10</span> Example 1: US Teen Employment</a></li>
   <li><a href="#example-2-staggered-did" id="toc-example-2-staggered-did" class="nav-link" data-scroll-target="#example-2-staggered-did"><span class="header-section-number">6.11</span> Example 2: Staggered DiD</a></li>
-  <li><a href="#synthetic-control" id="toc-synthetic-control" class="nav-link" data-scroll-target="#synthetic-control"><span class="header-section-number">6.12</span> Synthetic Control</a></li>
-  <li><a href="#synthetic-did" id="toc-synthetic-did" class="nav-link" data-scroll-target="#synthetic-did"><span class="header-section-number">6.13</span> Synthetic DiD</a>
-  <ul class="collapse">
-  <li><a href="#example-california-proposition-99" id="toc-example-california-proposition-99" class="nav-link" data-scroll-target="#example-california-proposition-99"><span class="header-section-number">6.13.1</span> Example: California Proposition 99</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -370,21 +375,20 @@ window.Quarto = {
 </header>
 
 
-<div id="2050fe67" class="cell" data-execution_count="2">
+<div id="379be740" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFramesMeta</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">ETWFE</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Vcov</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">StatsAPI</span>: coeftable</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">ReadStatTables</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RegressionTables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Vcov</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">StatsAPI</span>: coeftable</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">ReadStatTables</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RegressionTables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.</p>
 <section id="t2-panel-data" class="level2" data-number="6.1">
@@ -469,7 +473,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="example-1-us-teen-employment" class="level2" data-number="6.10">
 <h2 data-number="6.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">6.10</span> Example 1: US Teen Employment</h2>
 <p>We’ll use the mpdta dataset on US teen employment from the did package. “Treatment” in this dataset refers to an increase in the minimum wage rate. Our goal is to estimate the effect of this minimum wage treatment (treat) on the log of teen employment (lemp). Notice that the panel ID is at the county level (countyreal), but treatment was staggered across cohorts (first_treat) so that a group of counties were treated at the same time. In addition to these staggered treatment effects, we also observe log population (lpop) as a potential control variable.</p>
-<div id="f5710303" class="cell" data-cache="true" data-execution_count="3">
+<div id="aa654628" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load mpdta dataset from the did R package (Callaway &amp; Sant'Anna 2021)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># US teen employment data; treatment = minimum wage increase</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mpdta <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mpdta.csv"</span>, DataFrame)</span>
@@ -558,7 +562,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="ddb5b994" class="cell" data-cache="true" data-execution_count="4">
+<div id="801f9e6e" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>year), nrow)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>treat), nrow)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -603,7 +607,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="c0c9f3f0" class="cell" data-cache="true" data-execution_count="5">
+<div id="b93236f5" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns enable StatsModels to generate cohort×time dummies (ETWFE)</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mpdta.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.first_treat)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mpdta.year_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.year)</span>
@@ -617,7 +621,7 @@ Iterations: 1
 StatsBase.CoefTable(Any[[-3.4135316702287624e-33, -0.016068364858818695, 0.047730936400964666, -0.0104701478480778, -0.02119242369406829, -0.022699245305459644, 0.0305968097333614, -0.01058091587048539, 0.0026833514425835467, -0.00635008942575461  …  0.0030174212587004232, 0.016306614436172342, 0.01927923735644746, -0.054180200273172406, 0.02405214108803968, 0.010848821828685481, 0.02583846223358552, -0.011173599592035538, -0.006018498628176904, -0.008646364013373136], [2.693734919824209e-33, 0.010078316236422944, 0.01595288409731988, 0.017137025099277562, 0.011759676186809464, 0.007612886466273422, 0.013915644744225132, 0.00989279226068868, 0.008805267304217107, 0.006488322802137784  …  0.009240983616431102, 0.007952522630443234, 0.008259811231470142, 0.013273467701922963, 0.010176640147651453, 0.009275934764944458, 0.009151011027330144, 0.015526030036024176, 0.012651681503127534, 0.011287368047456251], [-1.2672114264500558, -1.5943501356652978, 2.991994181728154, -0.6109664768197828, -1.802126466529691, -2.9816870914891145, 2.198734610989462, -1.0695580774025883, 0.30474389361222565, -0.9786950525430658  …  0.3265259829413875, 2.050495823017041, 2.334101448104886, -4.081842174921869, 2.363465813772573, 1.1695664214549315, 2.823563664869064, -0.7196688120601379, -0.47570740906567344, -0.7660212705938744], [0.20507970114688281, 0.11085763425089842, 0.0027716154538513574, 0.5412217737289009, 0.07152551052359446, 0.0028666482948026565, 0.02789679840386153, 0.28481827388510017, 0.7605612164012949, 0.32773067736526  …  0.7440264340669105, 0.04031607098319924, 0.019590410497807256, 4.4680135143972516e-5, 0.01810489696348593, 0.24217549685092654, 0.004749299250498021, 0.4717289331182837, 0.6342828417802775, 0.4436636459744491]], ["Estimate", "Std. Error", "z value", "Pr(&gt;|z|)"], ["lpop", "first_treat_str: 0 &amp; year_str: 2003", "first_treat_str: 2004 &amp; year_str: 2003", "first_treat_str: 2006 &amp; year_str: 2003", "first_treat_str: 2007 &amp; year_str: 2003", "first_treat_str: 0 &amp; year_str: 2004", "first_treat_str: 2004 &amp; year_str: 2004", "first_treat_str: 2006 &amp; year_str: 2004", "first_treat_str: 2007 &amp; year_str: 2004", "first_treat_str: 0 &amp; year_str: 2005"  …  "first_treat_str: 2006 &amp; year_str: 2005", "first_treat_str: 2007 &amp; year_str: 2005", "first_treat_str: 0 &amp; year_str: 2006", "first_treat_str: 2004 &amp; year_str: 2006", "first_treat_str: 2006 &amp; year_str: 2006", "first_treat_str: 2007 &amp; year_str: 2006", "first_treat_str: 0 &amp; year_str: 2007", "first_treat_str: 2004 &amp; year_str: 2007", "first_treat_str: 2006 &amp; year_str: 2007", "first_treat_str: 2007 &amp; year_str: 2007"], 4, 3)</code></pre>
 </div>
 </div>
-<div id="d6427add" class="cell" data-cache="true" data-execution_count="6">
+<div id="a6499d40" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -793,7 +797,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="a7a6dfcb" class="cell" data-cache="true" data-execution_count="7">
+<div id="8e1ecb32" class="cell" data-cache="true" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -830,7 +834,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="5afa2988" class="cell" data-cache="true" data-execution_count="8">
+<div id="053a3f80" class="cell" data-cache="true" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -892,7 +896,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="63f578c6" class="cell" data-cache="true" data-execution_count="9">
+<div id="1114bdfc" class="cell" data-cache="true" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
@@ -919,7 +923,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="example-2-staggered-did" class="level2" data-number="6.11">
 <h2 data-number="6.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">6.11</span> Example 2: Staggered DiD</h2>
-<div id="c2b12322" class="cell" data-cache="true" data-execution_count="10">
+<div id="cde1deaf" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>did_data <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">readstat</span>(<span class="st">"data/did_staggered_6.dta"</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>first_treat <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span></span>
@@ -1057,7 +1061,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="e4c003d5" class="cell" data-cache="true" data-execution_count="11">
+<div id="f596ffab" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(did_data, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div><div style="float: left;"><span>4×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -1100,7 +1104,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="15abce64" class="cell" data-cache="true" data-execution_count="12">
+<div id="6684d863" class="cell" data-cache="true" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>treated_cohort1 <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="op">:</span>f04 <span class="op">==</span> <span class="fl">1</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"d4f04"</span></span>
@@ -1168,7 +1172,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="61cf0bd2" class="cell" data-cache="true" data-execution_count="13">
+<div id="e1f4be2b" class="cell" data-cache="true" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort2), <span class="op">:</span>treated_cohort2), <span class="op">:</span>te5 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean5)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort3), <span class="op">:</span>treated_cohort3), <span class="op">:</span>te6 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
@@ -1197,7 +1201,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="33452432" class="cell" data-cache="true" data-execution_count="14">
+<div id="d0f687c9" class="cell" data-cache="true" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns needed for cohort×time ETWFE dummies</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>did_data.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(did_data.first_treat)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>did_data.year_str <span class="op">=</span> <span class="fu">string</span>.(did_data.year)</span>
@@ -1407,7 +1411,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="e8db9df4" class="cell" data-cache="true" data-execution_count="15">
+<div id="2b85a02f" class="cell" data-cache="true" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -1444,7 +1448,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="04028d47" class="cell" data-cache="true" data-execution_count="16">
+<div id="1a672826" class="cell" data-cache="true" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -1498,7 +1502,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="c53b6cd9" class="cell" data-cache="true" data-execution_count="17">
+<div id="28038da5" class="cell" data-cache="true" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mod_es2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
@@ -1552,53 +1556,9 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-</section>
-<section id="synthetic-control" class="level2" data-number="6.12">
-<h2 data-number="6.12" class="anchored" data-anchor-id="synthetic-control"><span class="header-section-number">6.12</span> Synthetic Control</h2>
-<p>The biggest problem with DiD is the PT assumption. There is not really a test for it, just like the unconfoundedness assumption. It is less demanding than unconfoundedness assumption, but nevertheless hard to justify sometimes.</p>
-<p>Abadie (2010)’s idea is to construct a control unit, out of many control units (donor pool), which is a weighted average of all donor units, that then hopefully is very close to the treated unit in terms of outcome, in the pre-treatment periods. This works pretty well in practice, when you have a somewhat large donor pool. Of course there is still no test for post-treatment period, but for pre-treatment periods, usually it can get almost identical trend as the treated unit. This was designed for single treated unit at the beginning, but got extended to multiple treated units later on.</p>
-</section>
-<section id="synthetic-did" class="level2" data-number="6.13">
-<h2 data-number="6.13" class="anchored" data-anchor-id="synthetic-did"><span class="header-section-number">6.13</span> Synthetic DiD</h2>
-<p>Arkhangelsky et al (2021) tries to combine the idea of DiD and SC. SC assigns different weights to different control units. The standard DiD is a TWFE, assigning equal weights to all time periods and units.</p>
-<p>To see that, DiD objective function:</p>
-<p><span class="math display">\[ \small (\hat \tau^{did}, \hat \mu, \hat \alpha, \hat \beta) = \underset{\tau, \mu, \alpha, \beta}{argmin} { \Sigma_{i=1}^N \Sigma_{t=1}^T (Y_{it} - \mu - \alpha_i - \beta_t - W_{it} \tau)^2}\]</span></p>
-<p>SC objective function: <span class="math display">\[ (\hat \tau^{sc}, \hat \mu, \hat \beta) = \underset{\tau, \mu, \beta}{argmin} { \Sigma_{i=1}^N \Sigma_{t=1}^T (Y_{it} - \mu - \beta_t - W_{it} \tau)^2 \hat \omega^{sc}}\]</span></p>
-<p>It’s a weighted version of DiD. In this sense, DiD is a special case of SC, setting all weights to 1. The weights are set to optimally match donor units to treated unit so that they are as close as possible, in each time point. Note there is no <span class="math inline">\(\alpha_i\)</span>, since it’s forced to be 0.</p>
-<p>SDiD:</p>
-<p><span class="math display">\[ \small (\hat \tau^{sdid}, \hat \mu, \hat \alpha, \hat \beta) = \underset{\tau, \mu, \alpha, \beta}{argmin} { \Sigma_{i=1}^N \Sigma_{t=1}^T (Y_{it} - \mu - \alpha_i - \beta_t - W_{it} \tau)^2} \hat \omega_i^{sdid} \lambda_t^{sdid}\]</span></p>
-<p>SDiD sets another weight in addition to SC weights, which changes over time. The SC weights are trying to construct a control unit that is close to the treated unit; the SDiD weights are trying to put more weights on pre-treatment periods that are more similar to post-treatment periods.</p>
-<section id="example-california-proposition-99" class="level3" data-number="6.13.1">
-<h3 data-number="6.13.1" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">6.13.1</span> Example: California Proposition 99</h3>
-<div id="7cdd30c9" class="cell" data-cache="true" data-execution_count="18">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>tau_hat <span class="op">=</span> <span class="fu">synthdid_estimate</span>(setup.Y, setup.N0, setup.T0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="18">
-<pre><code>Synthetic Diff-in-Diff Estimate
-───────────────────────────────────
-  τ̂  = -15.6038
-  N₀ = 38,  N₁ = 1
-  T₀ = 19,  T₁ = 12
-  N₀_eff = 16.4,  T₀_eff = 2.8</code></pre>
-</div>
-</div>
-<div id="33a0a1fc" class="cell" data-cache="true" data-execution_count="19">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>tau_sc  <span class="op">=</span> <span class="fu">sc_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>tau_did <span class="op">=</span> <span class="fu">did_estimate</span>(setup.Y, setup.N0, setup.T0)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Diff-in-Diff           = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_did.estimate</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic Control      = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_sc.estimate</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic Diff-in-Diff = %.4g</span><span class="sc">\n</span><span class="st">"</span> tau_hat.estimate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Diff-in-Diff           = -27.35
-Synthetic Control      = -19.62
-Synthetic Diff-in-Diff = -15.6</code></pre>
-</div>
-</div>
+<p>Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -1675,7 +1635,7 @@ Synthetic Diff-in-Diff = -15.6</code></pre>
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
@@ -2009,8 +1969,8 @@ Synthetic Diff-in-Diff = -15.6</code></pre>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./iv-rdd.html" class="pagination-link" aria-label="IV &amp; Regression Discontinuity">
-        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./synthetic-control-did-tasc.html" class="pagination-link" aria-label="Synthetic Control, DiD, and TASC">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
