@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -368,7 +388,7 @@ window.Quarto = {
 </header>
 
 
-<div id="df4ddde1" class="cell" data-execution_count="2">
+<div id="a263223d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -421,7 +441,7 @@ window.Quarto = {
 </section>
 <section id="time-aware-synthetic-control" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="time-aware-synthetic-control"><span class="header-section-number">7.3</span> Time-Aware Synthetic Control</h2>
-<p>TASC starts from the same panel-data structure, but it models the donor and treated outcomes through a latent time-series system:</p>
+<p>TASC was proposed by <span class="citation" data-cites="rho2026timeaware">Rho et al. (<a href="#ref-rho2026timeaware" role="doc-biblioref">2026</a>)</span>. It starts from the same panel-data structure, but it models the donor and treated outcomes through a latent time-series system:</p>
 <p><span class="math display">\[
 x_t = A x_{t-1} + q_t,\qquad q_t \sim N(0,Q),
 \]</span></p>
@@ -442,7 +462,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <section id="example-california-proposition-99" class="level2" data-number="7.4">
 <h2 data-number="7.4" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">7.4</span> Example: California Proposition 99</h2>
 <p>California’s Proposition 99 raised cigarette taxes and funded anti-smoking programs. The usual synthetic-control exercise compares California’s cigarette sales after 1988 to a donor pool of other states. The outcome is per-capita cigarette sales in packs.</p>
-<div id="7feb263c" class="cell" data-cache="true" data-execution_count="3">
+<div id="d0907530" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -452,7 +472,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><code>SynthDiD.jl</code> orders the donor states first and treated states last. <code>TASC.jl</code> expects the treated unit to be first, so we explicitly reorder the matrix before fitting the state-space model. The paper’s Proposition 99 example uses a low latent dimension; here we set <code>d = 2</code>.</p>
-<div id="35304a58" class="cell" data-cache="true" data-execution_count="4">
+<div id="ec68e142" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>tasc_model <span class="op">=</span> <span class="fu">fit_tasc</span>(</span>
@@ -467,7 +487,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>tasc_att <span class="op">=</span> <span class="fu">mean</span>(tasc_pred.effect[(setup.T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="a562819b" class="cell" data-cache="true" data-execution_count="5">
+<div id="567b5b8b" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>estimates <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    Method <span class="op">=</span> [<span class="st">"Diff-in-Diff"</span>, <span class="st">"Synthetic Control"</span>, <span class="st">"Synthetic Diff-in-Diff"</span>, <span class="st">"TASC"</span>],</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    Estimate <span class="op">=</span> [tau_did.estimate, tau_sc.estimate, tau_sdid.estimate, tasc_att],</span>
@@ -522,7 +542,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 </div>
 </div>
 <p>The estimates are all negative: California’s observed cigarette sales fell below the estimated no-Proposition-99 counterfactual. The methods differ because they impose different restrictions on the untreated path. DiD compares average changes. Synthetic control chooses donor weights. Synthetic DiD adds time weights. TASC uses a low-rank state-space model and updates the latent state with post-treatment donor observations.</p>
-<div id="edd888c9" class="cell" data-cache="true" data-execution_count="6">
+<div id="c3ef180a" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>years <span class="op">=</span> <span class="fu">Int</span>.(setup.times)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>treated <span class="op">=</span> <span class="fu">vec</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>), <span class="op">:</span>])</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sc_counterfactual <span class="op">=</span> <span class="fu">vec</span>(tau_sc.weights.omega<span class="op">'</span> <span class="op">*</span> setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
@@ -560,6 +580,11 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <p>The figure emphasizes where the counterfactual enters. After 1988, the black line is observed California. The colored lines are estimates of California’s untreated path. The treatment-effect path is the vertical gap between the black line and each counterfactual.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-rho2026timeaware" class="csl-entry" role="listitem">
+Rho, Saeyoung, Cyrus Illick, Samhitha Narasipura, Alberto Abadie, Daniel Hsu, and Vishal Misra. 2026. <span>“Time-Aware Synthetic Control.”</span> <em>arXiv Preprint arXiv:2601.03099</em>. <a href="https://arxiv.org/abs/2601.03099">https://arxiv.org/abs/2601.03099</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->
