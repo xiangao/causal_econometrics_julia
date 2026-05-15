@@ -1,0 +1,327 @@
+# Distributional Treatment Effects
+
+```{julia}
+#| include: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using CairoMakie
+using Printf
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using CairoMakie
+```
+
+The previous chapters focus on the average treatment effect (ATE) — a single
+scalar summary of how treatment shifts the outcome's mean. Many economic
+questions, however, are not about the mean. A policy that raises average
+earnings by \$2,000 looks different depending on whether the gain is
+concentrated at the top of the wage distribution or distributed across the
+bottom tail. A clinical intervention that improves the median patient may
+harm the 10th percentile. The ATE is silent about these questions; the
+distribution of treatment effects answers them.
+
+## Beyond the average
+
+The fundamental object of distributional analysis is the pair of marginal
+distributions $F_{Y(1)}$ and $F_{Y(0)}$ — what the outcome distribution would
+look like under universal treatment vs. universal control. From these we can
+read off any distributional summary: quantile differences, density shifts,
+inequality measures, or the entire CDF of treatment effects.
+
+The most common summary is the **quantile treatment effect** (QTE):
+
+$$
+\text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau), \quad \tau \in (0, 1).
+$$
+
+QTE($\tau$) reports the difference between the $\tau$-th quantile of the
+treated and control distributions. It is *not* the same as the average effect
+*at* a given pre-treatment quantile — QTE does not track individuals; it
+compares quantile to quantile across two marginal distributions.
+
+A simulation makes the contrast vivid. Consider a treatment whose effect
+grows with the outcome:
+
+```{julia}
+#| label: sim-qte
+#| cache: true
+
+Random.seed!(42)
+n = 5000
+
+# Pre-treatment outcome (counterfactual under no treatment)
+Y0 = rand(LogNormal(0, 0.6), n)
+
+# Heterogeneous treatment effect: bigger at the top of the Y0 distribution
+true_te = 0.2 .* Y0 .+ 0.1
+Y1 = Y0 .+ true_te
+
+ate     = mean(Y1 .- Y0)
+qte_25  = quantile(Y1, 0.25) - quantile(Y0, 0.25)
+qte_50  = quantile(Y1, 0.50) - quantile(Y0, 0.50)
+qte_75  = quantile(Y1, 0.75) - quantile(Y0, 0.75)
+qte_90  = quantile(Y1, 0.90) - quantile(Y0, 0.90)
+
+@printf("ATE          = %.3f\n", ate)
+@printf("QTE(0.25)    = %.3f\n", qte_25)
+@printf("QTE(0.50)    = %.3f\n", qte_50)
+@printf("QTE(0.75)    = %.3f\n", qte_75)
+@printf("QTE(0.90)    = %.3f\n", qte_90)
+```
+
+The ATE reports a single number; the QTEs reveal that the treatment effect
+nearly triples from the 25th to the 90th percentile. Reporting only the ATE
+hides the heterogeneity that is often the policy-relevant finding.
+
+```{julia}
+#| label: plot-distributions
+#| cache: true
+#| fig-cap: "Treated and control marginal distributions. The QTE curve traces the horizontal distance between the two CDFs at each quantile."
+
+τ_grid = 0.05:0.025:0.95
+qte_curve = [quantile(Y1, τ) - quantile(Y0, τ) for τ in τ_grid]
+
+fig = Figure(size = (820, 360), fontsize = 13)
+
+ax1 = Axis(fig[1, 1], xlabel = "Outcome Y", ylabel = "Density",
+           title = "Outcome distributions")
+density!(ax1, Y0, color = (:steelblue, 0.4), label = "Y(0)")
+density!(ax1, Y1, color = (:firebrick, 0.4), label = "Y(1)")
+axislegend(ax1, position = :rt, framevisible = false)
+
+ax2 = Axis(fig[1, 2], xlabel = "Quantile τ", ylabel = "QTE(τ)",
+           title = "Quantile treatment effects")
+lines!(ax2, collect(τ_grid), qte_curve, color = :black, linewidth = 2)
+hlines!(ax2, [ate], color = :gray40, linestyle = :dash)
+text!(ax2, 0.05, ate + 0.02; text = "ATE", color = :gray40, fontsize = 11)
+
+fig
+```
+
+The left panel shows that treatment shifts and stretches the outcome
+distribution rather than translating it. The right panel — the QTE curve —
+quantifies the stretching: low quantiles barely move, high quantiles move
+substantially. The dashed horizontal line is the ATE; reporting only that
+number erases the upward slope that is the entire story.
+
+## Identifying counterfactual distributions
+
+The QTE estimand requires knowing two marginal distributions, $F_{Y(1)}$ and
+$F_{Y(0)}$, but observational data shows us only $F_{Y \mid D=1}$ and
+$F_{Y \mid D=0}$. Recovering the counterfactual marginals requires the same
+ingredients as identifying the ATE — typically unconfoundedness or some
+research design — but applied to the entire distribution rather than the
+mean.
+
+Three main approaches in the literature:
+
+**Inverse propensity weighting on the CDF.** Estimate the propensity score
+$\hat\pi(x)$ and weight observations to construct counterfactual empirical
+CDFs:
+
+$$
+\hat F_{Y(d)}(y) = \frac{1}{n}\sum_{i=1}^n \frac{\mathbf{1}\{D_i = d\}\mathbf{1}\{Y_i \le y\}}{\hat\pi(x_i)^d (1-\hat\pi(x_i))^{1-d}}.
+$$
+
+Then $\hat{\text{QTE}}(\tau) = \hat F^{-1}_{Y(1)}(\tau) - \hat F^{-1}_{Y(0)}(\tau)$.
+This is the Firpo (2007) estimator for QTE under unconfoundedness.
+
+**Distribution regression.** Model $P(Y \le y \mid X, D)$ as a flexible
+function of $X$ for each threshold $y$ (Chernozhukov, Fernández-Val, Melly
+2013). Integrating out $X$ gives the counterfactual marginal. Distribution
+regression handles the entire distribution simultaneously rather than
+estimating each quantile separately.
+
+**Generative / engression approaches.** Train a stochastic model that learns
+$Y \mid X, D$ as a distribution rather than a conditional mean. Sampling from
+the trained model gives counterfactual draws, from which any distributional
+summary follows. This is the route taken by `Engression.jl` and by
+`Endid.jl` for the DiD setting.
+
+## Distributional DiD with Engression
+
+For panel data with treatment, **distributional difference-in-differences**
+extends the standard DiD identification idea from means to distributions. Lee
+& Wooldridge (2025) propose a DiD construction in which the entire
+counterfactual distribution of the treated unit's post-treatment outcome is
+estimated by combining its pre-treatment distribution with a distributional
+"trend" learned from the control units.
+
+`Endid.jl` implements this using Engression — a stochastic neural network
+trained with the energy score, producing a generative model of $Y \mid X$
+rather than a conditional mean. The trained model can sample counterfactual
+outcomes, from which the QTE curve follows by quantile differences.
+
+```{julia}
+#| eval: false
+#| echo: true
+
+using Endid
+
+# Panel data: y outcome, id unit, time period, post 1 if post-treatment
+# D = 1 marks treated units (optional; otherwise inferred from post)
+res = endid(
+    df, :y, :id, :time, :post;
+    dvar       = :D,
+    controls   = [:age, :income],
+    nboot      = 100,
+    num_epochs = 500,
+    hidden_dim = 64,
+)
+
+println(res)   # ATT + bootstrap SE
+res.qte        # DataFrame of QTE estimates at default quantiles 0.1:0.1:0.9
+plot(res)      # QTE curve with confidence band
+```
+
+The `endid` function returns an `EndidResult` containing:
+
+- `att` — the average treatment effect on the treated, with bootstrap SE and CI
+- `qte` — a `DataFrame` of quantile treatment effects on the treated, one
+  row per quantile in the grid (default `0.1:0.1:0.9`), each with bootstrap
+  standard errors
+- `model` — the trained Engression model (for further sampling / introspection)
+- `design` — `"common_timing"` or `"staggered"` depending on which interface
+  was used
+
+For staggered adoption (different treatment times across cohorts), use
+`endid_staggered` with a `gvar` column carrying each unit's first-treatment
+period.
+
+## When QTE differs from ATT: a panel simulation
+
+To see when distributional analysis pays off, simulate panel data with a
+treatment effect that depends on the unit's underlying type:
+
+```{julia}
+#| label: panel-sim
+#| cache: true
+
+Random.seed!(11)
+n_units = 500
+n_time  = 4
+T0      = 2                # last pre-treatment period
+treated_frac = 0.5
+n_treated    = Int(round(n_units * treated_frac))
+
+# Unit type (latent ability); drives both Y and the treatment effect size
+ability = rand(Normal(0, 1), n_units)
+
+# Build long panel
+rows = NamedTuple[]
+for i in 1:n_units, t in 1:n_time
+    post = t > T0 ? 1 : 0
+    treated = i <= n_treated ? 1 : 0
+    # Heterogeneous TE: large at the top of the ability distribution
+    te = (treated == 1 && post == 1) ? 0.4 * ability[i] + 0.5 : 0.0
+    y = ability[i] + 0.3 * t + te + 0.4 * randn()
+    push!(rows, (id = i, time = t, y = y, post = post, D = treated))
+end
+df = DataFrame(rows)
+first(df, 5)
+```
+
+A standard ATT regression on this panel would report the mean of the
+heterogeneous effect — about 0.5 in this DGP, since `ability` is mean-zero.
+But the per-unit treatment effect ranges from very small (low-ability units)
+to large (high-ability units). The QTE curve reveals this gradient.
+
+```{julia}
+#| label: empirical-qte
+#| cache: true
+
+# Compute empirical QTE on the simulated data by comparing treated post-period
+# outcomes to a benchmark constructed from pre-period treated outcomes shifted
+# by the control units' time trend (the standard DiD-style counterfactual,
+# applied at each quantile rather than at the mean).
+
+post_treated = df[(df.D .== 1) .& (df.post .== 1), :y]
+pre_treated  = df[(df.D .== 1) .& (df.post .== 0), :y]
+post_control = df[(df.D .== 0) .& (df.post .== 1), :y]
+pre_control  = df[(df.D .== 0) .& (df.post .== 0), :y]
+
+τ_grid = 0.1:0.1:0.9
+qte_did = [
+    (quantile(post_treated, τ) - quantile(pre_treated, τ)) -
+    (quantile(post_control, τ) - quantile(pre_control, τ))
+    for τ in τ_grid
+]
+
+result = DataFrame(quantile = collect(τ_grid),
+                   QTE_DiD  = qte_did)
+result
+```
+
+The estimated QTE curve traces out the underlying treatment-effect
+heterogeneity: large at the top, small at the bottom. A standard DiD would
+have reported a single mean ATT and missed this gradient entirely.
+
+```{julia}
+#| label: qte-plot
+#| cache: true
+#| fig-cap: "Quantile treatment effects on the treated, estimated by DiD applied to each quantile. The treatment effect grows with the outcome, reflecting the underlying heterogeneity by unit type."
+
+fig = Figure(size = (640, 360), fontsize = 13)
+ax  = Axis(fig[1, 1], xlabel = "Quantile τ", ylabel = "QTE(τ)",
+           title = "Empirical quantile treatment effects on the treated")
+lines!(ax, result.quantile, result.QTE_DiD, color = :firebrick, linewidth = 2)
+scatter!(ax, result.quantile, result.QTE_DiD, color = :firebrick, markersize = 7)
+hlines!(ax, [mean(result.QTE_DiD)], color = :gray40, linestyle = :dash)
+text!(ax, 0.12, mean(result.QTE_DiD) + 0.02;
+      text = "Mean QTE ≈ ATT", color = :gray40, fontsize = 11)
+fig
+```
+
+The simple quantile-DiD above ignores covariate adjustment and bootstrap
+inference. `Endid.jl` implements both: it conditions on covariates via the
+Engression network, then bootstraps over units to compute confidence
+intervals for each QTE. The fitted model also supports counterfactual
+sampling, so one can produce posterior predictive distributions of the
+treated outcome under both `D = 1` and `D = 0`.
+
+## Beyond QTE: posterior bands as distributional output
+
+The synthetic-control chapter introduced TASC, whose Kalman smoother returns
+a posterior variance at each post-treatment period. That posterior interval
+is another flavour of distributional output — not over quantiles of $Y$, but
+over the counterfactual *path* of a single treated unit. The two approaches
+answer different questions:
+
+- **QTE / Engression DiD**: how does the treatment effect *vary across the
+  marginal distribution of outcomes* when many units are treated?
+- **TASC posterior band**: how uncertain is the *single counterfactual path*
+  when one unit is treated?
+
+Both move beyond a scalar point estimate. The right choice depends on the
+design: many treated units with heterogeneity → QTE; a single high-profile
+treated unit with serial dependence → TASC posterior.
+
+## Summary
+
+- The **ATE** answers "by how much does treatment shift the average?" The
+  **QTE curve** answers the much richer question "how does treatment reshape
+  the entire distribution of outcomes?"
+- Identification of QTE under unconfoundedness mirrors ATE identification but
+  is applied to CDFs rather than conditional means.
+- **`Endid.jl`** implements distributional DiD via Engression: the
+  counterfactual treated distribution is learned by a stochastic neural
+  network, and QTE estimates plus bootstrap inference are returned.
+- Reporting the QTE curve alongside the ATT is good practice whenever
+  treatment effects might vary systematically with the outcome — wages,
+  test scores, health outcomes, sales — where the policy-relevant question
+  is often "who is helped?" not "by how much on average?"
+
+## References
+
+- Firpo, S. (2007). Efficient semiparametric estimation of quantile treatment effects. *Econometrica*, 75(1), 259–276.
+- Chernozhukov, V., Fernández-Val, I., & Melly, B. (2013). Inference on counterfactual distributions. *Econometrica*, 81(6), 2205–2268.
+- Shen, X., & Meinshausen, N. (2024). Engression: extrapolation through the lens of distributional regression. *Journal of the Royal Statistical Society Series B*.
+- Lee, Y., & Wooldridge, J. M. (2025). Distributional difference-in-differences via engression.
