@@ -1,0 +1,322 @@
+# Five Estimands on One DGP
+
+```{julia}
+#| include: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using CairoMakie
+using GLM
+using Printf
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using CairoMakie
+using GLM
+```
+
+Before choosing an estimator, we need to know what we are estimating. The
+applied causal-inference literature has accumulated a zoo of estimands —
+ATE, ATT, LATE, CATE, QTE — and beginners often treat them as competing
+answers to one question. They are not. Each is a separate target that the
+data may or may not pin down. The estimator choice flows from which estimand
+you want.
+
+This chapter constructs one data-generating process where all five estimands
+are well-defined and computable. We then compute each one and discuss what
+the differences tell us.
+
+## The data-generating process
+
+Each individual $i$ has a baseline covariate $X_i$ (think: years of
+schooling), a latent type $U_i$ (think: ability), and a binary treatment
+$D_i$ (think: enrolling in a job-training programme). The instrument $Z_i$
+is a randomly offered programme slot — it shifts treatment but does not
+directly affect the outcome.
+
+```{julia}
+#| label: dgp
+#| cache: true
+
+Random.seed!(42)
+n = 20_000
+
+X = rand(Uniform(0, 1), n)         # observed covariate, in [0,1]
+U = rand(Normal(0, 1), n)          # latent type, unobserved
+Z = rand(Bernoulli(0.5), n)        # random instrument
+
+# Treatment assignment: depends on Z (the instrument) and U (selection on type)
+# Higher U → more likely to take treatment regardless of Z (always-takers)
+# Lower  U → less likely to take treatment regardless of Z (never-takers)
+# Middle U → responsive to Z (compliers)
+pD0 = @. clamp(0.10 + 0.20 * U, 0, 1)      # P(D=1 | Z=0, U)
+pD1 = @. clamp(0.10 + 0.20 * U + 0.50, 0, 1)  # P(D=1 | Z=1, U) — adds 0.50
+
+D0 = @. rand() < pD0   # potential treatment if not offered slot
+D1 = @. rand() < pD1   # potential treatment if offered slot
+D  = ifelse.(Z .== 1, D1, D0)
+
+# Heterogeneous treatment effect: depends on X
+# Y(d) = baseline + d * tau(X) + 0.3 * U + noise
+τ(x) = 1.0 + 2.0 * x            # the true individual treatment effect function
+Y0   = 0.5 .* X .+ 0.3 .* U .+ randn(n)
+Y1   = Y0 .+ τ.(X)
+Y    = ifelse.(D, Y1, Y0)
+
+df = DataFrame(X=X, Z=Z, D=D, Y=Y)
+first(df, 6)
+```
+
+Notice that we have full access to the potential outcomes `Y0` and `Y1` — a
+luxury only available in simulation. In real data we observe only one of
+them per unit, which is the fundamental problem of causal inference.
+
+## The five estimands
+
+### ATE — average treatment effect
+
+$$
+\text{ATE} = \mathbb{E}[Y(1) - Y(0)]
+$$
+
+The expected effect of treatment if everyone in the population were treated
+vs. if everyone were not.
+
+```{julia}
+#| label: ate
+#| cache: true
+
+ate_true = mean(Y1 .- Y0)
+@printf("ATE (population mean of Y1 - Y0) = %.3f\n", ate_true)
+
+# What the integral over τ(X) should be: ∫(1 + 2x) dx on [0,1] = 1 + 1 = 2
+@printf("Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000\n")
+```
+
+### ATT — average treatment effect on the treated
+
+$$
+\text{ATT} = \mathbb{E}[Y(1) - Y(0) \mid D = 1]
+$$
+
+The expected effect of treatment among those who actually took treatment.
+Differs from ATE when treatment uptake is selective.
+
+```{julia}
+#| label: att
+#| cache: true
+
+att_true = mean(Y1[D] .- Y0[D])
+@printf("ATT (mean of Y1-Y0 conditional on D=1) = %.3f\n", att_true)
+```
+
+The ATT here is similar to the ATE because the heterogeneity in τ depends
+on $X$ (uniform), and treatment selection depends on $U$ which is
+independent of $X$. If $X$ were correlated with $U$, ATT would diverge from
+ATE.
+
+### LATE — local average treatment effect (Imbens-Angrist)
+
+$$
+\text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid D(1) > D(0)]
+$$
+
+The effect among **compliers** — individuals whose treatment status changes
+with the instrument. The Wald estimator identifies LATE under the standard
+IV assumptions (exclusion, monotonicity, relevance).
+
+```{julia}
+#| label: late
+#| cache: true
+
+compliers = (D1 .== 1) .& (D0 .== 0)
+late_true = mean(Y1[compliers] .- Y0[compliers])
+@printf("LATE (mean of Y1-Y0 conditional on complier status) = %.3f\n", late_true)
+@printf("Share of compliers: %.3f\n", mean(compliers))
+
+# Wald estimator from the data alone
+wald = (mean(Y[Z .== 1]) - mean(Y[Z .== 0])) /
+       (mean(D[Z .== 1]) - mean(D[Z .== 0]))
+@printf("Wald IV estimate (should match LATE): %.3f\n", wald)
+```
+
+LATE is what an IV regression actually estimates under heterogeneous effects
+— **not** the ATE. The Wald estimator recovers LATE because the instrument
+only shifts the compliers' treatment status, so the IV "averages" the effect
+over that subpopulation.
+
+### CATE — conditional average treatment effect
+
+$$
+\text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
+$$
+
+The effect as a function of the covariate $X$. By construction in our DGP,
+CATE($x$) = $\tau(x) = 1 + 2x$.
+
+```{julia}
+#| label: cate
+#| cache: true
+
+# Bin X and compute mean of (Y1 - Y0) in each bin
+nbins = 20
+edges = range(0, 1, length=nbins + 1)
+centers = (edges[1:end-1] .+ edges[2:end]) ./ 2
+
+cate_est = [mean((Y1 .- Y0)[(X .>= edges[k]) .& (X .< edges[k+1])])
+            for k in 1:nbins]
+
+@printf("CATE at x=0.2: estimated %.2f, true %.2f\n", cate_est[4], τ(0.2))
+@printf("CATE at x=0.8: estimated %.2f, true %.2f\n", cate_est[16], τ(0.8))
+```
+
+### QTE — quantile treatment effect
+
+$$
+\text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau)
+$$
+
+The difference between the $\tau$-th quantile of the treated marginal
+distribution and the $\tau$-th quantile of the control marginal. Note that
+QTE compares **distributions** (one quantile to one quantile) — it does
+not track individuals across the two potential outcomes.
+
+```{julia}
+#| label: qte
+#| cache: true
+
+qte_grid = 0.05:0.05:0.95
+qte_est  = [quantile(Y1, q) - quantile(Y0, q) for q in qte_grid]
+
+@printf("QTE(0.10) = %.3f\n", quantile(Y1, 0.10) - quantile(Y0, 0.10))
+@printf("QTE(0.50) = %.3f\n", quantile(Y1, 0.50) - quantile(Y0, 0.50))
+@printf("QTE(0.90) = %.3f\n", quantile(Y1, 0.90) - quantile(Y0, 0.90))
+```
+
+## All five estimands on one plot
+
+```{julia}
+#| label: estimand-plot
+#| cache: true
+#| fig-cap: "Five views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(τ) shows how the effect varies across the outcome distribution. Each curve answers a different question."
+
+fig = Figure(size = (820, 380), fontsize = 13)
+
+ax1 = Axis(fig[1, 1], xlabel = "X (covariate)", ylabel = "Effect",
+           title = "CATE(x) vs scalar estimands")
+lines!(ax1, centers, cate_est, color = :firebrick, linewidth = 2, label = "CATE(x)")
+lines!(ax1, [0, 1], [τ(0), τ(1)], color = :firebrick, linestyle = :dot, label = "True τ(x)")
+hlines!(ax1, [ate_true], color = :black,     linewidth = 1.5, linestyle = :dash, label = "ATE")
+hlines!(ax1, [att_true], color = :steelblue, linewidth = 1.5, linestyle = :dash, label = "ATT")
+hlines!(ax1, [late_true], color = :seagreen,  linewidth = 1.5, linestyle = :dash, label = "LATE")
+axislegend(ax1, position = :lt, framevisible = false)
+
+ax2 = Axis(fig[1, 2], xlabel = "Quantile τ", ylabel = "QTE(τ)",
+           title = "QTE — distribution-level effect")
+lines!(ax2, collect(qte_grid), qte_est, color = :purple, linewidth = 2)
+hlines!(ax2, [ate_true], color = :black, linewidth = 1.5, linestyle = :dash)
+text!(ax2, 0.05, ate_true + 0.05; text = "ATE", color = :black, fontsize = 11)
+fig
+```
+
+The left panel makes the conceptual point clearly. **ATE**, **ATT**, and
+**LATE** each collapse the heterogeneous τ($x$) curve into a single number —
+but they collapse it differently. ATE averages over the full population's
+$X$ distribution. ATT averages over the treated subpopulation. LATE averages
+over compliers.
+
+**CATE** keeps the heterogeneity along $X$ explicit. **QTE** (right panel)
+keeps heterogeneity along the outcome distribution explicit. Neither nests
+the others: CATE and QTE answer fundamentally different questions about
+heterogeneity (covariate-level vs distribution-level).
+
+## When the estimands differ
+
+In this DGP all four scalar estimands are similar because:
+
+- $X$ is uniform on [0, 1] (so ATE = average of τ over uniform $X$ = 2)
+- Treatment selection is on $U$ (unobserved type), not $X$ (which drives τ),
+  so ATT ≈ ATE
+- The instrument shifts compliers uniformly across $X$, so LATE ≈ ATE
+
+Change any of these assumptions and the estimands diverge. To see this,
+modify the DGP so that high-$X$ individuals are more likely to take
+treatment:
+
+```{julia}
+#| label: dgp-selective
+#| cache: true
+
+Random.seed!(7)
+n = 20_000
+X2 = rand(Uniform(0, 1), n)
+U2 = rand(Normal(0, 1), n)
+Z2 = rand(Bernoulli(0.5), n)
+# High X → much more likely to take treatment (selection on X, the modifier)
+pD0_2 = @. clamp(0.10 + 0.20 * U2 + 0.6 * X2, 0, 1)
+pD1_2 = @. clamp(pD0_2 + 0.50, 0, 1)
+D0_2  = @. rand() < pD0_2
+D1_2  = @. rand() < pD1_2
+D2    = ifelse.(Z2 .== 1, D1_2, D0_2)
+Y0_2  = 0.5 .* X2 .+ 0.3 .* U2 .+ randn(n)
+Y1_2  = Y0_2 .+ τ.(X2)
+Y2    = ifelse.(D2, Y1_2, Y0_2)
+
+ate2  = mean(Y1_2 .- Y0_2)
+att2  = mean(Y1_2[D2] .- Y0_2[D2])
+late2 = mean((Y1_2 .- Y0_2)[(D1_2 .== 1) .& (D0_2 .== 0)])
+
+@printf("Selection-on-X DGP:\n")
+@printf("  ATE  = %.3f\n", ate2)
+@printf("  ATT  = %.3f (now higher because treated have higher X → larger τ)\n", att2)
+@printf("  LATE = %.3f (compliers' mean X)\n", late2)
+```
+
+Now ATT exceeds ATE because the treated subpopulation has higher $X$ and
+therefore larger treatment effects. The choice between reporting ATE and
+ATT is no longer cosmetic — it changes what the policy implication is.
+
+## Which estimand should you choose?
+
+The right estimand depends on the policy question:
+
+| Policy question | Right estimand |
+|---|---|
+| "What if we treated everyone?" | ATE |
+| "What did treating the currently-treated achieve?" | ATT |
+| "What can the instrument tell us?" (e.g. policy expansion that's already in place) | LATE |
+| "Who benefits most?" | CATE(x) |
+| "Does the effect vary across the outcome distribution?" | QTE(τ) |
+| "What is the distribution of individual effects?" | Often unidentifiable; bounds required |
+
+The same applied paper can defensibly report multiple estimands. The blog
+chapter on Proposition 99 reported the same-data-different-estimators
+exercise — DiD, SC, SDiD, TASC all targeting ATT under different
+assumptions. That is one direction. The complementary direction is to keep
+the estimator fixed and report multiple estimands: a regression with
+heterogeneous effects can yield ATE, ATT, and CATE($x$) jointly.
+
+## Summary
+
+- **ATE / ATT / LATE** are different scalar averages of the underlying
+  heterogeneous treatment effect. They coincide only under strong
+  homogeneity or specific selection structure.
+- **CATE($x$)** and **QTE($\tau$)** preserve the heterogeneity, along
+  different dimensions: covariates vs the outcome distribution.
+- IV regressions estimate LATE, not ATE. Reporting an IV coefficient as
+  "the" causal effect is a category error when effects are heterogeneous.
+- Picking the right estimand is the substantive step. The estimator
+  question — OLS, IV, matching, AIPW, TMLE — only makes sense once the
+  estimand is fixed.
+
+## References
+
+- Imbens, G. W., & Angrist, J. D. (1994). Identification and estimation of local average treatment effects. *Econometrica*, 62(2), 467–475.
+- Heckman, J. J., & Vytlacil, E. (2005). Structural equations, treatment effects, and econometric policy evaluation. *Econometrica*, 73(3), 669–738.
+- Athey, S., & Imbens, G. W. (2017). The state of applied econometrics: causality and policy evaluation. *Journal of Economic Perspectives*, 31(2), 3–32.
