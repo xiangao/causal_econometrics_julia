@@ -134,8 +134,8 @@ tasc_model = fit_tasc(
     Y_tasc;
     d = 2,
     T0 = setup.T0,
-    n_em = 25,
-    tol = 1e-4,
+    n_em = 200,
+    tol = 1e-3,
 )
 
 tasc_pred = predict_counterfactual(tasc_model, Y_tasc)
