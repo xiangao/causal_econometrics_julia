@@ -1,0 +1,346 @@
+# Randomization Inference for Synthetic Control
+
+```{julia}
+#| include: false
+using DataFrames
+using SynthDiD
+using Statistics
+using Random
+using CairoMakie
+using Printf
+
+include("../../software/TASC.jl/src/TASC.jl")
+using .TASC
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using SynthDiD
+using Statistics
+using Random
+using CairoMakie
+
+include("../../software/TASC.jl/src/TASC.jl")
+using .TASC
+```
+
+Synthetic control is most often applied in case studies with **one** treated
+unit (California, West Germany, Basque Country). Standard inference based on
+asymptotic normality is meaningless here — there is no sample of treated
+units to average over. The literature has converged on two distinct
+strategies:
+
+- **Randomization inference** (Abadie, Diamond, Hainmueller 2010, 2015):
+  use the donor pool to construct a permutation-style null distribution.
+  Frequentist, distribution-free, makes no parametric assumptions on the
+  outcome process.
+- **Posterior inference** (TASC and other state-space approaches): treat the
+  counterfactual path as the unknown to be estimated and derive an explicit
+  posterior. Bayesian, conditional on a generative model.
+
+This chapter walks through both on the Proposition 99 panel, then compares
+what they say.
+
+## The placebo test
+
+The randomization-inference idea is simple. For each control unit $\ell$ in
+the donor pool, pretend $\ell$ was treated and re-run synthetic control,
+leaving $\ell$ out of its own donor pool. This produces a "placebo
+estimate" — the gap between $\ell$'s observed outcome and a synthetic
+$\ell$ built from the other donors. Repeat for every control unit. The
+resulting collection of placebo estimates is the empirical null distribution
+under sharp-null (no effect anywhere).
+
+If the *true* treatment effect is zero, California's estimated effect should
+look like one of the placebos. If California's effect is large relative to
+the placebo distribution, that is evidence against the null.
+
+```{julia}
+#| label: setup-prop99
+#| cache: true
+
+california = california_prop99()
+setup = panel_matrices(california, :State, :Year, :PacksPerCapita, :treated)
+Y    = setup.Y
+N0   = setup.N0           # 38 donor states
+T0   = setup.T0           # 1989 onward is post-treatment
+N1   = size(Y, 1) - N0    # 1 treated state (California)
+years = Int.(setup.times)
+
+# California's observed effect (SC estimate)
+tau_sc = sc_estimate(Y, N0, T0)
+ca_obs = vec(Y[N0 + 1, :])
+ca_cfact = vec(tau_sc.weights.omega' * Y[1:N0, :])
+ca_effect = mean(ca_obs[(T0 + 1):end]) - mean(ca_cfact[(T0 + 1):end])
+
+@printf("California ATT (SC): %.2f packs per capita\n", ca_effect)
+```
+
+Now run the placebo: each control state takes a turn as the "treated" unit.
+
+```{julia}
+#| label: placebo-units
+#| cache: true
+
+function run_placebo(Y, N0, T0, treated_idx)
+    # Swap treated_idx into the last row (treated slot); remaining donors fill 1..N0-1
+    donor_idx = setdiff(1:N0, treated_idx)
+    Y_perm    = vcat(Y[donor_idx, :], Y[treated_idx:treated_idx, :])
+    fit       = sc_estimate(Y_perm, length(donor_idx), T0)
+    treated   = vec(Y_perm[end, :])
+    cfact     = vec(fit.weights.omega' * Y_perm[1:length(donor_idx), :])
+    return treated, cfact
+end
+
+placebo_effects = Float64[]
+placebo_paths   = Matrix{Float64}(undef, N0, size(Y, 2))
+placebo_cfacts  = Matrix{Float64}(undef, N0, size(Y, 2))
+
+for i in 1:N0
+    treated_i, cfact_i = run_placebo(Y, N0, T0, i)
+    placebo_paths[i, :]  = treated_i .- cfact_i
+    placebo_cfacts[i, :] = cfact_i
+    push!(placebo_effects, mean(treated_i[(T0 + 1):end] .- cfact_i[(T0 + 1):end]))
+end
+
+# California's treatment effect path
+ca_gap = ca_obs .- ca_cfact
+
+@printf("California ATT:        %.2f\n", ca_effect)
+@printf("Placebo distribution mean: %.2f\n", mean(placebo_effects))
+@printf("Placebo distribution sd:   %.2f\n", std(placebo_effects))
+```
+
+### The two-sided p-value
+
+A Fisher-style exact $p$-value is the fraction of placebo effects at least
+as extreme (in absolute value) as the observed effect:
+
+```{julia}
+#| label: pvalue
+#| cache: true
+
+p_value = mean(abs.(placebo_effects) .>= abs(ca_effect))
+@printf("Two-sided p-value: %.3f\n", p_value)
+```
+
+With 38 donor states, the smallest possible $p$-value is $1/39 \approx 0.026$
+(California plus 38 placebos). A $p$-value at this floor means the observed
+effect is more extreme than every placebo — strong evidence against the
+sharp null.
+
+### The placebo plot
+
+The canonical Abadie-Diamond-Hainmueller figure overlays each placebo's gap
+trajectory in grey on California's gap in black. If the black line falls
+outside the cloud of grey, the effect is unusual relative to what shocks to
+random control states produce.
+
+```{julia}
+#| label: placebo-plot
+#| cache: true
+#| fig-cap: "California's treatment-effect gap (black) vs placebo gaps from each donor state (grey). The vertical dashed line marks 1989."
+
+fig = Figure(size = (740, 380), fontsize = 13)
+ax  = Axis(fig[1, 1], xlabel = "Year", ylabel = "Gap: observed − synthetic",
+           title = "Placebo gap trajectories")
+for i in 1:N0
+    lines!(ax, years, placebo_paths[i, :],
+           color = (:grey, 0.35), linewidth = 1)
+end
+lines!(ax, years, ca_gap, color = :black, linewidth = 2.5, label = "California")
+hlines!(ax, [0.0]; color = :gray40, linestyle = :dot, linewidth = 1)
+vlines!(ax, [years[T0] + 0.5]; color = :gray40, linestyle = :dash, linewidth = 1)
+axislegend(ax, position = :lb, framevisible = false)
+fig
+```
+
+## The MSPE ratio test
+
+Some donor states fit California's pre-period trajectory better than others.
+A placebo state whose synthetic control fits its own pre-period poorly will
+produce a large *pre-period* gap by construction, inflating its placebo
+effect even under the sharp null. Abadie, Diamond, and Hainmueller (2015)
+propose normalising by pre-treatment fit:
+
+$$
+\text{MSPE ratio}(\ell) = \frac{\frac{1}{T - T_0}\sum_{t > T_0} (Y_{\ell t} - \hat Y_{\ell t})^2}
+                              {\frac{1}{T_0}\sum_{t \le T_0} (Y_{\ell t} - \hat Y_{\ell t})^2}.
+$$
+
+A large ratio means post-treatment gap is large *relative to* pre-treatment
+fit. The MSPE ratio test compares California's ratio to the distribution of
+placebo ratios.
+
+```{julia}
+#| label: mspe-test
+#| cache: true
+
+function mspe_ratio(treated, cfact, T0)
+    pre  = mean((treated[1:T0] .- cfact[1:T0]).^2)
+    post = mean((treated[(T0 + 1):end] .- cfact[(T0 + 1):end]).^2)
+    return post / max(pre, eps())
+end
+
+ca_ratio = mspe_ratio(ca_obs, ca_cfact, T0)
+
+placebo_ratios = Float64[]
+for i in 1:N0
+    treated_i, cfact_i = run_placebo(Y, N0, T0, i)
+    push!(placebo_ratios, mspe_ratio(treated_i, cfact_i, T0))
+end
+
+p_ratio = mean(placebo_ratios .>= ca_ratio)
+@printf("California MSPE ratio: %.2f\n", ca_ratio)
+@printf("Placebo ratio 75th pct: %.2f\n", quantile(placebo_ratios, 0.75))
+@printf("Placebo ratio max:     %.2f\n", maximum(placebo_ratios))
+@printf("One-sided p-value (ratio): %.3f\n", p_ratio)
+```
+
+The MSPE ratio test typically gives a smaller $p$-value than the raw-effect
+test because it down-weights placebos whose synthetic controls fit poorly in
+the pre-period.
+
+```{julia}
+#| label: mspe-plot
+#| cache: true
+#| fig-cap: "Distribution of post/pre MSPE ratios across donor states (histogram). California's ratio is the red dashed line."
+
+fig = Figure(size = (640, 360), fontsize = 13)
+ax  = Axis(fig[1, 1], xlabel = "Post/Pre MSPE ratio",
+           ylabel = "Count", title = "MSPE ratio distribution")
+hist!(ax, placebo_ratios, bins = 20, color = (:steelblue, 0.6))
+vlines!(ax, [ca_ratio]; color = :firebrick, linewidth = 2, linestyle = :dash,
+        label = "California")
+axislegend(ax, position = :rt, framevisible = false)
+fig
+```
+
+## Time placebo
+
+Another robustness check moves the treatment date backward into the
+pre-period and asks whether the SC framework "finds" an effect there too. If
+yes, the post-treatment effect is suspect because the synthetic-control
+method is detecting differences that pre-date Proposition 99.
+
+```{julia}
+#| label: time-placebo
+#| cache: true
+
+# Pretend treatment started in 1980 instead of 1989
+T0_placebo = findfirst(==(1980), years) - 1
+Y_pre      = Y[:, 1:T0]   # cut off real treatment period
+fit_pre    = sc_estimate(Y_pre, N0, T0_placebo)
+
+ca_pre     = vec(Y_pre[N0 + 1, :])
+ca_pre_cf  = vec(fit_pre.weights.omega' * Y_pre[1:N0, :])
+placebo_effect_time = mean(ca_pre[(T0_placebo + 1):end] .- ca_pre_cf[(T0_placebo + 1):end])
+
+@printf("Time-placebo effect (treatment moved to 1980): %.2f\n", placebo_effect_time)
+@printf("Real effect (treatment in 1989):               %.2f\n", ca_effect)
+```
+
+The time-placebo effect is much smaller in magnitude than the real effect,
+giving additional confidence that the 1989 break is genuine.
+
+## TASC posterior as Bayesian alternative
+
+The synthetic-control chapter introduced TASC, which models the panel as a
+linear Gaussian state-space process and returns a posterior distribution
+over the counterfactual path. The 95% posterior band is a Bayesian analogue
+to the randomization-inference confidence statement — under the SSM
+assumptions, the true counterfactual is within the band with 95% posterior
+probability.
+
+```{julia}
+#| label: tasc-band
+#| cache: true
+
+Y_tasc = vcat(Y[(N0 + 1):end, :], Y[1:N0, :])
+tasc_model = fit_tasc(Y_tasc; d = 2, T0 = T0, n_em = 200, tol = 1e-3)
+tasc_pred  = predict_counterfactual(tasc_model, Y_tasc)
+
+tasc_cfact = vec(tasc_pred.target)
+tasc_se    = sqrt.(max.(vec(tasc_pred.variance), 0.0))
+tasc_lower = tasc_cfact .- 1.96 .* tasc_se
+tasc_upper = tasc_cfact .+ 1.96 .* tasc_se
+
+# At each post-treatment year, is California outside the band?
+years_post = years[(T0 + 1):end]
+outside    = (ca_obs[(T0 + 1):end] .< tasc_lower[(T0 + 1):end]) .|
+             (ca_obs[(T0 + 1):end] .> tasc_upper[(T0 + 1):end])
+@printf("Years California is outside the 95%% band: %d/%d\n",
+        sum(outside), length(outside))
+```
+
+```{julia}
+#| label: combined-plot
+#| cache: true
+#| fig-cap: "California's observed path (black) with TASC posterior band (green), classical SC counterfactual (blue), and placebo gap envelope (grey)."
+
+# Convert placebo gaps to counterfactual paths for visualisation
+fig = Figure(size = (820, 420), fontsize = 13)
+ax  = Axis(fig[1, 1], xlabel = "Year", ylabel = "Packs per capita",
+           title = "Frequentist placebo cloud vs Bayesian posterior band")
+
+# Placebo counterfactuals (treated outcome minus gap, mapped to California's level)
+for i in 1:N0
+    cf = placebo_cfacts[i, :] .+ (ca_obs[T0] - placebo_cfacts[i, T0])
+    lines!(ax, years, cf, color = (:grey, 0.20), linewidth = 1)
+end
+
+band!(ax, years, tasc_lower, tasc_upper;
+      color = (:seagreen, 0.25), label = "TASC 95% interval")
+lines!(ax, years, ca_obs;    color = :black,     linewidth = 3, label = "California")
+lines!(ax, years, ca_cfact;  color = :steelblue, linewidth = 2, label = "SC counterfactual")
+lines!(ax, years, tasc_cfact; color = :seagreen,  linewidth = 2, label = "TASC counterfactual")
+vlines!(ax, [years[T0] + 0.5]; color = :gray40, linestyle = :dash, linewidth = 1)
+axislegend(ax, position = :lb, framevisible = false)
+fig
+```
+
+## How the two inference strategies compare
+
+| | Randomization inference | TASC posterior |
+|---|---|---|
+| **What is uncertain?** | Which unit was treated | Latent factor path |
+| **Null hypothesis** | Sharp null: no effect anywhere | None — direct uncertainty |
+| **Validity requires** | Donor pool comparable to treated | SSM correctly specified |
+| **Output** | Permutation p-value | Posterior band |
+| **Smallest p possible** | $1/(N_0 + 1)$ (here ~0.026) | N/A — continuous |
+| **Sensitivity to donor pool** | High (small N0 → coarse p) | Low (band reflects modelling) |
+
+The two strategies answer slightly different questions and rest on different
+assumptions. **Randomization inference** asks whether California's effect is
+unusual relative to the empirical distribution of placebo effects in the
+donor pool — a model-free statement at the cost of low power when the donor
+pool is small. **TASC posterior inference** asks whether the latent
+state-space model, fit to the entire pre-period panel, places California
+inside a band of plausible counterfactual paths — a powerful statement that
+requires the model to be approximately correct.
+
+A defensible applied paper reports both: randomization inference as the
+non-parametric robustness anchor, the posterior band as the more precise
+statement when one is willing to commit to a generative model.
+
+## Summary
+
+- With one (or few) treated units, **classical asymptotic SEs are not
+  available**. The synthetic-control literature has standardised on
+  randomization inference instead.
+- **Unit placebo** swaps each control into the treated slot; the placebo
+  effect distribution is the empirical null.
+- The **MSPE ratio test** down-weights placebos whose synthetic controls
+  fit their pre-period poorly — usually tightens the $p$-value.
+- The **time placebo** moves the treatment date earlier and checks for
+  spurious effects in the placebo period.
+- **TASC posterior bands** give a parallel Bayesian inference that does not
+  require the donor pool to be a randomization device — at the cost of an
+  explicit generative model.
+
+## References
+
+- Abadie, A., Diamond, A., & Hainmueller, J. (2010). Synthetic control methods for comparative case studies: estimating the effect of California's tobacco control program. *Journal of the American Statistical Association*, 105(490), 493–505.
+- Abadie, A., Diamond, A., & Hainmueller, J. (2015). Comparative politics and the synthetic control method. *American Journal of Political Science*, 59(2), 495–510.
+- Firpo, S., & Possebom, V. (2018). Synthetic control method: inference, sensitivity analysis and confidence sets. *Journal of Causal Inference*, 6(2).
