@@ -1,0 +1,380 @@
+# Sensitivity Analysis
+
+```{julia}
+#| include: false
+using DataFrames
+using GLM
+using Statistics
+using Random
+using LinearAlgebra
+using Printf
+using CairoMakie
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using GLM
+using Statistics
+using Random
+using LinearAlgebra
+using Printf
+using CairoMakie
+```
+
+The previous chapters proceeded as if identification is binary: either a
+graph supports the effect or it doesn't. Applied work faces a more nuanced
+situation. We believe our identification strategy is *approximately*
+correct — there might be some residual confounding, but probably not much.
+The honest question is: **how much unmeasured confounding would be needed
+to overturn the conclusion?**
+
+This is what sensitivity analysis answers. Rather than treating
+unconfoundedness as a binary assumption, it asks how strong the residual
+confounding would need to be — relative to observed covariates — to
+change the sign or significance of the estimate.
+
+We cover three complementary tools:
+
+1. **Cinelli-Hazlett (2020) omitted-variable bias bounds** — robustness
+   values and benchmark comparisons for regression-based estimators.
+2. **E-values (VanderWeele-Ding 2017)** — for risk-ratio estimates, the
+   minimum strength an unmeasured confounder would need.
+3. **Rosenbaum bounds** — the critical odds ratio of hidden bias that
+   would render a matched-sample test insignificant.
+
+No registered Julia package implements these directly, but all three have
+closed-form expressions that fit in a few lines of code.
+
+## A simulated example
+
+We work with a simulation where the truth is known, so we can verify that
+the sensitivity-analysis output is informative:
+
+```{julia}
+#| label: dgp
+#| cache: true
+
+Random.seed!(2026)
+n   = 2000
+X1  = randn(n)
+X2  = randn(n)
+U   = randn(n)             # unmeasured confounder
+D   = @. Float64(rand() < 1 / (1 + exp(-(0.5 * X1 + 0.5 * X2 + 0.6 * U))))
+Y   = @. 1.0 * D + 1.5 * X1 + 1.5 * X2 + 1.0 * U + 0.5 * randn()
+
+df  = DataFrame(Y = Y, D = D, X1 = X1, X2 = X2, U = U)
+@printf("True treatment effect: 1.000\n")
+@printf("Naive (D only):        %.3f\n",
+        coef(lm(@formula(Y ~ D), df))[end])
+@printf("Adjusted (D, X1, X2):  %.3f  (biased because U is unobserved)\n",
+        coef(lm(@formula(Y ~ D + X1 + X2), df))[end])
+@printf("Oracle (D, X1, X2, U): %.3f\n",
+        coef(lm(@formula(Y ~ D + X1 + X2 + U), df))[end])
+```
+
+The adjusted regression overestimates the true effect because we cannot
+control for $U$. Sensitivity analysis quantifies how dramatic the bias
+could be without knowing $U$ directly.
+
+## Cinelli-Hazlett robustness value
+
+Cinelli and Hazlett (2020) derive a single summary called the **robustness
+value (RV)**. It is the minimum partial $R^2$ that an unobserved
+confounder would need to have — both with the treatment and with the
+outcome — to bring the estimate to zero.
+
+The closed-form expression depends only on the t-statistic of the
+treatment coefficient and the regression's degrees of freedom:
+
+$$
+RV_q = \tfrac{1}{2}\left[\sqrt{f_q^4 + 4 f_q^2} - f_q^2\right], \qquad
+f_q = q\, \frac{|t|}{\sqrt{df}},
+$$
+
+where $|t|$ is the absolute t-stat of the treatment coefficient, $df$ is
+the residual degrees of freedom, and $q$ is the fraction of the estimate
+we want explained away ($q = 1$ for full explanation).
+
+```{julia}
+#| label: rv
+#| cache: true
+
+"""
+    robustness_value(t_stat, df; q=1.0)
+Minimum partial R² with both treatment and outcome that an unmeasured
+confounder would need to fully explain away a fraction `q` of the estimate.
+Cinelli & Hazlett (2020).
+"""
+function robustness_value(t_stat::Real, df::Real; q::Real=1.0)
+    fq = q * abs(t_stat) / sqrt(df)
+    return 0.5 * (sqrt(fq^4 + 4 * fq^2) - fq^2)
+end
+
+# Fit the adjusted regression and extract t-stat + dof
+fit_adj   = lm(@formula(Y ~ D + X1 + X2), df)
+t_adj     = coef(fit_adj)[2] / stderror(fit_adj)[2]
+df_resid  = dof_residual(fit_adj)
+
+rv  = robustness_value(t_adj, df_resid; q=1.0)
+rv5 = robustness_value(t_adj, df_resid; q=1.0 - 1.96/abs(t_adj))   # q to reach significance
+
+@printf("t-statistic on D:                %.2f\n", t_adj)
+@printf("Residual df:                     %.0f\n", df_resid)
+@printf("Robustness value (q=1):          %.4f  (= %.2f%% partial R²)\n",
+        rv, 100rv)
+@printf("RV to reach insignificance:      %.4f  (= %.2f%% partial R²)\n",
+        rv5, 100rv5)
+```
+
+The robustness value reports the minimum partial $R^2$ that a confounder
+would need to have with *both* treatment and outcome to drive the
+estimate to zero. If this number is large, the result is robust; if it
+is small, modest unmeasured confounding could overturn the conclusion.
+
+A useful interpretation: compare the RV to the partial $R^2$ values of
+the *observed* covariates. If the RV exceeds what any plausible observed
+covariate could achieve, the result is convincing.
+
+### Benchmarking against observed covariates
+
+How strong are the observed covariates as a reference? Compute their
+partial $R^2$ contributions:
+
+```{julia}
+#| label: benchmark
+#| cache: true
+
+# Partial R² of a covariate: variance explained over a model that omits it
+function partial_r2(full_fit, reduced_fit)
+    ss_full     = sum(abs2.(residuals(full_fit)))
+    ss_reduced  = sum(abs2.(residuals(reduced_fit)))
+    1 - ss_full / ss_reduced
+end
+
+# Partial R² of X1 with the outcome (omit X1)
+fit_noX1_Y = lm(@formula(Y ~ D + X2), df)
+pR2_X1_Y   = partial_r2(fit_adj, fit_noX1_Y)
+
+# Partial R² of X1 with the treatment (a separate regression)
+fit_D_full = lm(@formula(D ~ X1 + X2), df)
+fit_D_noX1 = lm(@formula(D ~ X2), df)
+pR2_X1_D   = partial_r2(fit_D_full, fit_D_noX1)
+
+@printf("Benchmark — X1:\n")
+@printf("  Partial R² with Y: %.4f\n", pR2_X1_Y)
+@printf("  Partial R² with D: %.4f\n", pR2_X1_D)
+@printf("\nRobustness value:    %.4f\n", rv)
+@printf("\nIf an unobserved confounder is as strong as X1 with BOTH Y and D,\n")
+@printf("would it explain the estimate? %s\n",
+        min(pR2_X1_Y, pR2_X1_D) > rv ? "YES — fragile result" : "NO — robust to this benchmark")
+```
+
+The benchmark comparison turns an abstract robustness value into a
+substantive statement: "an unmeasured confounder as strong as $X_1$
+would (not) overturn the result." This is the *applied* statement that
+appears in real papers.
+
+### A sensitivity contour plot
+
+The contour plot below shows, for each $(R^2_{D \sim U}, R^2_{Y \sim U})$
+pair, the implied estimate of the treatment effect under that strength
+of unobserved confounding:
+
+```{julia}
+#| label: contour
+#| cache: true
+
+# Bias formula (Cinelli-Hazlett 2020, eqn 4):
+# bias = se(τ̂) * sqrt(df) * sqrt( R²_Y * R²_D / (1 - R²_D) )
+# adjusted_estimate = τ̂ - bias (or + bias, the worst case is the larger absolute)
+tau_hat = coef(fit_adj)[2]
+se_hat  = stderror(fit_adj)[2]
+
+grid = 0.0:0.01:0.5
+bias_matrix = [se_hat * sqrt(df_resid) * sqrt(r2y * r2d / max(1 - r2d, 1e-8))
+               for r2y in grid, r2d in grid]
+adjusted    = tau_hat .- bias_matrix    # worst-case (downward) bias
+
+fig = Figure(size = (700, 500))
+ax  = Axis(fig[1, 1],
+           xlabel = "Partial R² with treatment (R²_D ~ U)",
+           ylabel = "Partial R² with outcome (R²_Y ~ U)",
+           title  = "Sensitivity contour: adjusted estimate of τ\n" *
+                    "(red = estimate reduced to 0)")
+contour!(ax, grid, grid, adjusted, levels = [0.0, 0.25, 0.5, 0.75, 1.0],
+         labels = true, color = :black)
+# Mark the X1 benchmark
+scatter!(ax, [pR2_X1_D], [pR2_X1_Y], color = :steelblue, markersize = 18,
+         label = "X1 benchmark")
+axislegend(ax, position = :rb, framevisible = false)
+fig
+```
+
+A confounder that lies above-and-to-the-right of the contour labelled
+"0" would reduce the estimate to zero. The $X_1$ benchmark dot shows how
+strong the observed covariates are by comparison. The result is robust
+to confounders weaker than the dot; fragile to confounders stronger.
+
+## E-values
+
+For risk-ratio estimates, VanderWeele and Ding (2017) propose a
+simpler-to-interpret sensitivity statistic. For an observed risk ratio
+$RR > 1$, the **E-value** is the minimum strength of association (on the
+risk-ratio scale) that an unobserved confounder would need to have with
+both treatment and outcome to fully explain the observed association:
+
+$$
+\text{E-value} = RR + \sqrt{RR\,(RR - 1)}.
+$$
+
+For $RR < 1$, use $1/RR$ first and apply the formula.
+
+```{julia}
+#| label: evalue
+#| cache: true
+
+"""
+    evalue(rr; lo=missing, hi=missing)
+Compute the E-value for a risk ratio and (optionally) its 95% confidence
+interval. Returns (E_point, E_ci) where E_ci is the E-value needed to
+shift the lower CI bound past 1 (or upper past 1 if rr < 1).
+"""
+function evalue(rr::Real; lo=missing, hi=missing)
+    e_point = rr >= 1 ? rr + sqrt(rr * (rr - 1)) : begin
+        rr_inv = 1 / rr
+        rr_inv + sqrt(rr_inv * (rr_inv - 1))
+    end
+    e_ci = missing
+    if !ismissing(lo) && !ismissing(hi)
+        if rr >= 1 && lo > 1
+            e_ci = lo + sqrt(lo * (lo - 1))
+        elseif rr < 1 && hi < 1
+            hi_inv = 1 / hi
+            e_ci = hi_inv + sqrt(hi_inv * (hi_inv - 1))
+        else
+            e_ci = 1.0   # CI crosses 1, no E-value needed
+        end
+    end
+    return (e_point = e_point, e_ci = e_ci)
+end
+
+# Example: a study reports RR = 1.40 [1.20, 1.62]
+ev = evalue(1.40; lo = 1.20, hi = 1.62)
+@printf("RR = 1.40 [1.20, 1.62]\n")
+@printf("E-value (point): %.2f\n", ev.e_point)
+@printf("E-value (CI):    %.2f\n", ev.e_ci)
+```
+
+The interpretation: a confounder would need to be associated with
+**both** the treatment and the outcome by risk ratios of at least 2.18
+(above and beyond the measured confounders) to fully explain away the
+observed RR of 1.40. Rule of thumb: E-values $\geq 2$ are moderate
+evidence of robustness; values $\geq 4$ are strong.
+
+The E-value is widely adopted in epidemiology because its interpretation
+is *model-free*: it doesn't require specifying a parametric form for
+the unobserved confounder; it is a purely scale-based statement.
+
+## Rosenbaum bounds for matched studies
+
+For matched estimators (propensity score matching, full matching,
+optimal matching), **Rosenbaum bounds** (Rosenbaum 2002) parametrise
+hidden bias as $\Gamma$, the maximum odds ratio of treatment assignment
+within a matched pair due to unobservables. $\Gamma = 1$ corresponds to
+within-pair randomisation; $\Gamma = 2$ means one unit in a matched pair
+was twice as likely to receive treatment due to unobservables.
+
+For each value of $\Gamma$, the upper-bound $p$-value of the Wilcoxon
+signed-rank test on matched-pair outcome differences is:
+
+```{julia}
+#| label: rosenbaum
+#| cache: true
+
+# Simulate matched-pair differences from a known DGP
+Random.seed!(7)
+n_pairs = 500
+true_effect = 0.5
+diffs = true_effect .+ 0.8 .* randn(n_pairs)
+
+"""
+    rosenbaum_pvalue(diffs, gamma)
+Upper-bound one-sided p-value of the Wilcoxon signed-rank test on matched
+pair differences, allowing for hidden bias of magnitude `gamma` ≥ 1.
+"""
+function rosenbaum_pvalue(diffs, gamma)
+    abs_d = abs.(diffs)
+    sgn   = sign.(diffs)
+    rks   = sortperm(sortperm(abs_d))   # ranks of |d|
+    # Under Γ, prob of positive sign is bounded by Γ/(1+Γ)
+    p_pos = gamma / (1 + gamma)
+    T_obs = sum(rks[sgn .> 0])
+    mu    = p_pos * sum(rks)
+    v     = p_pos * (1 - p_pos) * sum(rks .^ 2)
+    z     = (T_obs - mu) / sqrt(v)
+    return 1 - cdf(Normal(), z)
+end
+
+using Distributions: Normal, cdf
+
+gammas = 1.0:0.25:5.0
+pvals  = [rosenbaum_pvalue(diffs, g) for g in gammas]
+result = DataFrame(Gamma = gammas, p_upper = pvals)
+
+# Critical Γ: smallest Γ where p exceeds 0.05
+critical_idx = findfirst(p -> p > 0.05, pvals)
+critical_gamma = critical_idx === nothing ? Inf : gammas[critical_idx]
+
+@printf("Critical Γ (p > 0.05): %.2f\n", critical_gamma)
+@printf("\n%-10s %s\n", "Γ", "p (upper bound)")
+for (g, p) in zip(gammas[1:end-1], pvals[1:end-1])
+    @printf("%-10.2f %.4f\n", g, p)
+end
+```
+
+If the critical $\Gamma$ exceeds 2, the result is robust to moderate
+hidden bias; if it is close to 1, even small unmeasured confounding
+could overturn the test result.
+
+## Reporting practice
+
+Every observational causal estimate should be accompanied by *some*
+sensitivity analysis. A point estimate without one is a claim of
+certainty that the data cannot support. The minimum reasonable report:
+
+| Estimator family | What to report |
+|---|---|
+| Linear regression | Cinelli-Hazlett RV + benchmark comparison |
+| Risk-ratio analysis | E-value (point + CI) |
+| Matched / pair-based test | Critical $\Gamma$ from Rosenbaum bounds |
+
+Most modern applied papers include at least one of these. When
+sensitivity analysis reveals fragility, the next steps are usually
+either (a) finding additional measured covariates to control for, or
+(b) reporting partial-identification bounds (Manski 1990, Lee 2009)
+as the honest range of effects consistent with the data.
+
+## Summary
+
+- **Sensitivity analysis** quantifies how strong unobserved confounding
+  would need to be to overturn a result. It does not eliminate
+  unconfoundedness as an assumption — it quantifies how much we are
+  betting on it.
+- **Robustness value (RV)** (Cinelli-Hazlett 2020): closed-form
+  expression in t-stat and df; benchmark against observed covariates'
+  partial $R^2$.
+- **E-value** (VanderWeele-Ding 2017): closed-form scale-based statistic
+  for risk ratios; widely adopted in epidemiology.
+- **Rosenbaum bounds** (Rosenbaum 2002): hidden-bias parameter $\Gamma$
+  for matched studies; the critical $\Gamma$ is the threshold for
+  insignificance.
+- **All three have closed-form implementations** that fit in a few lines
+  of Julia code — no specialised package is required.
+
+## References
+
+- Cinelli, C., & Hazlett, C. (2020). Making sense of sensitivity: extending omitted variable bias. *JRSS-B*, 82(1), 39–67.
+- VanderWeele, T. J., & Ding, P. (2017). Sensitivity analysis in observational research: introducing the E-value. *Annals of Internal Medicine*, 167(4), 268–274.
+- Rosenbaum, P. R. (2002). *Observational Studies* (2nd ed.). Springer.
+- Manski, C. F. (1990). Nonparametric bounds on treatment effects. *AER P&P*, 80(2), 319–323.

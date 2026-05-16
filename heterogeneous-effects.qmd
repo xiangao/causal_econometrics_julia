@@ -1,0 +1,463 @@
+# Heterogeneous Treatment Effects with Machine Learning
+
+```{julia}
+#| include: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using LinearAlgebra
+using Printf
+using MLJ
+using MLJDecisionTreeInterface
+using GLM
+using CairoMakie
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using Distributions
+using Random
+using Statistics
+using LinearAlgebra
+using Printf
+using MLJ
+using MLJDecisionTreeInterface
+using GLM
+using CairoMakie
+```
+
+The [estimands chapter](causal-estimands.qmd) defined the conditional
+average treatment effect
+
+$$
+\text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
+$$
+
+as the effect of treatment for individuals with covariates $X = x$. There,
+we computed CATE from known potential outcomes — a luxury only simulation
+affords. In real data, $Y(0)$ and $Y(1)$ are never both observed, and CATE
+must be *estimated* from $(X, D, Y)$ without strong functional-form
+assumptions.
+
+This chapter covers the **meta-learner** recipe: any flexible regression
+algorithm can be turned into a CATE estimator. We implement the five most
+common meta-learners — S-, T-, X-, R-, and DR-learners — using `MLJ` +
+`DecisionTree.jl`'s random forests as the base learner.
+
+The chapter focuses on meta-learners rather than honest causal forests
+(Wager-Athey 2018) because Julia does not currently have a native
+implementation of honest sample-splitting trees. A T-learner with random
+forests provides a reasonable approximation; for production work with
+formal confidence intervals on CATE predictions, the R companion chapter
+covers `grf::causal_forest`.
+
+## The data-generating process
+
+Reuse the DGP from the estimands chapter, where the true CATE is
+$\tau(x) = 1 + 2 x_1$:
+
+```{julia}
+#| label: dgp
+#| cache: true
+
+Random.seed!(42)
+n = 5000
+p = 5
+
+X    = rand(n, p)
+U    = randn(n)
+# Treatment depends on a noise covariate (X2) and U — backdoor confounding
+ps   = @. 1 / (1 + exp(-(-0.3 + 1.5 * X[:, 2] + 0.5 * U)))
+D    = Float64.(rand(n) .< ps)
+tau  = @. 1 + 2 * X[:, 1]
+Y0   = @. 0.5 * X[:, 2] + 0.3 * U + randn()
+Y1   = Y0 .+ tau
+Y    = ifelse.(D .== 1, Y1, Y0)
+
+@printf("n = %d, true ATE = %.3f\n", n, mean(tau))
+@printf("True CATE at X1 = 0.2: %.2f\n", 1 + 2 * 0.2)
+@printf("True CATE at X1 = 0.8: %.2f\n", 1 + 2 * 0.8)
+```
+
+The treatment is confounded through $X_2$ and the unobserved $U$. We
+condition on $X_2$ to restore identification; we cannot condition on $U$.
+
+## A wrapper for fitting random forests
+
+To keep the code compact, define a small helper that fits a random forest
+and returns the predictions:
+
+```{julia}
+#| label: helper
+#| cache: true
+
+const RFR = @load RandomForestRegressor pkg=DecisionTree verbosity=0
+
+"""
+    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500)
+Fit a random forest on (Xtrain, ytrain) and return predictions at Xpredict.
+"""
+function rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees::Int=500)
+    learner = RFR(n_trees=n_trees, max_depth=-1)
+    Xtrain_t = MLJ.table(Xtrain)
+    Xpred_t  = MLJ.table(Xpredict)
+    mach = machine(learner, Xtrain_t, Float64.(ytrain))
+    fit!(mach, verbosity=0)
+    return MLJ.predict(mach, Xpred_t)
+end
+nothing
+```
+
+## S-learner ("single")
+
+Fit one regression of $Y$ on $(D, X)$, then predict the difference between
+$D = 1$ and $D = 0$ for each $x$:
+
+```{julia}
+#| label: s-learner
+#| cache: true
+
+X_with_D = hcat(D, X)
+X1_test  = hcat(ones(n), X)
+X0_test  = hcat(zeros(n), X)
+
+mu1_S = rf_fit_predict(X_with_D, Y, X1_test)
+mu0_S = rf_fit_predict(X_with_D, Y, X0_test)
+tau_S = mu1_S .- mu0_S
+
+@printf("S-learner CATE correlation with truth: %.3f\n", cor(tau_S, tau))
+```
+
+The S-learner is simple but biased toward zero when the treatment effect
+is small relative to outcome variation, because the regression "ignores"
+the $D$ variable if it has little predictive value.
+
+## T-learner ("two")
+
+Fit two separate regressions, one on treated units and one on controls:
+
+```{julia}
+#| label: t-learner
+#| cache: true
+
+idx_T = D .== 1
+idx_C = D .== 0
+
+mu1_T = rf_fit_predict(X[idx_T, :], Y[idx_T], X)
+mu0_T = rf_fit_predict(X[idx_C, :], Y[idx_C], X)
+tau_T = mu1_T .- mu0_T
+
+@printf("T-learner CATE correlation with truth: %.3f\n", cor(tau_T, tau))
+```
+
+The T-learner avoids the bias-toward-zero of the S-learner but suffers
+when the treated and control distributions diverge: extrapolation errors
+compound when subtracting the two fitted functions.
+
+## X-learner (Künzel et al. 2019)
+
+The X-learner imputes the missing potential outcomes using the T-learner
+fits, then regresses the resulting pseudo-outcomes on $X$ separately
+within each arm, and combines them with weights from the propensity score:
+
+```{julia}
+#| label: x-learner
+#| cache: true
+
+# Step 1: pseudo-outcomes
+D1_pseudo = Y[idx_T] .- mu0_T[idx_T]      # observed - imputed Y(0)
+D0_pseudo = mu1_T[idx_C] .- Y[idx_C]      # imputed Y(1) - observed
+
+# Step 2: regress pseudo-outcomes on X in each arm
+tau_X1 = rf_fit_predict(X[idx_T, :], D1_pseudo, X)
+tau_X0 = rf_fit_predict(X[idx_C, :], D0_pseudo, X)
+
+# Step 3: weight by propensity score
+e_hat = rf_fit_predict(X, D, X)
+e_hat = clamp.(e_hat, 0.02, 0.98)
+
+tau_X = e_hat .* tau_X0 .+ (1 .- e_hat) .* tau_X1
+@printf("X-learner CATE correlation with truth: %.3f\n", cor(tau_X, tau))
+```
+
+The X-learner is particularly effective when the propensity score is far
+from 0.5 (so one treatment arm is much smaller than the other) — common
+in observational studies.
+
+## R-learner (Nie & Wager 2021)
+
+The R-learner uses Robinson's (1988) partialled-out residual approach.
+Define pseudo-outcomes that, in expectation, equal $\tau(X)$:
+
+$$
+\tilde Y_i = \frac{Y_i - \hat m(X_i)}{D_i - \hat e(X_i)}, \qquad
+\text{weight}_i = (D_i - \hat e(X_i))^2,
+$$
+
+where $\hat m(x) = \mathbb{E}[Y \mid X = x]$ and $\hat e(x) = \mathbb{E}[D \mid X = x]$
+are cross-fitted nuisance estimates.
+
+```{julia}
+#| label: r-learner
+#| cache: true
+
+# Cross-fitting: 2 folds
+Random.seed!(7)
+folds  = rand(1:2, n)
+m_hat  = zeros(n)
+e_hat_cv = zeros(n)
+
+for k in 1:2
+    train = folds .!= k
+    test  = folds .== k
+    m_hat[test]    = rf_fit_predict(X[train, :], Y[train], X[test, :])
+    e_hat_cv[test] = rf_fit_predict(X[train, :], D[train], X[test, :])
+end
+e_hat_cv = clamp.(e_hat_cv, 0.02, 0.98)
+
+pseudo_R   = (Y .- m_hat) ./ (D .- e_hat_cv)
+weights_R  = (D .- e_hat_cv) .^ 2
+
+# Weighted regression: use random forest with per-sample weights via
+# weighted bootstrap (cheap approximation: oversample by sqrt(weight))
+# For exact weighted regression, MLJ regressors can take a weights argument.
+# We approximate here with unweighted RF on pseudo_R (the R-learner identity
+# holds in expectation; the weighting reduces variance).
+tau_R = rf_fit_predict(X, pseudo_R, X)
+@printf("R-learner CATE correlation with truth: %.3f\n", cor(tau_R, tau))
+```
+
+The R-learner is doubly robust in a Neyman-orthogonality sense and tends
+to be the most efficient meta-learner in moderately well-overlapping data.
+
+## DR-learner (Kennedy 2020)
+
+The DR-learner constructs AIPW-based pseudo-outcomes and regresses them
+on $X$:
+
+$$
+\tilde Y_i^{DR} = \hat\mu_1(X_i) - \hat\mu_0(X_i) +
+\frac{D_i (Y_i - \hat\mu_1(X_i))}{\hat e(X_i)} -
+\frac{(1 - D_i) (Y_i - \hat\mu_0(X_i))}{1 - \hat e(X_i)}.
+$$
+
+```{julia}
+#| label: dr-learner
+#| cache: true
+
+mu1_cf = zeros(n)
+mu0_cf = zeros(n)
+e_cf   = zeros(n)
+
+for k in 1:2
+    train = folds .!= k
+    test  = folds .== k
+    mu1_cf[test] = rf_fit_predict(X[train .& (D .== 1), :], Y[train .& (D .== 1)],
+                                  X[test, :])
+    mu0_cf[test] = rf_fit_predict(X[train .& (D .== 0), :], Y[train .& (D .== 0)],
+                                  X[test, :])
+    e_cf[test]   = rf_fit_predict(X[train, :], D[train], X[test, :])
+end
+e_cf = clamp.(e_cf, 0.02, 0.98)
+
+pseudo_DR = @. (mu1_cf - mu0_cf) +
+               D * (Y - mu1_cf) / e_cf -
+               (1 - D) * (Y - mu0_cf) / (1 - e_cf)
+
+tau_DR = rf_fit_predict(X, pseudo_DR, X)
+@printf("DR-learner CATE correlation with truth: %.3f\n", cor(tau_DR, tau))
+```
+
+## Comparing all five estimators
+
+```{julia}
+#| label: compare-plot
+#| cache: true
+#| fig-cap: "Estimated CATE vs true τ(x) = 1 + 2 X₁ for each meta-learner. Red dashed line = ground truth."
+
+fig = Figure(size = (1000, 700))
+labs = ["S-learner", "T-learner", "X-learner", "R-learner", "DR-learner"]
+preds = [tau_S, tau_T, tau_X, tau_R, tau_DR]
+
+for (i, (lab, pred)) in enumerate(zip(labs, preds))
+    row, col = divrem(i - 1, 3) .+ (1, 1)
+    ax = Axis(fig[row, col],
+              xlabel = "X1", ylabel = "Estimated CATE",
+              title = lab)
+    scatter!(ax, X[:, 1], pred, color = (:steelblue, 0.2), markersize = 4)
+    lines!(ax, 0:0.01:1, x -> 1 + 2x, color = :firebrick, linestyle = :dash,
+           linewidth = 2)
+end
+fig
+```
+
+## Best Linear Projection (BLP)
+
+Even when CATE is high-dimensional, we often want a simple summary: how
+does the treatment effect change with each covariate? The **best linear
+projection** of CATE onto $X$ is the OLS regression of the pseudo-outcomes
+on the covariates:
+
+$$
+\text{BLP}(X) = \arg\min_{\beta} \mathbb{E}\left[(\tau(X) - X'\beta)^2\right].
+$$
+
+A doubly-robust BLP uses the DR-learner pseudo-outcomes:
+
+```{julia}
+#| label: blp
+#| cache: true
+
+blp_df = DataFrame(hcat(pseudo_DR, X), [:tau_pseudo, :X1, :X2, :X3, :X4, :X5])
+blp_fit = lm(@formula(tau_pseudo ~ X1 + X2 + X3 + X4 + X5), blp_df)
+
+println(coeftable(blp_fit))
+```
+
+The BLP coefficient on $X_1$ should be close to 2 (the true slope of the
+CATE) and statistically significant; the coefficients on $X_2$ through
+$X_5$ should be close to 0. This is a clean test for heterogeneity along
+specific covariates.
+
+## CLAN: testing for heterogeneity
+
+A formal test of heterogeneity is the **CLAN** (Classification Analysis)
+proposed by Chernozhukov-Demirer-Duflo-Fernandez-Val (2018). Bin the
+population by predicted CATE, then estimate the average treatment effect
+in each bin. If the bin-specific ATEs are statistically different, there
+is heterogeneity.
+
+```{julia}
+#| label: clan
+#| cache: true
+
+nq = 5
+quintile_edges = quantile(tau_DR, range(0, 1, length = nq + 1))
+quintiles      = searchsortedfirst.(Ref(quintile_edges), tau_DR) .- 1
+quintiles      = clamp.(quintiles, 1, nq)
+
+# AIPW-style ATE within each quintile using the DR pseudo-outcomes
+function quintile_ate(tau_pseudo, idx)
+    n_q = sum(idx)
+    est = mean(tau_pseudo[idx])
+    sd  = std(tau_pseudo[idx]) / sqrt(n_q)
+    return (est = est, se = sd)
+end
+
+clan_df = DataFrame(quintile = 1:nq,
+                    ATE = [quintile_ate(pseudo_DR, quintiles .== q).est for q in 1:nq],
+                    SE  = [quintile_ate(pseudo_DR, quintiles .== q).se  for q in 1:nq])
+clan_df.lo = clan_df.ATE .- 1.96 .* clan_df.SE
+clan_df.hi = clan_df.ATE .+ 1.96 .* clan_df.SE
+
+@printf("%-10s %8s %8s %8s %8s\n", "Quintile", "ATE", "SE", "95% LB", "95% UB")
+for row in eachrow(clan_df)
+    @printf("%-10d %8.3f %8.3f %8.3f %8.3f\n",
+            row.quintile, row.ATE, row.SE, row.lo, row.hi)
+end
+```
+
+Quintile 5 should give a significantly larger ATE than quintile 1 — a
+formal test for whether the heterogeneity is real (rather than estimation
+noise).
+
+## Variable importance — which covariate drives heterogeneity?
+
+A natural diagnostic: regress the DR pseudo-outcomes on each covariate
+*separately* and look at the partial $R^2$:
+
+```{julia}
+#| label: var-importance
+#| cache: true
+
+function single_var_r2(target, x)
+    df_one = DataFrame(t = target, x = x)
+    fit = lm(@formula(t ~ x), df_one)
+    1 - sum(abs2.(residuals(fit))) / sum(abs2.(target .- mean(target)))
+end
+
+vi = [single_var_r2(pseudo_DR, X[:, j]) for j in 1:p]
+vi_df = DataFrame(variable = ["X$j" for j in 1:p], R2 = vi)
+sort!(vi_df, :R2, rev = true)
+println(vi_df)
+```
+
+$X_1$ should top the list. In real applications, this is a useful guide
+to which covariates carry heterogeneity.
+
+## Policy learning: who should we treat?
+
+A CATE estimate tells us the effect of treating each individual. But the
+**policy question** is often different: given a cost-benefit trade-off,
+*which* individuals should we treat? Define a treatment cost $c$ in
+outcome units; the optimal individualised policy is
+
+$$
+\pi^*(x) = \mathbb{1}\{\tau(x) > c\}.
+$$
+
+For interpretability, restrict to a shallow decision rule. A simple
+approach: pick a single covariate threshold that maximises welfare.
+
+```{julia}
+#| label: policy
+#| cache: true
+
+cost = 0.5
+
+# Optimal individualised policy (using estimated CATE)
+treat_optimal = tau_DR .> cost
+welfare_opt   = mean((treat_optimal .== 1) .* (pseudo_DR .- cost) .+
+                     (treat_optimal .== 0) .* 0.0)
+
+# Naive "treat everyone" policy
+welfare_all   = mean(pseudo_DR .- cost)
+
+# Simple threshold rule on X1
+function threshold_welfare(thresh)
+    treat = X[:, 1] .> thresh
+    mean(treat .* (pseudo_DR .- cost) .+ (1 .- treat) .* 0.0)
+end
+
+threshes = 0:0.05:1
+welfares = [threshold_welfare(t) for t in threshes]
+best_t   = threshes[argmax(welfares)]
+
+@printf("Welfare (treat everyone):                  %.3f\n", welfare_all)
+@printf("Welfare (treat if τ̂(x) > %.2f):           %.3f\n", cost, welfare_opt)
+@printf("Welfare (best X1-threshold rule, X1 > %.2f): %.3f\n",
+        best_t, maximum(welfares))
+```
+
+The optimal policy treats only individuals whose estimated CATE exceeds
+the cost. The interpretable threshold rule on $X_1$ alone is a
+reasonable compromise between welfare and explainability.
+
+## Summary
+
+- **Meta-learners** (S, T, X, R, DR) turn any regression algorithm into a
+  CATE estimator. R-learner and DR-learner exploit Neyman orthogonality
+  and cross-fitting for valid inference; X-learner helps with imbalanced
+  treatment arms.
+- All five fit on top of `MLJ` + random forests in Julia using ~10–30
+  lines each.
+- **Best Linear Projection (BLP)** gives a simple regression-style summary
+  of CATE — coefficients on how the effect varies with each covariate.
+- **CLAN** (quintile-binned ATEs) provides a formal test for heterogeneity.
+- **Policy learning** translates a CATE into a treatment-assignment rule;
+  even a simple threshold rule on the most-heterogeneous covariate often
+  achieves most of the welfare gain.
+- For applied work: estimate CATE with at least two methods, report BLP
+  coefficients and quintile-binned ATEs, and use an interpretable rule
+  when treatment-assignment recommendations are needed.
+
+## References
+
+- Wager, S., & Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. *JASA*, 113(523), 1228–1242.
+- Künzel, S. R., Sekhon, J. S., Bickel, P. J., & Yu, B. (2019). Metalearners for estimating heterogeneous treatment effects using machine learning. *PNAS*, 116(10), 4156–4165.
+- Nie, X., & Wager, S. (2021). Quasi-oracle estimation of heterogeneous treatment effects. *Biometrika*, 108(2), 299–319.
+- Kennedy, E. H. (2020). Towards optimal doubly robust estimation of heterogeneous causal effects. *arXiv:2004.14497*.
+- Athey, S., & Wager, S. (2021). Policy learning with observational data. *Econometrica*, 89(1), 133–161.
+- Chernozhukov, V., Demirer, M., Duflo, E., & Fernandez-Val, I. (2018). Generic machine learning inference on heterogeneous treatment effects in randomized experiments. *NBER Working Paper 24678*.
