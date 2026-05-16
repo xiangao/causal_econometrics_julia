@@ -2,82 +2,131 @@
 
 ## Quick reference
 
-- **Render**: `quarto render` (uses the standard `julia-1.12` kernel with `--project=@.`)
-- **Render one chapter**: `quarto render nonparametric.qmd`
-- **Optional fast kernel**: `julia --project build_sysimage.jl` (~20 min; do this when packages change)
-- **Run tests for packages**: `cd ~/projects/software/CausalEstimate.jl && julia --project -e 'using Pkg; Pkg.test()'`
+- **Render full book**: `JULIA_PROJECT=. quarto render`
+- **Render one chapter**: `JULIA_PROJECT=. quarto render nonparametric.qmd --to html`
+- **Publish**: `quarto publish gh-pages --no-render --no-prompt`
+- **Force re-execute a chapter**: delete `_freeze/<chapter>/` then render
+- **Run package tests**: `cd ~/projects/software/<Package>.jl && julia --project -e 'using Pkg; Pkg.test()'`
 
-## Project structure
+> **Navigation gotcha**: individual chapter renders update only that chapter's
+> HTML. Run `quarto render` (full project) whenever chapters are added or
+> removed so all sidebars stay in sync.
 
-- `*.qmd` — Quarto book chapters (Julia/IJulia kernel)
-- `_quarto.yml` — Quarto config; kernel = `julia-1.12`
-- `package-ecosystem.qmd` — final chapter summarizing the local packages under `~/projects/software`
-- `book_sysimage.so` — optional precompiled sysimage for fast rendering
-- `build_sysimage.jl` — Script to rebuild sysimage
-- `precompile_script.jl` — PackageCompiler precompile workload
-- `data/` — Dataset files (CSV, DTA)
-- `_book/` — Rendered HTML output (do not edit)
-- `_freeze/` — Quarto cell cache (delete to force re-render)
+## Book structure (18 chapters, 7 parts)
+
+| Part | Chapter file | Notes |
+|---|---|---|
+| Identification | `identification.qmd` | Potential outcomes, DAGs |
+| Identification | `causal-estimands.qmd` | ATE/ATT/LATE/CATE/QTE on one DGP |
+| Identification | `graphs-identification-estimation.qmd` | ADMGs, ID algorithm |
+| Identification | `smoking-cessation-graphs.qmd` | Applied NHEFS DAG workflow |
+| Estimation | `estimation.qmd` | RA, IPW, AIPW, IPWRA |
+| Estimation | `nonparametric.qmd` | TMLE, DoubleML, CausalEstimate.jl |
+| Estimation | `distributional-effects.qmd` | QTE, Engression-based distributional DiD |
+| Designs | `did.qmd` | ETWFE, staggered adoption |
+| Designs | `synthetic-control-did-tasc.qmd` | SC, SynthDiD, TASC |
+| Designs | `randomization-inference-sc.qmd` | Placebo tests, MSPE ratio, TASC posterior |
+| Designs | `iv-rdd.qmd` | IV/LATE, RD with RDRobust.jl |
+| Designs | `poisson-iv.qmd` | CF + GMM for Poisson with FE |
+| Mediation | `mediation.qmd` | CDE, NDE, NIE with Crumble.jl |
+| Causal Discovery | `causal-discovery.qmd` | PC, RSL-D |
+| Causal Discovery | `causal-discovery-latent.qmd` | FCI, L-MARVEL, PAGs |
+| Causal Discovery | `graph-to-estimate.qmd` | CausalGraphs.jl: identify + estimate |
+| Appendix | `package-ecosystem.qmd` | Package overview |
+
+## Adding a new chapter
+
+1. Create the `.qmd` file.
+2. Add it to `_quarto.yml` in the right part.
+3. Render it: `JULIA_PROJECT=. quarto render <chapter>.qmd --to html`
+4. Run a full project render to update nav in all other chapters: `JULIA_PROJECT=. quarto render`
+5. Commit: `git add <chapter>.qmd _quarto.yml _freeze/<chapter>/ && git commit -m "..."`
+6. Push: `git push`
+7. Publish: `quarto publish gh-pages --no-render --no-prompt`
 
 ## Custom packages (all at ~/projects/software/)
 
-| Package | Version | Purpose | Julia General PR |
-|---------|---------|---------|---------|
-| `RDRobust.jl` | 0.1.0 | RD estimation: `rdrobust`, `rdbwselect`, `rdplot` | [#155054](https://github.com/JuliaRegistries/General/pull/155054) |
-| `Panelest.jl` | 0.1.1 | FE panel OLS/GLM: `feols`, `feiv` | [#155060](https://github.com/JuliaRegistries/General/pull/155060) |
-| `CausalGraphs.jl` | 0.1.1 | DAG/ADMG construction, identification, and ID algorithm | [#155059](https://github.com/JuliaRegistries/General/pull/155059) |
-| `CausalEstimate.jl` | 0.1.0 | Unified TMLE/AIPW: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` | pending CausalGraphs merge |
-| `SynthDiD.jl` | 0.1.0 | Synthetic DiD: `synthdid_estimate`, `sc_estimate`, `did_estimate` | [#155055](https://github.com/JuliaRegistries/General/pull/155055) |
-| `DiD.jl` | 0.1.0 | ETWFE + `emfx()` aggregation; `dataset("mpdta")` | [#155056](https://github.com/JuliaRegistries/General/pull/155056) |
-| `Lavaan.jl` | 0.1.0 | SEM: `sem()` | [#155057](https://github.com/JuliaRegistries/General/pull/155057) |
-| `Crumble.jl` | 0.1.0 | Causal mediation analysis | [#155058](https://github.com/JuliaRegistries/General/pull/155058) |
+### In Project.toml (registered or developed)
 
-**Registration notes:**
-- All 8 packages submitted to Julia General Registry (JuliaRegistrator app installed on all repos)
-- CausalEstimate registration blocked until CausalGraphs PR merges — re-trigger with `@JuliaRegistrator register` on the v0.1.0 tagged commit once CausalGraphs is merged
-- CausalGraphs and Panelest are v0.1.1 (v0.1.0 had unregistered weakdeps that were removed: NPCausal from CausalGraphs, DuckDB/DBInterface from Panelest)
-- `RecursiveCausalDiscovery` is still a local path dep (`~/projects/repo_cloned/`) — not our package, upstream registration pending
-- UUID fixes applied: CausalGraphs, Crumble, Lavaan had placeholder UUIDs replaced with valid UUID4 values
+| Package | Version | Julia General | Key API |
+|---|---|---|---|
+| `CausalGraphs.jl` | 0.1.2 | **Merged** ✓ | `make_graph`, `identify`, `estimate_causal` |
+| `Crumble.jl` | 0.1.1 | **Merged** ✓ | causal mediation |
+| `ETWFE` (DiD.jl) | 0.1.3 | Pending #155610 | `att_gt`, `emfx`, `dataset` |
+| `Lavaan.jl` | 0.1.1 | Pending #155063 | `sem()` |
+| `RDRobust.jl` | 0.1.1 | Pending #155061 | `rdrobust`, `rdbwselect` |
+| `Panelest.jl` | 0.1.1 | Pending #155060 | `feols`, `feiv` |
+| `SynthDiD.jl` | 0.1.1 | Pending #155062 | `synthdid_estimate`, `sc_estimate`, `did_estimate`, `california_prop99` |
+| `CausalEstimate.jl` | 0.1.0 | Pending CausalGraphs merge | `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` |
+
+### Loaded via include() (not in Project.toml)
+
+| Package | Include path | Used in |
+|---|---|---|
+| `TASC.jl` | `../../software/TASC.jl/src/TASC.jl` | `synthetic-control-did-tasc.qmd`, `randomization-inference-sc.qmd` |
+
+Note: MSC.jl cannot currently be included because adding its `Tables.jl`
+dependency triggers a version conflict between Crumble (MLJ 0.20) and
+CausalEstimate (MLJ 0.23) in the Manifest.
+
+### External (not our packages)
+
+| Package | Source |
+|---|---|
+| `RecursiveCausalDiscovery` | Local clone at `~/projects/repo_cloned/`; used in discovery chapters |
+
+## Registry status (as of 2026-05-15)
+
+- **Merged**: CausalGraphs v0.1.2, Crumble v0.1.1
+- **Pending review**: ETWFE v0.1.3 (#155610), Lavaan v0.1.1 (#155063), RDRobust v0.1.1 (#155061), Panelest v0.1.1 (#155060), SynthDiD v0.1.1 (#155062)
+- **Closed/withdrawn**: DiD v0.1.0 and v0.1.1 (renamed to ETWFE), old v0.1.0 PRs superseded by v0.1.1s
+- To re-trigger registration for a package: comment `@JuliaRegistrator register` on the latest tagged commit
+
+## Chapter coding patterns
+
+### Setup blocks
+Each chapter has two import blocks:
+```julia
+# Block 1: hidden setup (include: false) — loads everything needed
+#| include: false
+using Foo, Bar, ...
+
+# Block 2: visible display (eval: false) — shows imports to reader
+#| eval: false
+using Foo, Bar, ...
+```
+Edit **both** when adding new packages to a chapter.
+
+### TASC.jl include pattern
+```julia
+#| include: false
+include("../../software/TASC.jl/src/TASC.jl")
+using .TASC
+```
+TASC EM convergence: use `n_em=200, tol=1e-3` for Prop 99 (38 states × 31 years).
+`n_em=25` was too tight and now emits a `@warn`.
+
+### ETWFE string-column requirement
+ETWFE cohort×time interactions require **string** columns:
+```julia
+df.first_treat_str = string.(df.first_treat)
+df.year_str        = string.(df.year)
+```
+`DiD.dataset("mpdta")` already includes these columns.
 
 ## CausalEstimate.jl API
 
 ```julia
-using CausalEstimate
-
-# ATE with TMLE
 result = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W1,:W2]), TMLE(crossfit=5), df)
-
-# ATE with AIPW
-result = estimate(ATE(outcome=:Y, treatment=:A, confounders=[:W1,:W2]), AIPW(crossfit=5), df)
-
-# ATT
 result = estimate(ATT(outcome=:Y, treatment=:A, confounders=[:W1,:W2]), AIPW(crossfit=5), df)
-
-# Graph-identified (backdoor/a-fixable)
-result = estimate(ATE(outcome=:Y, treatment=:A), GraphID(graph=g), AIPW(crossfit=5), df)
-
-estimate(result)        # point estimate
-confint(result)         # (lb, ub) tuple
-pvalue(result)          # p-value
-result.primary.standard_error
+estimate(result)   # point estimate
+confint(result)    # (lb, ub)
+pvalue(result)
 ```
 
-For p-fixable / front-door / nested-fixable / ID plug-in effects, use `CausalGraphs.estimate_causal(...)` directly.
+For p-fixable / front-door / nested-fixable effects, use `CausalGraphs.estimate_causal(...)` directly (see `graph-to-estimate.qmd`).
 
-## Chapter structure notes
+## Data
 
-- Each chapter has a **hidden setup block** (`#| include: false`) loading all packages and helper functions, followed immediately by a **visible display block** (`#| eval: false`) showing only the `using`/`import` lines. Edit both if adding new packages.
-- Causal discovery chapters (`causal-discovery.qmd`, `causal-discovery-latent.qmd`) use `gen_er_dag_adj_mat` and `gen_gaussian_data` from `RecursiveCausalDiscovery` (local clone at `~/projects/repo_cloned/RecursiveCausalDiscovery.jl`).
-
-## Sysimage notes
-
-- The default render path does not require a sysimage.
-- If you switch `_quarto.yml` to `jupyter: julia-_book_-1.12`, rebuild the sysimage whenever custom packages change (paths in Manifest.toml).
-- HypothesisTests must be in Project.toml as a **direct** dependency (not just transitive via TMLE.jl)
-- The `julia-_book_-1.12` IJulia kernel is installed by `build_sysimage.jl`
-
-## ETWFE / emfx design (critical)
-
-- Must use **string columns** `first_treat_str & year_str` for ETWFE dummies (Int columns give 1 coef, not cohort×time dummies)
-- `DiD.dataset("mpdta")` already includes `first_treat_str`, `year_str`
-- For external datasets: `df.first_treat_str = string.(df.first_treat); df.year_str = string.(df.year)`
+- `data/california_prop99.csv` — Prop 99 cigarette panel (39 states, 1970–2000)
+- Other datasets are loaded inside chapters from `causaldata` or generated synthetically
