@@ -75,6 +75,14 @@ CausalEstimate (MLJ 0.23) in the Manifest.
 |---|---|
 | `RecursiveCausalDiscovery` | Local clone at `~/projects/repo_cloned/`; used in discovery chapters |
 
+### Intentionally local (not published)
+
+| Package | Location | Reason |
+|---|---|---|
+| `TMLE.jl` | `~/projects/local_software/TMLE.jl` | Name taken by TARGENE/TMLE.jl in General registry; book uses CausalEstimate.jl for TMLE instead |
+| `anankeR` | `~/projects/local_software/anankeR` | R port of ananke-causal Python package; no remote |
+| `lavaan_r` | `~/projects/local_software/lavaan_r` | Rosseel's upstream lavaan source; reference copy for Lavaan.jl development |
+
 ## Registry status (as of 2026-05-15)
 
 - **Merged**: CausalGraphs v0.1.2, Crumble v0.1.1
