@@ -12,7 +12,7 @@
 > HTML. Run `quarto render` (full project) whenever chapters are added or
 > removed so all sidebars stay in sync.
 
-## Book structure (26 chapters, 9 parts)
+## Book structure (25 chapters, 9 parts; excluding `index.qmd`)
 
 | Part | Chapter file | Notes |
 |---|---|---|
