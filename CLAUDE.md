@@ -12,7 +12,7 @@
 > HTML. Run `quarto render` (full project) whenever chapters are added or
 > removed so all sidebars stay in sync.
 
-## Book structure (18 chapters, 7 parts)
+## Book structure (19 chapters, 7 parts)
 
 | Part | Chapter file | Notes |
 |---|---|---|
@@ -26,6 +26,7 @@
 | Designs | `did.qmd` | ETWFE, staggered adoption |
 | Designs | `synthetic-control-did-tasc.qmd` | SC, SynthDiD, TASC |
 | Designs | `randomization-inference-sc.qmd` | Placebo tests, MSPE ratio, TASC posterior |
+| Designs | `shift-share-iv.qmd` | Bartik IV, Rotemberg weights, BHJ collapse (ShiftShareIV.jl) |
 | Designs | `iv-rdd.qmd` | IV/LATE, RD with RDRobust.jl |
 | Designs | `poisson-iv.qmd` | CF + GMM for Poisson with FE |
 | Mediation | `mediation.qmd` | CDE, NDE, NIE with Crumble.jl |
@@ -64,6 +65,11 @@
 | Package | Include path | Used in |
 |---|---|---|
 | `TASC.jl` | `../../software/TASC.jl/src/TASC.jl` | `synthetic-control-did-tasc.qmd`, `randomization-inference-sc.qmd` |
+| `ShiftShareIV.jl` | `../../software/ShiftShareIV.jl/src/ShiftShareIV.jl` | `shift-share-iv.qmd` |
+
+Note: `ShiftShareIV.jl` uses include() rather than Project.toml because the book
+environment has a pre-existing MLJ version conflict (Crumble 0.20 vs CausalEstimate 0.23)
+that blocks any `Pkg.develop` call.
 
 Note: MSC.jl cannot currently be included because adding its `Tables.jl`
 dependency triggers a version conflict between Crumble (MLJ 0.20) and
