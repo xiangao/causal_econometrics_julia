@@ -12,7 +12,7 @@
 > HTML. Run `quarto render` (full project) whenever chapters are added or
 > removed so all sidebars stay in sync.
 
-## Book structure (22 chapters, 8 parts)
+## Book structure (26 chapters, 9 parts)
 
 | Part | Chapter file | Notes |
 |---|---|---|
@@ -22,8 +22,11 @@
 | Identification | `smoking-cessation-graphs.qmd` | Applied NHEFS DAG workflow |
 | Identification | `sensitivity-analysis.qmd` | Cinelli-Hazlett RV, E-values, Rosenbaum bounds (inline) |
 | Estimation | `estimation.qmd` | RA, IPW, AIPW, IPWRA |
+| Estimation | `matching.qmd` | NN matching, IPW, balance diagnostics |
 | Estimation | `nonparametric.qmd` | TMLE, DoubleML, CausalEstimate.jl |
 | Estimation | `heterogeneous-effects.qmd` | S/T/X/R/DR meta-learners with MLJ + DecisionTree |
+| Estimation | `continuous-treatments.qmd` | Hirano-Imbens GPS, DR dose-response (inline) |
+| Estimation | `bayesian-causal.qmd` | Bayesian g-computation (inline conjugate Bayesian linreg) |
 | Estimation | `distributional-effects.qmd` | QTE, Engression-based distributional DiD |
 | Designs | `did.qmd` | ETWFE, staggered adoption |
 | Designs | `synthetic-control-did-tasc.qmd` | SC, SynthDiD, TASC |
@@ -32,6 +35,7 @@
 | Designs | `iv-rdd.qmd` | IV/LATE, RD with RDRobust.jl |
 | Designs | `poisson-iv.qmd` | CF + GMM for Poisson with FE |
 | Longitudinal | `g-methods.qmd` | G-formula + IPTW + MSM via GLM (LTMLE noted as R-only) |
+| Survival | `survival-causal.qmd` | KM, IPW-adjusted KM, RMST (inline; Cox/DR-survival noted as R-only) |
 | Mediation | `mediation.qmd` | CDE, NDE, NIE with Crumble.jl |
 | Causal Discovery | `causal-discovery.qmd` | PC, RSL-D |
 | Causal Discovery | `causal-discovery-latent.qmd` | FCI, L-MARVEL, PAGs |

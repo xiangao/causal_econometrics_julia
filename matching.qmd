@@ -1,0 +1,248 @@
+# Matching Estimators
+
+```{julia}
+#| include: false
+using DataFrames
+using GLM
+using Statistics
+using Random
+using LinearAlgebra
+using Printf
+using CairoMakie
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using GLM
+using Statistics
+using Random
+using LinearAlgebra
+using Printf
+using CairoMakie
+```
+
+Matching is the oldest and most-taught approach to observational causal
+inference. For each treated unit, find a "twin" control unit with
+similar covariates, then compare outcomes within matched pairs. With
+enough good matches, the comparison approximates a randomised
+experiment.
+
+The mature implementation in R (`MatchIt`, `cobalt`, `WeightIt`) has no
+direct Julia counterpart. This chapter implements the core ideas
+inline — propensity score matching, balance diagnostics, weighted
+estimation — using `GLM.jl` and base Julia. For optimal matching, full
+matching, and coarsened exact matching with mature tooling, see the
+[R companion chapter](https://xiangao.github.io/causal_econometrics_guide/matching.html).
+
+## Assumptions
+
+Matching identifies a causal effect under three assumptions:
+
+1. **SUTVA** — no interference, no hidden treatment versions.
+2. **Ignorability** — conditional on $X$, $D \perp (Y(0), Y(1))$.
+3. **Overlap** — every $x$ has positive probability of both treatments.
+
+## A simulated example
+
+```{julia}
+#| label: dgp
+#| cache: true
+
+Random.seed!(42)
+n  = 2000
+X1 = randn(n)
+X2 = randn(n)
+
+# Treatment depends on covariates (confounding)
+ps_true = @. 1 / (1 + exp(-(-0.5 + 0.6 * X1 + 0.4 * X2)))
+D       = Float64.(rand(n) .< ps_true)
+
+# Outcome: true treatment effect = 1, plus confounding through X1, X2
+Y = @. 1.0 * D + 0.8 * X1 + 0.6 * X2 + 0.5 * randn()
+
+df = DataFrame(Y = Y, D = D, X1 = X1, X2 = X2)
+@printf("Naive difference in means: %.3f\n", mean(Y[D .== 1]) - mean(Y[D .== 0]))
+@printf("True ATE: 1.000\n")
+```
+
+## Estimating the propensity score
+
+```{julia}
+#| label: ps
+#| cache: true
+
+ps_fit = glm(@formula(D ~ X1 + X2), df, Binomial(), LogitLink())
+df.ps  = predict(ps_fit)
+
+@printf("PS range: [%.3f, %.3f]\n", minimum(df.ps), maximum(df.ps))
+```
+
+## Nearest-neighbour 1:1 matching
+
+```{julia}
+#| label: nn-match
+#| cache: true
+
+"""
+    nearest_neighbor_match(ps_treated, ps_control)
+Return a vector of indices into the control group, matching each treated
+unit to its nearest-neighbour control on PS. Sampling is without replacement.
+"""
+function nearest_neighbor_match(ps_treated, ps_control)
+    n_t = length(ps_treated)
+    avail = trues(length(ps_control))
+    matches = zeros(Int, n_t)
+    for (i, p) in enumerate(ps_treated)
+        candidates = findall(avail)
+        if isempty(candidates)
+            break
+        end
+        diffs = abs.(ps_control[candidates] .- p)
+        best  = candidates[argmin(diffs)]
+        matches[i] = best
+        avail[best] = false
+    end
+    matches
+end
+
+idx_T = findall(df.D .== 1)
+idx_C = findall(df.D .== 0)
+
+matched_C = nearest_neighbor_match(df.ps[idx_T], df.ps[idx_C])
+matched_idx_C = idx_C[matched_C[matched_C .> 0]]
+matched_idx_T = idx_T[1:length(matched_idx_C)]
+
+@printf("Matched %d treated to %d controls\n",
+        length(matched_idx_T), length(matched_idx_C))
+```
+
+## Balance diagnostics
+
+The standardised mean difference (SMD) before and after matching shows
+whether the matched groups are balanced:
+
+```{julia}
+#| label: balance
+#| cache: true
+
+function smd(x_t, x_c)
+    (mean(x_t) - mean(x_c)) / sqrt((var(x_t) + var(x_c)) / 2)
+end
+
+@printf("%-15s %12s %12s\n", "Covariate", "SMD before", "SMD after")
+for v in [:X1, :X2]
+    smd_before = smd(df[!, v][df.D .== 1], df[!, v][df.D .== 0])
+    smd_after  = smd(df[!, v][matched_idx_T], df[!, v][matched_idx_C])
+    @printf("%-15s %12.3f %12.3f\n", String(v), smd_before, smd_after)
+end
+```
+
+Standardised mean differences of magnitude < 0.1 after matching indicate
+adequate balance. Larger differences suggest the matching is insufficient
+and a more flexible method (e.g. Mahalanobis distance, or matching with
+replacement) is needed.
+
+## Estimating the ATT on matched data
+
+After matching, the ATT is the simple difference in means:
+
+```{julia}
+#| label: att
+#| cache: true
+
+att = mean(df.Y[matched_idx_T]) - mean(df.Y[matched_idx_C])
+@printf("Matched ATT: %.3f  (true ATE = 1.000)\n", att)
+
+# Standard error: paired-difference SE (treats matched pairs as paired)
+diffs = df.Y[matched_idx_T] .- df.Y[matched_idx_C]
+se    = std(diffs) / sqrt(length(diffs))
+@printf("Paired-diff SE: %.3f\n", se)
+@printf("95%% CI: [%.3f, %.3f]\n", att - 1.96 * se, att + 1.96 * se)
+```
+
+The matched estimate is close to the truth, and the paired-difference
+standard error is the right inferential approach for matched pairs.
+
+## Matching with replacement
+
+When the treated group is larger or the propensity distributions
+diverge, allowing each control to be matched more than once improves
+balance at the cost of effective sample size:
+
+```{julia}
+#| label: nn-replace
+#| cache: true
+
+function nn_match_replace(ps_treated, ps_control)
+    [argmin(abs.(ps_control .- p)) for p in ps_treated]
+end
+
+matched_repl = nn_match_replace(df.ps[idx_T], df.ps[idx_C])
+@printf("Average reuse: %.2f (1.0 = no replacement)\n",
+        length(matched_repl) / length(unique(matched_repl)))
+
+att_repl = mean(df.Y[idx_T]) - mean(df.Y[idx_C[matched_repl]])
+@printf("Matched-with-replacement ATT: %.3f\n", att_repl)
+```
+
+## Matching vs weighting
+
+A close cousin of matching is **inverse propensity weighting (IPW)**:
+weight treated units by $1 / \hat e(X)$ and control units by
+$1 / (1 - \hat e(X))$, then take the weighted difference in means:
+
+```{julia}
+#| label: ipw
+#| cache: true
+
+w = ifelse.(df.D .== 1, 1 ./ df.ps, 1 ./ (1 .- df.ps))
+w_trim = min.(w, quantile(w, 0.99))
+
+att_ipw = sum(df.Y[df.D .== 1] .* w_trim[df.D .== 1]) / sum(w_trim[df.D .== 1]) -
+          sum(df.Y[df.D .== 0] .* w_trim[df.D .== 0]) / sum(w_trim[df.D .== 0])
+@printf("IPW ATT (≈ ATE):       %.3f\n", att_ipw)
+@printf("Matched ATT (NN):      %.3f\n", att)
+@printf("Matched ATT (replace): %.3f\n", att_repl)
+@printf("True ATE:              1.000\n")
+```
+
+IPW and matching often agree closely. When they disagree, the
+divergence usually reflects either a misspecified propensity score
+(check with balance diagnostics) or an overlap problem.
+
+## When to use which method
+
+| Method | When to use | Limitation |
+|---|---|---|
+| **NN matching** (no replacement) | Simple, intuitive; ATT estimand | Drops unmatched units |
+| **NN matching** (with replacement) | Few treated, many controls | Wasteful of controls |
+| **IPW** | Good propensity model | Sensitive to extreme weights |
+| **Doubly robust (AIPW)** | Combine matching/IPW with regression | More complex |
+
+For applied work in Julia, **IPW + AIPW** is usually the more practical
+default than 1:1 matching, because Julia's regression and weighting
+infrastructure (`GLM`, `Panelest`) is mature whereas matching algorithms
+are not. For matched analyses, the R ecosystem (`MatchIt`, `cobalt`) is
+the workhorse — the [companion R chapter](https://xiangao.github.io/causal_econometrics_guide/matching.html)
+walks through full matching, CEM, and balance diagnostics in detail.
+
+## Summary
+
+- **Matching** restricts comparisons to similar treated–control pairs,
+  approximating a randomised experiment.
+- **Propensity score nearest-neighbour matching** is the simplest form
+  and implementable in a few lines of Julia.
+- **Balance diagnostics** (standardised mean differences) verify the
+  matching's success.
+- **Estimation**: paired-difference SE on the matched data; regression
+  adjustment on the matched sample (an even better default).
+- For richer matching (optimal, full, CEM) and mature balance tooling,
+  use R's `MatchIt`/`cobalt` ecosystem.
+
+## References
+
+- Stuart, E. A. (2010). Matching methods for causal inference: a review and a look forward. *Statistical Science*, 25(1), 1–21.
+- Iacus, S. M., King, G., & Porro, G. (2012). Causal inference without balance checking: coarsened exact matching. *Political Analysis*, 20(1), 1–24.
+- Ho, D. E., Imai, K., King, G., & Stuart, E. A. (2007). Matching as nonparametric preprocessing for reducing model dependence in parametric causal inference. *Political Analysis*, 15(3), 199–236.
+- Greifer, N. (2024). *MatchIt: Getting Started.* CRAN vignette.

@@ -1,0 +1,307 @@
+# Survival Analysis with Causal Inference
+
+```{julia}
+#| include: false
+using DataFrames
+using Distributions
+using GLM
+using Statistics
+using Random
+using LinearAlgebra
+using Printf
+using CairoMakie
+```
+
+```{julia}
+#| eval: false
+using DataFrames
+using Distributions
+using GLM
+using Statistics
+using Random
+using LinearAlgebra
+using Printf
+using CairoMakie
+```
+
+When the outcome is **time-to-event** — death, hospital re-admission,
+employment termination, machine failure — standard causal inference
+methods need to be adapted. Some observations are *censored*: we know
+the event has not occurred by the end of follow-up, but not when it
+will. Regression on the event time would discard or mishandle censored
+observations and produce biased estimates.
+
+This chapter implements the workhorses of survival-causal inference in
+Julia: Kaplan-Meier estimation, inverse probability weighting for the
+adjusted survival curve, and the restricted mean survival time (RMST)
+contrast. For Cox proportional-hazards modelling, R's `survival` package
+is more mature; for doubly-robust survival estimators, R's
+`riskRegression::ate` is the workhorse. The [companion R chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html)
+walks through these in detail.
+
+## The censoring problem
+
+We observe $\min(T_i, C_i)$ and $\delta_i = \mathbb{1}\{T_i \le C_i\}$,
+where $T_i$ is the event time and $C_i$ is the censoring time. The
+fundamental quantity of interest is the **survival function**
+
+$$
+S(t) = P(T > t)
+$$
+
+— the probability of surviving past time $t$. Causal contrasts on
+survival outcomes are typically expressed as:
+
+- **Hazard ratio (HR)** — easy to estimate but hard to interpret
+  causally (Hernán 2010).
+- **Restricted mean survival difference (RMST)** —
+  $\int_0^\tau [S_1(t) - S_0(t)] dt$ — interpretable as "years gained"
+  up to time $\tau$.
+- **Survival probability difference at t** — direct probability
+  statement, requires picking a follow-up time.
+
+## Simulated survival data
+
+```{julia}
+#| label: dgp
+#| cache: true
+
+Random.seed!(42)
+n = 1500
+
+age = randn(n) .* 10 .+ 60
+sex = Float64.(rand(n) .< 0.5)
+
+# Treatment depends on age (confounding)
+ps  = @. 1 / (1 + exp(-(-2 + 0.05 * age + 0.4 * sex)))
+trt = Float64.(rand(n) .< ps)
+
+# True log-hazard: treatment reduces hazard by ~33%
+shape   = 1.5
+linpred = @. 0.03 * age + 0.4 * sex - 0.4 * trt
+
+# Weibull event times
+event_time  = [rand(Weibull(shape, exp(-linpred[i] / shape))) for i in 1:n]
+censor_time = rand(n) .* 9 .+ 1
+
+obs_time = min.(event_time, censor_time)
+event    = Float64.(event_time .<= censor_time)
+
+df = DataFrame(time = obs_time, event = event, trt = trt,
+               age = age, sex = sex)
+@printf("n = %d, events = %d (%.1f%%), censored = %d\n",
+        n, Int(sum(event)), 100 * mean(event), Int(sum(1 .- event)))
+```
+
+## Kaplan-Meier estimator
+
+The Kaplan-Meier (KM) estimator computes $\hat S(t)$ nonparametrically.
+Implement it inline:
+
+```{julia}
+#| label: km
+#| cache: true
+
+"""
+    kaplan_meier(time, event)
+Compute Kaplan-Meier survival estimates at the unique event times.
+Returns (times, survival).
+"""
+function kaplan_meier(time, event)
+    df_sort = sort(DataFrame(t = time, d = event), :t)
+    event_times = unique(df_sort.t[df_sort.d .== 1])
+    survival = Float64[]
+    s = 1.0
+    for t in event_times
+        n_at_risk = sum(df_sort.t .>= t)
+        n_events  = sum((df_sort.t .== t) .& (df_sort.d .== 1))
+        s *= 1 - n_events / n_at_risk
+        push!(survival, s)
+    end
+    return event_times, survival
+end
+
+t_trt, s_trt = kaplan_meier(df.time[df.trt .== 1], df.event[df.trt .== 1])
+t_ctl, s_ctl = kaplan_meier(df.time[df.trt .== 0], df.event[df.trt .== 0])
+
+fig = Figure(size = (700, 400))
+ax = Axis(fig[1, 1], xlabel = "Time (years)", ylabel = "S(t)",
+          title = "Unadjusted Kaplan-Meier survival curves")
+stairs!(ax, t_ctl, s_ctl, color = :steelblue, linewidth = 2,
+        label = "Control")
+stairs!(ax, t_trt, s_trt, color = :firebrick, linewidth = 2,
+        label = "Treatment")
+axislegend(ax, position = :rb, framevisible = false)
+fig
+```
+
+The unadjusted KM curves show the *crude* survival gap — it includes
+both the causal effect and any baseline imbalance.
+
+## IPW-adjusted survival
+
+To account for confounding, weight observations by the inverse
+propensity score before computing KM:
+
+```{julia}
+#| label: ipw-survival
+#| cache: true
+
+ps_fit = glm(@formula(trt ~ age + sex), df, Binomial(), LogitLink())
+df.ps  = predict(ps_fit)
+df.ipw = ifelse.(df.trt .== 1, 1 ./ df.ps, 1 ./ (1 .- df.ps))
+df.ipw .= min.(df.ipw, quantile(df.ipw, 0.99))
+
+"""
+    weighted_kaplan_meier(time, event, weights)
+KM estimate with sample weights — used for IPW-adjusted survival.
+"""
+function weighted_kaplan_meier(time, event, weights)
+    df_sort = sort(DataFrame(t = time, d = event, w = weights), :t)
+    event_times = unique(df_sort.t[df_sort.d .== 1])
+    survival = Float64[]
+    s = 1.0
+    for t in event_times
+        w_at_risk = sum(df_sort.w[df_sort.t .>= t])
+        w_events  = sum(df_sort.w[(df_sort.t .== t) .& (df_sort.d .== 1)])
+        s *= 1 - w_events / w_at_risk
+        push!(survival, s)
+    end
+    return event_times, survival
+end
+
+t_trt_w, s_trt_w = weighted_kaplan_meier(df.time[df.trt .== 1],
+                                          df.event[df.trt .== 1],
+                                          df.ipw[df.trt .== 1])
+t_ctl_w, s_ctl_w = weighted_kaplan_meier(df.time[df.trt .== 0],
+                                          df.event[df.trt .== 0],
+                                          df.ipw[df.trt .== 0])
+
+fig2 = Figure(size = (700, 400))
+ax2 = Axis(fig2[1, 1], xlabel = "Time (years)", ylabel = "S(t)",
+           title = "IPW-adjusted Kaplan-Meier survival curves")
+stairs!(ax2, t_ctl_w, s_ctl_w, color = :steelblue, linewidth = 2,
+        label = "Control (IPW-adj)")
+stairs!(ax2, t_trt_w, s_trt_w, color = :firebrick, linewidth = 2,
+        label = "Treatment (IPW-adj)")
+axislegend(ax2, position = :rb, framevisible = false)
+fig2
+```
+
+The IPW-adjusted curves show the survival gap that the *causal* effect
+would produce, removing age and sex imbalance.
+
+## Restricted Mean Survival Time
+
+The **RMST** up to time $\tau$ is
+
+$$
+\text{RMST}(\tau) = E[\min(T, \tau)] = \int_0^\tau S(t) \, dt.
+$$
+
+The contrast $\Delta_{\text{RMST}}(\tau) = \text{RMST}_1(\tau) - \text{RMST}_0(\tau)$
+is interpretable as "years gained up to $\tau$" — a clean causal
+contrast that does not require the proportional hazards assumption.
+
+Compute it by trapezoidal integration of the KM curve:
+
+```{julia}
+#| label: rmst
+#| cache: true
+
+function rmst(times, survival, tau)
+    # Add time 0 and the truncation point, with appropriate S values
+    t_vec = [0.0; times; tau]
+    s_vec = [1.0; survival; survival[end]]
+    # Restrict to times ≤ tau
+    keep = t_vec .<= tau
+    t_use = t_vec[keep]
+    s_use = s_vec[keep]
+    # Add the tau endpoint
+    push!(t_use, tau)
+    push!(s_use, s_use[end])
+    # Trapezoidal area: width × left-height (since KM is step function)
+    sum(diff(t_use) .* s_use[1:end-1])
+end
+
+τ = 5.0
+rmst_trt_unadj = rmst(t_trt, s_trt, τ)
+rmst_ctl_unadj = rmst(t_ctl, s_ctl, τ)
+rmst_trt_adj   = rmst(t_trt_w, s_trt_w, τ)
+rmst_ctl_adj   = rmst(t_ctl_w, s_ctl_w, τ)
+
+@printf("Unadjusted RMST(τ=5):\n")
+@printf("  Treatment: %.3f years    Control: %.3f years    Diff: %.3f\n",
+        rmst_trt_unadj, rmst_ctl_unadj, rmst_trt_unadj - rmst_ctl_unadj)
+@printf("IPW-adjusted RMST(τ=5):\n")
+@printf("  Treatment: %.3f years    Control: %.3f years    Diff: %.3f\n",
+        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj - rmst_ctl_adj)
+```
+
+The IPW-adjusted RMST difference is the causal "years gained up to 5
+years" — directly interpretable for clinical or policy reporting.
+
+## Cox proportional hazards (regression adjustment)
+
+Fitting a Cox model in Julia requires `Survival.jl`, which has a more
+limited API than R's `survival::coxph`. The standard approach in Julia
+for survival-regression is either to:
+
+- Use `Survival.jl` for basic Cox PH (limited adjustment capabilities).
+- Use a parametric Weibull/exponential model via `Distributions` and
+  `Optim` directly.
+- Call out to R for serious survival modelling.
+
+For applied work where the Cox model with covariate adjustment is the
+target, R remains the practical choice. See the
+[companion R chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html)
+for the full Cox + IPCW + doubly-robust workflow.
+
+## Doubly-robust survival estimation
+
+R's `riskRegression::ate` provides a doubly-robust estimator that
+combines a Cox outcome model with a propensity score and a censoring
+model. The Julia ecosystem currently lacks an equivalent — implementing
+a doubly-robust survival estimator would be a substantial undertaking
+(requires careful handling of censoring weights at each event time).
+
+For now, the practical Julia workflow for survival-causal inference is:
+
+1. **Description**: unadjusted KM curves (this chapter).
+2. **Adjusted survival**: IPW-weighted KM (this chapter).
+3. **Causal contrasts**: RMST differences from the IPW-adjusted KM
+   (this chapter).
+4. **Cox HR with adjustment + doubly-robust estimators**: call out to R
+   via `RCall.jl` or use the [R companion chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html).
+
+## When to use these methods
+
+These methods are needed whenever:
+
+1. The outcome is time-to-event with censoring.
+2. The treatment effect on survival probabilities or years-of-life is
+   the causal question.
+
+For non-censored outcomes, the standard
+[Estimation](estimation.qmd) and [Heterogeneous Effects](heterogeneous-effects.qmd)
+methods are sufficient.
+
+## Summary
+
+- **Survival outcomes** require methods that handle censoring.
+- **Kaplan-Meier** estimates $S(t)$ nonparametrically; can be
+  implemented inline in Julia in a few lines.
+- **IPW-adjusted KM**: weight observations by inverse propensity score
+  before computing the survival curve.
+- **RMST differences** (years gained up to $\tau$): interpretable
+  causal contrasts that don't require proportional hazards.
+- **For Cox PH regression with adjustment and doubly-robust survival**,
+  use R's mature `survival` + `riskRegression` ecosystem — see the
+  [companion R chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html).
+
+## References
+
+- Hernán, M. A. (2010). The hazards of hazard ratios. *Epidemiology*, 21(1), 13–15.
+- Royston, P., & Parmar, M. K. B. (2013). Restricted mean survival time. *BMC Medical Research Methodology*, 13(1), 152.
+- Rotnitzky, A., & Robins, J. M. (2005). Inverse probability weighted estimation in survival analysis. *Encyclopedia of Biostatistics*.
+- Cui, Y., Kosorok, M. R., Sverdrup, E., Wager, S., & Zhu, R. (2023). Estimating heterogeneous treatment effects with right-censored data via causal survival forests. *JRSS-B*, 85(2), 179–211.
