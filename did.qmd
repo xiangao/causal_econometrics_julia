@@ -322,4 +322,159 @@ mod_es2 = emfx(mod, type = "calendar")
 mod_es2
 ```
 
+## Nonlinear ETWFE: Count and Binary Outcomes
+
+ETWFE is not limited to linear outcomes. When $Y$ is a count or binary variable, the key identifying assumption shifts to **Conditional Parallel Trends on the linear index**: parallel trends on $\log E[Y_{it}(\infty)]$ for Poisson, or on $\text{logit}\, E[Y_{it}(\infty)]$ for logit. This is Wooldridge's (2023, 2026) CPT assumption stated on $G^{-1}(E[Y])$.
+
+The correct Wooldridge ETWFE specification for a nonlinear model uses:
+- **Cohort FE** (one intercept per treatment cohort, including never-treated): captures selection into treatment
+- **Year FE** (common time trend): identified from never-treated units
+- **Post-treatment cohort×year dummies** (one per treated cohort per post-treatment year): capture the ATTs on the log scale
+
+Critically, this is a **pooled model**, not a within-estimator. Using unit FE (`fe(id)`) instead of cohort FE creates contamination bias by mixing pre- and post-treatment variation in the within-unit demeaning.
+
+### Simulated example: staggered count data
+
+We simulate panel data with three treatment cohorts (treated in years 3, 4, 5) and a never-treated group. The true treatment effect is multiplicative: $\exp(0.4) - 1 \approx 49\%$ increase in counts. Parallel trends holds on the log scale.
+
+```{julia did_pois0}
+#| warning: false
+#| cache: true
+#| echo: true
+using Statistics, LinearAlgebra
+
+Random.seed!(42)
+N_pois = 600; Tmax_pois = 6
+unit_fe_vals = randn(N_pois) .* 0.3
+rows_p = [(id=i, year=t) for i in 1:N_pois for t in 1:Tmax_pois]
+df_count = DataFrame(rows_p)
+sort!(df_count, [:id, :year])
+
+cohort_grp = ((df_count.id .- 1) .÷ 150) .+ 1
+df_count.first_treat = [3, 4, 5, 0][cohort_grp]   # 0 = never treated
+df_count.treated = (df_count.first_treat .> 0) .& (df_count.year .>= df_count.first_treat)
+df_count.unit_fe = unit_fe_vals[df_count.id]
+df_count.log_mu = 1.0 .+ 0.2 .* df_count.year .+ df_count.unit_fe .+ 0.4 .* df_count.treated
+df_count.count = rand.(Poisson.(exp.(df_count.log_mu)))
+df_count.first_treat_str = string.(df_count.first_treat)
+
+combine(groupby(df_count, [:first_treat, :treated]), :count => mean => :mean_count)
+```
+
+### Poisson ETWFE (LO model)
+
+Create post-treatment dummy variables for each (cohort $g$, year $t \geq g$) pair, then fit `fepois` with cohort FE and year FE.
+
+```{julia did_pois1}
+#| warning: false
+#| cache: true
+#| echo: true
+treated_cohorts_p = [3, 4, 5]
+post_cols_p = String[]
+
+for g in treated_cohorts_p, t in g:Tmax_pois
+    col = "D_g$(g)_t$(t)"
+    df_count[!, Symbol(col)] = Float64.((df_count.first_treat .== g) .& (df_count.year .== t))
+    push!(post_cols_p, col)
+end
+
+fml_lo = term(:count) ~ sum(term.(Symbol.(post_cols_p))) + fe(:first_treat_str) + fe(:year)
+mod_pois = fepois(df_count, fml_lo; vcov = Vcov.cluster(:id))
+```
+
+Compute the ATT as a weighted average of the cohort×time coefficients, with delta-method standard errors.
+
+```{julia did_pois2}
+#| warning: false
+#| cache: true
+#| echo: true
+post_idx_p = [findfirst(==(c), mod_pois.coefnames) for c in post_cols_p]
+w_p = ones(length(post_idx_p)) ./ length(post_idx_p)
+att_log = dot(w_p, mod_pois.beta[post_idx_p])
+se_att  = sqrt(dot(w_p, mod_pois.vcov[post_idx_p, post_idx_p] * w_p))
+
+@printf("ATT (log scale):  %.4f  (SE = %.4f)\n", att_log, se_att)
+@printf("IRR - 1:          %.4f  (true ≈ 0.492)\n", exp(att_log) - 1)
+@printf("95%% CI (log):     [%.4f, %.4f]\n", att_log - 1.96*se_att, att_log + 1.96*se_att)
+```
+
+The ATT is reported on the **log scale** (log incidence rate ratio). Exponentiating gives the incidence rate ratio: $\text{IRR} - 1$ is the proportional increase in counts.
+
+### Pre-trend test (L&L)
+
+Add pre-treatment dummies for all periods except $t = g-1$ (the reference period just before treatment), then check their significance.
+
+```{julia did_pois3}
+#| warning: false
+#| cache: true
+#| echo: true
+pre_cols_p = String[]
+for g in treated_cohorts_p, t in 1:g-2   # exclude t = g-1 (reference)
+    col = "pre_g$(g)_t$(t)"
+    df_count[!, Symbol(col)] = Float64.((df_count.first_treat .== g) .& (df_count.year .== t))
+    push!(pre_cols_p, col)
+end
+
+fml_ll = term(:count) ~ sum(term.(Symbol.(vcat(post_cols_p, pre_cols_p)))) + fe(:first_treat_str) + fe(:year)
+mod_ll  = fepois(df_count, fml_ll; vcov = Vcov.cluster(:id))
+
+pre_idx_p = [findfirst(==(c), mod_ll.coefnames) for c in pre_cols_p]
+pre_betas = mod_ll.beta[pre_idx_p]
+pre_ses   = sqrt.(diag(mod_ll.vcov[pre_idx_p, pre_idx_p]))
+DataFrame(period = pre_cols_p,
+          estimate = round.(pre_betas, digits=4),
+          z_stat   = round.(pre_betas ./ pre_ses, digits=2))
+```
+
+All pre-trend estimates are small and insignificant — confirming parallel trends on the log scale.
+
+### Event study plot
+
+```{julia did_pois4}
+#| warning: false
+#| cache: true
+#| echo: true
+# Aggregate post-treatment by exposure time
+event_vals_p = sort(unique([t - g for g in treated_cohorts_p for t in g:Tmax_pois]))
+pre_event_vals = sort(unique([t - g for g in treated_cohorts_p for t in 1:g-2]))
+all_events = sort(unique(vcat(pre_event_vals, [-1], event_vals_p)))
+
+ests_p = Float64[]; ses_p = Float64[]
+for e in all_events
+    if e == -1
+        push!(ests_p, 0.0); push!(ses_p, 0.0)   # reference
+    elseif e >= 0
+        # Post-treatment: average across cohorts
+        idxs = [findfirst(==(c), mod_pois.coefnames)
+                for c in ["D_g$(g)_t$(g+e)" for g in treated_cohorts_p if 1 <= g+e <= Tmax_pois]
+                if !isnothing(findfirst(==(c), mod_pois.coefnames))]
+        w_e = ones(length(idxs)) ./ length(idxs)
+        push!(ests_p, dot(w_e, mod_pois.beta[idxs]))
+        push!(ses_p,  sqrt(dot(w_e, mod_pois.vcov[idxs, idxs] * w_e)))
+    else
+        # Pre-treatment (e < -1): from L&L model
+        idxs = [findfirst(==(c), mod_ll.coefnames)
+                for c in ["pre_g$(g)_t$(g+e)" for g in treated_cohorts_p if 1 <= g+e <= Tmax_pois]
+                if !isnothing(findfirst(==(c), mod_ll.coefnames))]
+        isempty(idxs) && (push!(ests_p, NaN); push!(ses_p, NaN); continue)
+        w_e = ones(length(idxs)) ./ length(idxs)
+        push!(ests_p, dot(w_e, mod_ll.beta[idxs]))
+        push!(ses_p,  sqrt(dot(w_e, mod_ll.vcov[idxs, idxs] * w_e)))
+    end
+end
+
+valid = .!isnan.(ests_p)
+fig_p = Figure()
+ax_p  = Axis(fig_p[1, 1],
+    xlabel = "Years relative to treatment",
+    ylabel = "ATT (log scale)",
+    title  = "Poisson ETWFE event study")
+hlines!(ax_p, 0, color = :black, linewidth = 1)
+vlines!(ax_p, -0.5, color = :gray, linestyle = :dash)
+rangebars!(ax_p, all_events[valid], ests_p[valid] .- 1.96 .* ses_p[valid],
+                                    ests_p[valid] .+ 1.96 .* ses_p[valid], color = :darkcyan)
+scatter!(ax_p, all_events[valid], ests_p[valid], color = :darkcyan)
+fig_p
+```
+
 Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.
