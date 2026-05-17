@@ -63,7 +63,7 @@
 | `ETWFE` (DiD.jl) | 0.1.3 | Pending #155610 | `att_gt`, `emfx`, `dataset` |
 | `Lavaan.jl` | 0.1.1 | Pending #155063 | `sem()` |
 | `RDRobust.jl` | 0.1.1 | Pending #155061 | `rdrobust`, `rdbwselect` |
-| `Panelest.jl` | 0.1.1 | Pending #155060 | `feols`, `feiv` |
+| `Panelest.jl` | 0.1.1 | Pending #155060 | `feols`, `feiv`, `etwfe`, `emfx` |
 | `SynthDiD.jl` | 0.1.1 | Pending #155062 | `synthdid_estimate`, `sc_estimate`, `did_estimate`, `california_prop99` |
 | `CausalEstimate.jl` | 0.1.0 | Pending CausalGraphs merge | `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` |
 
@@ -147,7 +147,35 @@ pvalue(result)
 
 For p-fixable / front-door / nested-fixable effects, use `CausalGraphs.estimate_causal(...)` directly (see `graph-to-estimate.qmd`).
 
+## Cross-book parity with R companion
+
+Results are validated to match `causal_econometrics_guide` within 1% (real data) or 5% (simulated).
+
+### Shared datasets (generated in R, loaded by both books)
+- `survival-causal.qmd` → `data/survival_sim.csv` (n=1500 Weibull; propensity intercept=-4 for ~30% treatment)
+- `shift-share-iv.qmd` → `data/shift_share_sim.csv`, `shift_share_shares.csv`, `shift_share_shocks.csv`, `shift_share_bad_v.csv`, `shift_share_bad_noise.csv`
+
+### Notable chapter additions (May 2026)
+- `did.qmd`: Added **Nonlinear ETWFE** section using `Panelest.etwfe(family="poisson")`. Uses cohort FE + year FE (not unit FE) to avoid contamination bias. `emfx()` returns log-scale ATTs (log IRR).
+
+### Key gotchas
+
+**ETWFE: cohort FE vs unit FE**
+Wooldridge ETWFE uses cohort FE + year FE, NOT unit FE (`fe(id)`). Using unit FE creates contamination bias: the within-unit demeaning mixes pre- and post-treatment variation, compressing post-treatment ATTs and producing negative pre-trends even when CPT holds. Use `etwfe()` from Panelest (defaults to cohort FE) or manually specify `fe(first_treat_str) + fe(year)`.
+
+**`feiv` coefficient ordering**
+In `Panelest.feiv`, coefficients are ordered `[endo vars, exo vars]`:
+- `coef(model)[1]` → endogenous variable coefficient (the IV estimate you want)
+- `coef(model)[end]` → last exogenous coefficient (intercept if `@formula(Y ~ 1)`)
+This is opposite to `feols` where `[end]` gives the last regressor.
+
+**L&L pre-trend test reference period**
+When adding pre-treatment dummies for the event study, drop `t = g-1` (the period just before treatment). Including all pre-treatment periods without a reference creates identification issues with cohort FE.
+
 ## Data
 
 - `data/california_prop99.csv` — Prop 99 cigarette panel (39 states, 1970–2000)
-- Other datasets are loaded inside chapters from `causaldata` or generated synthetically
+- `data/mpdta.csv` — US teen employment (500 counties × 5 years)
+- `data/survival_sim.csv` — Shared survival simulation (Weibull, n=1500)
+- `data/shift_share_*.csv` — Shared shift-share simulation (n=500 regions, 20 industries)
+- Other datasets loaded inside chapters from CSV or generated synthetically
