@@ -465,7 +465,7 @@ window.Quarto = {
 </header>
 
 
-<div id="e3cd1e7c" class="cell" data-execution_count="2">
+<div id="a9ddd002" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -473,7 +473,8 @@ window.Quarto = {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>When the outcome is <strong>time-to-event</strong> — death, hospital re-admission, employment termination, machine failure — standard causal inference methods need to be adapted. Some observations are <em>censored</em>: we know the event has not occurred by the end of follow-up, but not when it will. Regression on the event time would discard or mishandle censored observations and produce biased estimates.</p>
 <p>This chapter implements the workhorses of survival-causal inference in Julia: Kaplan-Meier estimation, inverse probability weighting for the adjusted survival curve, and the restricted mean survival time (RMST) contrast. For Cox proportional-hazards modelling, R’s <code>survival</code> package is more mature; for doubly-robust survival estimators, R’s <code>riskRegression::ate</code> is the workhorse. The <a href="https://xiangao.github.io/causal_econometrics_guide/survival-causal.html">companion R chapter</a> walks through these in detail.</p>
@@ -493,31 +494,10 @@ S(t) = P(T &gt; t)
 <section id="simulated-survival-data" class="level2" data-number="20.2">
 <h2 data-number="20.2" class="anchored" data-anchor-id="simulated-survival-data"><span class="header-section-number">20.2</span> Simulated survival data</h2>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1500</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>age <span class="op">=</span> <span class="fu">randn</span>(n) <span class="op">.*</span> <span class="fl">10</span> <span class="op">.+</span> <span class="fl">60</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>sex <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> <span class="fl">0.5</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment depends on age (confounding)</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>ps  <span class="op">=</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">2</span> <span class="op">+</span> <span class="fl">0.05</span> <span class="op">*</span> age <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> sex)))</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>trt <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> ps)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># True log-hazard: treatment reduces hazard by ~33%</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>shape   <span class="op">=</span> <span class="fl">1.5</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>linpred <span class="op">=</span> @. <span class="fl">0.03</span> <span class="op">*</span> age <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> sex <span class="op">-</span> <span class="fl">0.4</span> <span class="op">*</span> trt</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Weibull event times</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>event_time  <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">Weibull</span>(shape, <span class="fu">exp</span>(<span class="op">-</span>linpred[i] <span class="op">/</span> shape))) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>censor_time <span class="op">=</span> <span class="fu">rand</span>(n) <span class="op">.*</span> <span class="fl">9</span> <span class="op">.+</span> <span class="fl">1</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>obs_time <span class="op">=</span> <span class="fu">min</span>.(event_time, censor_time)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>event    <span class="op">=</span> <span class="fu">Float64</span>.(event_time <span class="op">.&lt;=</span> censor_time)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(time <span class="op">=</span> obs_time, event <span class="op">=</span> event, trt <span class="op">=</span> trt,</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>               age <span class="op">=</span> age, sex <span class="op">=</span> sex)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, events = %d (%.1f%%), censored = %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        n, <span class="fu">Int</span>(<span class="fu">sum</span>(event)), <span class="fl">100</span> <span class="op">*</span> <span class="fu">mean</span>(event), <span class="fu">Int</span>(<span class="fu">sum</span>(<span class="fl">1</span> <span class="op">.-</span> event)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/survival_sim.csv"</span>, DataFrame)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fu">nrow</span>(df)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, events = %d (%.1f%%), censored = %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        n, <span class="fu">Int</span>(<span class="fu">sum</span>(df.event)), <span class="fl">100</span> <span class="op">*</span> <span class="fu">mean</span>(df.event), <span class="fu">Int</span>(<span class="fu">sum</span>(<span class="fl">1</span> <span class="op">.-</span> df.event)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>n = 1500, events = 1500 (100.0%), censored = 0</code></pre>
 </div>
@@ -675,9 +655,9 @@ S(t) = P(T &gt; t)
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj <span class="op">-</span> rmst_ctl_adj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unadjusted RMST(τ=5):
-  Treatment: 0.312 years    Control: 0.293 years    Diff: 0.020
+  Treatment: 0.289 years    Control: 0.260 years    Diff: 0.028
 IPW-adjusted RMST(τ=5):
-  Treatment: 0.322 years    Control: 0.276 years    Diff: 0.047</code></pre>
+  Treatment: 0.310 years    Control: 0.253 years    Diff: 0.057</code></pre>
 </div>
 </div>
 <p>The IPW-adjusted RMST difference is the causal “years gained up to 5 years” — directly interpretable for clinical or policy reporting.</p>

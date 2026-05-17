@@ -474,7 +474,7 @@ window.Quarto = {
 </header>
 
 
-<div id="96444c33" class="cell" data-execution_count="2">
+<div id="bc902dc4" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -482,9 +482,10 @@ window.Quarto = {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/ShiftShareIV.jl/src/ShiftShareIV.jl"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.ShiftShareIV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/ShiftShareIV.jl/src/ShiftShareIV.jl"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.ShiftShareIV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Shift-share (or “Bartik”) instruments combine local industry shares with national industry growth rates to construct an instrument for local employment shocks. They are workhorses in labour economics, trade, and urban economics — but the identifying assumptions and inference procedures have been reworked over the last five years. This chapter covers the modern view.</p>
 <section id="the-construction" class="level2" data-number="17.1">
@@ -529,32 +530,15 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <h2 data-number="17.4" class="anchored" data-anchor-id="simulation-build-intuition"><span class="header-section-number">17.4</span> Simulation: build intuition</h2>
 <p>Set up a small DGP with regions, industries, and a known causal effect.</p>
 <div id="cell-sim-data" class="cell" data-cache="true" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_region   <span class="op">=</span> <span class="fl">500</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_industry <span class="op">=</span> <span class="fl">20</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>beta_true  <span class="op">=</span> <span class="fl">0.5</span>        <span class="co"># true effect of regional shock on outcome</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Shares: each region's industry mix. Dirichlet(0.3) so regions concentrate</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># in a few industries (more realistic than uniform mixing).</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>shares_raw <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Gamma</span>(<span class="fl">0.3</span>), n_region, n_industry) <span class="op">.+</span> <span class="fl">1e-4</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>shares     <span class="op">=</span> shares_raw <span class="op">./</span> <span class="fu">sum</span>(shares_raw, dims<span class="op">=</span><span class="fl">2</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Industry-level shocks (the "shifts")</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> <span class="fu">randn</span>(n_industry)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the shift-share instrument B_ℓ = Σ_k s_ℓk g_k</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> <span class="fu">bartik_iv</span>(shares, shocks)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Endogenous local shock: depends on B plus a confounder</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> <span class="fu">randn</span>(n_region)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> B <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> u <span class="op">.+</span> <span class="fl">0.1</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome: true effect beta_true * X, plus confounder, plus noise</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> beta_true <span class="op">.*</span> X <span class="op">.+</span> u <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(region <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>n_region, X <span class="op">=</span> X, Y <span class="op">=</span> Y, B <span class="op">=</span> B)</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n_region   <span class="op">=</span> <span class="fl">500</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_industry <span class="op">=</span> <span class="fl">20</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>beta_true  <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>df     <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_sim.csv"</span>, DataFrame)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> <span class="fu">Matrix</span>(CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_shares.csv"</span>, DataFrame))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_shocks.csv"</span>, DataFrame).shock</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df.X; Y <span class="op">=</span> df.Y; u <span class="op">=</span> df.u</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df[<span class="op">:</span>, [<span class="op">:</span>region, <span class="op">:</span>X, <span class="op">:</span>Y, <span class="op">:</span>u]], <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div id="sim-data" class="cell-output cell-output-display" data-execution_count="3">
 <div><div style="float: left;"><span>6×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -564,7 +548,7 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <th style="text-align: left;" data-quarto-table-cell-role="th">region</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">Y</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">B</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">u</th>
 </tr>
 <tr class="columnLabelRow even">
 <th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
@@ -578,44 +562,44 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.453531</td>
-<td style="text-align: right;">-2.47677</td>
-<td style="text-align: right;">0.180802</td>
+<td style="text-align: right;">-0.518194</td>
+<td style="text-align: right;">0.11729</td>
+<td style="text-align: right;">-0.308258</td>
 </tr>
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">0.558589</td>
-<td style="text-align: right;">0.704245</td>
-<td style="text-align: right;">0.270855</td>
+<td style="text-align: right;">0.212703</td>
+<td style="text-align: right;">-1.06765</td>
+<td style="text-align: right;">-0.538806</td>
 </tr>
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">-0.607053</td>
-<td style="text-align: right;">-0.106138</td>
-<td style="text-align: right;">-0.504529</td>
+<td style="text-align: right;">0.652136</td>
+<td style="text-align: right;">0.892118</td>
+<td style="text-align: right;">1.37164</td>
 </tr>
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
 <td style="text-align: right;">4</td>
-<td style="text-align: right;">0.385392</td>
-<td style="text-align: right;">1.04877</td>
-<td style="text-align: right;">-0.0529427</td>
+<td style="text-align: right;">0.285676</td>
+<td style="text-align: right;">0.861261</td>
+<td style="text-align: right;">1.09974</td>
 </tr>
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">-1.21298</td>
-<td style="text-align: right;">-2.7029</td>
-<td style="text-align: right;">-0.650168</td>
+<td style="text-align: right;">-0.334493</td>
+<td style="text-align: right;">-0.329605</td>
+<td style="text-align: right;">-0.111544</td>
 </tr>
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
 <td style="text-align: right;">6</td>
-<td style="text-align: right;">-0.957177</td>
-<td style="text-align: right;">-1.1783</td>
-<td style="text-align: right;">-0.684897</td>
+<td style="text-align: right;">0.37613</td>
+<td style="text-align: right;">-1.72747</td>
+<td style="text-align: right;">-1.75462</td>
 </tr>
 </tbody>
 </table>
@@ -631,12 +615,12 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-25s %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"OLS (biased)"</span>,</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(ols)[<span class="kw">end</span>], <span class="fu">stderror</span>(ols)[<span class="kw">end</span>])</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-25s %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Shift-share IV"</span>,</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(ivss)[<span class="kw">end</span>], <span class="fu">stderror</span>(ivss)[<span class="kw">end</span>])</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(ivss)[<span class="fl">1</span>], <span class="fu">stderror</span>(ivss)[<span class="fl">1</span>])</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True beta: %.3f</span><span class="sc">\n</span><span class="st">"</span>, beta_true)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Estimator                     Coef       SE
-OLS (biased)                 1.768    0.088
-Shift-share IV               0.102    0.052
+OLS (biased)                 1.451    0.079
+Shift-share IV               0.531    0.120
 True beta: 0.500</code></pre>
 </div>
 </div>
@@ -653,32 +637,32 @@ True beta: 0.500</code></pre>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>            row.industry, row.shock, row.alpha, row.beta_k)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">GPSS identity: Σ α_k β_k = %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(rw.alpha_beta))</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV estimate: %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="kw">end</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV estimate: %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Industry      Shock      α_k      β_k
-1             1.464    0.122    0.280
-2            -1.195    0.062    0.463
-3            -1.535    0.105    0.395
-4            -0.353    0.002   -2.080
-5            -0.997    0.035    0.891
-6            -1.505    0.108    0.949
-7             0.027    0.001    1.766
-8             0.463    0.023    0.851
-9            -1.334    0.088    0.912
-10           -0.574    0.016    1.240
-11           -0.489    0.005    2.220
-12           -1.371    0.067   -0.080
-13            0.154    0.001   -1.782
-14            0.253    0.010    1.369
-15            1.228    0.078    0.758
-16            1.581    0.201    0.664
-17           -0.712    0.012    0.160
-18           -0.820    0.026    0.971
-19           -0.305    0.007    2.610
-20            0.620    0.031    0.800
+1             1.250    0.054    0.604
+2            -0.959    0.048    0.244
+3            -0.212    0.005    2.576
+4             0.745    0.002  -10.225
+5             2.663    0.387    0.469
+6            -1.068    0.082    1.025
+7             0.100   -0.001   -1.627
+8            -0.718    0.025   -0.689
+9             1.181    0.058    0.853
+10           -0.197    0.004    1.188
+11            0.741    0.023   -0.112
+12            0.051   -0.001   -0.055
+13           -0.442    0.014    0.611
+14            0.270    0.003   -0.013
+15            0.631    0.003   -3.240
+16            2.271    0.204    0.746
+17           -0.212    0.001    0.174
+18           -0.115    0.000  -39.532
+19            0.020   -0.000    1.234
+20           -1.183    0.089    0.554
 
-GPSS identity: Σ α_k β_k = 0.6326
-Shift-share IV estimate: 0.1019</code></pre>
+GPSS identity: Σ α_k β_k = 0.5309
+Shift-share IV estimate: 0.5309</code></pre>
 </div>
 </div>
 <p>Two diagnostics jump out:</p>
@@ -722,24 +706,24 @@ Shift-share IV estimate: 0.1019</code></pre>
 <h3 data-number="17.4.2" class="anchored" data-anchor-id="what-goes-wrong-when-shares-are-endogenous"><span class="header-section-number">17.4.2</span> What goes wrong when shares are endogenous</h3>
 <p>Now break the share-exogeneity assumption: make industry 1’s share correlated with the second-stage error.</p>
 <div id="bad-shares" class="cell" data-cache="true" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">11</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> <span class="fu">randn</span>(n_region)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> <span class="fu">copy</span>(shares)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>shares_bad[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.=</span> <span class="fu">max</span>.(<span class="fl">0.01</span>, shares[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.+</span> <span class="fl">0.15</span> <span class="op">.*</span> v)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> shares_bad <span class="op">./</span> <span class="fu">sum</span>(shares_bad, dims<span class="op">=</span><span class="fl">2</span>)   <span class="co"># renormalise</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_bad_v.csv"</span>, DataFrame).v</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> <span class="fu">copy</span>(shares)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>shares_bad[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.=</span> <span class="fu">max</span>.(<span class="fl">0.01</span>, shares[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.+</span> <span class="fl">0.15</span> <span class="op">.*</span> v)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> shares_bad <span class="op">./</span> <span class="fu">sum</span>(shares_bad, dims<span class="op">=</span><span class="fl">2</span>)   <span class="co"># renormalise</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>bad_noise <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_bad_noise.csv"</span>, DataFrame)</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>B_bad <span class="op">=</span> <span class="fu">bartik_iv</span>(shares_bad, shocks)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>X_bad <span class="op">=</span> B_bad <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> u <span class="op">.+</span> <span class="fl">0.1</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>Y_bad <span class="op">=</span> beta_true <span class="op">.*</span> X_bad <span class="op">.+</span> u <span class="op">.+</span> <span class="fl">0.6</span> <span class="op">.*</span> v <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>X_bad <span class="op">=</span> B_bad <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> u <span class="op">.+</span> bad_noise.noise_x</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>Y_bad <span class="op">=</span> beta_true <span class="op">.*</span> X_bad <span class="op">.+</span> u <span class="op">.+</span> <span class="fl">0.6</span> <span class="op">.*</span> v <span class="op">.+</span> bad_noise.noise_y</span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>df_bad  <span class="op">=</span> <span class="fu">DataFrame</span>(X <span class="op">=</span> X_bad, Y <span class="op">=</span> Y_bad, B <span class="op">=</span> B_bad)</span>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>iv_bad  <span class="op">=</span> <span class="fu">feiv</span>(df_bad, <span class="pp">@formula</span>(Y <span class="op">~</span> <span class="fl">1</span>), endo <span class="op">=</span> <span class="op">:</span>X, inst <span class="op">=</span> <span class="op">:</span>B)</span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True beta: %.3f</span><span class="sc">\n</span><span class="st">"</span>, beta_true)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV with bad share 1: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bad)[<span class="kw">end</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV with bad share 1: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bad)[<span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True beta: 0.500
-Shift-share IV with bad share 1: 0.206</code></pre>
+Shift-share IV with bad share 1: 0.798</code></pre>
 </div>
 </div>
 <p>The estimate is biased — but the bias comes from a <em>single industry’s share</em> covarying with unobservables. Rotemberg weights would have flagged industry 1 as carrying disproportionate identifying weight; a robustness check that drops industry 1 (or applies BHJ shock-level inference) would detect the problem.</p>
@@ -756,12 +740,12 @@ Shift-share IV with bad share 1: 0.206</code></pre>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>iv_bhj <span class="op">=</span> <span class="fu">feiv</span>(df_collapsed, <span class="pp">@formula</span>(Y_agg <span class="op">~</span> <span class="fl">1</span>),</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>              endo <span class="op">=</span> <span class="op">:</span>X_agg, inst <span class="op">=</span> <span class="op">:</span>shock, weights <span class="op">=</span> <span class="op">:</span>weight)</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Location-level shift-share IV: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="kw">end</span>])</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"BHJ shock-level IV:             %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bhj)[<span class="kw">end</span>])</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Location-level shift-share IV: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="fl">1</span>])</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"BHJ shock-level IV:             %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bhj)[<span class="fl">1</span>])</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"(Should be numerically equal under standard conditions)</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Location-level shift-share IV: 0.102
-BHJ shock-level IV:             0.104
+<pre><code>Location-level shift-share IV: 0.531
+BHJ shock-level IV:             0.537
 (Should be numerically equal under standard conditions)</code></pre>
 </div>
 </div>
@@ -775,7 +759,7 @@ BHJ shock-level IV:             0.104
                    \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
 \]</span></p>
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into <em>other rich countries</em> (a “leave-one-out” construction that strips US-specific demand from the shocks).</p>
-<div id="4a10f628" class="cell" data-execution_count="9">
+<div id="f5ea2fb8" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Files needed:</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   workfile_china.csv  (commuting zone data, 1990–2007)</span></span>

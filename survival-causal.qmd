@@ -10,6 +10,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+using CSV
 ```
 
 ```{julia}
@@ -22,6 +23,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+using CSV
 ```
 
 When the outcome is **time-to-event** — death, hospital re-admission,
@@ -66,31 +68,10 @@ survival outcomes are typically expressed as:
 #| label: dgp
 #| cache: true
 
-Random.seed!(42)
-n = 1500
-
-age = randn(n) .* 10 .+ 60
-sex = Float64.(rand(n) .< 0.5)
-
-# Treatment depends on age (confounding)
-ps  = @. 1 / (1 + exp(-(-2 + 0.05 * age + 0.4 * sex)))
-trt = Float64.(rand(n) .< ps)
-
-# True log-hazard: treatment reduces hazard by ~33%
-shape   = 1.5
-linpred = @. 0.03 * age + 0.4 * sex - 0.4 * trt
-
-# Weibull event times
-event_time  = [rand(Weibull(shape, exp(-linpred[i] / shape))) for i in 1:n]
-censor_time = rand(n) .* 9 .+ 1
-
-obs_time = min.(event_time, censor_time)
-event    = Float64.(event_time .<= censor_time)
-
-df = DataFrame(time = obs_time, event = event, trt = trt,
-               age = age, sex = sex)
+df = CSV.read("data/survival_sim.csv", DataFrame)
+n  = nrow(df)
 @printf("n = %d, events = %d (%.1f%%), censored = %d\n",
-        n, Int(sum(event)), 100 * mean(event), Int(sum(1 .- event)))
+        n, Int(sum(df.event)), 100 * mean(df.event), Int(sum(1 .- df.event)))
 ```
 
 ## Kaplan-Meier estimator

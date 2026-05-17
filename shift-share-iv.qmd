@@ -10,6 +10,7 @@ using CairoMakie
 using Printf
 using Panelest
 using StatsModels
+using CSV
 import StatsAPI: coef, stderror, coefnames
 
 include("../../software/ShiftShareIV.jl/src/ShiftShareIV.jl")
@@ -25,6 +26,7 @@ using Random
 using CairoMakie
 using Panelest
 using StatsModels
+using CSV
 
 include("../../software/ShiftShareIV.jl/src/ShiftShareIV.jl")
 using .ShiftShareIV
@@ -116,32 +118,15 @@ Set up a small DGP with regions, industries, and a known causal effect.
 #| label: sim-data
 #| cache: true
 
-Random.seed!(2026)
 n_region   = 500
 n_industry = 20
-beta_true  = 0.5        # true effect of regional shock on outcome
+beta_true  = 0.5
 
-# Shares: each region's industry mix. Dirichlet(0.3) so regions concentrate
-# in a few industries (more realistic than uniform mixing).
-using Distributions
-shares_raw = rand(Gamma(0.3), n_region, n_industry) .+ 1e-4
-shares     = shares_raw ./ sum(shares_raw, dims=2)
-
-# Industry-level shocks (the "shifts")
-shocks = randn(n_industry)
-
-# Construct the shift-share instrument B_ℓ = Σ_k s_ℓk g_k
-B = bartik_iv(shares, shocks)
-
-# Endogenous local shock: depends on B plus a confounder
-u = randn(n_region)
-X = B .+ 0.3 .* u .+ 0.1 .* randn(n_region)
-
-# Outcome: true effect beta_true * X, plus confounder, plus noise
-Y = beta_true .* X .+ u .+ 0.3 .* randn(n_region)
-
-df = DataFrame(region = 1:n_region, X = X, Y = Y, B = B)
-first(df, 6)
+df     = CSV.read("data/shift_share_sim.csv", DataFrame)
+shares = Matrix(CSV.read("data/shift_share_shares.csv", DataFrame))
+shocks = CSV.read("data/shift_share_shocks.csv", DataFrame).shock
+X = df.X; Y = df.Y; u = df.u
+first(df[:, [:region, :X, :Y, :u]], 6)
 ```
 
 A naive OLS suffers from the confounder `u`:
@@ -157,7 +142,7 @@ ivss = feiv(df, @formula(Y ~ 1), endo = :X, inst = :B)
 @printf("%-25s %8.3f %8.3f\n", "OLS (biased)",
         coef(ols)[end], stderror(ols)[end])
 @printf("%-25s %8.3f %8.3f\n", "Shift-share IV",
-        coef(ivss)[end], stderror(ivss)[end])
+        coef(ivss)[1], stderror(ivss)[1])
 @printf("True beta: %.3f\n", beta_true)
 ```
 
@@ -181,7 +166,7 @@ for row in eachrow(rw)
             row.industry, row.shock, row.alpha, row.beta_k)
 end
 @printf("\nGPSS identity: Σ α_k β_k = %.4f\n", sum(rw.alpha_beta))
-@printf("Shift-share IV estimate: %.4f\n", coef(ivss)[end])
+@printf("Shift-share IV estimate: %.4f\n", coef(ivss)[1])
 ```
 
 Two diagnostics jump out:
@@ -225,21 +210,21 @@ correlated with the second-stage error.
 #| label: bad-shares
 #| cache: true
 
-Random.seed!(11)
-v = randn(n_region)
+v = CSV.read("data/shift_share_bad_v.csv", DataFrame).v
 shares_bad = copy(shares)
 shares_bad[:, 1] .= max.(0.01, shares[:, 1] .+ 0.15 .* v)
 shares_bad = shares_bad ./ sum(shares_bad, dims=2)   # renormalise
 
+bad_noise = CSV.read("data/shift_share_bad_noise.csv", DataFrame)
 B_bad = bartik_iv(shares_bad, shocks)
-X_bad = B_bad .+ 0.3 .* u .+ 0.1 .* randn(n_region)
-Y_bad = beta_true .* X_bad .+ u .+ 0.6 .* v .+ 0.3 .* randn(n_region)
+X_bad = B_bad .+ 0.3 .* u .+ bad_noise.noise_x
+Y_bad = beta_true .* X_bad .+ u .+ 0.6 .* v .+ bad_noise.noise_y
 
 df_bad  = DataFrame(X = X_bad, Y = Y_bad, B = B_bad)
 iv_bad  = feiv(df_bad, @formula(Y ~ 1), endo = :X, inst = :B)
 
 @printf("True beta: %.3f\n", beta_true)
-@printf("Shift-share IV with bad share 1: %.3f\n", coef(iv_bad)[end])
+@printf("Shift-share IV with bad share 1: %.3f\n", coef(iv_bad)[1])
 ```
 
 The estimate is biased — but the bias comes from a *single industry's share*
@@ -265,8 +250,8 @@ df_collapsed = collapsed
 iv_bhj = feiv(df_collapsed, @formula(Y_agg ~ 1),
               endo = :X_agg, inst = :shock, weights = :weight)
 
-@printf("Location-level shift-share IV: %.3f\n", coef(ivss)[end])
-@printf("BHJ shock-level IV:             %.3f\n", coef(iv_bhj)[end])
+@printf("Location-level shift-share IV: %.3f\n", coef(ivss)[1])
+@printf("BHJ shock-level IV:             %.3f\n", coef(iv_bhj)[1])
 @printf("(Should be numerically equal under standard conditions)\n")
 ```
 
