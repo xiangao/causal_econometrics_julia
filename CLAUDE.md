@@ -63,7 +63,7 @@
 | `ETWFE` (DiD.jl) | 0.1.3 | Pending #155610 | `att_gt`, `emfx`, `dataset` |
 | `Lavaan.jl` | 0.1.1 | Pending #155063 | `sem()` |
 | `RDRobust.jl` | 0.1.1 | Pending #155061 | `rdrobust`, `rdbwselect` |
-| `Panelest.jl` | 0.1.1 | Pending #155060 | `feols`, `feiv`, `etwfe`, `emfx` |
+| `Panelest.jl` | 0.1.3 | Pending #155060 | `feols`, `feiv`, `etwfe`, `emfx` |
 | `SynthDiD.jl` | 0.1.1 | Pending #155062 | `synthdid_estimate`, `sc_estimate`, `did_estimate`, `california_prop99` |
 | `CausalEstimate.jl` | 0.1.0 | Pending CausalGraphs merge | `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` |
 
