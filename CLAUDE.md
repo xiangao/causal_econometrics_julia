@@ -22,9 +22,9 @@
 | Identification | `smoking-cessation-graphs.qmd` | Applied NHEFS DAG workflow |
 | Identification | `sensitivity-analysis.qmd` | Cinelli-Hazlett RV, E-values, Rosenbaum bounds (inline) |
 | Estimation | `estimation.qmd` | RA, IPW, AIPW, IPWRA |
-| Estimation | `matching.qmd` | NN matching, IPW, balance diagnostics |
+| Estimation | `matching.qmd` | NN matching, IPW, balance diagnostics, entropy balancing (inline Newton on convex dual) |
 | Estimation | `nonparametric.qmd` | TMLE, DoubleML, CausalEstimate.jl |
-| Estimation | `heterogeneous-effects.qmd` | S/T/X/R/DR meta-learners with MLJ + DecisionTree |
+| Estimation | `heterogeneous-effects.qmd` | S/T/X/R/DR meta-learners with MLJ + DecisionTree; panel CATE via within-transform |
 | Estimation | `continuous-treatments.qmd` | Hirano-Imbens GPS, DR dose-response (inline) |
 | Estimation | `bayesian-causal.qmd` | Bayesian g-computation (inline conjugate Bayesian linreg) |
 | Estimation | `distributional-effects.qmd` | QTE, Engression-based distributional DiD |

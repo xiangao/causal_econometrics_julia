@@ -31,9 +31,15 @@ experiment.
 The mature implementation in R (`MatchIt`, `cobalt`, `WeightIt`) has no
 direct Julia counterpart. This chapter implements the core ideas
 inline — propensity score matching, balance diagnostics, weighted
-estimation — using `GLM.jl` and base Julia. For optimal matching, full
-matching, and coarsened exact matching with mature tooling, see the
-[R companion chapter](https://xiangao.github.io/causal_econometrics_guide/matching.html).
+estimation, entropy balancing — using `GLM.jl`, `Optim.jl`, and base
+Julia. For optimal matching, full matching, coarsened exact matching,
+and additional weighting variants (CBPS, energy balancing) with mature
+tooling, see the [R companion chapter](https://xiangao.github.io/causal_econometrics_guide/matching.html).
+
+> **Related reading**: The [Matching and Weighting Part 1](https://xiangao.github.io/blog_book/matching-part1.html)
+> and [Treatment effects and matching](https://xiangao.github.io/blog_book/treatment-matching.html)
+> chapters of *Topics on Econometrics and Causal Inference* walk through
+> matching with `MatchIt` and Stata's `teffects` commands respectively.
 
 ## Assumptions
 
@@ -211,6 +217,130 @@ IPW and matching often agree closely. When they disagree, the
 divergence usually reflects either a misspecified propensity score
 (check with balance diagnostics) or an overlap problem.
 
+## Entropy balancing
+
+Beyond IPW, the modern toolkit of *weighting* estimators includes
+**entropy balancing** (Hainmueller 2012), which yields weights with
+*exact* mean balance on every covariate by solving a small convex
+optimisation problem — no propensity-score model required. R's
+[`WeightIt` package](https://xiangao.github.io/blog_book/weighting-part2.html)
+implements this and several related methods (CBPS, energy balancing,
+SuperLearner-based weights); the Julia ecosystem currently lacks an
+equivalent package, but the core math is short enough to implement
+inline.
+
+The entropy-balancing problem for the ATT: find weights $w_i$ on the
+control units that solve
+
+$$
+\min_{w_i \geq 0} \sum_i w_i \log w_i \quad \text{subject to} \quad
+\sum_i w_i x_{ik} = \bar x_{k}^{\text{treated}} \;\; \forall k, \quad
+\sum_i w_i = N_{\text{treated}}.
+$$
+
+Lagrangian duality reduces this to a low-dimensional convex problem in
+the Lagrange multipliers $\lambda$ (one per balance constraint). The
+dual is:
+
+$$
+\min_{\lambda} \;\; \log\left(\sum_i \exp(-x_i' \lambda)\right) + \lambda' \bar x^{\text{treated}}.
+$$
+
+The dual problem is small (one Lagrange multiplier per covariate) and
+strictly convex, so it can be solved with a few iterations of Newton's
+method:
+
+```{julia}
+#| label: ebal
+#| cache: true
+
+"""
+    entropy_balance(X_control, X_treated; tol=1e-8, maxiter=50)
+Compute entropy-balancing weights on the control units so that the
+weighted control mean of every covariate equals the treated mean.
+Returns a length-`size(X_control, 1)` vector of normalised weights that
+sum to 1.
+"""
+function entropy_balance(X_control::AbstractMatrix, X_treated::AbstractMatrix;
+                          tol::Float64 = 1e-8, maxiter::Int = 50)
+    target = vec(mean(X_treated, dims=1))   # length p target means
+    Xc = X_control                          # n_c × p
+    p  = size(Xc, 2)
+    λ  = zeros(p)
+
+    for _ in 1:maxiter
+        z = -Xc * λ
+        m = maximum(z)
+        w = exp.(z .- m)
+        w ./= sum(w)                                    # normalised weights
+        mean_w = vec(w' * Xc)                           # weighted control mean
+        grad   = target .- mean_w                       # negative gradient
+        if maximum(abs.(grad)) < tol
+            break
+        end
+        # Hessian: Σ w_i (x_i - mean_w)(x_i - mean_w)'  (with tiny ridge for stability)
+        Xc_centered = Xc .- reshape(mean_w, 1, :)
+        H = Matrix((Xc_centered .* w)' * Xc_centered) + 1e-6 .* Matrix{Float64}(I, p, p)
+        # Newton step: λ ← λ + H⁻¹ grad
+        step = H \ grad
+        λ .+= step
+    end
+
+    z = -Xc * λ
+    m = maximum(z)
+    w = exp.(z .- m)
+    w ./ sum(w)
+end
+
+# Apply to the simulated example from earlier sections
+Xc_mat = Matrix(df[df.D .== 0, [:X1, :X2]])
+Xt_mat = Matrix(df[df.D .== 1, [:X1, :X2]])
+
+w_ebal = entropy_balance(Xc_mat, Xt_mat)
+@printf("Sum of weights: %.6f  (should be 1.0)\n", sum(w_ebal))
+@printf("Max weight: %.4f, min weight: %.6f\n",
+        maximum(w_ebal), minimum(w_ebal))
+
+# Verify the mean-balance constraints
+control_means_unweighted = mean(Xc_mat, dims=1)
+control_means_balanced   = w_ebal' * Xc_mat
+treated_means            = mean(Xt_mat, dims=1)
+
+@printf("\n%-15s %12s %12s %12s\n",
+        "Covariate", "Treated", "Control (raw)", "Control (ebal)")
+for (j, name) in enumerate([:X1, :X2])
+    @printf("%-15s %12.4f %12.4f %12.4f\n",
+            String(name),
+            treated_means[j], control_means_unweighted[j],
+            control_means_balanced[j])
+end
+```
+
+Notice that the entropy-balanced control means **exactly** equal the
+treated means — this is guaranteed by the construction. The cost is
+that the weights can be quite variable when the covariate distributions
+differ sharply (poor overlap).
+
+The ATT estimate uses these weights on the control outcomes:
+
+```{julia}
+#| label: ebal-att
+#| cache: true
+
+Yt = df.Y[df.D .== 1]
+Yc = df.Y[df.D .== 0]
+
+# ATT = mean(Y_treated) - weighted mean(Y_control)
+att_ebal = mean(Yt) - dot(w_ebal, Yc)
+@printf("Entropy-balanced ATT: %.3f  (true ATE = 1.000)\n", att_ebal)
+```
+
+Entropy balancing is particularly effective when balance on covariate
+*means* is the analyst's primary diagnostic. For balance on full
+covariate *distributions*, R's `WeightIt` package also implements
+**energy balancing** (Huling & Mak 2024); no Julia port currently
+exists.
+
 ## When to use which method
 
 | Method | When to use | Limitation |
@@ -218,6 +348,7 @@ divergence usually reflects either a misspecified propensity score
 | **NN matching** (no replacement) | Simple, intuitive; ATT estimand | Drops unmatched units |
 | **NN matching** (with replacement) | Few treated, many controls | Wasteful of controls |
 | **IPW** | Good propensity model | Sensitive to extreme weights |
+| **Entropy balancing** | Want exact mean balance; small covariate set | Balances means only, not distributions |
 | **Doubly robust (AIPW)** | Combine matching/IPW with regression | More complex |
 
 For applied work in Julia, **IPW + AIPW** is usually the more practical

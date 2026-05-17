@@ -435,6 +435,100 @@ The optimal policy treats only individuals whose estimated CATE exceeds
 the cost. The interpretable threshold rule on $X_1$ alone is a
 reasonable compromise between welfare and explainability.
 
+For a richer treatment of policy trees with IPW and AIPW losses (using
+R's `policytree` package), see the
+[companion blog chapter on `policytree`](https://xiangao.github.io/blog_book/policytree.html).
+For a cross-software comparison of CATE estimators (including Stata 19's
+new `cate` command), see the
+[Stata CATE blog chapter](https://xiangao.github.io/blog_book/stata-cate.html).
+
+## Causal forests with panel data
+
+When the data are a panel — repeated observations on the same units —
+and the unobserved unit effects are correlated with treatment or
+covariates, the cross-sectional CATE methods above can be biased. The
+classical fix is the **within-transform**: demean each variable by its
+unit-level mean before applying the meta-learner.
+
+```{julia}
+#| label: panel-dgp
+#| cache: true
+
+Random.seed!(2024)
+n_firms = 200
+n_t     = 5
+N       = n_firms * n_t
+
+firm_id  = repeat(1:n_firms, inner = n_t)
+unit_fe  = randn(n_firms) .* 1.5
+V1_firm  = randn(n_firms) .* 1.0
+V1_panel = V1_firm[firm_id] .+ 0.3 .* randn(N)
+W_panel  = Float64.(rand(N) .< @. 1 / (1 + exp(-(0.5 + 0.3 * V1_firm[firm_id]))))
+tau_panel = @. 0.5 + 1.0 * V1_panel
+Y_panel  = unit_fe[firm_id] .+ V1_panel .+ W_panel .+
+           tau_panel .* (W_panel .- mean(W_panel)) .+ randn(N)
+
+df_panel = DataFrame(firm = firm_id, V1 = V1_panel, W = W_panel, Y = Y_panel)
+@printf("True panel ATE: %.3f\n", mean(tau_panel))
+```
+
+A naive T-learner on the panel ignores the firm fixed effects:
+
+```{julia}
+#| label: panel-naive
+#| cache: true
+
+X_panel_naive = reshape(df_panel.V1, N, 1)
+idx_T_p = df_panel.W .== 1
+idx_C_p = df_panel.W .== 0
+
+mu1_naive = rf_fit_predict(X_panel_naive[idx_T_p, :], df_panel.Y[idx_T_p],
+                            X_panel_naive)
+mu0_naive = rf_fit_predict(X_panel_naive[idx_C_p, :], df_panel.Y[idx_C_p],
+                            X_panel_naive)
+tau_naive = mu1_naive .- mu0_naive
+
+@printf("Naive panel T-learner ATE: %.3f  (true = %.3f)\n",
+        mean(tau_naive), mean(tau_panel))
+```
+
+The within-transform removes unit-level variation, leaving only the
+panel's within-firm signal for CATE estimation:
+
+```{julia}
+#| label: panel-within
+#| cache: true
+
+# Within transformation: subtract firm means
+df_dm = combine(groupby(df_panel, :firm),
+                :Y  => (y -> y .- mean(y)) => :Y_dm,
+                :W  => (w -> w .- mean(w)) => :W_dm,
+                :V1 => (v -> v .- mean(v)) => :V1_dm)
+
+X_dm = reshape(df_dm.V1_dm, N, 1)
+idx_T_dm = df_dm.W_dm .> 0
+idx_C_dm = df_dm.W_dm .<= 0
+
+mu1_dm = rf_fit_predict(X_dm[idx_T_dm, :], df_dm.Y_dm[idx_T_dm], X_dm)
+mu0_dm = rf_fit_predict(X_dm[idx_C_dm, :], df_dm.Y_dm[idx_C_dm], X_dm)
+tau_dm = mu1_dm .- mu0_dm
+
+@printf("Within-transform T-learner ATE: %.3f  (true = %.3f)\n",
+        mean(tau_dm), mean(tau_panel))
+```
+
+The within-transform recovers the panel ATE because firm fixed effects
+are differenced out. The cost is variance: each unit contributes only
+its *within-firm* variation, so effective sample size shrinks.
+
+For R's `grf::causal_forest`, the cleaner approach is passing
+`clusters = firm_id` so the forest's honest sample-splitting keeps each
+firm's observations in the same training fold. The Julia ecosystem
+currently lacks a native equivalent — see the
+[companion blog chapter on causal forests in panel data](https://xiangao.github.io/blog_book/causal-forest-panel.html)
+and the [R companion to this chapter](https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html)
+for the GRF-based workflow.
+
 ## Summary
 
 - **Meta-learners** (S, T, X, R, DR) turn any regression algorithm into a
