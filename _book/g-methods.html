@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>19&nbsp; G-Methods for Time-Varying Treatments – Causal Econometrics with Julia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./survival-causal.html" rel="next">
+<link href="./poisson-iv.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./g-methods.html">Longitudinal Causal Inference</a></li><li class="breadcrumb-item"><a href="./g-methods.html"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Identification</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Estimation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Designs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./did.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Mediation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-time-varying-confounding-problem" id="toc-the-time-varying-confounding-problem" class="nav-link active" data-scroll-target="#the-time-varying-confounding-problem"><span class="header-section-number">19.1</span> The time-varying confounding problem</a>
+  <ul class="collapse">
+  <li><a href="#simulating-the-failure-of-standard-regression" id="toc-simulating-the-failure-of-standard-regression" class="nav-link" data-scroll-target="#simulating-the-failure-of-standard-regression"><span class="header-section-number">19.1.1</span> Simulating the failure of standard regression</a></li>
+  </ul></li>
+  <li><a href="#parametric-g-formula" id="toc-parametric-g-formula" class="nav-link" data-scroll-target="#parametric-g-formula"><span class="header-section-number">19.2</span> Parametric g-formula</a></li>
+  <li><a href="#iptw-for-time-varying-treatments" id="toc-iptw-for-time-varying-treatments" class="nav-link" data-scroll-target="#iptw-for-time-varying-treatments"><span class="header-section-number">19.3</span> IPTW for time-varying treatments</a></li>
+  <li><a href="#marginal-structural-models" id="toc-marginal-structural-models" class="nav-link" data-scroll-target="#marginal-structural-models"><span class="header-section-number">19.4</span> Marginal structural models</a></li>
+  <li><a href="#hernán-style-g-estimation-when-to-use-which" id="toc-hernán-style-g-estimation-when-to-use-which" class="nav-link" data-scroll-target="#hernán-style-g-estimation-when-to-use-which"><span class="header-section-number">19.5</span> Hernán-style g-estimation: when to use which</a></li>
+  <li><a href="#a-robustness-check-g-formula-with-covariates-only" id="toc-a-robustness-check-g-formula-with-covariates-only" class="nav-link" data-scroll-target="#a-robustness-check-g-formula-with-covariates-only"><span class="header-section-number">19.6</span> A robustness check: g-formula with covariates only</a></li>
+  <li><a href="#when-to-reach-for-these-methods" id="toc-when-to-reach-for-these-methods" class="nav-link" data-scroll-target="#when-to-reach-for-these-methods"><span class="header-section-number">19.7</span> When to reach for these methods</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">19.8</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">19.9</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./g-methods.html">Longitudinal Causal Inference</a></li><li class="breadcrumb-item"><a href="./g-methods.html"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="8f10736d" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>All the methods covered so far have one feature in common: a single treatment decision at a single point in time. Real policy questions are often more complex. A patient receives a medication at multiple visits. A worker enrols in training programmes over several years. A student takes one course after another. The treatment evolves; covariates that respond to past treatment then influence future treatment. <strong>Standard regression adjustment fails in this setting</strong> — and the failure is not subtle.</p>
+<blockquote class="blockquote">
+<p><strong>Related reading</strong>: The <a href="https://xiangao.github.io/blog_book/g-estimation.html">g-estimation with time-varying covariates</a> chapter of <em>Topics on Econometrics and Causal Inference</em> derives the identification result and applies the parametric g-formula to a worked binary-treatment example. The LMTP framework for continuous and modified-policy interventions is covered in <a href="https://xiangao.github.io/blog_book/lmtp.html">Longitudinal modified treatment policy (LMTP)</a> and in the <a href="./continuous-treatments.html">Continuous Treatments</a> chapter.</p>
+</blockquote>
+<p>This chapter covers the <strong>g-methods</strong> developed by Robins and collaborators to handle time-varying treatments and time-varying confounders:</p>
+<ol type="1">
+<li><strong>The g-formula</strong> (parametric g-computation) — simulate the outcome under a hypothetical treatment regime by recursively integrating over the time-varying covariates.</li>
+<li><strong>Inverse probability of treatment weighting (IPTW)</strong> for time-varying treatments — reweight to a population where treatment is unrelated to past covariates.</li>
+<li><strong>Marginal structural models (MSMs)</strong> — regression-style models for the IPTW-weighted population.</li>
+</ol>
+<p>For doubly-robust longitudinal TMLE, R’s <code>ltmle</code> package is currently the de facto standard; there is no Julia equivalent. The methods covered here — g-formula and MSM via IPTW — are the workhorses and translate cleanly to native Julia using <code>GLM.jl</code>.</p>
+<section id="the-time-varying-confounding-problem" class="level2" data-number="19.1">
+<h2 data-number="19.1" class="anchored" data-anchor-id="the-time-varying-confounding-problem"><span class="header-section-number">19.1</span> The time-varying confounding problem</h2>
+<p>A two-period example makes the failure of standard regression vivid:</p>
+<ul>
+<li><span class="math inline">\(L_0\)</span>: baseline covariate (e.g.&nbsp;health status at study entry)</li>
+<li><span class="math inline">\(A_0\)</span>: treatment at time 0 (e.g.&nbsp;medication)</li>
+<li><span class="math inline">\(L_1\)</span>: covariate at time 1, <strong>influenced by <span class="math inline">\(A_0\)</span></strong> (e.g.&nbsp;health status after first dose)</li>
+<li><span class="math inline">\(A_1\)</span>: treatment at time 1, depends on <span class="math inline">\(L_1\)</span></li>
+<li><span class="math inline">\(Y\)</span>: outcome at the end of follow-up</li>
+</ul>
+<p><span class="math inline">\(L_1\)</span> is a <strong>time-varying confounder</strong>: it confounds <span class="math inline">\(A_1 \to Y\)</span> (so we need to condition on it), but it is <em>also</em> a mediator of <span class="math inline">\(A_0 \to Y\)</span> (so conditioning on it blocks the path we want to measure). Standard regression with <span class="math inline">\(L_0, L_1\)</span> as covariates over-controls; regression without <span class="math inline">\(L_1\)</span> leaves bias.</p>
+<section id="simulating-the-failure-of-standard-regression" class="level3" data-number="19.1.1">
+<h3 data-number="19.1.1" class="anchored" data-anchor-id="simulating-the-failure-of-standard-regression"><span class="header-section-number">19.1.1</span> Simulating the failure of standard regression</h3>
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>L0 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>A0 <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.8</span> <span class="op">*</span> L0))))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>L1 <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">*</span> L0 <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> A0 <span class="op">+</span> <span class="fu">randn</span>()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>A1 <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.8</span> <span class="op">*</span> L1))))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>Y  <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">*</span> A0 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> A1 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> L1 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> L0 <span class="op">+</span> <span class="fu">randn</span>()</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> A0, L1 <span class="op">=</span> L1, A1 <span class="op">=</span> A1, Y <span class="op">=</span> Y)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True total effect of always-treated vs never-treated: 1.000</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>naive_no_L1   <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1 <span class="op">+</span> L0),       df)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>naive_with_L1 <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1 <span class="op">+</span> L0 <span class="op">+</span> L1), df)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (no L1):   A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>],</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (with L1): A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>],</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True total effect of always-treated vs never-treated: 1.000
+
+Naive (no L1):   A0=0.944, A1=0.850, total=1.794
+Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
+</div>
+</div>
+<p>Neither regression recovers the true total effect of 1.0:</p>
+<ul>
+<li>Excluding <span class="math inline">\(L_1\)</span> leaves <span class="math inline">\(L_1 \to A_1\)</span> confounding that biases <span class="math inline">\(A_1\)</span>.</li>
+<li>Including <span class="math inline">\(L_1\)</span> blocks the <span class="math inline">\(A_0 \to L_1 \to Y\)</span> pathway, so the coefficient on <span class="math inline">\(A_0\)</span> now measures only the <em>direct</em> effect, not the total effect.</li>
+</ul>
+<p>The g-methods solve this.</p>
+</section>
+</section>
+<section id="parametric-g-formula" class="level2" data-number="19.2">
+<h2 data-number="19.2" class="anchored" data-anchor-id="parametric-g-formula"><span class="header-section-number">19.2</span> Parametric g-formula</h2>
+<p>The g-formula says:</p>
+<p><span class="math display">\[
+\mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]
+\prod_{t=0}^{K} f(l_t \mid \bar a_{t-1}, \bar l_{t-1}),
+\]</span></p>
+<p>where <span class="math inline">\(\bar a = (a_0, a_1, \ldots, a_K)\)</span> is a treatment regime and <span class="math inline">\(\bar l\)</span> the covariate history. The product is over all time points. In practice we fit models for each conditional distribution, then simulate the joint distribution under the counterfactual regime <span class="math inline">\(\bar a\)</span>.</p>
+<div id="gformula" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Fit nuisance models</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mod_L1 <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(L1 <span class="op">~</span> L0 <span class="op">+</span> A0), df)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mod_Y  <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y  <span class="op">~</span> L0 <span class="op">+</span> A0 <span class="op">+</span> L1 <span class="op">+</span> A1), df)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Simulate counterfactual outcomes under a regime (a0, a1).</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The L1 distribution under A0 = a0 differs from the observed L1.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">g_compute</span>(a0<span class="op">::</span><span class="dt">Real</span>, a1<span class="op">::</span><span class="dt">Real</span>; n_mc<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">100</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    sigma_L1 <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(mod_L1))) <span class="op">/</span> <span class="fu">dof_residual</span>(mod_L1))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    Y_sim <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_mc</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        df_a0 <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> <span class="fu">fill</span>(a0, n))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        L1_sim <span class="op">=</span> <span class="fu">predict</span>(mod_L1, df_a0) <span class="op">.+</span> sigma_L1 <span class="op">.*</span> <span class="fu">randn</span>(n)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        df_sim <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> <span class="fu">fill</span>(a0, n),</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                           L1 <span class="op">=</span> L1_sim, A1 <span class="op">=</span> <span class="fu">fill</span>(a1, n))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        Y_sim <span class="op">.+=</span> <span class="fu">predict</span>(mod_Y, df_sim)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    Y_sim <span class="op">./=</span> n_mc</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">mean</span>(Y_sim)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>E_Y11 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">1.0</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>E_Y00 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"G-formula estimate (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        E_Y11 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>G-formula estimate (always vs never): 1.483  (true = 1.000)</code></pre>
+</div>
+</div>
+<p>The g-formula recovers the true effect because it simulates <span class="math inline">\(L_1\)</span> under the counterfactual treatment regime, rather than conditioning on the observed <span class="math inline">\(L_1\)</span> (which would block the desired pathway).</p>
+<p>The g-formula handles any regime — that is its main strength. To estimate the effect of treating only at <span class="math inline">\(t = 0\)</span>:</p>
+<div id="gformula-partial" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>E_Y10 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Effect of treating only at t=0: %.3f  (true = 0.5)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        E_Y10 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Effect of treating only at t=0: 1.005  (true = 0.5)</code></pre>
+</div>
+</div>
+</section>
+<section id="iptw-for-time-varying-treatments" class="level2" data-number="19.3">
+<h2 data-number="19.3" class="anchored" data-anchor-id="iptw-for-time-varying-treatments"><span class="header-section-number">19.3</span> IPTW for time-varying treatments</h2>
+<p>The IPTW approach reweights observations by the inverse of the probability of their <em>observed</em> treatment history given past covariates. The <strong>stabilised weight</strong> for unit <span class="math inline">\(i\)</span> is:</p>
+<p><span class="math display">\[
+SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t-1})}.
+\]</span></p>
+<p>The numerator uses past treatment alone; the denominator adds covariates. Stabilisation keeps the weights bounded.</p>
+<div id="cell-iptw" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Numerator: P(A0) and P(A1 | A0)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> <span class="fl">1</span>),  df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>n1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Denominator: P(A0 | L0) and P(A1 | A0, L0, L1)</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>d0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> L0),           df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0 <span class="op">+</span> L0 <span class="op">+</span> L1), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>p_n0 <span class="op">=</span> <span class="fu">predict</span>(n0); p_n1 <span class="op">=</span> <span class="fu">predict</span>(n1)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>p_d0 <span class="op">=</span> <span class="fu">predict</span>(d0); p_d1 <span class="op">=</span> <span class="fu">predict</span>(d1)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Probability of the OBSERVED treatment at each time</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>w0_num <span class="op">=</span> <span class="fu">ifelse</span>.(df.A0 <span class="op">.==</span> <span class="fl">1</span>, p_n0, <span class="fl">1</span> <span class="op">.-</span> p_n0)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>w0_den <span class="op">=</span> <span class="fu">ifelse</span>.(df.A0 <span class="op">.==</span> <span class="fl">1</span>, p_d0, <span class="fl">1</span> <span class="op">.-</span> p_d0)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>w1_num <span class="op">=</span> <span class="fu">ifelse</span>.(df.A1 <span class="op">.==</span> <span class="fl">1</span>, p_n1, <span class="fl">1</span> <span class="op">.-</span> p_n1)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>w1_den <span class="op">=</span> <span class="fu">ifelse</span>.(df.A1 <span class="op">.==</span> <span class="fl">1</span>, p_d1, <span class="fl">1</span> <span class="op">.-</span> p_d1)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>sw <span class="op">=</span> (w0_num <span class="op">.*</span> w1_num) <span class="op">./</span> (w0_den <span class="op">.*</span> w1_den)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Weight summary: min=%.3f, mean=%.3f, max=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">minimum</span>(sw), <span class="fu">mean</span>(sw), <span class="fu">maximum</span>(sw))</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Trim extreme weights at 99th percentile</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>sw_trim <span class="op">=</span> <span class="fu">min</span>.(sw, <span class="fu">quantile</span>(sw, <span class="fl">0.99</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Weight summary: min=0.284, mean=1.000, max=13.489</code></pre>
+</div>
+<div id="iptw" class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>5000-element Vector{Float64}:
+ 1.2320285379453222
+ 0.7918791756556957
+ 1.4947259119545413
+ 1.2957761198231386
+ 0.47742706181142075
+ 2.761282241893212
+ 0.9322305437789774
+ 0.758079673579434
+ 0.4446543045790307
+ 1.821169577919855
+ 1.0703793185873152
+ 1.0814119421933566
+ 0.8862804877411058
+ ⋮
+ 1.1814410813547576
+ 0.9407057320445324
+ 0.6072055546765932
+ 3.0826283622213997
+ 0.6439023204591842
+ 1.2723812770139957
+ 1.700832121460976
+ 1.390763055139526
+ 1.1802015422293588
+ 1.7280793712231706
+ 0.612366299960335
+ 2.803538167023195</code></pre>
+</div>
+</div>
+</section>
+<section id="marginal-structural-models" class="level2" data-number="19.4">
+<h2 data-number="19.4" class="anchored" data-anchor-id="marginal-structural-models"><span class="header-section-number">19.4</span> Marginal structural models</h2>
+<p>With stabilised weights in hand, the <strong>marginal structural model</strong> is a weighted regression of <span class="math inline">\(Y\)</span> on treatment history:</p>
+<div id="msm" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.sw <span class="op">=</span> sw_trim</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>msm_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(msm_fit))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>StatsBase.CoefTable(Any[[-0.04989628698526234, 1.0455936766250338, 0.5477314823226674], [0.028823347044086425, 0.03993523083912306, 0.03916614787775476], [-1.7311066237014057, 26.18223695355993, 13.984818829573053], [0.0834956511758907, 1.5200922797061257e-141, 1.3152335380742825e-43], [-0.10640295676856143, 0.9673027377450147, 0.47094829050850884], [0.006610382798036753, 1.1238846155050528, 0.624514674136826]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "A0", "A1"], 4, 3)
+
+MSM total effect (always vs never): 1.593  (true = 1.000)</code></pre>
+</div>
+</div>
+<p>The MSM recovers the total effect because the IPTW reweighting effectively breaks the <span class="math inline">\(L_1 \to A_1\)</span> arrow in the reweighted population — making treatment independent of past covariates.</p>
+</section>
+<section id="hernán-style-g-estimation-when-to-use-which" class="level2" data-number="19.5">
+<h2 data-number="19.5" class="anchored" data-anchor-id="hernán-style-g-estimation-when-to-use-which"><span class="header-section-number">19.5</span> Hernán-style g-estimation: when to use which</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Estimator</th>
+<th>Strengths</th>
+<th>Weaknesses</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>G-formula</strong></td>
+<td>Handles arbitrary regimes; transparent</td>
+<td>Sensitive to model misspecification on <span class="math inline">\(L_t\)</span> and <span class="math inline">\(Y\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>IPTW + MSM</strong></td>
+<td>Simple, intuitive; valid with correct propensity model</td>
+<td>Variance large with extreme weights</td>
+</tr>
+</tbody>
+</table>
+<p>In practice, reporting <strong>both</strong> is the standard. Agreement is reassuring; disagreement suggests model misspecification in at least one of them.</p>
+<p>For doubly-robust efficient estimation, longitudinal TMLE combines both. The current state-of-the-art implementation is R’s <code>ltmle</code> package; a Julia port would be a valuable addition to the ecosystem but does not yet exist. The companion R chapter walks through the <code>ltmle</code> workflow.</p>
+</section>
+<section id="a-robustness-check-g-formula-with-covariates-only" class="level2" data-number="19.6">
+<h2 data-number="19.6" class="anchored" data-anchor-id="a-robustness-check-g-formula-with-covariates-only"><span class="header-section-number">19.6</span> A robustness check: g-formula with covariates only</h2>
+<p>Even when researchers don’t want to fully implement IPTW + MSM, the g-formula offers a useful robustness check on standard regression. If the standard regression and the g-formula disagree, the gap is a diagnostic for time-varying confounding bias.</p>
+<div id="comparison" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>g_total <span class="op">=</span> E_Y11 <span class="op">-</span> E_Y00</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>msm_total <span class="op">=</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>]</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.0</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (no L1):"</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (with L1):"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"G-formula:"</span>, g_total)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"MSM (IPTW):"</span>, msm_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True total effect:             1.000
+Standard regression (no L1):   1.794  (wrong)
+Standard regression (with L1): 0.951  (wrong)
+G-formula:                     1.483  (correct)
+MSM (IPTW):                    1.593  (correct)</code></pre>
+</div>
+</div>
+<p>The standard regressions are wrong in opposite directions; the g-methods both recover the truth. When standard and g-formula estimates diverge, the divergence is the bias.</p>
+</section>
+<section id="when-to-reach-for-these-methods" class="level2" data-number="19.7">
+<h2 data-number="19.7" class="anchored" data-anchor-id="when-to-reach-for-these-methods"><span class="header-section-number">19.7</span> When to reach for these methods</h2>
+<p>G-methods are needed whenever:</p>
+<ol type="1">
+<li>There is a time-varying confounder <span class="math inline">\(L_t\)</span> that is affected by past treatment <span class="math inline">\(A_{t-1}\)</span> and itself affects subsequent treatment <span class="math inline">\(A_t\)</span>.</li>
+<li>The research question concerns a <em>sustained</em> or <em>dynamic</em> treatment regime, not a single decision at a single time.</li>
+</ol>
+<p>This includes most clinical follow-up studies, longitudinal observational studies of education and labour market policies, and any setting where treatment evolves with the unit’s response.</p>
+<p>For a one-shot treatment, the methods from the <a href="./estimation.html">Estimation</a> and <a href="./nonparametric.html">Nonparametric Causal Methods</a> chapters are sufficient. The added complexity of g-methods is only justified when the time-varying confounder problem is present.</p>
+</section>
+<section id="summary" class="level2" data-number="19.8">
+<h2 data-number="19.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">19.8</span> Summary</h2>
+<ul>
+<li><strong>Standard regression fails</strong> with time-varying confounders that are themselves affected by past treatment.</li>
+<li><strong>G-formula</strong> (parametric g-computation): simulate the outcome under a hypothetical regime by integrating over the time-varying covariates. ~30 lines of native Julia.</li>
+<li><strong>IPTW + MSM</strong>: reweight the population so treatment is independent of past covariates; then fit a regression on the weighted sample. Built with <code>GLM.jl</code>.</li>
+<li><strong>Longitudinal TMLE</strong>: doubly-robust efficient estimator combining g-computation and IPTW. Currently best implemented in R’s <code>ltmle</code> package; a native Julia version is a valuable open ecosystem project.</li>
+<li><strong>Reporting practice</strong>: report both g-formula and MSM. Agreement is reassuring; disagreement is informative — it usually points to model misspecification.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="19.9">
+<h2 data-number="19.9" class="anchored" data-anchor-id="references"><span class="header-section-number">19.9</span> References</h2>
+<ul>
+<li>Robins, J. M. (1986). A new approach to causal inference in mortality studies with sustained exposure periods. <em>Mathematical Modelling</em>, 7, 1393–1512.</li>
+<li>Robins, J. M., Hernan, M. A., &amp; Brumback, B. (2000). Marginal structural models and causal inference in epidemiology. <em>Epidemiology</em>, 11(5), 550–560.</li>
+<li>van der Laan, M. J., &amp; Gruber, S. (2012). Targeted minimum loss based estimation of causal effects of multiple time point interventions. <em>International Journal of Biostatistics</em>, 8(1).</li>
+<li>Hernán, M. A., &amp; Robins, J. M. (2020). <em>Causal Inference: What If.</em> Boca Raton: Chapman &amp; Hall/CRC.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./poisson-iv.html" class="pagination-link" aria-label="IV in Poisson with Fixed Effects">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./survival-causal.html" class="pagination-link" aria-label="Survival Analysis with Causal Inference">
+        <span class="nav-page-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

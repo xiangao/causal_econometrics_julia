@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>17&nbsp; Shift-Share Instrumental Variables – Causal Econometrics with Julia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./poisson-iv.html" rel="next">
+<link href="./iv-rdd.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./shift-share-iv.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Identification</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Estimation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Designs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./did.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Mediation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-construction" id="toc-the-construction" class="nav-link active" data-scroll-target="#the-construction"><span class="header-section-number">17.1</span> The construction</a></li>
+  <li><a href="#two-identification-views" id="toc-two-identification-views" class="nav-link" data-scroll-target="#two-identification-views"><span class="header-section-number">17.2</span> Two identification views</a>
+  <ul class="collapse">
+  <li><a href="#share-view-gpss-2020" id="toc-share-view-gpss-2020" class="nav-link" data-scroll-target="#share-view-gpss-2020"><span class="header-section-number">17.2.1</span> Share view (GPSS 2020)</a></li>
+  <li><a href="#shock-view-bhj-2022" id="toc-shock-view-bhj-2022" class="nav-link" data-scroll-target="#shock-view-bhj-2022"><span class="header-section-number">17.2.2</span> Shock view (BHJ 2022)</a></li>
+  </ul></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference"><span class="header-section-number">17.3</span> Inference</a></li>
+  <li><a href="#simulation-build-intuition" id="toc-simulation-build-intuition" class="nav-link" data-scroll-target="#simulation-build-intuition"><span class="header-section-number">17.4</span> Simulation: build intuition</a>
+  <ul class="collapse">
+  <li><a href="#rotemberg-weights" id="toc-rotemberg-weights" class="nav-link" data-scroll-target="#rotemberg-weights"><span class="header-section-number">17.4.1</span> Rotemberg weights</a></li>
+  <li><a href="#what-goes-wrong-when-shares-are-endogenous" id="toc-what-goes-wrong-when-shares-are-endogenous" class="nav-link" data-scroll-target="#what-goes-wrong-when-shares-are-endogenous"><span class="header-section-number">17.4.2</span> What goes wrong when shares are endogenous</a></li>
+  </ul></li>
+  <li><a href="#bhj-shock-level-inference" id="toc-bhj-shock-level-inference" class="nav-link" data-scroll-target="#bhj-shock-level-inference"><span class="header-section-number">17.5</span> BHJ shock-level inference</a></li>
+  <li><a href="#empirical-the-china-shock-autor-dorn-hanson-2013" id="toc-empirical-the-china-shock-autor-dorn-hanson-2013" class="nav-link" data-scroll-target="#empirical-the-china-shock-autor-dorn-hanson-2013"><span class="header-section-number">17.6</span> Empirical: the China shock (Autor, Dorn, Hanson 2013)</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">17.7</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">17.8</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./shift-share-iv.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="96444c33" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/ShiftShareIV.jl/src/ShiftShareIV.jl"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.ShiftShareIV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Shift-share (or “Bartik”) instruments combine local industry shares with national industry growth rates to construct an instrument for local employment shocks. They are workhorses in labour economics, trade, and urban economics — but the identifying assumptions and inference procedures have been reworked over the last five years. This chapter covers the modern view.</p>
+<section id="the-construction" class="level2" data-number="17.1">
+<h2 data-number="17.1" class="anchored" data-anchor-id="the-construction"><span class="header-section-number">17.1</span> The construction</h2>
+<p>For each location <span class="math inline">\(\ell\)</span> and industry <span class="math inline">\(k\)</span>, let <span class="math inline">\(s_{\ell k}\)</span> be the share of local employment in industry <span class="math inline">\(k\)</span> at baseline, and let <span class="math inline">\(g_k\)</span> be a national growth rate (or trade shock) for that industry. The shift-share instrument is</p>
+<p><span class="math display">\[
+B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
+\]</span></p>
+<p>This is “shift-share” because it combines a local <em>share</em> with an industry-level <em>shift</em>. The classic application is Bartik (1991), who used local industry mix to predict employment growth. Autor, Dorn, and Hanson (2013) — “the China shock” — used local industry shares interacted with industry-level Chinese import growth in other rich countries.</p>
+<p>The first-stage regression is then</p>
+<p><span class="math display">\[
+\Delta L_\ell \;=\; \pi_0 + \pi_1 B_\ell + X_\ell'\gamma + \epsilon_\ell,
+\]</span></p>
+<p>with <span class="math inline">\(B_\ell\)</span> instrumenting for the observed local shock in a 2SLS for the outcome of interest.</p>
+</section>
+<section id="two-identification-views" class="level2" data-number="17.2">
+<h2 data-number="17.2" class="anchored" data-anchor-id="two-identification-views"><span class="header-section-number">17.2</span> Two identification views</h2>
+<p>A 2020 paper by Goldsmith-Pinkham, Sorkin, and Swift (GPSS) and a 2022 paper by Borusyak, Hull, and Jaravel (BHJ) showed that shift-share IV has two distinct identification stories, with different validity conditions.</p>
+<section id="share-view-gpss-2020" class="level3" data-number="17.2.1">
+<h3 data-number="17.2.1" class="anchored" data-anchor-id="share-view-gpss-2020"><span class="header-section-number">17.2.1</span> Share view (GPSS 2020)</h3>
+<p>Treat the shares <span class="math inline">\(s_{\ell k}\)</span> as the source of identifying variation, with the shocks <span class="math inline">\(g_k\)</span> acting as weights. The instrument is valid if shares are exogenous to the outcome (conditional on controls). GPSS prove that the shift-share IV is numerically equivalent to a GMM combination of <span class="math inline">\(K\)</span> just-identified IVs, one per industry share:</p>
+<p><span class="math display">\[
+\hat\beta^{SS} \;=\; \sum_{k=1}^{K} \hat\alpha_k\, \hat\beta_k,
+\]</span></p>
+<p>where <span class="math inline">\(\hat\beta_k\)</span> is the just-identified IV using share <span class="math inline">\(s_{\cdot k}\)</span> alone and <span class="math inline">\(\hat\alpha_k\)</span> is the <strong>Rotemberg weight</strong>. This is the key diagnostic: which shares are driving the estimate?</p>
+</section>
+<section id="shock-view-bhj-2022" class="level3" data-number="17.2.2">
+<h3 data-number="17.2.2" class="anchored" data-anchor-id="shock-view-bhj-2022"><span class="header-section-number">17.2.2</span> Shock view (BHJ 2022)</h3>
+<p>Treat the shocks <span class="math inline">\(g_k\)</span> as the source of identifying variation — they should behave as-if randomly assigned across industries. Shares are exposure weights. Under this view, validity requires that shocks are uncorrelated with unobservables in the second stage, conditional on industry-level controls. BHJ derive an equivalent IV regression at the shock level (one observation per industry rather than per region), which is easier to validate.</p>
+<p>The two views are not mutually exclusive but place the burden of exogeneity on different objects. In an application, you should defend at least one of them and report diagnostics for both.</p>
+</section>
+</section>
+<section id="inference" class="level2" data-number="17.3">
+<h2 data-number="17.3" class="anchored" data-anchor-id="inference"><span class="header-section-number">17.3</span> Inference</h2>
+<p>Standard OLS or cluster-robust standard errors on the regional regression <strong>underestimate uncertainty</strong> because the same industry shocks appear in many regions, inducing cross-region correlation that region-level clustering does not capture. Two corrections are now standard:</p>
+<ul>
+<li><strong>Cluster on shocks (BHJ)</strong>: equivalent to running the regression at the industry-shock level. Implemented via the <code>bhj_collapse</code> function.</li>
+<li><strong>AKM SE (Adão, Kolesár, Morales 2019)</strong>: explicit formula accounting for shock-level correlation; requires custom implementation or a dedicated package.</li>
+</ul>
+</section>
+<section id="simulation-build-intuition" class="level2" data-number="17.4">
+<h2 data-number="17.4" class="anchored" data-anchor-id="simulation-build-intuition"><span class="header-section-number">17.4</span> Simulation: build intuition</h2>
+<p>Set up a small DGP with regions, industries, and a known causal effect.</p>
+<div id="cell-sim-data" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_region   <span class="op">=</span> <span class="fl">500</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_industry <span class="op">=</span> <span class="fl">20</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>beta_true  <span class="op">=</span> <span class="fl">0.5</span>        <span class="co"># true effect of regional shock on outcome</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Shares: each region's industry mix. Dirichlet(0.3) so regions concentrate</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># in a few industries (more realistic than uniform mixing).</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>shares_raw <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Gamma</span>(<span class="fl">0.3</span>), n_region, n_industry) <span class="op">.+</span> <span class="fl">1e-4</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>shares     <span class="op">=</span> shares_raw <span class="op">./</span> <span class="fu">sum</span>(shares_raw, dims<span class="op">=</span><span class="fl">2</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Industry-level shocks (the "shifts")</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> <span class="fu">randn</span>(n_industry)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the shift-share instrument B_ℓ = Σ_k s_ℓk g_k</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> <span class="fu">bartik_iv</span>(shares, shocks)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Endogenous local shock: depends on B plus a confounder</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> B <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> u <span class="op">.+</span> <span class="fl">0.1</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome: true effect beta_true * X, plus confounder, plus noise</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> beta_true <span class="op">.*</span> X <span class="op">.+</span> u <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(region <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>n_region, X <span class="op">=</span> X, Y <span class="op">=</span> Y, B <span class="op">=</span> B)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="sim-data" class="cell-output cell-output-display" data-execution_count="3">
+<div><div style="float: left;"><span>6×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">region</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Y</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">B</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Int64">Int64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.453531</td>
+<td style="text-align: right;">-2.47677</td>
+<td style="text-align: right;">0.180802</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.558589</td>
+<td style="text-align: right;">0.704245</td>
+<td style="text-align: right;">0.270855</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">-0.607053</td>
+<td style="text-align: right;">-0.106138</td>
+<td style="text-align: right;">-0.504529</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.385392</td>
+<td style="text-align: right;">1.04877</td>
+<td style="text-align: right;">-0.0529427</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">-1.21298</td>
+<td style="text-align: right;">-2.7029</td>
+<td style="text-align: right;">-0.650168</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">-0.957177</td>
+<td style="text-align: right;">-1.1783</td>
+<td style="text-align: right;">-0.684897</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>A naive OLS suffers from the confounder <code>u</code>:</p>
+<div id="naive-ols" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ols  <span class="op">=</span> <span class="fu">feols</span>(df, <span class="pp">@formula</span>(Y <span class="op">~</span> X))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ivss <span class="op">=</span> <span class="fu">feiv</span>(df, <span class="pp">@formula</span>(Y <span class="op">~</span> <span class="fl">1</span>), endo <span class="op">=</span> <span class="op">:</span>X, inst <span class="op">=</span> <span class="op">:</span>B)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-25s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Estimator"</span>, <span class="st">"Coef"</span>, <span class="st">"SE"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-25s %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"OLS (biased)"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(ols)[<span class="kw">end</span>], <span class="fu">stderror</span>(ols)[<span class="kw">end</span>])</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-25s %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Shift-share IV"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(ivss)[<span class="kw">end</span>], <span class="fu">stderror</span>(ivss)[<span class="kw">end</span>])</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True beta: %.3f</span><span class="sc">\n</span><span class="st">"</span>, beta_true)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Estimator                     Coef       SE
+OLS (biased)                 1.768    0.088
+Shift-share IV               0.102    0.052
+True beta: 0.500</code></pre>
+</div>
+</div>
+<p>OLS is biased upward by the confounder; the shift-share IV recovers a value close to the true effect.</p>
+<section id="rotemberg-weights" class="level3" data-number="17.4.1">
+<h3 data-number="17.4.1" class="anchored" data-anchor-id="rotemberg-weights"><span class="header-section-number">17.4.1</span> Rotemberg weights</h3>
+<p>The GPSS decomposition says the shift-share IV is a weighted average of <span class="math inline">\(K\)</span> just-identified IVs (one per industry share). Compute the weights:</p>
+<div id="rotemberg" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rw <span class="op">=</span> <span class="fu">rotemberg_weights</span>(shares, shocks, X, Y)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Industry"</span>, <span class="st">"Shock"</span>, <span class="st">"α_k"</span>, <span class="st">"β_k"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="fu">eachrow</span>(rw)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-10d %8.3f %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>            row.industry, row.shock, row.alpha, row.beta_k)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">GPSS identity: Σ α_k β_k = %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(rw.alpha_beta))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV estimate: %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="kw">end</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Industry      Shock      α_k      β_k
+1             1.464    0.122    0.280
+2            -1.195    0.062    0.463
+3            -1.535    0.105    0.395
+4            -0.353    0.002   -2.080
+5            -0.997    0.035    0.891
+6            -1.505    0.108    0.949
+7             0.027    0.001    1.766
+8             0.463    0.023    0.851
+9            -1.334    0.088    0.912
+10           -0.574    0.016    1.240
+11           -0.489    0.005    2.220
+12           -1.371    0.067   -0.080
+13            0.154    0.001   -1.782
+14            0.253    0.010    1.369
+15            1.228    0.078    0.758
+16            1.581    0.201    0.664
+17           -0.712    0.012    0.160
+18           -0.820    0.026    0.971
+19           -0.305    0.007    2.610
+20            0.620    0.031    0.800
+
+GPSS identity: Σ α_k β_k = 0.6326
+Shift-share IV estimate: 0.1019</code></pre>
+</div>
+</div>
+<p>Two diagnostics jump out:</p>
+<ol type="1">
+<li><strong>Weight concentration</strong>: if one or two industries carry most of the weight, the identifying variation is essentially coming from those industries’ shares. Their exogeneity is the assumption you are really leaning on.</li>
+<li><strong>Heterogeneous <span class="math inline">\(\hat\beta_k\)</span></strong>: in this benign simulation, the industry-specific IVs are all near the true effect (with sampling noise). In real data, if a few industries give wildly different estimates, the “average” shift-share IV is averaging over heterogeneous treatment effects you should report explicitly.</li>
+</ol>
+<div id="cell-rotemberg-plot" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">380</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>],</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>           xlabel <span class="op">=</span> <span class="st">"Industry"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>           ylabel <span class="op">=</span> <span class="st">"Just-identified IV estimate (β_k)"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>           title  <span class="op">=</span> <span class="st">"Industry-level IV estimates and Rotemberg weights"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Bubble plot: position = beta_k, size = |alpha_k|</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, rw.industry, rw.beta_k,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>         markersize <span class="op">=</span> <span class="fl">30</span> <span class="op">.*</span> <span class="fu">sqrt</span>.(<span class="fu">abs</span>.(rw.alpha)),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>         color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.7</span>))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax, [beta_true], color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"True β = </span><span class="sc">$</span>(beta_true)<span class="st">"</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
+
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div>
+<figure class="figure">
+<p><img src="shift-share-iv_files/figure-html/rotemberg-plot-output-2.svg" id="rotemberg-plot" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="what-goes-wrong-when-shares-are-endogenous" class="level3" data-number="17.4.2">
+<h3 data-number="17.4.2" class="anchored" data-anchor-id="what-goes-wrong-when-shares-are-endogenous"><span class="header-section-number">17.4.2</span> What goes wrong when shares are endogenous</h3>
+<p>Now break the share-exogeneity assumption: make industry 1’s share correlated with the second-stage error.</p>
+<div id="bad-shares" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">11</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> <span class="fu">copy</span>(shares)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>shares_bad[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.=</span> <span class="fu">max</span>.(<span class="fl">0.01</span>, shares[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.+</span> <span class="fl">0.15</span> <span class="op">.*</span> v)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> shares_bad <span class="op">./</span> <span class="fu">sum</span>(shares_bad, dims<span class="op">=</span><span class="fl">2</span>)   <span class="co"># renormalise</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>B_bad <span class="op">=</span> <span class="fu">bartik_iv</span>(shares_bad, shocks)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>X_bad <span class="op">=</span> B_bad <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> u <span class="op">.+</span> <span class="fl">0.1</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>Y_bad <span class="op">=</span> beta_true <span class="op">.*</span> X_bad <span class="op">.+</span> u <span class="op">.+</span> <span class="fl">0.6</span> <span class="op">.*</span> v <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(n_region)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>df_bad  <span class="op">=</span> <span class="fu">DataFrame</span>(X <span class="op">=</span> X_bad, Y <span class="op">=</span> Y_bad, B <span class="op">=</span> B_bad)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>iv_bad  <span class="op">=</span> <span class="fu">feiv</span>(df_bad, <span class="pp">@formula</span>(Y <span class="op">~</span> <span class="fl">1</span>), endo <span class="op">=</span> <span class="op">:</span>X, inst <span class="op">=</span> <span class="op">:</span>B)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True beta: %.3f</span><span class="sc">\n</span><span class="st">"</span>, beta_true)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV with bad share 1: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bad)[<span class="kw">end</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True beta: 0.500
+Shift-share IV with bad share 1: 0.206</code></pre>
+</div>
+</div>
+<p>The estimate is biased — but the bias comes from a <em>single industry’s share</em> covarying with unobservables. Rotemberg weights would have flagged industry 1 as carrying disproportionate identifying weight; a robustness check that drops industry 1 (or applies BHJ shock-level inference) would detect the problem.</p>
+</section>
+</section>
+<section id="bhj-shock-level-inference" class="level2" data-number="17.5">
+<h2 data-number="17.5" class="anchored" data-anchor-id="bhj-shock-level-inference"><span class="header-section-number">17.5</span> BHJ shock-level inference</h2>
+<p>Collapse the location-level data to the shock level and run a weighted IV at the shock (industry) level. This reframes the identifying assumption: shocks must be uncorrelated with the shock-level aggregated outcome residual.</p>
+<div id="bhj" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>collapsed <span class="op">=</span> <span class="fu">bhj_collapse</span>(shares, shocks, Y, X)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># BHJ shock-level 2SLS: regress Y_agg ~ X_agg | shock, weighted by weight</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df_collapsed <span class="op">=</span> collapsed</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>iv_bhj <span class="op">=</span> <span class="fu">feiv</span>(df_collapsed, <span class="pp">@formula</span>(Y_agg <span class="op">~</span> <span class="fl">1</span>),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>              endo <span class="op">=</span> <span class="op">:</span>X_agg, inst <span class="op">=</span> <span class="op">:</span>shock, weights <span class="op">=</span> <span class="op">:</span>weight)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Location-level shift-share IV: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="kw">end</span>])</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"BHJ shock-level IV:             %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bhj)[<span class="kw">end</span>])</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"(Should be numerically equal under standard conditions)</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Location-level shift-share IV: 0.102
+BHJ shock-level IV:             0.104
+(Should be numerically equal under standard conditions)</code></pre>
+</div>
+</div>
+<p>The BHJ shock-level regression is equivalent to the location-level IV when there are no controls. Its value is interpretive: validity is now a statement about shocks (20 observations, one per industry) rather than locations (500 observations), and testing shock-level exogeneity is more transparent.</p>
+</section>
+<section id="empirical-the-china-shock-autor-dorn-hanson-2013" class="level2" data-number="17.6">
+<h2 data-number="17.6" class="anchored" data-anchor-id="empirical-the-china-shock-autor-dorn-hanson-2013"><span class="header-section-number">17.6</span> Empirical: the China shock (Autor, Dorn, Hanson 2013)</h2>
+<p>The canonical shift-share application is ADH (2013). Local labour markets (commuting zones) are differently exposed to rising Chinese import competition because they had different baseline industry mixes. The instrument is</p>
+<p><span class="math display">\[
+\text{IV}_\ell \;=\; \sum_k \frac{L_{\ell k,\,1990}}{L_{\ell,\,1990}}\,
+                   \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
+\]</span></p>
+<p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into <em>other rich countries</em> (a “leave-one-out” construction that strips US-specific demand from the shocks).</p>
+<div id="4a10f628" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Files needed:</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   workfile_china.csv  (commuting zone data, 1990–2007)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   industry_shares.csv (czone × industry shares)</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>cz     <span class="op">=</span> <span class="fu">DataFrame</span>(CSV.<span class="fu">File</span>(<span class="st">"data/workfile_china.csv"</span>))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> <span class="fu">Matrix</span>(<span class="fu">select</span>(cz_wide, <span class="st">r"share_"</span>))   <span class="co"># L × K share matrix</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> cz_wide.import_shock_other            <span class="co"># K-vector of "other-countries" shocks</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>B   <span class="op">=</span> <span class="fu">bartik_iv</span>(shares, shocks)               <span class="co"># Bartik instrument</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>df_adh <span class="op">=</span> <span class="fu">hcat</span>(cz, <span class="fu">DataFrame</span>(B <span class="op">=</span> B))</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># First-stage + second-stage</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>iv_adh <span class="op">=</span> <span class="fu">feiv</span>(df_adh, <span class="pp">@formula</span>(d_sh_empl_mfg <span class="op">~</span> <span class="fl">1</span>),</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>              endo <span class="op">=</span> <span class="op">:</span>d_tradeusch_pw, inst <span class="op">=</span> <span class="op">:</span>B,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>              vcov_type <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>statefip))</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Rotemberg decomposition</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>rw_adh <span class="op">=</span> <span class="fu">rotemberg_weights</span>(shares, shocks, df_adh.d_tradeusch_pw,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                           df_adh.d_sh_empl_mfg)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Top 5 industries by |alpha|:</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="fu">sort</span>(rw_adh, <span class="op">:</span>alpha, rev<span class="op">=</span><span class="cn">true</span>)[<span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">:</span>]</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="co"># BHJ shock-level regression</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>collapsed_adh <span class="op">=</span> <span class="fu">bhj_collapse</span>(shares, shocks, df_adh.d_sh_empl_mfg,</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>                             df_adh.d_tradeusch_pw)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>iv_bhj_adh <span class="op">=</span> <span class="fu">feiv</span>(collapsed_adh, <span class="pp">@formula</span>(Y_agg <span class="op">~</span> <span class="fl">1</span>),</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>                  endo <span class="op">=</span> <span class="op">:</span>X_agg, inst <span class="op">=</span> <span class="op">:</span>shock, weights <span class="op">=</span> <span class="op">:</span>weight)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Modern best-practice extensions of the basic ADH regression:</p>
+<ol type="1">
+<li><strong>Rotemberg weights</strong> (via <code>rotemberg_weights</code>): identify which industries drive the estimate; flag weight concentration and heterogeneous <span class="math inline">\(\hat\beta_k\)</span>.</li>
+<li><strong>BHJ shock-level regression</strong> (via <code>bhj_collapse</code>): reframe validity as a statement about 20 industry shocks rather than 500 commuting zones.</li>
+<li><strong>AKM standard errors</strong> (Adão, Kolesár, Morales 2019): account for shock-level correlation in inference. Requires custom implementation; see the accompanying R chapter for an R-based version.</li>
+</ol>
+</section>
+<section id="summary" class="level2" data-number="17.7">
+<h2 data-number="17.7" class="anchored" data-anchor-id="summary"><span class="header-section-number">17.7</span> Summary</h2>
+<ul>
+<li><strong>Shift-share IV</strong> = local shares × national shocks. Identifies effects of local economic shocks by leveraging differences in industry mix.</li>
+<li><strong>Two identification views</strong>: shares exogenous (GPSS) or shocks as-if-random (BHJ). Defend at least one; report diagnostics for both.</li>
+<li><strong>Rotemberg weights</strong> decompose the 2SLS estimate into industry-specific just-identified IVs. Concentration warnings and heterogeneity warnings come for free.</li>
+<li><strong>Inference</strong>: cluster-on-region underestimates uncertainty. Use BHJ shock-level regressions, and if available, AKM standard errors.</li>
+<li><strong><code>ShiftShareIV.jl</code></strong>: provides <code>bartik_iv</code>, <code>rotemberg_weights</code>, and <code>bhj_collapse</code>. <code>Panelest.jl</code> provides <code>feols</code>/<code>feiv</code> for the regressions.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="17.8">
+<h2 data-number="17.8" class="anchored" data-anchor-id="references"><span class="header-section-number">17.8</span> References</h2>
+<ul>
+<li>Bartik, T. J. (1991). <em>Who Benefits from State and Local Economic Development Policies?</em> Upjohn Institute.</li>
+<li>Autor, D., Dorn, D., &amp; Hanson, G. (2013). The China syndrome: local labor market effects of import competition in the United States. <em>American Economic Review</em>, 103(6), 2121–68.</li>
+<li>Adão, R., Kolesár, M., &amp; Morales, E. (2019). Shift-share designs: theory and inference. <em>Quarterly Journal of Economics</em>, 134(4), 1949–2010.</li>
+<li>Goldsmith-Pinkham, P., Sorkin, I., &amp; Swift, H. (2020). Bartik instruments: what, when, why, and how. <em>American Economic Review</em>, 110(8), 2586–2624.</li>
+<li>Borusyak, K., Hull, P., &amp; Jaravel, X. (2022). Quasi-experimental shift-share research designs. <em>Review of Economic Studies</em>, 89(1), 181–213.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./iv-rdd.html" class="pagination-link" aria-label="IV &amp; Regression Discontinuity">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./poisson-iv.html" class="pagination-link" aria-label="IV in Poisson with Fixed Effects">
+        <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

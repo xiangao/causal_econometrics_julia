@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; DAGs, ADMGs, Identification, and Estimation – Causal Econometrics with Julia</title>
+<title>3&nbsp; DAGs, ADMGs, Identification, and Estimation – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./smoking-cessation-graphs.html" rel="next">
-<link href="./identification.html" rel="prev">
+<link href="./causal-estimands.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -153,7 +153,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./graphs-identification-estimation.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./graphs-identification-estimation.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -205,14 +205,26 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
   </div>
 </li>
       </ul>
@@ -229,13 +241,43 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -252,25 +294,37 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -278,7 +332,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
- <span class="menu-text">Mediation</span></a>
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -286,8 +340,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
   </div>
 </li>
       </ul>
@@ -295,7 +349,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
- <span class="menu-text">Causal Discovery</span></a>
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -303,14 +357,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
   </div>
 </li>
       </ul>
@@ -318,7 +366,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
- <span class="menu-text">Appendix</span></a>
+ <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -326,8 +374,54 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
       </ul>
@@ -342,23 +436,23 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#dags-and-admgs" id="toc-dags-and-admgs" class="nav-link active" data-scroll-target="#dags-and-admgs"><span class="header-section-number">2.1</span> DAGs and ADMGs</a></li>
-  <li><a href="#a-dag-backdoor-adjustment" id="toc-a-dag-backdoor-adjustment" class="nav-link" data-scroll-target="#a-dag-backdoor-adjustment"><span class="header-section-number">2.2</span> A DAG: Backdoor Adjustment</a></li>
-  <li><a href="#estimating-the-dag-effect-with-causalestimate" id="toc-estimating-the-dag-effect-with-causalestimate" class="nav-link" data-scroll-target="#estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">2.3</span> Estimating the DAG Effect with CausalEstimate</a></li>
-  <li><a href="#an-admg-front-door-identification" id="toc-an-admg-front-door-identification" class="nav-link" data-scroll-target="#an-admg-front-door-identification"><span class="header-section-number">2.4</span> An ADMG: Front-Door Identification</a></li>
-  <li><a href="#estimating-the-admg-effect-with-causalgraphs" id="toc-estimating-the-admg-effect-with-causalgraphs" class="nav-link" data-scroll-target="#estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">2.5</span> Estimating the ADMG Effect with CausalGraphs</a></li>
-  <li><a href="#general-id-algorithm" id="toc-general-id-algorithm" class="nav-link" data-scroll-target="#general-id-algorithm"><span class="header-section-number">2.6</span> General ID Algorithm</a></li>
-  <li><a href="#when-the-graph-says-no" id="toc-when-the-graph-says-no" class="nav-link" data-scroll-target="#when-the-graph-says-no"><span class="header-section-number">2.7</span> When the Graph Says No</a></li>
-  <li><a href="#practical-workflow" id="toc-practical-workflow" class="nav-link" data-scroll-target="#practical-workflow"><span class="header-section-number">2.8</span> Practical Workflow</a></li>
+  <li><a href="#dags-and-admgs" id="toc-dags-and-admgs" class="nav-link active" data-scroll-target="#dags-and-admgs"><span class="header-section-number">3.1</span> DAGs and ADMGs</a></li>
+  <li><a href="#a-dag-backdoor-adjustment" id="toc-a-dag-backdoor-adjustment" class="nav-link" data-scroll-target="#a-dag-backdoor-adjustment"><span class="header-section-number">3.2</span> A DAG: Backdoor Adjustment</a></li>
+  <li><a href="#estimating-the-dag-effect-with-causalestimate" id="toc-estimating-the-dag-effect-with-causalestimate" class="nav-link" data-scroll-target="#estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">3.3</span> Estimating the DAG Effect with CausalEstimate</a></li>
+  <li><a href="#an-admg-front-door-identification" id="toc-an-admg-front-door-identification" class="nav-link" data-scroll-target="#an-admg-front-door-identification"><span class="header-section-number">3.4</span> An ADMG: Front-Door Identification</a></li>
+  <li><a href="#estimating-the-admg-effect-with-causalgraphs" id="toc-estimating-the-admg-effect-with-causalgraphs" class="nav-link" data-scroll-target="#estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">3.5</span> Estimating the ADMG Effect with CausalGraphs</a></li>
+  <li><a href="#general-id-algorithm" id="toc-general-id-algorithm" class="nav-link" data-scroll-target="#general-id-algorithm"><span class="header-section-number">3.6</span> General ID Algorithm</a></li>
+  <li><a href="#when-the-graph-says-no" id="toc-when-the-graph-says-no" class="nav-link" data-scroll-target="#when-the-graph-says-no"><span class="header-section-number">3.7</span> When the Graph Says No</a></li>
+  <li><a href="#practical-workflow" id="toc-practical-workflow" class="nav-link" data-scroll-target="#practical-workflow"><span class="header-section-number">3.8</span> Practical Workflow</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./graphs-identification-estimation.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./graphs-identification-estimation.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></h1>
 </div>
 
 
@@ -387,8 +481,8 @@ window.Quarto = {
 </div>
 <p>The potential-outcomes chapter introduced the question: when can an observed data set tell us about <span class="math inline">\(E[Y(1)-Y(0)]\)</span>? Graphs are one way to make the answer explicit. A graph records which variables are assumed to cause other variables, and whether some observed variables may share unobserved common causes. Once the graph is stated, identification becomes a graph problem. Estimation is the next step: estimate the functional that the graph identified.</p>
 <p>In this chapter we use <code>CausalGraphs.jl</code> for the graph and identification steps, then <code>CausalEstimate.jl</code> for backdoor/a-fixable effects, and <code>CausalGraphs.estimate_causal</code> directly for p-fixable and nested-fixable effects.</p>
-<section id="dags-and-admgs" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="dags-and-admgs"><span class="header-section-number">2.1</span> DAGs and ADMGs</h2>
+<section id="dags-and-admgs" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="dags-and-admgs"><span class="header-section-number">3.1</span> DAGs and ADMGs</h2>
 <p>A directed acyclic graph, or DAG, has directed arrows such as <code>X -&gt; A</code>. In causal work, an arrow means a direct causal relation is allowed by the model. Absence of an arrow is also a substantive assumption.</p>
 <p>An acyclic directed mixed graph, or ADMG, adds bidirected arrows such as <code>A &lt;-&gt; Y</code>. A bidirected edge represents an unobserved common cause. This is useful because many econometric applications have variables we cannot measure: ability, preferences, latent health, firm quality, and so on.</p>
 <p>The graph is not an estimator. It is a compact statement of assumptions. The workflow is:</p>
@@ -398,8 +492,8 @@ window.Quarto = {
 <li>estimate the identified functional from data.</li>
 </ol>
 </section>
-<section id="a-dag-backdoor-adjustment" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="a-dag-backdoor-adjustment"><span class="header-section-number">2.2</span> A DAG: Backdoor Adjustment</h2>
+<section id="a-dag-backdoor-adjustment" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="a-dag-backdoor-adjustment"><span class="header-section-number">3.2</span> A DAG: Backdoor Adjustment</h2>
 <p>Start with a simple observational study. <code>A</code> is treatment, <code>Y</code> is the outcome, and <code>X</code> is an observed confounder:</p>
 <div id="40be1b68" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>g_dag <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -450,8 +544,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 \]</span></p>
 <p>So the graph has translated a causal query into a regression-style observed data functional.</p>
 </section>
-<section id="estimating-the-dag-effect-with-causalestimate" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">2.3</span> Estimating the DAG Effect with CausalEstimate</h2>
+<section id="estimating-the-dag-effect-with-causalestimate" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">3.3</span> Estimating the DAG Effect with CausalEstimate</h2>
 <p>Here is a small simulated data set where <code>X</code> confounds the treatment-outcome association.</p>
 <div id="0ef0b5fb" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
@@ -564,8 +658,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 <p>The graph chose the adjustment set (Markov pillow of <code>A</code>) and the estimator used that set. Access it via <code>dag_res.components[:adjustment_set]</code>.</p>
 </section>
-<section id="an-admg-front-door-identification" class="level2" data-number="2.4">
-<h2 data-number="2.4" class="anchored" data-anchor-id="an-admg-front-door-identification"><span class="header-section-number">2.4</span> An ADMG: Front-Door Identification</h2>
+<section id="an-admg-front-door-identification" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="an-admg-front-door-identification"><span class="header-section-number">3.4</span> An ADMG: Front-Door Identification</h2>
 <p>Now suppose treatment and outcome share an unobserved common cause. A simple DAG adjustment argument no longer works. The front-door ADMG has a mediator <code>M</code> that transmits the effect of <code>A</code> to <code>Y</code>, while <code>A</code> and <code>Y</code> are hidden-confounded:</p>
 <div id="baefbc5d" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>g_fd <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -614,8 +708,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 <p>The intuition is that <code>M</code> carries the causal effect of <code>A</code>, and <code>M</code> is not itself hidden-confounded with <code>A</code>. The graph lets us use mediator information to recover the causal effect even though <code>A</code> and <code>Y</code> are confounded.</p>
 </section>
-<section id="estimating-the-admg-effect-with-causalgraphs" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">2.5</span> Estimating the ADMG Effect with CausalGraphs</h2>
+<section id="estimating-the-admg-effect-with-causalgraphs" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">3.5</span> Estimating the ADMG Effect with CausalGraphs</h2>
 <p>Simulate a front-door setting. The latent <code>U</code> is not included in the observed data; it is represented in the graph by <code>A &lt;-&gt; Y</code>.</p>
 <div id="288085e8" class="cell" data-cache="true" data-message="false" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2027</span>)</span>
@@ -734,8 +828,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 <p>This is the main practical advantage of separating identification from estimation. The user states the graph once. The software checks the graph and routes the effect to the estimator that matches the identified functional.</p>
 </section>
-<section id="general-id-algorithm" class="level2" data-number="2.6">
-<h2 data-number="2.6" class="anchored" data-anchor-id="general-id-algorithm"><span class="header-section-number">2.6</span> General ID Algorithm</h2>
+<section id="general-id-algorithm" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="general-id-algorithm"><span class="header-section-number">3.6</span> General ID Algorithm</h2>
 <p>The specialized routes above are useful because they have named estimators: backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more general. The Pearl-Shpitser ID algorithm asks the broader question:</p>
 <pre class="text"><code>Can P(Y | do(A)) be written using only the observed joint law P(V)?</code></pre>
 <p>The algorithm works recursively:</p>
@@ -806,8 +900,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 <p>This plug-in estimator is useful for discrete examples and diagnostics. It is not a universal TMLE for every continuous ID functional.</p>
 </section>
-<section id="when-the-graph-says-no" class="level2" data-number="2.7">
-<h2 data-number="2.7" class="anchored" data-anchor-id="when-the-graph-says-no"><span class="header-section-number">2.7</span> When the Graph Says No</h2>
+<section id="when-the-graph-says-no" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="when-the-graph-says-no"><span class="header-section-number">3.7</span> When the Graph Says No</h2>
 <p>The bow graph has both a direct causal edge and unobserved confounding between the same two variables:</p>
 <div id="bbae027f" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>g_bow <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -855,8 +949,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 <p>This is a feature, not a failure. If the graph does not justify the causal effect, the estimator should not manufacture one.</p>
 </section>
-<section id="practical-workflow" class="level2" data-number="2.8">
-<h2 data-number="2.8" class="anchored" data-anchor-id="practical-workflow"><span class="header-section-number">2.8</span> Practical Workflow</h2>
+<section id="practical-workflow" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="practical-workflow"><span class="header-section-number">3.8</span> Practical Workflow</h2>
 <p>For applied work, a useful workflow is:</p>
 <ol type="1">
 <li>write the graph before looking at estimates;</li>
@@ -1272,13 +1366,13 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./identification.html" class="pagination-link" aria-label="Identification &amp; Potential Outcomes">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span>
+      <a href="./causal-estimands.html" class="pagination-link" aria-label="Five Estimands on One DGP">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./smoking-cessation-graphs.html" class="pagination-link" aria-label="Applied Graph Workflow: Smoking Cessation">
-        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

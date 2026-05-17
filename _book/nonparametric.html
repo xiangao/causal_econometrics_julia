@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>5&nbsp; Nonparametric Causal Methods – Causal Econometrics with Julia</title>
+<title>8&nbsp; Nonparametric Causal Methods – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -65,8 +65,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./did.html" rel="next">
-<link href="./estimation.html" rel="prev">
+<link href="./heterogeneous-effects.html" rel="next">
+<link href="./matching.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -147,7 +147,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./nonparametric.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./nonparametric.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -199,14 +199,26 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
   </div>
 </li>
       </ul>
@@ -223,13 +235,43 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -246,25 +288,37 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -272,7 +326,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
- <span class="menu-text">Mediation</span></a>
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -280,8 +334,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
   </div>
 </li>
       </ul>
@@ -289,7 +343,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
- <span class="menu-text">Causal Discovery</span></a>
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -297,14 +351,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
   </div>
 </li>
       </ul>
@@ -312,7 +360,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
- <span class="menu-text">Appendix</span></a>
+ <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -320,8 +368,54 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
       </ul>
@@ -336,27 +430,27 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#why-do-we-need-nonparametric-methods" id="toc-why-do-we-need-nonparametric-methods" class="nav-link active" data-scroll-target="#why-do-we-need-nonparametric-methods"><span class="header-section-number">5.1</span> Why Do We Need Nonparametric Methods?</a></li>
-  <li><a href="#influence-function-based-estimators" id="toc-influence-function-based-estimators" class="nav-link" data-scroll-target="#influence-function-based-estimators"><span class="header-section-number">5.2</span> Influence Function Based Estimators</a>
+  <li><a href="#why-do-we-need-nonparametric-methods" id="toc-why-do-we-need-nonparametric-methods" class="nav-link active" data-scroll-target="#why-do-we-need-nonparametric-methods"><span class="header-section-number">8.1</span> Why Do We Need Nonparametric Methods?</a></li>
+  <li><a href="#influence-function-based-estimators" id="toc-influence-function-based-estimators" class="nav-link" data-scroll-target="#influence-function-based-estimators"><span class="header-section-number">8.2</span> Influence Function Based Estimators</a>
   <ul class="collapse">
-  <li><a href="#simulation-setup" id="toc-simulation-setup" class="nav-link" data-scroll-target="#simulation-setup"><span class="header-section-number">5.2.1</span> Simulation Setup</a></li>
-  <li><a href="#plug-in-estimator-from-outcome-regression" id="toc-plug-in-estimator-from-outcome-regression" class="nav-link" data-scroll-target="#plug-in-estimator-from-outcome-regression"><span class="header-section-number">5.2.2</span> Plug-in Estimator from Outcome Regression</a></li>
-  <li><a href="#aipw-ate" id="toc-aipw-ate" class="nav-link" data-scroll-target="#aipw-ate"><span class="header-section-number">5.2.3</span> AIPW ATE</a></li>
-  <li><a href="#aipw-ate-using-causalestimate.jl" id="toc-aipw-ate-using-causalestimate.jl" class="nav-link" data-scroll-target="#aipw-ate-using-causalestimate.jl"><span class="header-section-number">5.2.4</span> AIPW ATE Using CausalEstimate.jl</a></li>
-  <li><a href="#aipw-att" id="toc-aipw-att" class="nav-link" data-scroll-target="#aipw-att"><span class="header-section-number">5.2.5</span> AIPW ATT</a></li>
-  <li><a href="#aipw-att-using-causalestimate.jl" id="toc-aipw-att-using-causalestimate.jl" class="nav-link" data-scroll-target="#aipw-att-using-causalestimate.jl"><span class="header-section-number">5.2.6</span> AIPW ATT Using CausalEstimate.jl</a></li>
+  <li><a href="#simulation-setup" id="toc-simulation-setup" class="nav-link" data-scroll-target="#simulation-setup"><span class="header-section-number">8.2.1</span> Simulation Setup</a></li>
+  <li><a href="#plug-in-estimator-from-outcome-regression" id="toc-plug-in-estimator-from-outcome-regression" class="nav-link" data-scroll-target="#plug-in-estimator-from-outcome-regression"><span class="header-section-number">8.2.2</span> Plug-in Estimator from Outcome Regression</a></li>
+  <li><a href="#aipw-ate" id="toc-aipw-ate" class="nav-link" data-scroll-target="#aipw-ate"><span class="header-section-number">8.2.3</span> AIPW ATE</a></li>
+  <li><a href="#aipw-ate-using-causalestimate.jl" id="toc-aipw-ate-using-causalestimate.jl" class="nav-link" data-scroll-target="#aipw-ate-using-causalestimate.jl"><span class="header-section-number">8.2.4</span> AIPW ATE Using CausalEstimate.jl</a></li>
+  <li><a href="#aipw-att" id="toc-aipw-att" class="nav-link" data-scroll-target="#aipw-att"><span class="header-section-number">8.2.5</span> AIPW ATT</a></li>
+  <li><a href="#aipw-att-using-causalestimate.jl" id="toc-aipw-att-using-causalestimate.jl" class="nav-link" data-scroll-target="#aipw-att-using-causalestimate.jl"><span class="header-section-number">8.2.6</span> AIPW ATT Using CausalEstimate.jl</a></li>
   </ul></li>
-  <li><a href="#tmle" id="toc-tmle" class="nav-link" data-scroll-target="#tmle"><span class="header-section-number">5.3</span> TMLE</a></li>
-  <li><a href="#doubleml" id="toc-doubleml" class="nav-link" data-scroll-target="#doubleml"><span class="header-section-number">5.4</span> DoubleML</a></li>
+  <li><a href="#tmle" id="toc-tmle" class="nav-link" data-scroll-target="#tmle"><span class="header-section-number">8.3</span> TMLE</a></li>
+  <li><a href="#doubleml" id="toc-doubleml" class="nav-link" data-scroll-target="#doubleml"><span class="header-section-number">8.4</span> DoubleML</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./nonparametric.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./nonparametric.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></h1>
+<h1 class="title"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></h1>
 </div>
 
 
@@ -373,7 +467,7 @@ window.Quarto = {
 </header>
 
 
-<div id="1ce8c9bd" class="cell" data-execution_count="2">
+<div id="fa31aa6c" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -386,8 +480,11 @@ window.Quarto = {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">CausalEstimate</span>: estimate, confint, pvalue</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<section id="why-do-we-need-nonparametric-methods" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="why-do-we-need-nonparametric-methods"><span class="header-section-number">5.1</span> Why Do We Need Nonparametric Methods?</h2>
+<blockquote class="blockquote">
+<p><strong>Related reading</strong>: For an R-based TMLE simulation that compares super-learner libraries and stress-tests model misspecification, see the <a href="https://xiangao.github.io/blog_book/tmle.html">companion blog chapter on TMLE</a> in <em>Topics on Econometrics and Causal Inference</em>.</p>
+</blockquote>
+<section id="why-do-we-need-nonparametric-methods" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="why-do-we-need-nonparametric-methods"><span class="header-section-number">8.1</span> Why Do We Need Nonparametric Methods?</h2>
 <ul>
 <li>Parametric models are often mis-specified</li>
 <li>Nonparametric models are more flexible; less assumptions</li>
@@ -402,8 +499,8 @@ window.Quarto = {
 <li>Influence function based estimators are shown to be efficient.</li>
 </ul>
 </section>
-<section id="influence-function-based-estimators" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="influence-function-based-estimators"><span class="header-section-number">5.2</span> Influence Function Based Estimators</h2>
+<section id="influence-function-based-estimators" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="influence-function-based-estimators"><span class="header-section-number">8.2</span> Influence Function Based Estimators</h2>
 <p>Estimators based on efficient influence function are often <span class="math inline">\(\sqrt n\)</span> consistent, meaning they converge to the truth as fast as <span class="math inline">\(\sqrt n\)</span> rate. This means the bias not only goes to 0 with <span class="math inline">\(n\)</span> goes to infinity, but also as fast as <span class="math inline">\(1/ \sqrt n\)</span> goes to 0. Why does this matter? Because we have limited sample size, when we are based on asymptotics, the faster the bias goes to 0 the smaller sample size we need.</p>
 <p>If we have an estimator such that <span class="math display">\[ \sqrt n (\hat \psi - \psi) = \sqrt n P_n(\phi) + o_P(1) \rightarrow N(0, var(\phi))\]</span></p>
 <p>Then this estimator is <span class="math inline">\(\sqrt n\)</span> consistent and asymptotically normal; and <span class="math inline">\(\phi\)</span> is the influence function. The efficient influence function is the one with variance at the lower bound (similar to parametric case for Cramer-Rao lower bound).</p>
@@ -412,9 +509,9 @@ window.Quarto = {
 <p>For example, an IF-based bias-corrected estimator <span class="math display">\[\hat \psi = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu (X) \} + \hat \mu(X) \right]\]</span> where <span class="math inline">\(P_n\)</span> means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.</p>
 <p>Since we know the influence function, we can calculate its variance. This variance is the same as variance of <span class="math inline">\(\hat \psi\)</span> since they differ by a constant <span class="math inline">\(\psi\)</span>. We can use any estimators to estimate the nuisance parameters, then get <span class="math inline">\(\hat \psi\)</span>. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.</p>
 <p>In this estimator, both <span class="math inline">\(\hat \mu\)</span> and <span class="math inline">\(\hat \pi\)</span> can be done using any estimator, such as machine learning.</p>
-<section id="simulation-setup" class="level3" data-number="5.2.1">
-<h3 data-number="5.2.1" class="anchored" data-anchor-id="simulation-setup"><span class="header-section-number">5.2.1</span> Simulation Setup</h3>
-<div id="716431e7" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<section id="simulation-setup" class="level3" data-number="8.2.1">
+<h3 data-number="8.2.1" class="anchored" data-anchor-id="simulation-setup"><span class="header-section-number">8.2.1</span> Simulation Setup</h3>
+<div id="a157226f" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>w1 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Binomial</span>(<span class="fl">1</span>, <span class="fl">0.5</span>), n)</span>
@@ -443,7 +540,7 @@ window.Quarto = {
 <pre><code>True ATE = 0.184</code></pre>
 </div>
 </div>
-<div id="19505bd2" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="6075c220" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load MLJ models to form our equivalent of SuperLearner</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>LogisticClassifier <span class="op">=</span> <span class="pp">@load</span> LogisticClassifier pkg<span class="op">=</span>MLJLinearModels verbosity<span class="op">=</span><span class="fl">0</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>EvoTreeClassifier <span class="op">=</span> <span class="pp">@load</span> EvoTreeClassifier pkg<span class="op">=</span>EvoTrees verbosity<span class="op">=</span><span class="fl">0</span></span>
@@ -513,9 +610,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="plug-in-estimator-from-outcome-regression" class="level3" data-number="5.2.2">
-<h3 data-number="5.2.2" class="anchored" data-anchor-id="plug-in-estimator-from-outcome-regression"><span class="header-section-number">5.2.2</span> Plug-in Estimator from Outcome Regression</h3>
-<div id="6f1bdc45" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<section id="plug-in-estimator-from-outcome-regression" class="level3" data-number="8.2.2">
+<h3 data-number="8.2.2" class="anchored" data-anchor-id="plug-in-estimator-from-outcome-regression"><span class="header-section-number">8.2.2</span> Plug-in Estimator from Outcome Regression</h3>
+<div id="e7cf7b35" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>X_mu <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4, <span class="op">:</span>A)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>mach_mu <span class="op">=</span> <span class="fu">machine</span>(stack, X_mu, <span class="fu">categorical</span>(df.Y))</span>
@@ -536,9 +633,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="aipw-ate" class="level3" data-number="5.2.3">
-<h3 data-number="5.2.3" class="anchored" data-anchor-id="aipw-ate"><span class="header-section-number">5.2.3</span> AIPW ATE</h3>
-<div id="bbe08b2f" class="cell" data-cache="true" data-message="false" data-execution_count="6">
+<section id="aipw-ate" class="level3" data-number="8.2.3">
+<h3 data-number="8.2.3" class="anchored" data-anchor-id="aipw-ate"><span class="header-section-number">8.2.3</span> AIPW ATE</h3>
+<div id="0377d65b" class="cell" data-cache="true" data-message="false" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>X_pi <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>mach_pi <span class="op">=</span> <span class="fu">machine</span>(stack, X_pi, <span class="fu">categorical</span>(df.A))</span>
@@ -572,9 +669,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="aipw-ate-using-causalestimate.jl" class="level3" data-number="5.2.4">
-<h3 data-number="5.2.4" class="anchored" data-anchor-id="aipw-ate-using-causalestimate.jl"><span class="header-section-number">5.2.4</span> AIPW ATE Using CausalEstimate.jl</h3>
-<div id="4fe17188" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<section id="aipw-ate-using-causalestimate.jl" class="level3" data-number="8.2.4">
+<h3 data-number="8.2.4" class="anchored" data-anchor-id="aipw-ate-using-causalestimate.jl"><span class="header-section-number">8.2.4</span> AIPW ATE Using CausalEstimate.jl</h3>
+<div id="89734347" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">r</span>(x) <span class="op">=</span> <span class="fu">round</span>(x, sigdigits<span class="op">=</span><span class="fl">4</span>)</span>
@@ -592,9 +689,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="aipw-att" class="level3" data-number="5.2.5">
-<h3 data-number="5.2.5" class="anchored" data-anchor-id="aipw-att"><span class="header-section-number">5.2.5</span> AIPW ATT</h3>
-<div id="89160217" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<section id="aipw-att" class="level3" data-number="8.2.5">
+<h3 data-number="8.2.5" class="anchored" data-anchor-id="aipw-att"><span class="header-section-number">8.2.5</span> AIPW ATT</h3>
+<div id="dde0a01b" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> <span class="fu">copy</span>(df)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df2.pi0hat <span class="op">=</span> pi0hat</span>
@@ -628,9 +725,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="aipw-att-using-causalestimate.jl" class="level3" data-number="5.2.6">
-<h3 data-number="5.2.6" class="anchored" data-anchor-id="aipw-att-using-causalestimate.jl"><span class="header-section-number">5.2.6</span> AIPW ATT Using CausalEstimate.jl</h3>
-<div id="c0a8ceb2" class="cell" data-cache="true" data-message="false" data-execution_count="9">
+<section id="aipw-att-using-causalestimate.jl" class="level3" data-number="8.2.6">
+<h3 data-number="8.2.6" class="anchored" data-anchor-id="aipw-att-using-causalestimate.jl"><span class="header-section-number">8.2.6</span> AIPW ATT Using CausalEstimate.jl</h3>
+<div id="a515f6de" class="cell" data-cache="true" data-message="false" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>psi_att <span class="op">=</span> <span class="fu">ATT</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4])</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>att_result <span class="op">=</span> <span class="fu">estimate</span>(psi_att, <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -645,11 +742,11 @@ window.Quarto = {
 </div>
 </section>
 </section>
-<section id="tmle" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="tmle"><span class="header-section-number">5.3</span> TMLE</h2>
+<section id="tmle" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="tmle"><span class="header-section-number">8.3</span> TMLE</h2>
 <p>TMLE is a variant of IF based estimator. It is also a doubly robust estimator. See Mark van der Laan and his coauthors for the recent development of TMLE.</p>
 <p>We should expect AIPW and TMLE to give similar answers.</p>
-<div id="928253ac" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div id="278d11ee" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>tmle_result <span class="op">=</span> <span class="fu">estimate</span>(psi_ate, <span class="fu">TMLE</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -662,15 +759,15 @@ window.Quarto = {
 <pre><code>(TMLE = 0.1775, CI = (0.08638, 0.2687), pvalue = 0.0001349)</code></pre>
 </div>
 </div>
-<div id="c1eb48c4" class="cell" data-execution_count="11">
+<div id="e27c2736" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"True ATE: %.4g</span><span class="sc">\n</span><span class="st">"</span> True_Psi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True ATE: 0.184</code></pre>
 </div>
 </div>
 </section>
-<section id="doubleml" class="level2" data-number="5.4">
-<h2 data-number="5.4" class="anchored" data-anchor-id="doubleml"><span class="header-section-number">5.4</span> DoubleML</h2>
+<section id="doubleml" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="doubleml"><span class="header-section-number">8.4</span> DoubleML</h2>
 <p>DoubleML (Double/Debiased Machine Learning) was proposed by Chernozhukov et al.&nbsp;(2018). An R package <code>DoubleML</code> implements the framework; as of this writing there is no native Julia package, but the algorithm is straightforward to implement directly. The double machine learning framework consists of three key ingredients: Neyman orthogonality, high-quality machine learning estimation, and sample splitting.</p>
 <p>They consider a partially linear model:</p>
 <p><span class="math display">\[ y_i = \theta d_i + g_0(x_i) + \eta_i \]</span></p>
@@ -682,7 +779,7 @@ window.Quarto = {
 <p><span class="math display">\[\psi (W; \theta, \eta) = (Y-D\theta -g(X))(D-m(X)) \]</span></p>
 <p>The estimator <span class="math inline">\(\hat \theta\)</span> is to solve the equation that the sample mean of this score function being 0.</p>
 <p>And the variance of this score function is used as the variance of the doubleML estimator’s variance.</p>
-<div id="9cf1971c" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<div id="b3da2877" class="cell" data-cache="true" data-message="false" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -717,7 +814,7 @@ window.Quarto = {
 <span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>    V_res[test_idx] <span class="op">=</span> df.A[test_idx] <span class="op">.-</span> a_pred</span>
 <span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="bbf9ecc2" class="cell" data-cache="true" data-message="false" data-execution_count="13">
+<div id="84d73493" class="cell" data-cache="true" data-message="false" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FWL theorem: regress residual W_res on residual V_res</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>theta_hat <span class="op">=</span> <span class="fu">sum</span>(W_res <span class="op">.*</span> V_res) <span class="op">/</span> <span class="fu">sum</span>(V_res <span class="op">.^</span> <span class="fl">2</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1142,13 +1239,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./estimation.html" class="pagination-link" aria-label="Estimation: RA, IPW, AIPW and IPWRA">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span>
+      <a href="./matching.html" class="pagination-link" aria-label="Matching Estimators">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./did.html" class="pagination-link" aria-label="Difference-in-Differences">
-        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./heterogeneous-effects.html" class="pagination-link" aria-label="Heterogeneous Treatment Effects with Machine Learning">
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>6&nbsp; Difference-in-Differences – Causal Econometrics with Julia</title>
+<title>13&nbsp; Difference-in-Differences – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./synthetic-control-did-tasc.html" rel="next">
-<link href="./nonparametric.html" rel="prev">
+<link href="./distributional-effects.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -150,7 +150,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./did.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./did.html"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -202,14 +202,26 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
   </div>
 </li>
       </ul>
@@ -226,13 +238,43 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -249,25 +291,37 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -275,7 +329,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
- <span class="menu-text">Mediation</span></a>
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -283,8 +337,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
   </div>
 </li>
       </ul>
@@ -292,7 +346,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
- <span class="menu-text">Causal Discovery</span></a>
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -300,14 +354,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
   </div>
 </li>
       </ul>
@@ -315,7 +363,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
- <span class="menu-text">Appendix</span></a>
+ <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -323,8 +371,54 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
       </ul>
@@ -339,26 +433,26 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#t2-panel-data" id="toc-t2-panel-data" class="nav-link active" data-scroll-target="#t2-panel-data"><span class="header-section-number">6.1</span> <span class="math inline">\(T=2\)</span> Panel Data</a></li>
-  <li><a href="#parallel-trends-assumption" id="toc-parallel-trends-assumption" class="nav-link" data-scroll-target="#parallel-trends-assumption"><span class="header-section-number">6.2</span> Parallel Trends Assumption</a></li>
-  <li><a href="#no-anticipation-assumption" id="toc-no-anticipation-assumption" class="nav-link" data-scroll-target="#no-anticipation-assumption"><span class="header-section-number">6.3</span> No Anticipation Assumption</a></li>
-  <li><a href="#did-is-identified-with-pt-and-na" id="toc-did-is-identified-with-pt-and-na" class="nav-link" data-scroll-target="#did-is-identified-with-pt-and-na"><span class="header-section-number">6.4</span> DiD is Identified with PT and NA</a></li>
-  <li><a href="#advantages-and-disadvantages-of-did" id="toc-advantages-and-disadvantages-of-did" class="nav-link" data-scroll-target="#advantages-and-disadvantages-of-did"><span class="header-section-number">6.5</span> Advantages and Disadvantages of DiD</a></li>
-  <li><a href="#traditional-did" id="toc-traditional-did" class="nav-link" data-scroll-target="#traditional-did"><span class="header-section-number">6.6</span> Traditional DiD</a></li>
-  <li><a href="#twfe-with-staggered-treatment-timing" id="toc-twfe-with-staggered-treatment-timing" class="nav-link" data-scroll-target="#twfe-with-staggered-treatment-timing"><span class="header-section-number">6.7</span> TWFE with Staggered Treatment Timing</a></li>
-  <li><a href="#goodman-bacon-decomposition" id="toc-goodman-bacon-decomposition" class="nav-link" data-scroll-target="#goodman-bacon-decomposition"><span class="header-section-number">6.8</span> Goodman-Bacon Decomposition</a></li>
-  <li><a href="#wooldridges-etwfe" id="toc-wooldridges-etwfe" class="nav-link" data-scroll-target="#wooldridges-etwfe"><span class="header-section-number">6.9</span> Wooldridge’s ETWFE</a></li>
-  <li><a href="#example-1-us-teen-employment" id="toc-example-1-us-teen-employment" class="nav-link" data-scroll-target="#example-1-us-teen-employment"><span class="header-section-number">6.10</span> Example 1: US Teen Employment</a></li>
-  <li><a href="#example-2-staggered-did" id="toc-example-2-staggered-did" class="nav-link" data-scroll-target="#example-2-staggered-did"><span class="header-section-number">6.11</span> Example 2: Staggered DiD</a></li>
+  <li><a href="#t2-panel-data" id="toc-t2-panel-data" class="nav-link active" data-scroll-target="#t2-panel-data"><span class="header-section-number">13.1</span> <span class="math inline">\(T=2\)</span> Panel Data</a></li>
+  <li><a href="#parallel-trends-assumption" id="toc-parallel-trends-assumption" class="nav-link" data-scroll-target="#parallel-trends-assumption"><span class="header-section-number">13.2</span> Parallel Trends Assumption</a></li>
+  <li><a href="#no-anticipation-assumption" id="toc-no-anticipation-assumption" class="nav-link" data-scroll-target="#no-anticipation-assumption"><span class="header-section-number">13.3</span> No Anticipation Assumption</a></li>
+  <li><a href="#did-is-identified-with-pt-and-na" id="toc-did-is-identified-with-pt-and-na" class="nav-link" data-scroll-target="#did-is-identified-with-pt-and-na"><span class="header-section-number">13.4</span> DiD is Identified with PT and NA</a></li>
+  <li><a href="#advantages-and-disadvantages-of-did" id="toc-advantages-and-disadvantages-of-did" class="nav-link" data-scroll-target="#advantages-and-disadvantages-of-did"><span class="header-section-number">13.5</span> Advantages and Disadvantages of DiD</a></li>
+  <li><a href="#traditional-did" id="toc-traditional-did" class="nav-link" data-scroll-target="#traditional-did"><span class="header-section-number">13.6</span> Traditional DiD</a></li>
+  <li><a href="#twfe-with-staggered-treatment-timing" id="toc-twfe-with-staggered-treatment-timing" class="nav-link" data-scroll-target="#twfe-with-staggered-treatment-timing"><span class="header-section-number">13.7</span> TWFE with Staggered Treatment Timing</a></li>
+  <li><a href="#goodman-bacon-decomposition" id="toc-goodman-bacon-decomposition" class="nav-link" data-scroll-target="#goodman-bacon-decomposition"><span class="header-section-number">13.8</span> Goodman-Bacon Decomposition</a></li>
+  <li><a href="#wooldridges-etwfe" id="toc-wooldridges-etwfe" class="nav-link" data-scroll-target="#wooldridges-etwfe"><span class="header-section-number">13.9</span> Wooldridge’s ETWFE</a></li>
+  <li><a href="#example-1-us-teen-employment" id="toc-example-1-us-teen-employment" class="nav-link" data-scroll-target="#example-1-us-teen-employment"><span class="header-section-number">13.10</span> Example 1: US Teen Employment</a></li>
+  <li><a href="#example-2-staggered-did" id="toc-example-2-staggered-did" class="nav-link" data-scroll-target="#example-2-staggered-did"><span class="header-section-number">13.11</span> Example 2: Staggered DiD</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./did.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./did.html"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></h1>
+<h1 class="title"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></h1>
 </div>
 
 
@@ -375,7 +469,7 @@ window.Quarto = {
 </header>
 
 
-<div id="379be740" class="cell" data-execution_count="2">
+<div id="7d0004b0" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFramesMeta</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
@@ -391,8 +485,11 @@ window.Quarto = {
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RegressionTables</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.</p>
-<section id="t2-panel-data" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="t2-panel-data"><span class="header-section-number">6.1</span> <span class="math inline">\(T=2\)</span> Panel Data</h2>
+<blockquote class="blockquote">
+<p><strong>Related reading</strong>: For a side-by-side comparison of DiD, synthetic control, synthetic DiD, and multivariate SC on a <em>single</em> panel — and how the choice of estimator changes the answer — see the <a href="https://xiangao.github.io/blog_book/same-data-different-estimators.html">Same data, different estimators</a> chapter of <em>Topics on Econometrics and Causal Inference</em>.</p>
+</blockquote>
+<section id="t2-panel-data" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="t2-panel-data"><span class="header-section-number">13.1</span> <span class="math inline">\(T=2\)</span> Panel Data</h2>
 <p>Suppose we have two periods, <span class="math inline">\(t = (1,2)\)</span>. Some units are treated just prior to period 2. For each individual <span class="math inline">\(i\)</span>, there are four potential outcomes:</p>
 <p><span class="math display">\[ [Y_{i1}(0), Y_{i1}(1), Y_{i2}(0), Y_{i2}(1)] \]</span></p>
 <p>We use <span class="math inline">\(D\)</span> to identify the treated group.</p>
@@ -400,20 +497,20 @@ window.Quarto = {
 <p><span class="math display">\[ \tau_{2,att} = E(Y_2(1) - Y_2(0) | D=1) \]</span></p>
 <p>In words, we are interested in the ATT in the second period. The difficult part is the second term.</p>
 </section>
-<section id="parallel-trends-assumption" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="parallel-trends-assumption"><span class="header-section-number">6.2</span> Parallel Trends Assumption</h2>
+<section id="parallel-trends-assumption" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="parallel-trends-assumption"><span class="header-section-number">13.2</span> Parallel Trends Assumption</h2>
 <p><span class="math display">\[ E[Y_2(0) -Y_1(0) | D=1] = E[Y_2(0) - Y_1(0) | D =0] \]</span></p>
 <p>or</p>
 <p><span class="math display">\[ E[\Delta Y(0) | D=1] = E[\Delta Y(0) | D =0] \]</span></p>
 <p>In other words, this means the change of potential outcome for untreated state between period 1 and 2 is independent of treatment assignment (unconfounded).</p>
 </section>
-<section id="no-anticipation-assumption" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="no-anticipation-assumption"><span class="header-section-number">6.3</span> No Anticipation Assumption</h2>
+<section id="no-anticipation-assumption" class="level2" data-number="13.3">
+<h2 data-number="13.3" class="anchored" data-anchor-id="no-anticipation-assumption"><span class="header-section-number">13.3</span> No Anticipation Assumption</h2>
 <p><span class="math display">\[ E[Y_1(1) - Y_1(0) | D=1] = 0 \]</span></p>
 <p>This is to say, in period 1, there is no treatment effect for the treated group.</p>
 </section>
-<section id="did-is-identified-with-pt-and-na" class="level2" data-number="6.4">
-<h2 data-number="6.4" class="anchored" data-anchor-id="did-is-identified-with-pt-and-na"><span class="header-section-number">6.4</span> DiD is Identified with PT and NA</h2>
+<section id="did-is-identified-with-pt-and-na" class="level2" data-number="13.4">
+<h2 data-number="13.4" class="anchored" data-anchor-id="did-is-identified-with-pt-and-na"><span class="header-section-number">13.4</span> DiD is Identified with PT and NA</h2>
 <p>With Parallel Trends, we notice <span class="math display">\[\small  E[Y_2(0) | D=1 ]= E[Y_1(0) | D=1] + E[Y_2(0) - Y_1(0) | D=0] \]</span></p>
 <p>Then, with No Anticipation, <span class="math display">\[\small  \begin{align}
 E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
@@ -421,8 +518,8 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 \end{align} \]</span></p>
 <p><span class="math display">\[\small  \tau_{2,att} = E[Y_2 - Y_1 | D=1] - E[Y_2-Y_1 | D=0] \]</span></p>
 </section>
-<section id="advantages-and-disadvantages-of-did" class="level2" data-number="6.5">
-<h2 data-number="6.5" class="anchored" data-anchor-id="advantages-and-disadvantages-of-did"><span class="header-section-number">6.5</span> Advantages and Disadvantages of DiD</h2>
+<section id="advantages-and-disadvantages-of-did" class="level2" data-number="13.5">
+<h2 data-number="13.5" class="anchored" data-anchor-id="advantages-and-disadvantages-of-did"><span class="header-section-number">13.5</span> Advantages and Disadvantages of DiD</h2>
 <p>Advantages:</p>
 <ul>
 <li>No need to assume unconfoundedness. We “only” need PT and NA. Or say we don’t need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This is importantly weaker in a lot of situations. There can be selection bias. If the selection bias does not change over time, then DiD can handle it.</li>
@@ -433,23 +530,23 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <li>PT is not scale free, in the sense that even if outcome can have PT, but then non-linear transformation of outcome won’t have PT (for example log of Y).</li>
 </ul>
 </section>
-<section id="traditional-did" class="level2" data-number="6.6">
-<h2 data-number="6.6" class="anchored" data-anchor-id="traditional-did"><span class="header-section-number">6.6</span> Traditional DiD</h2>
+<section id="traditional-did" class="level2" data-number="13.6">
+<h2 data-number="13.6" class="anchored" data-anchor-id="traditional-did"><span class="header-section-number">13.6</span> Traditional DiD</h2>
 <p>In practice, DiD in many period setting is usually done with</p>
 <p><span class="math display">\[ Y_{it} = \alpha_i + \phi_t + W_{it} \beta + \epsilon_{it} \]</span></p>
 <p>here <span class="math inline">\(W_{it} =(1[t=2] \cdot D_i)\)</span>, which is the interaction of post-treatment indicator and treatment group indicator.</p>
 <p>This is usually called Two Way Fixed Effect (TWFE). There are multiple ways to implement the same model in practice.</p>
 <p>TWFE can be done by “Pooled OLS”. That is, using OLS on time dummies and firm (individual) dummies. Wooldridge (2021) shows it’s equivalent to use treatment dummies, instead of individual dummies. He also shows that this model can be equivalently implemented with fixed effect model and random effect model.</p>
 </section>
-<section id="twfe-with-staggered-treatment-timing" class="level2" data-number="6.7">
-<h2 data-number="6.7" class="anchored" data-anchor-id="twfe-with-staggered-treatment-timing"><span class="header-section-number">6.7</span> TWFE with Staggered Treatment Timing</h2>
+<section id="twfe-with-staggered-treatment-timing" class="level2" data-number="13.7">
+<h2 data-number="13.7" class="anchored" data-anchor-id="twfe-with-staggered-treatment-timing"><span class="header-section-number">13.7</span> TWFE with Staggered Treatment Timing</h2>
 <p>The problem comes in when there is different timing of treatment. People used to still use</p>
 <p><span class="math display">\[ Y_{it} = \alpha_i + \phi_t + W_{it} \beta + \epsilon_{it} \]</span></p>
 <p>where <span class="math inline">\(W_{it}\)</span> now is a dummy when an individual <span class="math inline">\(i\)</span> gets treated at time <span class="math inline">\(t\)</span>.</p>
 <p>However, what is <span class="math inline">\(\beta\)</span> here?</p>
 </section>
-<section id="goodman-bacon-decomposition" class="level2" data-number="6.8">
-<h2 data-number="6.8" class="anchored" data-anchor-id="goodman-bacon-decomposition"><span class="header-section-number">6.8</span> Goodman-Bacon Decomposition</h2>
+<section id="goodman-bacon-decomposition" class="level2" data-number="13.8">
+<h2 data-number="13.8" class="anchored" data-anchor-id="goodman-bacon-decomposition"><span class="header-section-number">13.8</span> Goodman-Bacon Decomposition</h2>
 <p>Goodman-Bacon (2021) showed that <span class="math inline">\(\beta\)</span> in the TWFE is a weighted average of many different treatment effects, between treated cohorts, and control units, both can be different at different time points. The weights are a function of the size of the subsample, relative size of treatment and control units, and the timing of treatment in the sub sample. They can be negative. The units treated earlier can still be used as controls later. Therefore there is no meaningful interpretation of <span class="math inline">\(\beta\)</span>. It does not need to be a convex combination of treatment effects.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -464,16 +561,16 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </figure>
 </div>
 </section>
-<section id="wooldridges-etwfe" class="level2" data-number="6.9">
-<h2 data-number="6.9" class="anchored" data-anchor-id="wooldridges-etwfe"><span class="header-section-number">6.9</span> Wooldridge’s ETWFE</h2>
+<section id="wooldridges-etwfe" class="level2" data-number="13.9">
+<h2 data-number="13.9" class="anchored" data-anchor-id="wooldridges-etwfe"><span class="header-section-number">13.9</span> Wooldridge’s ETWFE</h2>
 <p>There are a lot of ways to deal with staggered DiD situation. Wooldridge (2021) is basically saying: This is not a problem of TWFE, it’s a mis-use of TWFE. The reason we get non-sensible result of <span class="math inline">\(\beta\)</span> is that we know there is heterogeneous treatment effect, in the sense the treatment effect differs across cohort, but we force them to be the same. If we relax it, it can work. As he shows, this works when we specify cohort effects accordingly.</p>
 <p><span class="math display">\[ y_{it} = \alpha_i + \phi_t + \sum_{g=g_0}^G \sum_{t=g}^T \lambda_{g,t} \times 1(g,t) + \epsilon_{i,t} \]</span></p>
 <p>Here <span class="math inline">\(g\)</span> is a cohort indicator, a cohort is determined by the time of getting treatment. ETWFE is allowing each cohort to have different effect at each different time point after being treated. The baseline group is the never treated group. If there is no never treated group, it can easily changed to comparing to the last treated group.</p>
 </section>
-<section id="example-1-us-teen-employment" class="level2" data-number="6.10">
-<h2 data-number="6.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">6.10</span> Example 1: US Teen Employment</h2>
+<section id="example-1-us-teen-employment" class="level2" data-number="13.10">
+<h2 data-number="13.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">13.10</span> Example 1: US Teen Employment</h2>
 <p>We’ll use the mpdta dataset on US teen employment from the did package. “Treatment” in this dataset refers to an increase in the minimum wage rate. Our goal is to estimate the effect of this minimum wage treatment (treat) on the log of teen employment (lemp). Notice that the panel ID is at the county level (countyreal), but treatment was staggered across cohorts (first_treat) so that a group of counties were treated at the same time. In addition to these staggered treatment effects, we also observe log population (lpop) as a potential control variable.</p>
-<div id="aa654628" class="cell" data-cache="true" data-execution_count="3">
+<div id="961e0780" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load mpdta dataset from the did R package (Callaway &amp; Sant'Anna 2021)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># US teen employment data; treatment = minimum wage increase</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mpdta <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mpdta.csv"</span>, DataFrame)</span>
@@ -562,7 +659,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="801f9e6e" class="cell" data-cache="true" data-execution_count="4">
+<div id="9a7695d8" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>year), nrow)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>treat), nrow)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -607,7 +704,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 </div>
-<div id="b93236f5" class="cell" data-cache="true" data-execution_count="5">
+<div id="c1612a37" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns enable StatsModels to generate cohort×time dummies (ETWFE)</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mpdta.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.first_treat)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mpdta.year_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.year)</span>
@@ -621,7 +718,7 @@ Iterations: 1
 StatsBase.CoefTable(Any[[-3.4135316702287624e-33, -0.016068364858818695, 0.047730936400964666, -0.0104701478480778, -0.02119242369406829, -0.022699245305459644, 0.0305968097333614, -0.01058091587048539, 0.0026833514425835467, -0.00635008942575461  …  0.0030174212587004232, 0.016306614436172342, 0.01927923735644746, -0.054180200273172406, 0.02405214108803968, 0.010848821828685481, 0.02583846223358552, -0.011173599592035538, -0.006018498628176904, -0.008646364013373136], [2.693734919824209e-33, 0.010078316236422944, 0.01595288409731988, 0.017137025099277562, 0.011759676186809464, 0.007612886466273422, 0.013915644744225132, 0.00989279226068868, 0.008805267304217107, 0.006488322802137784  …  0.009240983616431102, 0.007952522630443234, 0.008259811231470142, 0.013273467701922963, 0.010176640147651453, 0.009275934764944458, 0.009151011027330144, 0.015526030036024176, 0.012651681503127534, 0.011287368047456251], [-1.2672114264500558, -1.5943501356652978, 2.991994181728154, -0.6109664768197828, -1.802126466529691, -2.9816870914891145, 2.198734610989462, -1.0695580774025883, 0.30474389361222565, -0.9786950525430658  …  0.3265259829413875, 2.050495823017041, 2.334101448104886, -4.081842174921869, 2.363465813772573, 1.1695664214549315, 2.823563664869064, -0.7196688120601379, -0.47570740906567344, -0.7660212705938744], [0.20507970114688281, 0.11085763425089842, 0.0027716154538513574, 0.5412217737289009, 0.07152551052359446, 0.0028666482948026565, 0.02789679840386153, 0.28481827388510017, 0.7605612164012949, 0.32773067736526  …  0.7440264340669105, 0.04031607098319924, 0.019590410497807256, 4.4680135143972516e-5, 0.01810489696348593, 0.24217549685092654, 0.004749299250498021, 0.4717289331182837, 0.6342828417802775, 0.4436636459744491]], ["Estimate", "Std. Error", "z value", "Pr(&gt;|z|)"], ["lpop", "first_treat_str: 0 &amp; year_str: 2003", "first_treat_str: 2004 &amp; year_str: 2003", "first_treat_str: 2006 &amp; year_str: 2003", "first_treat_str: 2007 &amp; year_str: 2003", "first_treat_str: 0 &amp; year_str: 2004", "first_treat_str: 2004 &amp; year_str: 2004", "first_treat_str: 2006 &amp; year_str: 2004", "first_treat_str: 2007 &amp; year_str: 2004", "first_treat_str: 0 &amp; year_str: 2005"  …  "first_treat_str: 2006 &amp; year_str: 2005", "first_treat_str: 2007 &amp; year_str: 2005", "first_treat_str: 0 &amp; year_str: 2006", "first_treat_str: 2004 &amp; year_str: 2006", "first_treat_str: 2006 &amp; year_str: 2006", "first_treat_str: 2007 &amp; year_str: 2006", "first_treat_str: 0 &amp; year_str: 2007", "first_treat_str: 2004 &amp; year_str: 2007", "first_treat_str: 2006 &amp; year_str: 2007", "first_treat_str: 2007 &amp; year_str: 2007"], 4, 3)</code></pre>
 </div>
 </div>
-<div id="a6499d40" class="cell" data-cache="true" data-execution_count="6">
+<div id="ca6db556" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -797,7 +894,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="8e1ecb32" class="cell" data-cache="true" data-execution_count="7">
+<div id="4a71c048" class="cell" data-cache="true" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -834,7 +931,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="053a3f80" class="cell" data-cache="true" data-execution_count="8">
+<div id="0aec5c1c" class="cell" data-cache="true" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -896,7 +993,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="1114bdfc" class="cell" data-cache="true" data-execution_count="9">
+<div id="b24bf463" class="cell" data-cache="true" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
@@ -921,9 +1018,9 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </section>
-<section id="example-2-staggered-did" class="level2" data-number="6.11">
-<h2 data-number="6.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">6.11</span> Example 2: Staggered DiD</h2>
-<div id="cde1deaf" class="cell" data-cache="true" data-execution_count="10">
+<section id="example-2-staggered-did" class="level2" data-number="13.11">
+<h2 data-number="13.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">13.11</span> Example 2: Staggered DiD</h2>
+<div id="05230c1a" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>did_data <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">readstat</span>(<span class="st">"data/did_staggered_6.dta"</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>first_treat <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span></span>
@@ -1061,7 +1158,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="f596ffab" class="cell" data-cache="true" data-execution_count="11">
+<div id="22677d92" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(did_data, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div><div style="float: left;"><span>4×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -1104,7 +1201,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="6684d863" class="cell" data-cache="true" data-execution_count="12">
+<div id="52a31bbe" class="cell" data-cache="true" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>treated_cohort1 <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="op">:</span>f04 <span class="op">==</span> <span class="fl">1</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"d4f04"</span></span>
@@ -1172,7 +1269,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="e1f4be2b" class="cell" data-cache="true" data-execution_count="13">
+<div id="caea4c66" class="cell" data-cache="true" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort2), <span class="op">:</span>treated_cohort2), <span class="op">:</span>te5 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean5)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort3), <span class="op">:</span>treated_cohort3), <span class="op">:</span>te6 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
@@ -1201,7 +1298,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="d0f687c9" class="cell" data-cache="true" data-execution_count="14">
+<div id="acba4302" class="cell" data-cache="true" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns needed for cohort×time ETWFE dummies</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>did_data.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(did_data.first_treat)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>did_data.year_str <span class="op">=</span> <span class="fu">string</span>.(did_data.year)</span>
@@ -1411,7 +1508,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="2b85a02f" class="cell" data-cache="true" data-execution_count="15">
+<div id="9feee7ae" class="cell" data-cache="true" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
@@ -1448,7 +1545,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="1a672826" class="cell" data-cache="true" data-execution_count="16">
+<div id="4b5b5919" class="cell" data-cache="true" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -1502,7 +1599,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="28038da5" class="cell" data-cache="true" data-execution_count="17">
+<div id="5585775b" class="cell" data-cache="true" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mod_es2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
@@ -1964,13 +2061,13 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./nonparametric.html" class="pagination-link" aria-label="Nonparametric Causal Methods">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span>
+      <a href="./distributional-effects.html" class="pagination-link" aria-label="Distributional Treatment Effects">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./synthetic-control-did-tasc.html" class="pagination-link" aria-label="Synthetic Control, DiD, and TASC">
-        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

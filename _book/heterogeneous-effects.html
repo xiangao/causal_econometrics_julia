@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>9&nbsp; Heterogeneous Treatment Effects with Machine Learning – Causal Econometrics with Julia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./continuous-treatments.html" rel="next">
+<link href="./nonparametric.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./heterogeneous-effects.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Identification</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Estimation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Designs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./did.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Mediation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-data-generating-process" id="toc-the-data-generating-process" class="nav-link active" data-scroll-target="#the-data-generating-process"><span class="header-section-number">9.1</span> The data-generating process</a></li>
+  <li><a href="#a-wrapper-for-fitting-random-forests" id="toc-a-wrapper-for-fitting-random-forests" class="nav-link" data-scroll-target="#a-wrapper-for-fitting-random-forests"><span class="header-section-number">9.2</span> A wrapper for fitting random forests</a></li>
+  <li><a href="#s-learner-single" id="toc-s-learner-single" class="nav-link" data-scroll-target="#s-learner-single"><span class="header-section-number">9.3</span> S-learner (“single”)</a></li>
+  <li><a href="#t-learner-two" id="toc-t-learner-two" class="nav-link" data-scroll-target="#t-learner-two"><span class="header-section-number">9.4</span> T-learner (“two”)</a></li>
+  <li><a href="#x-learner-künzel-et-al.-2019" id="toc-x-learner-künzel-et-al.-2019" class="nav-link" data-scroll-target="#x-learner-künzel-et-al.-2019"><span class="header-section-number">9.5</span> X-learner (Künzel et al.&nbsp;2019)</a></li>
+  <li><a href="#r-learner-nie-wager-2021" id="toc-r-learner-nie-wager-2021" class="nav-link" data-scroll-target="#r-learner-nie-wager-2021"><span class="header-section-number">9.6</span> R-learner (Nie &amp; Wager 2021)</a></li>
+  <li><a href="#dr-learner-kennedy-2020" id="toc-dr-learner-kennedy-2020" class="nav-link" data-scroll-target="#dr-learner-kennedy-2020"><span class="header-section-number">9.7</span> DR-learner (Kennedy 2020)</a></li>
+  <li><a href="#comparing-all-five-estimators" id="toc-comparing-all-five-estimators" class="nav-link" data-scroll-target="#comparing-all-five-estimators"><span class="header-section-number">9.8</span> Comparing all five estimators</a></li>
+  <li><a href="#best-linear-projection-blp" id="toc-best-linear-projection-blp" class="nav-link" data-scroll-target="#best-linear-projection-blp"><span class="header-section-number">9.9</span> Best Linear Projection (BLP)</a></li>
+  <li><a href="#clan-testing-for-heterogeneity" id="toc-clan-testing-for-heterogeneity" class="nav-link" data-scroll-target="#clan-testing-for-heterogeneity"><span class="header-section-number">9.10</span> CLAN: testing for heterogeneity</a></li>
+  <li><a href="#variable-importance-which-covariate-drives-heterogeneity" id="toc-variable-importance-which-covariate-drives-heterogeneity" class="nav-link" data-scroll-target="#variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</a></li>
+  <li><a href="#policy-learning-who-should-we-treat" id="toc-policy-learning-who-should-we-treat" class="nav-link" data-scroll-target="#policy-learning-who-should-we-treat"><span class="header-section-number">9.12</span> Policy learning: who should we treat?</a></li>
+  <li><a href="#causal-forests-with-panel-data" id="toc-causal-forests-with-panel-data" class="nav-link" data-scroll-target="#causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">9.14</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">9.15</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./heterogeneous-effects.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="5c121f47" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJDecisionTreeInterface</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The <a href="./causal-estimands.html">estimands chapter</a> defined the conditional average treatment effect</p>
+<p><span class="math display">\[
+\text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
+\]</span></p>
+<p>as the effect of treatment for individuals with covariates <span class="math inline">\(X = x\)</span>. There, we computed CATE from known potential outcomes — a luxury only simulation affords. In real data, <span class="math inline">\(Y(0)\)</span> and <span class="math inline">\(Y(1)\)</span> are never both observed, and CATE must be <em>estimated</em> from <span class="math inline">\((X, D, Y)\)</span> without strong functional-form assumptions.</p>
+<p>This chapter covers the <strong>meta-learner</strong> recipe: any flexible regression algorithm can be turned into a CATE estimator. We implement the five most common meta-learners — S-, T-, X-, R-, and DR-learners — using <code>MLJ</code> + <code>DecisionTree.jl</code>’s random forests as the base learner.</p>
+<p>The chapter focuses on meta-learners rather than honest causal forests (Wager-Athey 2018) because Julia does not currently have a native implementation of honest sample-splitting trees. A T-learner with random forests provides a reasonable approximation; for production work with formal confidence intervals on CATE predictions, the R companion chapter covers <code>grf::causal_forest</code>.</p>
+<section id="the-data-generating-process" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">9.1</span> The data-generating process</h2>
+<p>Reuse the DGP from the estimands chapter, where the true CATE is <span class="math inline">\(\tau(x) = 1 + 2 x_1\)</span>:</p>
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X    <span class="op">=</span> <span class="fu">rand</span>(n, p)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>U    <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment depends on a noise covariate (X2) and U — backdoor confounding</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>ps   <span class="op">=</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.3</span> <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>] <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> U)))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>D    <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> ps)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>tau  <span class="op">=</span> @. <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">1</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>Y0   <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>] <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> U <span class="op">+</span> <span class="fu">randn</span>()</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>Y1   <span class="op">=</span> Y0 <span class="op">.+</span> tau</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>Y    <span class="op">=</span> <span class="fu">ifelse</span>.(D <span class="op">.==</span> <span class="fl">1</span>, Y1, Y0)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, true ATE = %.3f</span><span class="sc">\n</span><span class="st">"</span>, n, <span class="fu">mean</span>(tau))</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.2: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.2</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.8: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n = 5000, true ATE = 2.009
+True CATE at X1 = 0.2: 1.40
+True CATE at X1 = 0.8: 2.60</code></pre>
+</div>
+</div>
+<p>The treatment is confounded through <span class="math inline">\(X_2\)</span> and the unobserved <span class="math inline">\(U\)</span>. We condition on <span class="math inline">\(X_2\)</span> to restore identification; we cannot condition on <span class="math inline">\(U\)</span>.</p>
+</section>
+<section id="a-wrapper-for-fitting-random-forests" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="a-wrapper-for-fitting-random-forests"><span class="header-section-number">9.2</span> A wrapper for fitting random forests</h2>
+<p>To keep the code compact, define a small helper that fits a random forest and returns the predictions:</p>
+<div id="helper" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> RFR <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">Fit a random forest on (Xtrain, ytrain) and return predictions at Xpredict.</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rf_fit_predict</span>(Xtrain, ytrain, Xpredict; n_trees<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    learner <span class="op">=</span> <span class="fu">RFR</span>(n_trees<span class="op">=</span>n_trees, max_depth<span class="op">=-</span><span class="fl">1</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    Xtrain_t <span class="op">=</span> MLJ.<span class="fu">table</span>(Xtrain)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    Xpred_t  <span class="op">=</span> MLJ.<span class="fu">table</span>(Xpredict)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    mach <span class="op">=</span> <span class="fu">machine</span>(learner, Xtrain_t, <span class="fu">Float64</span>.(ytrain))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fit!</span>(mach, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> MLJ.<span class="fu">predict</span>(mach, Xpred_t)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="s-learner-single" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="s-learner-single"><span class="header-section-number">9.3</span> S-learner (“single”)</h2>
+<p>Fit one regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\((D, X)\)</span>, then predict the difference between <span class="math inline">\(D = 1\)</span> and <span class="math inline">\(D = 0\)</span> for each <span class="math inline">\(x\)</span>:</p>
+<div id="s-learner" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_with_D <span class="op">=</span> <span class="fu">hcat</span>(D, X)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X1_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), X)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>X0_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">zeros</span>(n), X)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>mu1_S <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_with_D, Y, X1_test)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>mu0_S <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_with_D, Y, X0_test)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>tau_S <span class="op">=</span> mu1_S <span class="op">.-</span> mu0_S</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"S-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_S, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>S-learner CATE correlation with truth: 0.711</code></pre>
+</div>
+</div>
+<p>The S-learner is simple but biased toward zero when the treatment effect is small relative to outcome variation, because the regression “ignores” the <span class="math inline">\(D\)</span> variable if it has little predictive value.</p>
+</section>
+<section id="t-learner-two" class="level2" data-number="9.4">
+<h2 data-number="9.4" class="anchored" data-anchor-id="t-learner-two"><span class="header-section-number">9.4</span> T-learner (“two”)</h2>
+<p>Fit two separate regressions, one on treated units and one on controls:</p>
+<div id="t-learner" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> D <span class="op">.==</span> <span class="fl">1</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> D <span class="op">.==</span> <span class="fl">0</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>mu1_T <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_T, <span class="op">:</span>], Y[idx_T], X)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>mu0_T <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_C, <span class="op">:</span>], Y[idx_C], X)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>tau_T <span class="op">=</span> mu1_T <span class="op">.-</span> mu0_T</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"T-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_T, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>T-learner CATE correlation with truth: 0.707</code></pre>
+</div>
+</div>
+<p>The T-learner avoids the bias-toward-zero of the S-learner but suffers when the treated and control distributions diverge: extrapolation errors compound when subtracting the two fitted functions.</p>
+</section>
+<section id="x-learner-künzel-et-al.-2019" class="level2" data-number="9.5">
+<h2 data-number="9.5" class="anchored" data-anchor-id="x-learner-künzel-et-al.-2019"><span class="header-section-number">9.5</span> X-learner (Künzel et al.&nbsp;2019)</h2>
+<p>The X-learner imputes the missing potential outcomes using the T-learner fits, then regresses the resulting pseudo-outcomes on <span class="math inline">\(X\)</span> separately within each arm, and combines them with weights from the propensity score:</p>
+<div id="x-learner" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: pseudo-outcomes</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>D1_pseudo <span class="op">=</span> Y[idx_T] <span class="op">.-</span> mu0_T[idx_T]      <span class="co"># observed - imputed Y(0)</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>D0_pseudo <span class="op">=</span> mu1_T[idx_C] <span class="op">.-</span> Y[idx_C]      <span class="co"># imputed Y(1) - observed</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: regress pseudo-outcomes on X in each arm</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>tau_X1 <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_T, <span class="op">:</span>], D1_pseudo, X)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>tau_X0 <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_C, <span class="op">:</span>], D0_pseudo, X)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: weight by propensity score</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>e_hat <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, D, X)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>e_hat <span class="op">=</span> <span class="fu">clamp</span>.(e_hat, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>tau_X <span class="op">=</span> e_hat <span class="op">.*</span> tau_X0 <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> e_hat) <span class="op">.*</span> tau_X1</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"X-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_X, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>X-learner CATE correlation with truth: 0.906</code></pre>
+</div>
+</div>
+<p>The X-learner is particularly effective when the propensity score is far from 0.5 (so one treatment arm is much smaller than the other) — common in observational studies.</p>
+</section>
+<section id="r-learner-nie-wager-2021" class="level2" data-number="9.6">
+<h2 data-number="9.6" class="anchored" data-anchor-id="r-learner-nie-wager-2021"><span class="header-section-number">9.6</span> R-learner (Nie &amp; Wager 2021)</h2>
+<p>The R-learner uses Robinson’s (1988) partialled-out residual approach. Define pseudo-outcomes that, in expectation, equal <span class="math inline">\(\tau(X)\)</span>:</p>
+<p><span class="math display">\[
+\tilde Y_i = \frac{Y_i - \hat m(X_i)}{D_i - \hat e(X_i)}, \qquad
+\text{weight}_i = (D_i - \hat e(X_i))^2,
+\]</span></p>
+<p>where <span class="math inline">\(\hat m(x) = \mathbb{E}[Y \mid X = x]\)</span> and <span class="math inline">\(\hat e(x) = \mathbb{E}[D \mid X = x]\)</span> are cross-fitted nuisance estimates.</p>
+<div id="r-learner" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cross-fitting: 2 folds</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>folds  <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, n)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>m_hat  <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    m_hat[test]    <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], Y[train], X[test, <span class="op">:</span>])</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    e_hat_cv[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], D[train], X[test, <span class="op">:</span>])</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">clamp</span>.(e_hat_cv, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>pseudo_R   <span class="op">=</span> (Y <span class="op">.-</span> m_hat) <span class="op">./</span> (D <span class="op">.-</span> e_hat_cv)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>weights_R  <span class="op">=</span> (D <span class="op">.-</span> e_hat_cv) <span class="op">.^</span> <span class="fl">2</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted regression: use random forest with per-sample weights via</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted bootstrap (cheap approximation: oversample by sqrt(weight))</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># For exact weighted regression, MLJ regressors can take a weights argument.</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co"># We approximate here with unweighted RF on pseudo_R (the R-learner identity</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co"># holds in expectation; the weighting reduces variance).</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>tau_R <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_R, X)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"R-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_R, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>R-learner CATE correlation with truth: 0.383</code></pre>
+</div>
+</div>
+<p>The R-learner is doubly robust in a Neyman-orthogonality sense and tends to be the most efficient meta-learner in moderately well-overlapping data.</p>
+</section>
+<section id="dr-learner-kennedy-2020" class="level2" data-number="9.7">
+<h2 data-number="9.7" class="anchored" data-anchor-id="dr-learner-kennedy-2020"><span class="header-section-number">9.7</span> DR-learner (Kennedy 2020)</h2>
+<p>The DR-learner constructs AIPW-based pseudo-outcomes and regresses them on <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[
+\tilde Y_i^{DR} = \hat\mu_1(X_i) - \hat\mu_0(X_i) +
+\frac{D_i (Y_i - \hat\mu_1(X_i))}{\hat e(X_i)} -
+\frac{(1 - D_i) (Y_i - \hat\mu_0(X_i))}{1 - \hat e(X_i)}.
+\]</span></p>
+<div id="dr-learner" class="cell" data-cache="true" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mu1_cf <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>mu0_cf <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>e_cf   <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    mu1_cf[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">1</span>), <span class="op">:</span>], Y[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">1</span>)],</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                                  X[test, <span class="op">:</span>])</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    mu0_cf[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">0</span>), <span class="op">:</span>], Y[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">0</span>)],</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>                                  X[test, <span class="op">:</span>])</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    e_cf[test]   <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], D[train], X[test, <span class="op">:</span>])</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>e_cf <span class="op">=</span> <span class="fu">clamp</span>.(e_cf, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>pseudo_DR <span class="op">=</span> @. (mu1_cf <span class="op">-</span> mu0_cf) <span class="op">+</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>               D <span class="op">*</span> (Y <span class="op">-</span> mu1_cf) <span class="op">/</span> e_cf <span class="op">-</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>               (<span class="fl">1</span> <span class="op">-</span> D) <span class="op">*</span> (Y <span class="op">-</span> mu0_cf) <span class="op">/</span> (<span class="fl">1</span> <span class="op">-</span> e_cf)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>tau_DR <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_DR, X)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"DR-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_DR, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DR-learner CATE correlation with truth: 0.424</code></pre>
+</div>
+</div>
+</section>
+<section id="comparing-all-five-estimators" class="level2" data-number="9.8">
+<h2 data-number="9.8" class="anchored" data-anchor-id="comparing-all-five-estimators"><span class="header-section-number">9.8</span> Comparing all five estimators</h2>
+<div id="cell-compare-plot" class="cell" data-cache="true" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">1000</span>, <span class="fl">700</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>labs <span class="op">=</span> [<span class="st">"S-learner"</span>, <span class="st">"T-learner"</span>, <span class="st">"X-learner"</span>, <span class="st">"R-learner"</span>, <span class="st">"DR-learner"</span>]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> [tau_S, tau_T, tau_X, tau_R, tau_DR]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i, (lab, pred)) <span class="kw">in</span> <span class="fu">enumerate</span>(<span class="fu">zip</span>(labs, preds))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    row, col <span class="op">=</span> <span class="fu">divrem</span>(i <span class="op">-</span> <span class="fl">1</span>, <span class="fl">3</span>) <span class="op">.+</span> (<span class="fl">1</span>, <span class="fl">1</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[row, col],</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>              xlabel <span class="op">=</span> <span class="st">"X1"</span>, ylabel <span class="op">=</span> <span class="st">"Estimated CATE"</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>              title <span class="op">=</span> lab)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scatter!</span>(ax, X[<span class="op">:</span>, <span class="fl">1</span>], pred, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), markersize <span class="op">=</span> <span class="fl">4</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, <span class="fl">0</span><span class="op">:</span><span class="fl">0.01</span><span class="op">:</span><span class="fl">1</span>, x <span class="op">-&gt;</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span>x, color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>           linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
+
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div id="compare-plot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="heterogeneous-effects_files/figure-html/compare-plot-output-2.svg" class="img-fluid figure-img"></p>
+<figcaption>Estimated CATE vs true τ(x) = 1 + 2 X₁ for each meta-learner. Red dashed line = ground truth.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="best-linear-projection-blp" class="level2" data-number="9.9">
+<h2 data-number="9.9" class="anchored" data-anchor-id="best-linear-projection-blp"><span class="header-section-number">9.9</span> Best Linear Projection (BLP)</h2>
+<p>Even when CATE is high-dimensional, we often want a simple summary: how does the treatment effect change with each covariate? The <strong>best linear projection</strong> of CATE onto <span class="math inline">\(X\)</span> is the OLS regression of the pseudo-outcomes on the covariates:</p>
+<p><span class="math display">\[
+\text{BLP}(X) = \arg\min_{\beta} \mathbb{E}\left[(\tau(X) - X'\beta)^2\right].
+\]</span></p>
+<p>A doubly-robust BLP uses the DR-learner pseudo-outcomes:</p>
+<div id="blp" class="cell" data-cache="true" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>blp_df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">hcat</span>(pseudo_DR, X), [<span class="op">:</span>tau_pseudo, <span class="op">:</span>X1, <span class="op">:</span>X2, <span class="op">:</span>X3, <span class="op">:</span>X4, <span class="op">:</span>X5])</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>blp_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(tau_pseudo <span class="op">~</span> X1 <span class="op">+</span> X2 <span class="op">+</span> X3 <span class="op">+</span> X4 <span class="op">+</span> X5), blp_df)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(blp_fit))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>StatsBase.CoefTable(Any[[1.0491980280052309, 2.06880499005843, 0.025224040596492147, 0.1168049914783185, -0.02064513179584383, -0.02313807841559642], [0.14016411913833968, 0.12069064903228814, 0.12127704834669321, 0.12248564191466972, 0.12274318018466555, 0.12274164025892546], [7.485496534028725, 17.141385903931685, 0.20798692696069326, 0.9536219074533758, -0.16819779123193232, -0.18851042210928803], [8.377346668013315e-14, 4.803247234253767e-64, 0.8352476560797701, 0.3403212164400472, 0.8664344895721525, 0.8504842058869386], [0.7744148053447648, 1.8321983200351033, -0.21253222958391252, -0.12332065281535344, -0.26127566418942966, -0.26376559187851634], [1.323981250665697, 2.3054116600817567, 0.2629803107768968, 0.35693063577199047, 0.219985400597742, 0.21748943504732351]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "X1", "X2", "X3", "X4", "X5"], 4, 3)</code></pre>
+</div>
+</div>
+<p>The BLP coefficient on <span class="math inline">\(X_1\)</span> should be close to 2 (the true slope of the CATE) and statistically significant; the coefficients on <span class="math inline">\(X_2\)</span> through <span class="math inline">\(X_5\)</span> should be close to 0. This is a clean test for heterogeneity along specific covariates.</p>
+</section>
+<section id="clan-testing-for-heterogeneity" class="level2" data-number="9.10">
+<h2 data-number="9.10" class="anchored" data-anchor-id="clan-testing-for-heterogeneity"><span class="header-section-number">9.10</span> CLAN: testing for heterogeneity</h2>
+<p>A formal test of heterogeneity is the <strong>CLAN</strong> (Classification Analysis) proposed by Chernozhukov-Demirer-Duflo-Fernandez-Val (2018). Bin the population by predicted CATE, then estimate the average treatment effect in each bin. If the bin-specific ATEs are statistically different, there is heterogeneity.</p>
+<div id="clan" class="cell" data-cache="true" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>quintile_edges <span class="op">=</span> <span class="fu">quantile</span>(tau_DR, <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length <span class="op">=</span> nq <span class="op">+</span> <span class="fl">1</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">searchsortedfirst</span>.(<span class="fu">Ref</span>(quintile_edges), tau_DR) <span class="op">.-</span> <span class="fl">1</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">clamp</span>.(quintiles, <span class="fl">1</span>, nq)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># AIPW-style ATE within each quintile using the DR pseudo-outcomes</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">quintile_ate</span>(tau_pseudo, idx)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    n_q <span class="op">=</span> <span class="fu">sum</span>(idx)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    est <span class="op">=</span> <span class="fu">mean</span>(tau_pseudo[idx])</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    sd  <span class="op">=</span> <span class="fu">std</span>(tau_pseudo[idx]) <span class="op">/</span> <span class="fu">sqrt</span>(n_q)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (est <span class="op">=</span> est, se <span class="op">=</span> sd)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>clan_df <span class="op">=</span> <span class="fu">DataFrame</span>(quintile <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>nq,</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                    ATE <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).est for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq],</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                    SE  <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).se  for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq])</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>clan_df.lo <span class="op">=</span> clan_df.ATE <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>clan_df.hi <span class="op">=</span> clan_df.ATE <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Quintile"</span>, <span class="st">"ATE"</span>, <span class="st">"SE"</span>, <span class="st">"95% LB"</span>, <span class="st">"95% UB"</span>)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="fu">eachrow</span>(clan_df)</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-10d %8.3f %8.3f %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>            row.quintile, row.ATE, row.SE, row.lo, row.hi)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Quintile        ATE       SE   95% LB   95% UB
+1            -1.173    0.068   -1.307   -1.039
+2             1.122    0.023    1.076    1.168
+3             2.131    0.023    2.086    2.176
+4             3.265    0.024    3.218    3.312
+5             5.363    0.055    5.255    5.471</code></pre>
+</div>
+</div>
+<p>Quintile 5 should give a significantly larger ATE than quintile 1 — a formal test for whether the heterogeneity is real (rather than estimation noise).</p>
+</section>
+<section id="variable-importance-which-covariate-drives-heterogeneity" class="level2" data-number="9.11">
+<h2 data-number="9.11" class="anchored" data-anchor-id="variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</h2>
+<p>A natural diagnostic: regress the DR pseudo-outcomes on each covariate <em>separately</em> and look at the partial <span class="math inline">\(R^2\)</span>:</p>
+<div id="var-importance" class="cell" data-cache="true" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">single_var_r2</span>(target, x)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    df_one <span class="op">=</span> <span class="fu">DataFrame</span>(t <span class="op">=</span> target, x <span class="op">=</span> x)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(t <span class="op">~</span> x), df_one)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1</span> <span class="op">-</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(fit))) <span class="op">/</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(target <span class="op">.-</span> <span class="fu">mean</span>(target)))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>vi <span class="op">=</span> [<span class="fu">single_var_r2</span>(pseudo_DR, X[<span class="op">:</span>, j]) for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p]</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>vi_df <span class="op">=</span> <span class="fu">DataFrame</span>(variable <span class="op">=</span> [<span class="st">"X</span><span class="sc">$</span>j<span class="st">"</span> for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p], R2 <span class="op">=</span> vi)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(vi_df, <span class="op">:</span>R2, rev <span class="op">=</span> <span class="cn">true</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(vi_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-bold">5×2 DataFrame</span>
+
+<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> variable </span><span class="ansi-bold"> R2          </span>
+
+<span class="ansi-bold">     </span>│<span class="ansi-bright-black-fg"> String   </span><span class="ansi-bright-black-fg"> Float64     </span>
+
+─────┼───────────────────────
+
+   1 │ X1        0.0556742
+
+   2 │ X3        0.000222108
+
+   3 │ X5        5.35887e-5
+
+   4 │ X2        2.49949e-5
+
+   5 │ X4        2.04448e-5
+</pre>
+</div>
+</div>
+</div>
+<p><span class="math inline">\(X_1\)</span> should top the list. In real applications, this is a useful guide to which covariates carry heterogeneity.</p>
+</section>
+<section id="policy-learning-who-should-we-treat" class="level2" data-number="9.12">
+<h2 data-number="9.12" class="anchored" data-anchor-id="policy-learning-who-should-we-treat"><span class="header-section-number">9.12</span> Policy learning: who should we treat?</h2>
+<p>A CATE estimate tells us the effect of treating each individual. But the <strong>policy question</strong> is often different: given a cost-benefit trade-off, <em>which</em> individuals should we treat? Define a treatment cost <span class="math inline">\(c\)</span> in outcome units; the optimal individualised policy is</p>
+<p><span class="math display">\[
+\pi^*(x) = \mathbb{1}\{\tau(x) &gt; c\}.
+\]</span></p>
+<p>For interpretability, restrict to a shallow decision rule. A simple approach: pick a single covariate threshold that maximises welfare.</p>
+<div id="policy" class="cell" data-cache="true" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimal individualised policy (using estimated CATE)</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>treat_optimal <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>welfare_opt   <span class="op">=</span> <span class="fu">mean</span>((treat_optimal <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                     (treat_optimal <span class="op">.==</span> <span class="fl">0</span>) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive "treat everyone" policy</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>welfare_all   <span class="op">=</span> <span class="fu">mean</span>(pseudo_DR <span class="op">.-</span> cost)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold rule on X1</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">threshold_welfare</span>(thresh)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    treat <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> thresh</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> treat) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">threshold_welfare</span>(t) for t <span class="kw">in</span> threshes]</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                  %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat if τ̂(x) &gt; %.2f):           %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, welfare_opt)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Welfare (treat everyone):                  1.642
+Welfare (treat if τ̂(x) &gt; 0.50):           1.921
+Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
+</div>
+</div>
+<p>The optimal policy treats only individuals whose estimated CATE exceeds the cost. The interpretable threshold rule on <span class="math inline">\(X_1\)</span> alone is a reasonable compromise between welfare and explainability.</p>
+<p>For a richer treatment of policy trees with IPW and AIPW losses (using R’s <code>policytree</code> package), see the <a href="https://xiangao.github.io/blog_book/policytree.html">companion blog chapter on <code>policytree</code></a>. For a cross-software comparison of CATE estimators (including Stata 19’s new <code>cate</code> command), see the <a href="https://xiangao.github.io/blog_book/stata-cate.html">Stata CATE blog chapter</a>.</p>
+</section>
+<section id="causal-forests-with-panel-data" class="level2" data-number="9.13">
+<h2 data-number="9.13" class="anchored" data-anchor-id="causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</h2>
+<p>When the data are a panel — repeated observations on the same units — and the unobserved unit effects are correlated with treatment or covariates, the cross-sectional CATE methods above can be biased. The classical fix is the <strong>within-transform</strong>: demean each variable by its unit-level mean before applying the meta-learner.</p>
+<div id="panel-dgp" class="cell" data-cache="true" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2024</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>n_firms <span class="op">=</span> <span class="fl">200</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>n_t     <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>N       <span class="op">=</span> n_firms <span class="op">*</span> n_t</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>firm_id  <span class="op">=</span> <span class="fu">repeat</span>(<span class="fl">1</span><span class="op">:</span>n_firms, inner <span class="op">=</span> n_t)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>unit_fe  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.5</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>V1_firm  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.0</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>V1_panel <span class="op">=</span> V1_firm[firm_id] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(N)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id]))))</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> W_panel <span class="op">.+</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           tau_panel <span class="op">.*</span> (W_panel <span class="op">.-</span> <span class="fu">mean</span>(W_panel)) <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True panel ATE: 0.655</code></pre>
+</div>
+</div>
+<p>A naive T-learner on the panel ignores the firm fixed effects:</p>
+<div id="panel-naive" class="cell" data-cache="true" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>idx_C_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">0</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>mu1_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_T_p, <span class="op">:</span>], df_panel.Y[idx_T_p],</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>mu0_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_C_p, <span class="op">:</span>], df_panel.Y[idx_C_p],</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>tau_naive <span class="op">=</span> mu1_naive <span class="op">.-</span> mu0_naive</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Naive panel T-learner ATE: 1.775  (true = 0.655)</code></pre>
+</div>
+</div>
+<p>The within-transform removes unit-level variation, leaving only the panel’s within-firm signal for CATE estimation:</p>
+<div id="panel-within" class="cell" data-cache="true" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within transformation: subtract firm means</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>df_dm <span class="op">=</span> <span class="fu">combine</span>(<span class="fu">groupby</span>(df_panel, <span class="op">:</span>firm),</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>Y  <span class="op">=&gt;</span> (y <span class="op">-&gt;</span> y <span class="op">.-</span> <span class="fu">mean</span>(y)) <span class="op">=&gt;</span> <span class="op">:</span>Y_dm,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>W  <span class="op">=&gt;</span> (w <span class="op">-&gt;</span> w <span class="op">.-</span> <span class="fu">mean</span>(w)) <span class="op">=&gt;</span> <span class="op">:</span>W_dm,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>V1 <span class="op">=&gt;</span> (v <span class="op">-&gt;</span> v <span class="op">.-</span> <span class="fu">mean</span>(v)) <span class="op">=&gt;</span> <span class="op">:</span>V1_dm)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>X_dm <span class="op">=</span> <span class="fu">reshape</span>(df_dm.V1_dm, N, <span class="fl">1</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>idx_T_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&gt;</span> <span class="fl">0</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>idx_C_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&lt;=</span> <span class="fl">0</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>mu1_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_T_dm, <span class="op">:</span>], df_dm.Y_dm[idx_T_dm], X_dm)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>mu0_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_C_dm, <span class="op">:</span>], df_dm.Y_dm[idx_C_dm], X_dm)</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Within-transform T-learner ATE: 1.283  (true = 0.655)</code></pre>
+</div>
+</div>
+<p>The within-transform recovers the panel ATE because firm fixed effects are differenced out. The cost is variance: each unit contributes only its <em>within-firm</em> variation, so effective sample size shrinks.</p>
+<p>For R’s <code>grf::causal_forest</code>, the cleaner approach is passing <code>clusters = firm_id</code> so the forest’s honest sample-splitting keeps each firm’s observations in the same training fold. The Julia ecosystem currently lacks a native equivalent — see the <a href="https://xiangao.github.io/blog_book/causal-forest-panel.html">companion blog chapter on causal forests in panel data</a> and the <a href="https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html">R companion to this chapter</a> for the GRF-based workflow.</p>
+</section>
+<section id="summary" class="level2" data-number="9.14">
+<h2 data-number="9.14" class="anchored" data-anchor-id="summary"><span class="header-section-number">9.14</span> Summary</h2>
+<ul>
+<li><strong>Meta-learners</strong> (S, T, X, R, DR) turn any regression algorithm into a CATE estimator. R-learner and DR-learner exploit Neyman orthogonality and cross-fitting for valid inference; X-learner helps with imbalanced treatment arms.</li>
+<li>All five fit on top of <code>MLJ</code> + random forests in Julia using ~10–30 lines each.</li>
+<li><strong>Best Linear Projection (BLP)</strong> gives a simple regression-style summary of CATE — coefficients on how the effect varies with each covariate.</li>
+<li><strong>CLAN</strong> (quintile-binned ATEs) provides a formal test for heterogeneity.</li>
+<li><strong>Policy learning</strong> translates a CATE into a treatment-assignment rule; even a simple threshold rule on the most-heterogeneous covariate often achieves most of the welfare gain.</li>
+<li>For applied work: estimate CATE with at least two methods, report BLP coefficients and quintile-binned ATEs, and use an interpretable rule when treatment-assignment recommendations are needed.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="9.15">
+<h2 data-number="9.15" class="anchored" data-anchor-id="references"><span class="header-section-number">9.15</span> References</h2>
+<ul>
+<li>Wager, S., &amp; Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. <em>JASA</em>, 113(523), 1228–1242.</li>
+<li>Künzel, S. R., Sekhon, J. S., Bickel, P. J., &amp; Yu, B. (2019). Metalearners for estimating heterogeneous treatment effects using machine learning. <em>PNAS</em>, 116(10), 4156–4165.</li>
+<li>Nie, X., &amp; Wager, S. (2021). Quasi-oracle estimation of heterogeneous treatment effects. <em>Biometrika</em>, 108(2), 299–319.</li>
+<li>Kennedy, E. H. (2020). Towards optimal doubly robust estimation of heterogeneous causal effects. <em>arXiv:2004.14497</em>.</li>
+<li>Athey, S., &amp; Wager, S. (2021). Policy learning with observational data. <em>Econometrica</em>, 89(1), 133–161.</li>
+<li>Chernozhukov, V., Demirer, M., Duflo, E., &amp; Fernandez-Val, I. (2018). Generic machine learning inference on heterogeneous treatment effects in randomized experiments. <em>NBER Working Paper 24678</em>.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./nonparametric.html" class="pagination-link" aria-label="Nonparametric Causal Methods">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./continuous-treatments.html" class="pagination-link" aria-label="Continuous and Multivalued Treatments">
+        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

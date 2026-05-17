@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1&nbsp; Identification &amp; Potential Outcomes – Causal Econometrics with Julia</title>
+<title>24&nbsp; From Graph to Estimate – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -65,8 +65,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./causal-estimands.html" rel="next">
-<link href="./index.html" rel="prev">
+<link href="./package-ecosystem.html" rel="next">
+<link href="./causal-discovery-latent.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -105,9 +105,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
-<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
-<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -150,7 +147,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./identification.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./causal-discovery.html">Causal Discovery</a></li><li class="breadcrumb-item"><a href="./graph-to-estimate.html"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -196,7 +193,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./identification.html" class="sidebar-item-text sidebar-link active">
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
   </div>
 </li>
@@ -400,7 +397,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
   </div>
 </li>
@@ -433,23 +430,22 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#why-do-we-need-tools-for-causal-inference" id="toc-why-do-we-need-tools-for-causal-inference" class="nav-link active" data-scroll-target="#why-do-we-need-tools-for-causal-inference"><span class="header-section-number">1.1</span> Why Do We Need Tools for Causal Inference?</a></li>
-  <li><a href="#confounders" id="toc-confounders" class="nav-link" data-scroll-target="#confounders"><span class="header-section-number">1.2</span> Confounders</a></li>
-  <li><a href="#controlled-and-uncontrolled-confounders" id="toc-controlled-and-uncontrolled-confounders" class="nav-link" data-scroll-target="#controlled-and-uncontrolled-confounders"><span class="header-section-number">1.3</span> Controlled and Uncontrolled Confounders</a></li>
-  <li><a href="#potential-outcome-setup" id="toc-potential-outcome-setup" class="nav-link" data-scroll-target="#potential-outcome-setup"><span class="header-section-number">1.4</span> Potential Outcome Setup</a></li>
-  <li><a href="#ate-att-and-atu" id="toc-ate-att-and-atu" class="nav-link" data-scroll-target="#ate-att-and-atu"><span class="header-section-number">1.5</span> ATE, ATT and ATU</a></li>
-  <li><a href="#identification-from-potential-outcome-to-observed" id="toc-identification-from-potential-outcome-to-observed" class="nav-link" data-scroll-target="#identification-from-potential-outcome-to-observed"><span class="header-section-number">1.6</span> Identification: From Potential Outcome to Observed</a></li>
-  <li><a href="#unconfoundedness-and-overlap" id="toc-unconfoundedness-and-overlap" class="nav-link" data-scroll-target="#unconfoundedness-and-overlap"><span class="header-section-number">1.7</span> Unconfoundedness and Overlap</a></li>
-  <li><a href="#observational-data-flowchart" id="toc-observational-data-flowchart" class="nav-link" data-scroll-target="#observational-data-flowchart"><span class="header-section-number">1.8</span> Observational Data Flowchart</a></li>
+  <li><a href="#backdoor-a-fixable-effects" id="toc-backdoor-a-fixable-effects" class="nav-link active" data-scroll-target="#backdoor-a-fixable-effects"><span class="header-section-number">24.1</span> Backdoor: a-fixable effects</a></li>
+  <li><a href="#front-door-p-fixable-effects" id="toc-front-door-p-fixable-effects" class="nav-link" data-scroll-target="#front-door-p-fixable-effects"><span class="header-section-number">24.2</span> Front-door: p-fixable effects</a></li>
+  <li><a href="#when-identification-fails" id="toc-when-identification-fails" class="nav-link" data-scroll-target="#when-identification-fails"><span class="header-section-number">24.3</span> When identification fails</a></li>
+  <li><a href="#end-to-end-discover-identify-estimate" id="toc-end-to-end-discover-identify-estimate" class="nav-link" data-scroll-target="#end-to-end-discover-identify-estimate"><span class="header-section-number">24.4</span> End-to-end: discover, identify, estimate</a></li>
+  <li><a href="#why-this-matters" id="toc-why-this-matters" class="nav-link" data-scroll-target="#why-this-matters"><span class="header-section-number">24.5</span> Why this matters</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">24.6</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">24.7</span> References</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./identification.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./causal-discovery.html">Causal Discovery</a></li><li class="breadcrumb-item"><a href="./graph-to-estimate.html"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></h1>
+<h1 class="title"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></h1>
 </div>
 
 
@@ -466,131 +462,240 @@ window.Quarto = {
 </header>
 
 
-<div id="845967c7" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeometryBasics</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="3a477930" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<section id="why-do-we-need-tools-for-causal-inference" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="why-do-we-need-tools-for-causal-inference"><span class="header-section-number">1.1</span> Why Do We Need Tools for Causal Inference?</h2>
-<p>The main reason we need tools for causal inference is that “association is not causation”. We have known how to do association for a long time. In econometrics, people have studied various models for different situations, but mostly associational. But why is association not causation?</p>
-<p>The reason is that we may have confounding variables.</p>
-</section>
-<section id="confounders" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="confounders"><span class="header-section-number">1.2</span> Confounders</h2>
-<p>In this graph, we have <span class="math inline">\(w\)</span> (treatment), <span class="math inline">\(y\)</span> (outcome), and two confounders <span class="math inline">\(c1\)</span> and <span class="math inline">\(c2\)</span>. Both <span class="math inline">\(c1\)</span> and <span class="math inline">\(c2\)</span> affect both <span class="math inline">\(w\)</span> and <span class="math inline">\(y\)</span>. Therefore, if we just look at the association between <span class="math inline">\(w\)</span> and <span class="math inline">\(y\)</span>, it may be due to the confounding effect of <span class="math inline">\(c1\)</span> and <span class="math inline">\(c2\)</span>. We cannot say that the association is causal.</p>
-<div id="cell-dag1" class="cell" data-cache="true" data-message="false" data-execution_count="3">
-<div class="cell-output cell-output-display" data-execution_count="3">
-<div>
-<figure class="figure">
-<p><img src="identification_files/figure-html/dag1-output-1.svg" id="dag1" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Here is a concrete example with 401(k) participation and assets: It could be the case that income and age are causing both 401(k) participation and assets. Therefore, the association between 401(k) participation and assets may not be causal. We need to control for income and age to identify the causal effect of 401(k) participation on assets.</p>
-<div id="cell-dag1-2" class="cell" data-cache="true" data-message="false" data-execution_count="4">
-<div class="cell-output cell-output-display" data-execution_count="4">
-<div>
-<figure class="figure">
-<p><img src="identification_files/figure-html/dag1-2-output-1.svg" id="dag1-2" class="img-fluid figure-img"></p>
-</figure>
+<p>The two previous chapters covered <strong>discovery</strong> — algorithms that learn a graph from data. Discovery returns a graph, but a graph is not yet an estimate. To go from the graph to an actionable number, we need two more steps:</p>
+<ol type="1">
+<li><strong>Identification</strong> — given the graph and a target effect, is the effect a function of the observed-data distribution? If yes, derive the identifying functional. If no, declare non-identification (or place bounds).</li>
+<li><strong>Estimation</strong> — fit the identifying functional to data, ideally with a doubly-robust or efficient estimator that yields a confidence interval.</li>
+</ol>
+<p><code>CausalGraphs.jl</code> implements both steps for <strong>acyclic directed mixed graphs (ADMGs)</strong> — directed graphs that may also have bidirected edges representing unmeasured common causes. ADMGs are the natural output of discovery algorithms like FCI when there are latent confounders. They are also the natural way to encode researcher hypotheses about which arrows are causal and which open paths represent hidden confounding.</p>
+<p>This chapter walks through three workflows: backdoor identification, front-door identification, and the case where identification fails.</p>
+<section id="backdoor-a-fixable-effects" class="level2" data-number="24.1">
+<h2 data-number="24.1" class="anchored" data-anchor-id="backdoor-a-fixable-effects"><span class="header-section-number">24.1</span> Backdoor: a-fixable effects</h2>
+<p>The simplest case. Treatment <span class="math inline">\(A\)</span> has measured parents, and the path <span class="math inline">\(A \rightarrow Y\)</span> has no shared hidden common cause with <span class="math inline">\(A\)</span> along its descendants. Standard backdoor adjustment applies. The package terminology is “<strong>a-fixable</strong>” (Bhattacharya, Nabi, Shpitser 2022).</p>
+<div id="backdoor-graph" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build the graph: X is a common cause of A and Y</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>g_backdoor <span class="op">=</span> <span class="fu">make_graph</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>X, <span class="op">:</span>A), (<span class="op">:</span>X, <span class="op">:</span>Y), (<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>id_backdoor <span class="op">=</span> <span class="fu">identify</span>(g_backdoor, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Identification strategy: %s</span><span class="sc">\n</span><span class="st">"</span>, id_backdoor.strategy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Identification strategy: a_fixable</code></pre>
 </div>
 </div>
-</div>
-<p>And another example with birth weight and maternal smoking: It could be the case that prenatal care and maternal age are causing both maternal smoking and birth weight. It could be that maternal smoking has nothing to do with birth weight. But age and prenatal care are causing both maternal smoking and birth weight, therefore maternal smoking appears to cause birth weight.</p>
-<div id="cell-dag1-3" class="cell" data-cache="true" data-message="false" data-execution_count="5">
-<div class="cell-output cell-output-display" data-execution_count="5">
-<div>
-<figure class="figure">
-<p><img src="identification_files/figure-html/dag1-3-output-1.svg" id="dag1-3" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="controlled-and-uncontrolled-confounders" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="controlled-and-uncontrolled-confounders"><span class="header-section-number">1.3</span> Controlled and Uncontrolled Confounders</h2>
-<p>If we can control for all confounders then we do have causation from correlation. However, first, do we have all confounders in our data? Secondly, how do we control for them. In a randomised experiment, we don’t have these problems. In an observational study, we have these two problems. In the graph, we may have “c2” unobserved, “c1” observed, for example. Then any estimation of the effect from <span class="math inline">\(w\)</span> to <span class="math inline">\(y\)</span> is biased.</p>
-</section>
-<section id="potential-outcome-setup" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="potential-outcome-setup"><span class="header-section-number">1.4</span> Potential Outcome Setup</h2>
-<p>We use the Potential Outcomes framework, also called counterfactual framework to study causal effect. What is a potential outcome? Suppose we have the simplest situation. A treatment has two states, treated and control (untreated). And we have a person (subject) who then has two potential outcomes <span class="math inline">\(Y(1)\)</span> and <span class="math inline">\(Y(0)\)</span>. Consider these two fixed.</p>
-<p>That is, every one subject has two potential outcomes. That can be seen as pre-determined. That is, even before the experiment, or program, they are already there. The experiment is to try to recover them. However, recovering each individual treatment effect <span class="math inline">\(\tau_i = Y_i(1) - Y_i(0)\)</span> is not possible, because it’s impossible to observe both <span class="math inline">\(Y_i(1)\)</span> and <span class="math inline">\(Y_i(0)\)</span>. Only some average treatment effects can be estimated.</p>
-<p>We label treatment assignment status <span class="math inline">\(W\)</span>, covariates <span class="math inline">\(X\)</span>.</p>
-</section>
-<section id="ate-att-and-atu" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="ate-att-and-atu"><span class="header-section-number">1.5</span> ATE, ATT and ATU</h2>
-<p>Let’s define some treatment effects:</p>
-<p><span class="math display">\[ \tau_{ATE} = E[Y(1) - Y(0)] \]</span></p>
-<p><span class="math display">\[ \tau_{ATT} =  E[Y(1) - Y(0) | W=1] \]</span></p>
-<p><span class="math display">\[ \tau_{ATU} =  E[Y(1) - Y(0)| W=0] \]</span></p>
-<p><span class="math display">\[ \tau_{ATE} = \rho \tau_{ATT} + (1-\rho) \tau_{ATU}\]</span></p>
-<p>where <span class="math inline">\(\rho= P(W=1)\)</span>.</p>
-</section>
-<section id="identification-from-potential-outcome-to-observed" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="identification-from-potential-outcome-to-observed"><span class="header-section-number">1.6</span> Identification: From Potential Outcome to Observed</h2>
-<p>We focus on <span class="math inline">\(\tau_{ATT}\)</span>. To identify it, we need: <span class="math display">\[ E[Y(1) | W=1)]\]</span> which is easy, because we observe it.</p>
-<p>And we need <span class="math display">\[ E[Y(0) | W=1]\]</span></p>
-<p>To identify this, we’ll need unconfoundedness: <span class="math display">\[ E[Y(0) | W, X] = E[Y(0)| X] \]</span> and overlap: <span class="math display">\[ \pi(X)= P(W=1 | X=x) &lt; 1 \]</span></p>
-<p>Under unconfoundedness:</p>
-<p><span class="math display">\[ E[Y(0)| W=1] = E[Y(0) | W=0] \]</span></p>
-<p><span class="math display">\[ \small \begin{align}
-\tau_{ATT} &amp;=  E[Y(1) - Y(0) | W=1] \\
-&amp;= E[Y(1)|W=1] - E[Y(0)|W=0] \\
-&amp;= E[Y|W=1] - E[Y|W=0]
-\end{align}
-\]</span></p>
-<p>Therefore ATT is identified. In randomised experiments, we can assume unconfoundedness. A difference-in-means estimator is consistent.</p>
-<p><span class="math display">\[ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 \]</span></p>
-<p>But in observational studies, most cases we cannot assume unconfoundedness. What can we do to justify unconfoundedness better?</p>
-</section>
-<section id="unconfoundedness-and-overlap" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="unconfoundedness-and-overlap"><span class="header-section-number">1.7</span> Unconfoundedness and Overlap</h2>
-<p>Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability): <span class="math display">\[ E[Y(0) | W, X] = E[Y(0)| X] \]</span> Overlap: <span class="math display">\[ \pi(X)= P(W=1 | X=x) &lt; 1 \]</span> SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.</p>
-<p>Within each subgroup of <span class="math inline">\(X=x\)</span>, W is independent of <span class="math inline">\(Y(0)\)</span>. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.</p>
-<p>However, these two criteria are often contradictory: we may need more covariates to satisfy conditional independence; meanwhile, if the dimension of covariates goes high, then it’s likely in some partition we don’t have control units.</p>
-<p>We need four assumptions for identification:</p>
-<ul>
-<li>Unconfoundedness (conditional independence, or ignorability)</li>
-<li>Overlap (positivity, common support)</li>
-<li>No interference</li>
-<li>Consistency</li>
-</ul>
-</section>
-<section id="observational-data-flowchart" class="level2" data-number="1.8">
-<h2 data-number="1.8" class="anchored" data-anchor-id="observational-data-flowchart"><span class="header-section-number">1.8</span> Observational Data Flowchart</h2>
-<p>In observational studies, I summarise the decision what method to use for indentification of causal effect:</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">flowchart LR
-  A[Observational data Y,W,X] --&gt; B{Unconfoundedness?}
-  B --&gt; | Yes | C{Parametric?}
-  C --&gt; | Yes | D(RA)
-  C --&gt; | Yes | E(IPW)
-  C --&gt; | Yes | F(AIPW)
-  C --&gt; | Yes | G(IPWRA)
-  C --&gt; | No | H(IF based estimators)
-  C --&gt; | No | I(TMLE)
-  C --&gt; | No | J(DoubleML)
-  B --&gt; | No | K{Panel data?}
-  K --&gt; | Yes | L{Parallel Trend?}
-  L --&gt; | Yes | M(DID)
-  L --&gt; | No | N(Synthetic Control)
-  L --&gt; | No | O(Synthetic DID)
-  K --&gt; | No | P{Instrument?}
-  P --&gt; | Yes | Q(IV or RDD)
-  P --&gt; | No | R(You are stuck!)
+<p>The package recognises the backdoor structure: <code>X</code> blocks the only open backdoor path from <span class="math inline">\(A\)</span> to <span class="math inline">\(Y\)</span>, so adjusting on <span class="math inline">\(X\)</span> identifies the ACE.</p>
+<div id="backdoor-sim" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">2000</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="op">-</span>X)))      <span class="co"># treatment depends on X</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> <span class="fl">2</span> <span class="op">.*</span> A <span class="op">.+</span> X <span class="op">.+</span> <span class="fl">0.5</span> <span class="op">.*</span> <span class="fu">randn</span>(n)                  <span class="co"># true ACE = 2</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>data_bd <span class="op">=</span> <span class="fu">DataFrame</span>(X <span class="op">=</span> X, A <span class="op">=</span> A, Y <span class="op">=</span> Y)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>result_bd <span class="op">=</span> <span class="fu">estimate_causal</span>(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> [<span class="fl">1</span>, <span class="fl">0</span>],</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    data      <span class="op">=</span> data_bd,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    graph     <span class="op">=</span> g_backdoor,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    treatment <span class="op">=</span> <span class="op">:</span>A,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    outcome   <span class="op">=</span> <span class="op">:</span>Y,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Backdoor estimation (true ACE = 2.0):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  TMLE  ACE: %.3f  [95%% CI: %.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        result_bd[<span class="op">:</span>TMLE].ACE, result_bd[<span class="op">:</span>TMLE].lower_ci, result_bd[<span class="op">:</span>TMLE].upper_ci)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  AIPW  ACE: %.3f  [95%% CI: %.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        result_bd[<span class="op">:</span>Onestep].ACE, result_bd[<span class="op">:</span>Onestep].lower_ci, result_bd[<span class="op">:</span>Onestep].upper_ci)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  IPW   ACE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, result_bd[<span class="op">:</span>IPW].ACE)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  GCOMP ACE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, result_bd[<span class="op">:</span>Gcomp].ACE)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-cyan-fg ansi-bold">[ </span><span class="ansi-cyan-fg ansi-bold">Info: </span>Treatment is a-fixable (backdoor). Using TMLE.
 </pre>
 </div>
-<p></p></figure><p></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Backdoor estimation (true ACE = 2.0):
+  TMLE  ACE: 2.018  [95% CI: 1.972, 2.065]
+  AIPW  ACE: 2.018  [95% CI: 1.972, 2.065]
+  IPW   ACE: 2.041
+  GCOMP ACE: 2.018</code></pre>
 </div>
 </div>
+<p>All four estimators recover the true ACE. TMLE and the one-step (AIPW) estimator are doubly robust and efficient — they return ACE estimates with analytic confidence intervals based on the efficient influence function. G-computation and IPW return only the point estimate; their standard errors would require a bootstrap and they are sensitive to misspecification of the outcome or propensity model respectively.</p>
+</section>
+<section id="front-door-p-fixable-effects" class="level2" data-number="24.2">
+<h2 data-number="24.2" class="anchored" data-anchor-id="front-door-p-fixable-effects"><span class="header-section-number">24.2</span> Front-door: p-fixable effects</h2>
+<p>Now suppose there is an <em>unmeasured</em> common cause <span class="math inline">\(U\)</span> of <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>, but a measured mediator <span class="math inline">\(M\)</span> lies on the causal path <span class="math inline">\(A \rightarrow M \rightarrow Y\)</span>, with no arrow from <span class="math inline">\(U\)</span> to <span class="math inline">\(M\)</span> except through <span class="math inline">\(A\)</span>. The classic example is Pearl’s smoking/tar/cancer story. Standard backdoor adjustment fails because <span class="math inline">\(U\)</span> is unobserved, but the front-door criterion identifies the effect.</p>
+<p>In ADMG notation, the unmeasured confounder appears as a bidirected edge between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>.</p>
+<div id="frontdoor-graph" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A → M → Y, with unmeasured confounding between A and Y (bidirected edge)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>g_frontdoor <span class="op">=</span> <span class="fu">make_graph</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>M, <span class="op">:</span>Y],</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>M), (<span class="op">:</span>M, <span class="op">:</span>Y)],</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    bi_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>id_frontdoor <span class="op">=</span> <span class="fu">identify</span>(g_frontdoor, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Identification strategy: %s</span><span class="sc">\n</span><span class="st">"</span>, id_frontdoor.strategy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Identification strategy: p_fixable</code></pre>
 </div>
+</div>
+<p>The package returns <code>p_fixable</code>, recognising the front-door structure. Estimation goes through a different functional than backdoor — it requires modelling <span class="math inline">\(M\)</span> as well as <span class="math inline">\(Y\)</span>.</p>
+<div id="frontdoor-sim" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">3000</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>U <span class="op">=</span> <span class="fu">randn</span>(n)                                          <span class="co"># unmeasured confounder</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="op">-</span>U)))         <span class="co"># A depends on U</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">.+</span> <span class="fl">2.0</span> <span class="op">.*</span> A))))   <span class="co"># M depends on A only</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> <span class="fl">1.5</span> <span class="op">.*</span> M <span class="op">.+</span> <span class="fl">2.0</span> <span class="op">.*</span> U <span class="op">.+</span> <span class="fl">0.5</span> <span class="op">.*</span> <span class="fu">randn</span>(n)           <span class="co"># Y depends on M and U</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>data_fd <span class="op">=</span> <span class="fu">DataFrame</span>(A <span class="op">=</span> A, M <span class="op">=</span> M, Y <span class="op">=</span> Y)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># True ACE: effect of setting A=1 vs A=0</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># E[Y|do(A=1)] - E[Y|do(A=0)] = 1.5 * (E[M|A=1] - E[M|A=0])</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>true_M_a1 <span class="op">=</span> <span class="fu">mean</span>(<span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">2.0</span>))))</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>true_M_a0 <span class="op">=</span> <span class="fu">mean</span>(<span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="fu">-</span>(<span class="fl">0.5</span>))))</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>true_ace_fd <span class="op">=</span> <span class="fl">1.5</span> <span class="op">*</span> (true_M_a1 <span class="op">-</span> true_M_a0)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True front-door ACE = %.3f</span><span class="sc">\n\n</span><span class="st">"</span>, true_ace_fd)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>result_fd <span class="op">=</span> <span class="fu">estimate_causal</span>(</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> [<span class="fl">1</span>, <span class="fl">0</span>],</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    data      <span class="op">=</span> data_fd,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    graph     <span class="op">=</span> g_frontdoor,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    treatment <span class="op">=</span> <span class="op">:</span>A,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    outcome   <span class="op">=</span> <span class="op">:</span>Y,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Front-door estimation:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  TMLE  ACE: %.3f  [95%% CI: %.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        result_fd[<span class="op">:</span>TMLE].ACE, result_fd[<span class="op">:</span>TMLE].lower_ci, result_fd[<span class="op">:</span>TMLE].upper_ci)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True front-door ACE = 0.453
+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-cyan-fg ansi-bold">[ </span><span class="ansi-cyan-fg ansi-bold">Info: </span>Treatment is p-fixable (front-door/NPS). Using NPS-TMLE.
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Front-door estimation:
+  TMLE  ACE: 0.484  [95% CI: 0.401, 0.567]</code></pre>
+</div>
+</div>
+<p>Despite <span class="math inline">\(U\)</span> being unobserved, the front-door functional pins down the effect. A naïve OLS regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\(A\)</span> here would be badly biased by the unobserved <span class="math inline">\(U\)</span>:</p>
+<div id="frontdoor-naive" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>naive_ace <span class="op">=</span> <span class="fu">mean</span>(Y[A <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[A <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naïve mean difference (Y|A=1) - (Y|A=0): %.3f  (biased!)</span><span class="sc">\n</span><span class="st">"</span>, naive_ace)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Front-door TMLE estimate:                 %.3f</span><span class="sc">\n</span><span class="st">"</span>, result_fd[<span class="op">:</span>TMLE].ACE)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ACE:                                 %.3f</span><span class="sc">\n</span><span class="st">"</span>, true_ace_fd)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Naïve mean difference (Y|A=1) - (Y|A=0): 2.132  (biased!)
+Front-door TMLE estimate:                 0.484
+True ACE:                                 0.453</code></pre>
+</div>
+</div>
+<p>The naïve difference is contaminated by the <span class="math inline">\(U \rightarrow Y\)</span> and <span class="math inline">\(U \rightarrow A\)</span> paths. The front-door TMLE undoes that confounding by using <span class="math inline">\(M\)</span> as the front-door variable.</p>
+</section>
+<section id="when-identification-fails" class="level2" data-number="24.3">
+<h2 data-number="24.3" class="anchored" data-anchor-id="when-identification-fails"><span class="header-section-number">24.3</span> When identification fails</h2>
+<p>Not every ADMG yields an identified effect. Suppose <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span> have a hidden common cause <em>and</em> there is no front-door mediator — every causal path from <span class="math inline">\(A\)</span> to <span class="math inline">\(Y\)</span> also passes through a hidden confounder. The effect is <strong>not identified</strong>.</p>
+<div id="not-identified" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A → Y with unmeasured confounding and no mediator</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>g_unident <span class="op">=</span> <span class="fu">make_graph</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>Y],</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    bi_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    id_unident <span class="op">=</span> <span class="fu">identify</span>(g_unident, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"Strategy: %s</span><span class="sc">\n</span><span class="st">"</span>, id_unident.strategy)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="cf">catch</span> <span class="cn">e</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"Identification failed: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sprint</span>(showerror, <span class="cn">e</span>))</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Strategy: not_identified</code></pre>
+</div>
+</div>
+<p>The package returns <code>not_identified</code> (or raises an informative error, depending on the version). The honest response in applied work is to report the non-identifiability, then either:</p>
+<ol type="1">
+<li>Find additional variables that close the unmeasured-confounding paths</li>
+<li>Apply sensitivity analysis to bound the effect under maintained assumptions</li>
+<li>Find an instrumental variable for a LATE-style identification (covered in the IV chapter)</li>
+</ol>
+<p>A hidden assumption that everyone tacitly makes — “of course the confounding is small” — is <em>not</em> identification. Either the graph supports the effect or it does not.</p>
+</section>
+<section id="end-to-end-discover-identify-estimate" class="level2" data-number="24.4">
+<h2 data-number="24.4" class="anchored" data-anchor-id="end-to-end-discover-identify-estimate"><span class="header-section-number">24.4</span> End-to-end: discover, identify, estimate</h2>
+<p>The previous chapters’ discovery algorithms (PC, FCI, RSL-D, L-MARVEL) return graphs that can be passed directly to <code>identify()</code> and <code>estimate_causal()</code>. The full pipeline is:</p>
+<div id="0ee6e592" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span>   <span class="co"># for PC algorithm</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: discover the graph (chapter 11)</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>graph_pc <span class="op">=</span> <span class="fu">pcalg</span>(data, <span class="fl">0.05</span>, gausscitest)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: convert to ADMG (if needed; PC returns a CPDAG)</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the helpers in chapter 11 to convert CPDAG → ADMG</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: identify and estimate</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>id  <span class="op">=</span> <span class="fu">identify</span>(graph_admg, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">estimate_causal</span>(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> [<span class="fl">1</span>, <span class="fl">0</span>],</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> data,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    graph <span class="op">=</span> graph_admg,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    treatment <span class="op">=</span> <span class="op">:</span>A,</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="op">:</span>Y,</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>In practice, the discovered graph is almost never trusted blindly. The applied-research workflow is:</p>
+<ol type="1">
+<li><strong>Hypothesise</strong> a graph based on subject-matter knowledge</li>
+<li><strong>Discover</strong> a data-driven graph using PC/FCI/RSL-D</li>
+<li><strong>Compare</strong> the two — disagreement points to substantive questions</li>
+<li><strong>Identify</strong> under both graphs separately</li>
+<li><strong>Estimate</strong> under both, and report the range as part of the result</li>
+</ol>
+<p>If the estimate is robust to the choice of graph, the conclusion is strong. If it flips sign depending on which graph you use, the data alone is not enough to answer the question.</p>
+</section>
+<section id="why-this-matters" class="level2" data-number="24.5">
+<h2 data-number="24.5" class="anchored" data-anchor-id="why-this-matters"><span class="header-section-number">24.5</span> Why this matters</h2>
+<p>The “graph → identification → estimation” pipeline is what closes the loop between causal-discovery papers and applied empirical work. Discovery algorithms have made enormous progress, but they have historically stopped at the graph. <code>CausalGraphs.jl</code> is one of the few packages — and the only Julia package — that automates the identification routing and connects it to efficient estimators.</p>
+<p>This matters substantively because:</p>
+<ul>
+<li><strong>Backdoor adjustment is not always available.</strong> Many real DAGs have hidden confounders. Front-door, nested, and general ID algorithms are the recourse, but they are too complex to derive by hand for non-trivial graphs.</li>
+<li><strong>The right estimator depends on the identification strategy.</strong> TMLE-for-backdoor is different from TMLE-for-front-door. Automating the routing avoids the common mistake of plugging a graph into the wrong estimator.</li>
+<li><strong>Reporting becomes more disciplined.</strong> Once the workflow forces you to specify a graph, it becomes harder to wave hands about “unconfoundedness” — you have to say exactly which variables are doing the unconfounding work.</li>
+</ul>
+</section>
+<section id="summary" class="level2" data-number="24.6">
+<h2 data-number="24.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">24.6</span> Summary</h2>
+<ul>
+<li><strong>Discovery returns a graph; estimation returns a number.</strong> The bridge is the <strong>identification</strong> step.</li>
+<li><code>CausalGraphs.jl</code> implements automatic identification routing for ADMGs. Given a graph and a treatment/outcome pair, <code>identify()</code> returns the strategy (<code>a_fixable</code>, <code>p_fixable</code>, <code>nested_fixable</code>, <code>id_algorithm</code>, or <code>not_identified</code>).</li>
+<li><code>estimate_causal()</code> then runs the appropriate efficient estimator: TMLE or AIPW for backdoor/front-door, ANIPW for nested-fixable functionals.</li>
+<li><strong>End-to-end workflow</strong>: hypothesise a graph, run discovery as a check, identify, estimate, and report the range across plausible graphs. This is the modern alternative to “assume unconfoundedness and regress”.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="24.7">
+<h2 data-number="24.7" class="anchored" data-anchor-id="references"><span class="header-section-number">24.7</span> References</h2>
+<ul>
+<li>Pearl, J. (1995). Causal diagrams for empirical research. <em>Biometrika</em>, 82(4), 669–688.</li>
+<li>Bhattacharya, R., Nabi, R., &amp; Shpitser, I. (2022). Semiparametric inference for causal effects in graphical models with hidden variables. <em>Journal of Machine Learning Research</em>, 23, 1–76.</li>
+<li>Tikka, S., Hyttinen, A., &amp; Karvanen, J. (2019). Causal effect identification from multiple incomplete data sources. <em>Journal of Statistical Software</em>, 99(5).</li>
+<li>Guo, A., &amp; Nabi, R. (2024). <code>flexCausal</code> R package documentation.</li>
+</ul>
 
 
 </section>
@@ -998,13 +1103,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Preface">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      <a href="./causal-discovery-latent.html" class="pagination-link" aria-label="Causal Discovery: Latent Variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./causal-estimands.html" class="pagination-link" aria-label="Five Estimands on One DGP">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./package-ecosystem.html" class="pagination-link" aria-label="Julia Packages Used in This Book">
+        <span class="nav-page-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

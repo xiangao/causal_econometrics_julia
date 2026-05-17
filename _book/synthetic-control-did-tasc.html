@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>7&nbsp; Synthetic Control, DiD, and TASC – Causal Econometrics with Julia</title>
+<title>14&nbsp; Synthetic Control, DiD, and TASC – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -85,7 +85,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./iv-rdd.html" rel="next">
+<link href="./randomization-inference-sc.html" rel="next">
 <link href="./did.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -170,7 +170,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./synthetic-control-did-tasc.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./synthetic-control-did-tasc.html"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -222,14 +222,26 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
   </div>
 </li>
       </ul>
@@ -246,13 +258,43 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./estimation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -269,25 +311,37 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./did.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
   </div>
 </li>
       </ul>
@@ -295,7 +349,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
- <span class="menu-text">Mediation</span></a>
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -303,8 +357,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
   </div>
 </li>
       </ul>
@@ -312,7 +366,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
- <span class="menu-text">Causal Discovery</span></a>
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -320,14 +374,8 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
   </div>
 </li>
       </ul>
@@ -335,7 +383,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
- <span class="menu-text">Appendix</span></a>
+ <span class="menu-text">Mediation</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -343,8 +391,54 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
   </div>
 </li>
       </ul>
@@ -359,19 +453,19 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#synthetic-control" id="toc-synthetic-control" class="nav-link active" data-scroll-target="#synthetic-control"><span class="header-section-number">7.1</span> Synthetic Control</a></li>
-  <li><a href="#synthetic-did" id="toc-synthetic-did" class="nav-link" data-scroll-target="#synthetic-did"><span class="header-section-number">7.2</span> Synthetic DiD</a></li>
-  <li><a href="#time-aware-synthetic-control" id="toc-time-aware-synthetic-control" class="nav-link" data-scroll-target="#time-aware-synthetic-control"><span class="header-section-number">7.3</span> Time-Aware Synthetic Control</a></li>
-  <li><a href="#example-california-proposition-99" id="toc-example-california-proposition-99" class="nav-link" data-scroll-target="#example-california-proposition-99"><span class="header-section-number">7.4</span> Example: California Proposition 99</a></li>
+  <li><a href="#synthetic-control" id="toc-synthetic-control" class="nav-link active" data-scroll-target="#synthetic-control"><span class="header-section-number">14.1</span> Synthetic Control</a></li>
+  <li><a href="#synthetic-did" id="toc-synthetic-did" class="nav-link" data-scroll-target="#synthetic-did"><span class="header-section-number">14.2</span> Synthetic DiD</a></li>
+  <li><a href="#time-aware-synthetic-control" id="toc-time-aware-synthetic-control" class="nav-link" data-scroll-target="#time-aware-synthetic-control"><span class="header-section-number">14.3</span> Time-Aware Synthetic Control</a></li>
+  <li><a href="#example-california-proposition-99" id="toc-example-california-proposition-99" class="nav-link" data-scroll-target="#example-california-proposition-99"><span class="header-section-number">14.4</span> Example: California Proposition 99</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./synthetic-control-did-tasc.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./did.html">Designs</a></li><li class="breadcrumb-item"><a href="./synthetic-control-did-tasc.html"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></h1>
+<h1 class="title"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></h1>
 </div>
 
 
@@ -388,7 +482,7 @@ window.Quarto = {
 </header>
 
 
-<div id="a263223d" class="cell" data-execution_count="2">
+<div id="67655053" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -399,8 +493,8 @@ window.Quarto = {
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.TASC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This chapter collects three related panel-data designs: classical synthetic control, synthetic DiD, and Time-Aware Synthetic Control (TASC). They are all useful when treatment is not randomly assigned and the treated unit is compared to a donor pool over time. They differ in what structure they impose on the untreated counterfactual.</p>
-<section id="synthetic-control" class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="synthetic-control"><span class="header-section-number">7.1</span> Synthetic Control</h2>
+<section id="synthetic-control" class="level2" data-number="14.1">
+<h2 data-number="14.1" class="anchored" data-anchor-id="synthetic-control"><span class="header-section-number">14.1</span> Synthetic Control</h2>
 <p>The biggest problem with DiD is the parallel trends assumption. There is not really a test for it, just like the unconfoundedness assumption. It is less demanding than unconfoundedness, but it is still hard to justify in many applications.</p>
 <p>Synthetic control starts from a different idea. Instead of giving every control unit the same weight, it constructs a synthetic control unit from the donor pool:</p>
 <p><span class="math display">\[
@@ -409,8 +503,8 @@ window.Quarto = {
 <p>where the weights are chosen to make the synthetic unit close to the treated unit before treatment. The usual Abadie-style version restricts the donor weights to be nonnegative and to sum to one. The identifying hope is not that the average control follows the treated unit, but that some weighted average of controls does.</p>
 <p>Classical synthetic control is time-agnostic in an important sense: the pre-treatment periods enter the weight-fitting problem as a set of matching moments. If we permute the order of the pre-treatment periods, the fitted donor weights are unchanged. This is often a strength because it avoids imposing a time-series model, but it can leave predictive information unused when there is a stable trend.</p>
 </section>
-<section id="synthetic-did" class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="synthetic-did"><span class="header-section-number">7.2</span> Synthetic DiD</h2>
+<section id="synthetic-did" class="level2" data-number="14.2">
+<h2 data-number="14.2" class="anchored" data-anchor-id="synthetic-did"><span class="header-section-number">14.2</span> Synthetic DiD</h2>
 <p>Arkhangelsky et al.&nbsp;(2021) combine the idea of DiD and synthetic control. Standard DiD assigns equal weight to all control units and all pre-treatment time periods. Synthetic control assigns data-driven weights to donor units. Synthetic DiD uses both unit weights and time weights.</p>
 <p>The DiD objective can be written as</p>
 <p><span class="math display">\[
@@ -439,8 +533,8 @@ window.Quarto = {
 \]</span></p>
 <p>The unit weights try to make the donor pool look like the treated unit. The time weights put more emphasis on pre-treatment periods that are more informative about the post-treatment period.</p>
 </section>
-<section id="time-aware-synthetic-control" class="level2" data-number="7.3">
-<h2 data-number="7.3" class="anchored" data-anchor-id="time-aware-synthetic-control"><span class="header-section-number">7.3</span> Time-Aware Synthetic Control</h2>
+<section id="time-aware-synthetic-control" class="level2" data-number="14.3">
+<h2 data-number="14.3" class="anchored" data-anchor-id="time-aware-synthetic-control"><span class="header-section-number">14.3</span> Time-Aware Synthetic Control</h2>
 <p>TASC was proposed by <span class="citation" data-cites="rho2026timeaware">Rho et al. (<a href="#ref-rho2026timeaware" role="doc-biblioref">2026</a>)</span>. It starts from the same panel-data structure, but it models the donor and treated outcomes through a latent time-series system:</p>
 <p><span class="math display">\[
 x_t = A x_{t-1} + q_t,\qquad q_t \sim N(0,Q),
@@ -459,10 +553,10 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 \]</span></p>
 <p>Relative to classical synthetic control, TASC uses the order of time. Relative to synthetic DiD, it puts the time dependence in a generative latent-state model rather than in a set of pre-period weights. This can help when trends are stable and outcomes are noisy, but it is also a stronger modeling assumption.</p>
 </section>
-<section id="example-california-proposition-99" class="level2" data-number="7.4">
-<h2 data-number="7.4" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">7.4</span> Example: California Proposition 99</h2>
+<section id="example-california-proposition-99" class="level2" data-number="14.4">
+<h2 data-number="14.4" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">14.4</span> Example: California Proposition 99</h2>
 <p>California’s Proposition 99 raised cigarette taxes and funded anti-smoking programs. The usual synthetic-control exercise compares California’s cigarette sales after 1988 to a donor pool of other states. The outcome is per-capita cigarette sales in packs.</p>
-<div id="d0907530" class="cell" data-cache="true" data-execution_count="3">
+<div id="5e4f90b6" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -472,22 +566,22 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><code>SynthDiD.jl</code> orders the donor states first and treated states last. <code>TASC.jl</code> expects the treated unit to be first, so we explicitly reorder the matrix before fitting the state-space model. The paper’s Proposition 99 example uses a low latent dimension; here we set <code>d = 2</code>.</p>
-<div id="ec68e142" class="cell" data-cache="true" data-execution_count="4">
+<div id="d038e3c9" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>tasc_model <span class="op">=</span> <span class="fu">fit_tasc</span>(</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    Y_tasc;</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fl">2</span>,</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    T0 <span class="op">=</span> setup.T0,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    n_em <span class="op">=</span> <span class="fl">25</span>,</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    tol <span class="op">=</span> <span class="fl">1e-4</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    n_em <span class="op">=</span> <span class="fl">200</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    tol <span class="op">=</span> <span class="fl">1e-3</span>,</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>tasc_pred <span class="op">=</span> <span class="fu">predict_counterfactual</span>(tasc_model, Y_tasc)</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>tasc_att <span class="op">=</span> <span class="fu">mean</span>(tasc_pred.effect[(setup.T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="567b5b8b" class="cell" data-cache="true" data-execution_count="5">
+<div id="7138dde4" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>estimates <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    Method <span class="op">=</span> [<span class="st">"Diff-in-Diff"</span>, <span class="st">"Synthetic Control"</span>, <span class="st">"Synthetic Diff-in-Diff"</span>, <span class="st">"TASC"</span>],</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    Estimate <span class="op">=</span> [tau_did.estimate, tau_sc.estimate, tau_sdid.estimate, tasc_att],</span>
@@ -533,8 +627,8 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
 <td style="text-align: left;">TASC</td>
-<td style="text-align: right;">-17.1442</td>
-<td style="text-align: right;">-17.14</td>
+<td style="text-align: right;">-17.1127</td>
+<td style="text-align: right;">-17.11</td>
 </tr>
 </tbody>
 </table>
@@ -542,7 +636,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 </div>
 </div>
 <p>The estimates are all negative: California’s observed cigarette sales fell below the estimated no-Proposition-99 counterfactual. The methods differ because they impose different restrictions on the untreated path. DiD compares average changes. Synthetic control chooses donor weights. Synthetic DiD adds time weights. TASC uses a low-rank state-space model and updates the latent state with post-treatment donor observations.</p>
-<div id="c3ef180a" class="cell" data-cache="true" data-execution_count="6">
+<div id="507bb8a0" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>years <span class="op">=</span> <span class="fu">Int</span>.(setup.times)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>treated <span class="op">=</span> <span class="fu">vec</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>), <span class="op">:</span>])</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sc_counterfactual <span class="op">=</span> <span class="fu">vec</span>(tau_sc.weights.omega<span class="op">'</span> <span class="op">*</span> setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
@@ -991,12 +1085,12 @@ Rho, Saeyoung, Cyrus Illick, Samhitha Narasipura, Alberto Abadie, Daniel Hsu, an
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./did.html" class="pagination-link" aria-label="Difference-in-Differences">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./iv-rdd.html" class="pagination-link" aria-label="IV &amp; Regression Discontinuity">
-        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./randomization-inference-sc.html" class="pagination-link" aria-label="Randomization Inference for Synthetic Control">
+        <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

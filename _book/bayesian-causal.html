@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1&nbsp; Identification &amp; Potential Outcomes – Causal Econometrics with Julia</title>
+<title>11&nbsp; Bayesian Causal Inference – Causal Econometrics with Julia</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -65,8 +65,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./causal-estimands.html" rel="next">
-<link href="./index.html" rel="prev">
+<link href="./distributional-effects.html" rel="next">
+<link href="./continuous-treatments.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -105,9 +105,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
-<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
-<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -150,7 +147,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./identification.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./bayesian-causal.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -196,7 +193,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./identification.html" class="sidebar-item-text sidebar-link active">
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
   </div>
 </li>
@@ -267,7 +264,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
   </div>
 </li>
@@ -433,23 +430,25 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#why-do-we-need-tools-for-causal-inference" id="toc-why-do-we-need-tools-for-causal-inference" class="nav-link active" data-scroll-target="#why-do-we-need-tools-for-causal-inference"><span class="header-section-number">1.1</span> Why Do We Need Tools for Causal Inference?</a></li>
-  <li><a href="#confounders" id="toc-confounders" class="nav-link" data-scroll-target="#confounders"><span class="header-section-number">1.2</span> Confounders</a></li>
-  <li><a href="#controlled-and-uncontrolled-confounders" id="toc-controlled-and-uncontrolled-confounders" class="nav-link" data-scroll-target="#controlled-and-uncontrolled-confounders"><span class="header-section-number">1.3</span> Controlled and Uncontrolled Confounders</a></li>
-  <li><a href="#potential-outcome-setup" id="toc-potential-outcome-setup" class="nav-link" data-scroll-target="#potential-outcome-setup"><span class="header-section-number">1.4</span> Potential Outcome Setup</a></li>
-  <li><a href="#ate-att-and-atu" id="toc-ate-att-and-atu" class="nav-link" data-scroll-target="#ate-att-and-atu"><span class="header-section-number">1.5</span> ATE, ATT and ATU</a></li>
-  <li><a href="#identification-from-potential-outcome-to-observed" id="toc-identification-from-potential-outcome-to-observed" class="nav-link" data-scroll-target="#identification-from-potential-outcome-to-observed"><span class="header-section-number">1.6</span> Identification: From Potential Outcome to Observed</a></li>
-  <li><a href="#unconfoundedness-and-overlap" id="toc-unconfoundedness-and-overlap" class="nav-link" data-scroll-target="#unconfoundedness-and-overlap"><span class="header-section-number">1.7</span> Unconfoundedness and Overlap</a></li>
-  <li><a href="#observational-data-flowchart" id="toc-observational-data-flowchart" class="nav-link" data-scroll-target="#observational-data-flowchart"><span class="header-section-number">1.8</span> Observational Data Flowchart</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup"><span class="header-section-number">11.1</span> Setup</a></li>
+  <li><a href="#bayesian-g-computation" id="toc-bayesian-g-computation" class="nav-link" data-scroll-target="#bayesian-g-computation"><span class="header-section-number">11.2</span> Bayesian g-computation</a>
+  <ul class="collapse">
+  <li><a href="#individual-level-credible-intervals" id="toc-individual-level-credible-intervals" class="nav-link" data-scroll-target="#individual-level-credible-intervals"><span class="header-section-number">11.2.1</span> Individual-level credible intervals</a></li>
+  </ul></li>
+  <li><a href="#why-use-bartbcf-in-r-instead" id="toc-why-use-bartbcf-in-r-instead" class="nav-link" data-scroll-target="#why-use-bartbcf-in-r-instead"><span class="header-section-number">11.3</span> Why use BART/BCF in R instead?</a></li>
+  <li><a href="#when-to-use-bayesian-methods" id="toc-when-to-use-bayesian-methods" class="nav-link" data-scroll-target="#when-to-use-bayesian-methods"><span class="header-section-number">11.4</span> When to use Bayesian methods</a></li>
+  <li><a href="#connections" id="toc-connections" class="nav-link" data-scroll-target="#connections"><span class="header-section-number">11.5</span> Connections</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">11.6</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">11.7</span> References</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./identification.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./bayesian-causal.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></h1>
+<h1 class="title"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></h1>
 </div>
 
 
@@ -466,131 +465,269 @@ window.Quarto = {
 </header>
 
 
-<div id="845967c7" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeometryBasics</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="0ff1a5a2" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<section id="why-do-we-need-tools-for-causal-inference" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="why-do-we-need-tools-for-causal-inference"><span class="header-section-number">1.1</span> Why Do We Need Tools for Causal Inference?</h2>
-<p>The main reason we need tools for causal inference is that “association is not causation”. We have known how to do association for a long time. In econometrics, people have studied various models for different situations, but mostly associational. But why is association not causation?</p>
-<p>The reason is that we may have confounding variables.</p>
-</section>
-<section id="confounders" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="confounders"><span class="header-section-number">1.2</span> Confounders</h2>
-<p>In this graph, we have <span class="math inline">\(w\)</span> (treatment), <span class="math inline">\(y\)</span> (outcome), and two confounders <span class="math inline">\(c1\)</span> and <span class="math inline">\(c2\)</span>. Both <span class="math inline">\(c1\)</span> and <span class="math inline">\(c2\)</span> affect both <span class="math inline">\(w\)</span> and <span class="math inline">\(y\)</span>. Therefore, if we just look at the association between <span class="math inline">\(w\)</span> and <span class="math inline">\(y\)</span>, it may be due to the confounding effect of <span class="math inline">\(c1\)</span> and <span class="math inline">\(c2\)</span>. We cannot say that the association is causal.</p>
-<div id="cell-dag1" class="cell" data-cache="true" data-message="false" data-execution_count="3">
-<div class="cell-output cell-output-display" data-execution_count="3">
-<div>
-<figure class="figure">
-<p><img src="identification_files/figure-html/dag1-output-1.svg" id="dag1" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Here is a concrete example with 401(k) participation and assets: It could be the case that income and age are causing both 401(k) participation and assets. Therefore, the association between 401(k) participation and assets may not be causal. We need to control for income and age to identify the causal effect of 401(k) participation on assets.</p>
-<div id="cell-dag1-2" class="cell" data-cache="true" data-message="false" data-execution_count="4">
-<div class="cell-output cell-output-display" data-execution_count="4">
-<div>
-<figure class="figure">
-<p><img src="identification_files/figure-html/dag1-2-output-1.svg" id="dag1-2" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>And another example with birth weight and maternal smoking: It could be the case that prenatal care and maternal age are causing both maternal smoking and birth weight. It could be that maternal smoking has nothing to do with birth weight. But age and prenatal care are causing both maternal smoking and birth weight, therefore maternal smoking appears to cause birth weight.</p>
-<div id="cell-dag1-3" class="cell" data-cache="true" data-message="false" data-execution_count="5">
-<div class="cell-output cell-output-display" data-execution_count="5">
-<div>
-<figure class="figure">
-<p><img src="identification_files/figure-html/dag1-3-output-1.svg" id="dag1-3" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<p>Bayesian methods compute a full posterior distribution over the unknown quantities, providing credible intervals and natural uncertainty propagation. For causal inference, this means uncertainty about treatment effects can be reported at the <em>individual</em> level — not just aggregate ATEs — and downstream decisions (treatment recommendation, policy evaluation) can use the posterior directly.</p>
+<p>The two workhorses in this area are:</p>
+<ol type="1">
+<li><strong>BART for causal inference</strong> (Hill 2011) — Bayesian Additive Regression Trees as a flexible outcome model.</li>
+<li><strong>Bayesian Causal Forests</strong> (BCF; Hahn-Murray-Carvalho 2020) — BART extended to separate prognostic and treatment-effect components.</li>
+</ol>
+<p>Both have mature R packages (<code>BART</code>, <code>bcf</code>). The Julia ecosystem currently lacks a comparable BART implementation; this chapter sketches the <em>concepts</em> with a simpler Bayesian linear-regression-based g-computation that captures the essential idea, and points to R for production work.</p>
+<blockquote class="blockquote">
+<p><strong>Related reading</strong>: For a hands-on Bayesian model with <code>Numpyro</code>, see the <a href="https://xiangao.github.io/blog_book/numpyro.html">Using Numpyro</a> chapter in <em>Topics on Econometrics and Causal Inference</em>. The R companion to this chapter walks through BART and BCF in detail.</p>
+</blockquote>
+<section id="setup" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="setup"><span class="header-section-number">11.1</span> Setup</h2>
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1500</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">3</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> <span class="fu">randn</span>(n, p)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ps <span class="op">=</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.3</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>])))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>D  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> ps)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> @. <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">1</span>]   <span class="co"># true CATE</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Y0  <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>] <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">3</span>] <span class="op">+</span> <span class="fu">randn</span>()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>Y1  <span class="op">=</span> Y0 <span class="op">.+</span> tau</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>Y   <span class="op">=</span> <span class="fu">ifelse</span>.(D <span class="op">.==</span> <span class="fl">1</span>, Y1, Y0)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">1</span>], X2 <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">2</span>], X3 <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">3</span>])</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True ATE = 0.901</code></pre>
 </div>
 </div>
 </section>
-<section id="controlled-and-uncontrolled-confounders" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="controlled-and-uncontrolled-confounders"><span class="header-section-number">1.3</span> Controlled and Uncontrolled Confounders</h2>
-<p>If we can control for all confounders then we do have causation from correlation. However, first, do we have all confounders in our data? Secondly, how do we control for them. In a randomised experiment, we don’t have these problems. In an observational study, we have these two problems. In the graph, we may have “c2” unobserved, “c1” observed, for example. Then any estimation of the effect from <span class="math inline">\(w\)</span> to <span class="math inline">\(y\)</span> is biased.</p>
-</section>
-<section id="potential-outcome-setup" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="potential-outcome-setup"><span class="header-section-number">1.4</span> Potential Outcome Setup</h2>
-<p>We use the Potential Outcomes framework, also called counterfactual framework to study causal effect. What is a potential outcome? Suppose we have the simplest situation. A treatment has two states, treated and control (untreated). And we have a person (subject) who then has two potential outcomes <span class="math inline">\(Y(1)\)</span> and <span class="math inline">\(Y(0)\)</span>. Consider these two fixed.</p>
-<p>That is, every one subject has two potential outcomes. That can be seen as pre-determined. That is, even before the experiment, or program, they are already there. The experiment is to try to recover them. However, recovering each individual treatment effect <span class="math inline">\(\tau_i = Y_i(1) - Y_i(0)\)</span> is not possible, because it’s impossible to observe both <span class="math inline">\(Y_i(1)\)</span> and <span class="math inline">\(Y_i(0)\)</span>. Only some average treatment effects can be estimated.</p>
-<p>We label treatment assignment status <span class="math inline">\(W\)</span>, covariates <span class="math inline">\(X\)</span>.</p>
-</section>
-<section id="ate-att-and-atu" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="ate-att-and-atu"><span class="header-section-number">1.5</span> ATE, ATT and ATU</h2>
-<p>Let’s define some treatment effects:</p>
-<p><span class="math display">\[ \tau_{ATE} = E[Y(1) - Y(0)] \]</span></p>
-<p><span class="math display">\[ \tau_{ATT} =  E[Y(1) - Y(0) | W=1] \]</span></p>
-<p><span class="math display">\[ \tau_{ATU} =  E[Y(1) - Y(0)| W=0] \]</span></p>
-<p><span class="math display">\[ \tau_{ATE} = \rho \tau_{ATT} + (1-\rho) \tau_{ATU}\]</span></p>
-<p>where <span class="math inline">\(\rho= P(W=1)\)</span>.</p>
-</section>
-<section id="identification-from-potential-outcome-to-observed" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="identification-from-potential-outcome-to-observed"><span class="header-section-number">1.6</span> Identification: From Potential Outcome to Observed</h2>
-<p>We focus on <span class="math inline">\(\tau_{ATT}\)</span>. To identify it, we need: <span class="math display">\[ E[Y(1) | W=1)]\]</span> which is easy, because we observe it.</p>
-<p>And we need <span class="math display">\[ E[Y(0) | W=1]\]</span></p>
-<p>To identify this, we’ll need unconfoundedness: <span class="math display">\[ E[Y(0) | W, X] = E[Y(0)| X] \]</span> and overlap: <span class="math display">\[ \pi(X)= P(W=1 | X=x) &lt; 1 \]</span></p>
-<p>Under unconfoundedness:</p>
-<p><span class="math display">\[ E[Y(0)| W=1] = E[Y(0) | W=0] \]</span></p>
-<p><span class="math display">\[ \small \begin{align}
-\tau_{ATT} &amp;=  E[Y(1) - Y(0) | W=1] \\
-&amp;= E[Y(1)|W=1] - E[Y(0)|W=0] \\
-&amp;= E[Y|W=1] - E[Y|W=0]
-\end{align}
-\]</span></p>
-<p>Therefore ATT is identified. In randomised experiments, we can assume unconfoundedness. A difference-in-means estimator is consistent.</p>
-<p><span class="math display">\[ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 \]</span></p>
-<p>But in observational studies, most cases we cannot assume unconfoundedness. What can we do to justify unconfoundedness better?</p>
-</section>
-<section id="unconfoundedness-and-overlap" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="unconfoundedness-and-overlap"><span class="header-section-number">1.7</span> Unconfoundedness and Overlap</h2>
-<p>Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability): <span class="math display">\[ E[Y(0) | W, X] = E[Y(0)| X] \]</span> Overlap: <span class="math display">\[ \pi(X)= P(W=1 | X=x) &lt; 1 \]</span> SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.</p>
-<p>Within each subgroup of <span class="math inline">\(X=x\)</span>, W is independent of <span class="math inline">\(Y(0)\)</span>. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.</p>
-<p>However, these two criteria are often contradictory: we may need more covariates to satisfy conditional independence; meanwhile, if the dimension of covariates goes high, then it’s likely in some partition we don’t have control units.</p>
-<p>We need four assumptions for identification:</p>
-<ul>
-<li>Unconfoundedness (conditional independence, or ignorability)</li>
-<li>Overlap (positivity, common support)</li>
-<li>No interference</li>
-<li>Consistency</li>
-</ul>
-</section>
-<section id="observational-data-flowchart" class="level2" data-number="1.8">
-<h2 data-number="1.8" class="anchored" data-anchor-id="observational-data-flowchart"><span class="header-section-number">1.8</span> Observational Data Flowchart</h2>
-<p>In observational studies, I summarise the decision what method to use for indentification of causal effect:</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">flowchart LR
-  A[Observational data Y,W,X] --&gt; B{Unconfoundedness?}
-  B --&gt; | Yes | C{Parametric?}
-  C --&gt; | Yes | D(RA)
-  C --&gt; | Yes | E(IPW)
-  C --&gt; | Yes | F(AIPW)
-  C --&gt; | Yes | G(IPWRA)
-  C --&gt; | No | H(IF based estimators)
-  C --&gt; | No | I(TMLE)
-  C --&gt; | No | J(DoubleML)
-  B --&gt; | No | K{Panel data?}
-  K --&gt; | Yes | L{Parallel Trend?}
-  L --&gt; | Yes | M(DID)
-  L --&gt; | No | N(Synthetic Control)
-  L --&gt; | No | O(Synthetic DID)
-  K --&gt; | No | P{Instrument?}
-  P --&gt; | Yes | Q(IV or RDD)
-  P --&gt; | No | R(You are stuck!)
+<section id="bayesian-g-computation" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="bayesian-g-computation"><span class="header-section-number">11.2</span> Bayesian g-computation</h2>
+<p>The simplest Bayesian causal inference recipe is <strong>Bayesian g-computation</strong>:</p>
+<ol type="1">
+<li>Specify a Bayesian model for <span class="math inline">\(\mathbb{E}[Y \mid D, X]\)</span>.</li>
+<li>Sample from the posterior of the regression parameters.</li>
+<li>For each posterior draw, compute counterfactual outcomes <span class="math inline">\(\hat Y(1), \hat Y(0)\)</span>.</li>
+<li>The posterior of the ATE is the distribution of <span class="math inline">\(\mathbb{E}[\hat Y(1) - \hat Y(0)]\)</span> across draws.</li>
+</ol>
+<p>A Bayesian linear regression with a flat prior implements this cleanly:</p>
+<div id="bayes-gcomp" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    bayes_linreg(X, y; n_samples=2000)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">(flat → posterior matches frequentist OLS). Returns `n_samples` posterior</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">draws of (β, σ²).</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bayes_linreg</span>(X<span class="op">::</span><span class="dt">Matrix</span>, y<span class="op">::</span><span class="dt">Vector</span>; n_samples<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">2000</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    n, p <span class="op">=</span> <span class="fu">size</span>(X)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    XtX_inv <span class="op">=</span> <span class="fu">inv</span>(X<span class="op">'</span> <span class="op">*</span> X)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    beta_hat <span class="op">=</span> XtX_inv <span class="op">*</span> X<span class="op">'</span> <span class="op">*</span> y</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    sse <span class="op">=</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(y <span class="op">.-</span> X <span class="op">*</span> beta_hat))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># σ² ~ InverseGamma((n-p)/2, sse/2)</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    σ²_post <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">InverseGamma</span>((n <span class="op">-</span> p) <span class="op">/</span> <span class="fl">2</span>, sse <span class="op">/</span> <span class="fl">2</span>)) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># β | σ² ~ MultivariateNormal(beta_hat, σ² * XtX_inv)</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    betas <span class="op">=</span> <span class="fu">zeros</span>(n_samples, p)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        cov_mat <span class="op">=</span> σ²_post[i] <span class="op">.*</span> XtX_inv</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        betas[i, <span class="op">:</span>] <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">MvNormal</span>(beta_hat, <span class="fu">Symmetric</span>(cov_mat)))</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> betas, σ²_post</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on (D, X1, X2, X3, D*X1, D*X2, D*X3) — allow treatment effect heterogeneity</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>DesignMat <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), df.D, df.X1, df.X2, df.X3,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                 df.D <span class="op">.*</span> df.X1, df.D <span class="op">.*</span> df.X2, df.D <span class="op">.*</span> df.X3)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>betas, σ²_draws <span class="op">=</span> <span class="fu">bayes_linreg</span>(DesignMat, df.Y; n_samples <span class="op">=</span> <span class="fl">2000</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Counterfactual prediction matrices</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>X_treat   <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">ones</span>(n),  df.X1, df.X2, df.X3,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>                 df.X1, df.X2, df.X3)           <span class="co"># D = 1, so D*X = X</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>X_control <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">zeros</span>(n), df.X1, df.X2, df.X3,</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n))  <span class="co"># D = 0</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Posterior ITEs: n_samples x n</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>ite_post <span class="op">=</span> (X_treat <span class="op">*</span> betas<span class="op">'</span>)<span class="ch">' .- (X_control * betas'</span>)<span class="ch">'</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE posterior: average over n at each draw</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>ate_post <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">2</span>))</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bayesian g-computation:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior mean ATE:  %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(ate_post))</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior SD:        %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(ate_post))</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  95%% CrI:             [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(ate_post, <span class="fl">0.025</span>), <span class="fu">quantile</span>(ate_post, <span class="fl">0.975</span>))</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  True ATE:            %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Bayesian g-computation:
+  Posterior mean ATE:  0.904
+  Posterior SD:        0.056
+  95% CrI:             [0.798, 1.016]
+  True ATE:            0.901</code></pre>
+</div>
+</div>
+<p>The posterior 95% credible interval reports uncertainty about the ATE directly. With a flat prior the credible interval matches the frequentist confidence interval; with informative priors they diverge, and the Bayesian interval reflects prior + data.</p>
+<section id="individual-level-credible-intervals" class="level3" data-number="11.2.1">
+<h3 data-number="11.2.1" class="anchored" data-anchor-id="individual-level-credible-intervals"><span class="header-section-number">11.2.1</span> Individual-level credible intervals</h3>
+<div id="cell-ite-credible" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ite_mean <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">1</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ite_lo   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.025</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ite_hi   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.975</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Sort by X1 for plotting</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>ord <span class="op">=</span> <span class="fu">sortperm</span>(df.X1)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X1"</span>, ylabel <span class="op">=</span> <span class="st">"ITE"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>          title <span class="op">=</span> <span class="st">"Posterior ITEs vs truth"</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">band!</span>(ax, df.X1[ord], ite_lo[ord], ite_hi[ord],</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), label <span class="op">=</span> <span class="st">"95% CrI"</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, df.X1, ite_mean, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.4</span>), markersize <span class="op">=</span> <span class="fl">3</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>         label <span class="op">=</span> <span class="st">"Posterior mean ITE"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>], [<span class="fl">1</span> <span class="op">-</span> <span class="fl">6</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">6</span>], color <span class="op">=</span> <span class="op">:</span>firebrick,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>       linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
+
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
 </pre>
 </div>
-<p></p></figure><p></p>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div id="ite-credible" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="bayesian-causal_files/figure-html/ite-credible-output-2.svg" class="img-fluid figure-img"></p>
+<figcaption>Posterior mean ITE vs true τ(x) = 1 + 2 X₁. Blue band shows 95% pointwise credible interval across posterior draws.</figcaption>
+</figure>
 </div>
 </div>
 </div>
+<p>The blue ribbon shows pointwise 95% credible intervals; the red dashed line is the truth. Where the ribbon covers the truth, the posterior is well-calibrated.</p>
+</section>
+</section>
+<section id="why-use-bartbcf-in-r-instead" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="why-use-bartbcf-in-r-instead"><span class="header-section-number">11.3</span> Why use BART/BCF in R instead?</h2>
+<p>The Bayesian linear g-computation above suffices when:</p>
+<ul>
+<li>The outcome model is well-approximated by a small number of interactions.</li>
+<li>The effect heterogeneity is along covariates the analyst has pre-specified.</li>
+</ul>
+<p>For genuinely flexible nonparametric Bayesian causal inference, R’s <code>BART</code> and <code>bcf</code> are the workhorses. They use sum-of-trees ensembles with weakly informative priors on tree structure, providing:</p>
+<ul>
+<li><strong>Automatic flexibility</strong>: no need to specify interactions.</li>
+<li><strong>Posterior over individual effects</strong>: native uncertainty at the unit level, including for ITEs not detectable by linear models.</li>
+<li><strong>BCF’s separation prior</strong>: regularises treatment-effect heterogeneity separately from prognostic variation, reducing spurious effects.</li>
+</ul>
+<p>Compare the rough sketch:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Capability</th>
+<th>Julia (this chapter)</th>
+<th>R (BART/BCF)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Bayesian point estimate of ATE</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>Posterior credible intervals</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>Flexible nonparametric outcome model</td>
+<td>(limited to linear + interactions)</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>Native ITE posterior with regularisation</td>
+<td>(linear-model heterogeneity only)</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>Separation of prognostic and treatment effects</td>
+<td>–</td>
+<td>✓ (BCF)</td>
+</tr>
+</tbody>
+</table>
+<p>For now, Julia users wanting the full flexibility of BART/BCF should either call out to R or write a domain-specific package using <code>Turing.jl</code> or <code>Mamba.jl</code> (the latter is a substantial project — a future contribution to the Julia ecosystem).</p>
+</section>
+<section id="when-to-use-bayesian-methods" class="level2" data-number="11.4">
+<h2 data-number="11.4" class="anchored" data-anchor-id="when-to-use-bayesian-methods"><span class="header-section-number">11.4</span> When to use Bayesian methods</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Reason to use Bayesian</th>
+<th>Reason to use Frequentist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Prior information matters</td>
+<td>Asymptotic theory is well-understood</td>
+</tr>
+<tr class="even">
+<td>Need full posterior for downstream decisions</td>
+<td>Computational cost matters at scale</td>
+</tr>
+<tr class="odd">
+<td>Small sample, weak identification</td>
+<td>Effects are well-identified</td>
+</tr>
+<tr class="even">
+<td>Want native individual-level CrIs</td>
+<td>Existing frequentist toolkit suffices</td>
+</tr>
+</tbody>
+</table>
+<p>The Bayesian approach offers outputs (posterior over individual effects, principled propagation of uncertainty into derived quantities) that are not natural for frequentist methods. For decision-theoretic applications — treatment-recommendation under cost-benefit trade-offs — the Bayesian posterior is the natural input.</p>
+</section>
+<section id="connections" class="level2" data-number="11.5">
+<h2 data-number="11.5" class="anchored" data-anchor-id="connections"><span class="header-section-number">11.5</span> Connections</h2>
+<ul>
+<li>The <a href="./heterogeneous-effects.html">Heterogeneous Treatment Effects</a> chapter covers frequentist meta-learners. BCF is the Bayesian counterpart to causal forests.</li>
+<li>The <a href="./sensitivity-analysis.html">Sensitivity Analysis</a> chapter’s Cinelli-Hazlett bounds are frequentist; the Bayesian analog puts a prior on the unmeasured-confounder strength (McCandless et al.&nbsp;2007).</li>
+<li>For a hands-on Numpyro example of Bayesian modelling, see <a href="https://xiangao.github.io/blog_book/numpyro.html">Using Numpyro</a>.</li>
+</ul>
+</section>
+<section id="summary" class="level2" data-number="11.6">
+<h2 data-number="11.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">11.6</span> Summary</h2>
+<ul>
+<li><strong>Bayesian causal inference</strong> computes full posteriors over treatment effects, providing credible intervals for both aggregate and individual-level effects.</li>
+<li><strong>Bayesian g-computation</strong> with a Normal-Inverse-Gamma conjugate prior is implementable in Julia in ~30 lines and gives valid credible intervals for the ATE.</li>
+<li><strong>For nonparametric flexibility</strong> (BART, BCF), R’s <code>BART</code> and <code>bcf</code> packages remain the workhorses — see the <a href="https://xiangao.github.io/causal_econometrics_guide/bayesian-causal.html">R companion chapter</a>.</li>
+<li><strong>For Numpyro-based Bayesian models in Python</strong>, see the <a href="https://xiangao.github.io/blog_book/numpyro.html">Using Numpyro</a> blog chapter.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="11.7">
+<h2 data-number="11.7" class="anchored" data-anchor-id="references"><span class="header-section-number">11.7</span> References</h2>
+<ul>
+<li>Hill, J. L. (2011). Bayesian nonparametric modeling for causal inference. <em>JCGS</em>, 20(1), 217–240.</li>
+<li>Chipman, H. A., George, E. I., &amp; McCulloch, R. E. (2010). BART: Bayesian additive regression trees. <em>Annals of Applied Statistics</em>, 4(1), 266–298.</li>
+<li>Hahn, P. R., Murray, J. S., &amp; Carvalho, C. M. (2020). Bayesian regression tree models for causal inference: regularization, confounding, and heterogeneous effects. <em>Bayesian Analysis</em>, 15(3), 965–1056.</li>
+<li>McCandless, L. C., Gustafson, P., &amp; Levy, A. (2007). Bayesian sensitivity analysis for unmeasured confounding in observational studies. <em>Statistics in Medicine</em>, 26(11), 2331–2347.</li>
+</ul>
 
 
 </section>
@@ -998,13 +1135,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Preface">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      <a href="./continuous-treatments.html" class="pagination-link" aria-label="Continuous and Multivalued Treatments">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./causal-estimands.html" class="pagination-link" aria-label="Five Estimands on One DGP">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./distributional-effects.html" class="pagination-link" aria-label="Distributional Treatment Effects">
+        <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

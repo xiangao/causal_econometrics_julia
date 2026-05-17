@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>2&nbsp; Five Estimands on One DGP – Causal Econometrics with Julia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./graphs-identification-estimation.html" rel="next">
+<link href="./identification.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./causal-estimands.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Identification</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Estimation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Designs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./did.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Mediation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-data-generating-process" id="toc-the-data-generating-process" class="nav-link active" data-scroll-target="#the-data-generating-process"><span class="header-section-number">2.1</span> The data-generating process</a></li>
+  <li><a href="#the-five-estimands" id="toc-the-five-estimands" class="nav-link" data-scroll-target="#the-five-estimands"><span class="header-section-number">2.2</span> The five estimands</a>
+  <ul class="collapse">
+  <li><a href="#ate-average-treatment-effect" id="toc-ate-average-treatment-effect" class="nav-link" data-scroll-target="#ate-average-treatment-effect"><span class="header-section-number">2.2.1</span> ATE — average treatment effect</a></li>
+  <li><a href="#att-average-treatment-effect-on-the-treated" id="toc-att-average-treatment-effect-on-the-treated" class="nav-link" data-scroll-target="#att-average-treatment-effect-on-the-treated"><span class="header-section-number">2.2.2</span> ATT — average treatment effect on the treated</a></li>
+  <li><a href="#late-local-average-treatment-effect-imbens-angrist" id="toc-late-local-average-treatment-effect-imbens-angrist" class="nav-link" data-scroll-target="#late-local-average-treatment-effect-imbens-angrist"><span class="header-section-number">2.2.3</span> LATE — local average treatment effect (Imbens-Angrist)</a></li>
+  <li><a href="#cate-conditional-average-treatment-effect" id="toc-cate-conditional-average-treatment-effect" class="nav-link" data-scroll-target="#cate-conditional-average-treatment-effect"><span class="header-section-number">2.2.4</span> CATE — conditional average treatment effect</a></li>
+  <li><a href="#qte-quantile-treatment-effect" id="toc-qte-quantile-treatment-effect" class="nav-link" data-scroll-target="#qte-quantile-treatment-effect"><span class="header-section-number">2.2.5</span> QTE — quantile treatment effect</a></li>
+  </ul></li>
+  <li><a href="#all-five-estimands-on-one-plot" id="toc-all-five-estimands-on-one-plot" class="nav-link" data-scroll-target="#all-five-estimands-on-one-plot"><span class="header-section-number">2.3</span> All five estimands on one plot</a></li>
+  <li><a href="#when-the-estimands-differ" id="toc-when-the-estimands-differ" class="nav-link" data-scroll-target="#when-the-estimands-differ"><span class="header-section-number">2.4</span> When the estimands differ</a></li>
+  <li><a href="#which-estimand-should-you-choose" id="toc-which-estimand-should-you-choose" class="nav-link" data-scroll-target="#which-estimand-should-you-choose"><span class="header-section-number">2.5</span> Which estimand should you choose?</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">2.6</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">2.7</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./identification.html">Identification</a></li><li class="breadcrumb-item"><a href="./causal-estimands.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="222bb68a" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Before choosing an estimator, we need to know what we are estimating. The applied causal-inference literature has accumulated a zoo of estimands — ATE, ATT, LATE, CATE, QTE — and beginners often treat them as competing answers to one question. They are not. Each is a separate target that the data may or may not pin down. The estimator choice flows from which estimand you want.</p>
+<p>This chapter constructs one data-generating process where all five estimands are well-defined and computable. We then compute each one and discuss what the differences tell us.</p>
+<section id="the-data-generating-process" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">2.1</span> The data-generating process</h2>
+<p>Each individual <span class="math inline">\(i\)</span> has a baseline covariate <span class="math inline">\(X_i\)</span> (think: years of schooling), a latent type <span class="math inline">\(U_i\)</span> (think: ability), and a binary treatment <span class="math inline">\(D_i\)</span> (think: enrolling in a job-training programme). The instrument <span class="math inline">\(Z_i\)</span> is a randomly offered programme slot — it shifts treatment but does not directly affect the outcome.</p>
+<div id="cell-dgp" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)         <span class="co"># observed covariate, in [0,1]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>U <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)          <span class="co"># latent type, unobserved</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Bernoulli</span>(<span class="fl">0.5</span>), n)        <span class="co"># random instrument</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment assignment: depends on Z (the instrument) and U (selection on type)</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Higher U → more likely to take treatment regardless of Z (always-takers)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Lower  U → less likely to take treatment regardless of Z (never-takers)</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Middle U → responsive to Z (compliers)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>pD0 <span class="op">=</span> @. <span class="fu">clamp</span>(<span class="fl">0.10</span> <span class="op">+</span> <span class="fl">0.20</span> <span class="op">*</span> U, <span class="fl">0</span>, <span class="fl">1</span>)      <span class="co"># P(D=1 | Z=0, U)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>pD1 <span class="op">=</span> @. <span class="fu">clamp</span>(<span class="fl">0.10</span> <span class="op">+</span> <span class="fl">0.20</span> <span class="op">*</span> U <span class="op">+</span> <span class="fl">0.50</span>, <span class="fl">0</span>, <span class="fl">1</span>)  <span class="co"># P(D=1 | Z=1, U) — adds 0.50</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>D0 <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD0   <span class="co"># potential treatment if not offered slot</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>D1 <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD1   <span class="co"># potential treatment if offered slot</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>D  <span class="op">=</span> <span class="fu">ifelse</span>.(Z <span class="op">.==</span> <span class="fl">1</span>, D1, D0)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Heterogeneous treatment effect: depends on X</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Y(d) = baseline + d * tau(X) + 0.3 * U + noise</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">τ</span>(x) <span class="op">=</span> <span class="fl">1.0</span> <span class="op">+</span> <span class="fl">2.0</span> <span class="op">*</span> x            <span class="co"># the true individual treatment effect function</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>Y0   <span class="op">=</span> <span class="fl">0.5</span> <span class="op">.*</span> X <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> U <span class="op">.+</span> <span class="fu">randn</span>(n)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>Y1   <span class="op">=</span> Y0 <span class="op">.+</span> <span class="fu">τ</span>.(X)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>Y    <span class="op">=</span> <span class="fu">ifelse</span>.(D, Y1, Y0)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(X<span class="op">=</span>X, Z<span class="op">=</span>Z, D<span class="op">=</span>D, Y<span class="op">=</span>Y)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="dgp" class="cell-output cell-output-display" data-execution_count="3">
+<div><div style="float: left;"><span>6×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Z</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">D</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Y</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: right;">0.173575</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">1.08396</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: right;">0.321662</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">-1.93861</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: right;">0.258585</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">0.954567</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: right;">0.166439</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">1.64741</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: right;">0.527015</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">3.5308</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: right;">0.483022</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">0.286693</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Notice that we have full access to the potential outcomes <code>Y0</code> and <code>Y1</code> — a luxury only available in simulation. In real data we observe only one of them per unit, which is the fundamental problem of causal inference.</p>
+</section>
+<section id="the-five-estimands" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="the-five-estimands"><span class="header-section-number">2.2</span> The five estimands</h2>
+<section id="ate-average-treatment-effect" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="ate-average-treatment-effect"><span class="header-section-number">2.2.1</span> ATE — average treatment effect</h3>
+<p><span class="math display">\[
+\text{ATE} = \mathbb{E}[Y(1) - Y(0)]
+\]</span></p>
+<p>The expected effect of treatment if everyone in the population were treated vs.&nbsp;if everyone were not.</p>
+<div id="ate" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ate_true <span class="op">=</span> <span class="fu">mean</span>(Y1 <span class="op">.-</span> Y0)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATE (population mean of Y1 - Y0) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate_true)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># What the integral over τ(X) should be: ∫(1 + 2x) dx on [0,1] = 1 + 1 = 2</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ATE (population mean of Y1 - Y0) = 2.002
+Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</code></pre>
+</div>
+</div>
+</section>
+<section id="att-average-treatment-effect-on-the-treated" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="att-average-treatment-effect-on-the-treated"><span class="header-section-number">2.2.2</span> ATT — average treatment effect on the treated</h3>
+<p><span class="math display">\[
+\text{ATT} = \mathbb{E}[Y(1) - Y(0) \mid D = 1]
+\]</span></p>
+<p>The expected effect of treatment among those who actually took treatment. Differs from ATE when treatment uptake is selective.</p>
+<div id="att" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>att_true <span class="op">=</span> <span class="fu">mean</span>(Y1[D] <span class="op">.-</span> Y0[D])</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATT (mean of Y1-Y0 conditional on D=1) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_true)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ATT (mean of Y1-Y0 conditional on D=1) = 2.003</code></pre>
+</div>
+</div>
+<p>The ATT here is similar to the ATE because the heterogeneity in τ depends on <span class="math inline">\(X\)</span> (uniform), and treatment selection depends on <span class="math inline">\(U\)</span> which is independent of <span class="math inline">\(X\)</span>. If <span class="math inline">\(X\)</span> were correlated with <span class="math inline">\(U\)</span>, ATT would diverge from ATE.</p>
+</section>
+<section id="late-local-average-treatment-effect-imbens-angrist" class="level3" data-number="2.2.3">
+<h3 data-number="2.2.3" class="anchored" data-anchor-id="late-local-average-treatment-effect-imbens-angrist"><span class="header-section-number">2.2.3</span> LATE — local average treatment effect (Imbens-Angrist)</h3>
+<p><span class="math display">\[
+\text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid D(1) &gt; D(0)]
+\]</span></p>
+<p>The effect among <strong>compliers</strong> — individuals whose treatment status changes with the instrument. The Wald estimator identifies LATE under the standard IV assumptions (exclusion, monotonicity, relevance).</p>
+<div id="late" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>compliers <span class="op">=</span> (D1 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0 <span class="op">.==</span> <span class="fl">0</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>late_true <span class="op">=</span> <span class="fu">mean</span>(Y1[compliers] <span class="op">.-</span> Y0[compliers])</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"LATE (mean of Y1-Y0 conditional on complier status) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, late_true)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Share of compliers: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(compliers))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Wald estimator from the data alone</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>wald <span class="op">=</span> (<span class="fu">mean</span>(Y[Z <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[Z <span class="op">.==</span> <span class="fl">0</span>])) <span class="op">/</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>       (<span class="fu">mean</span>(D[Z <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(D[Z <span class="op">.==</span> <span class="fl">0</span>]))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Wald IV estimate (should match LATE): %.3f</span><span class="sc">\n</span><span class="st">"</span>, wald)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>LATE (mean of Y1-Y0 conditional on complier status) = 2.001
+Share of compliers: 0.487
+Wald IV estimate (should match LATE): 1.974</code></pre>
+</div>
+</div>
+<p>LATE is what an IV regression actually estimates under heterogeneous effects — <strong>not</strong> the ATE. The Wald estimator recovers LATE because the instrument only shifts the compliers’ treatment status, so the IV “averages” the effect over that subpopulation.</p>
+</section>
+<section id="cate-conditional-average-treatment-effect" class="level3" data-number="2.2.4">
+<h3 data-number="2.2.4" class="anchored" data-anchor-id="cate-conditional-average-treatment-effect"><span class="header-section-number">2.2.4</span> CATE — conditional average treatment effect</h3>
+<p><span class="math display">\[
+\text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
+\]</span></p>
+<p>The effect as a function of the covariate <span class="math inline">\(X\)</span>. By construction in our DGP, CATE(<span class="math inline">\(x\)</span>) = <span class="math inline">\(\tau(x) = 1 + 2x\)</span>.</p>
+<div id="cate" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bin X and compute mean of (Y1 - Y0) in each bin</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>nbins <span class="op">=</span> <span class="fl">20</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span>nbins <span class="op">+</span> <span class="fl">1</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>centers <span class="op">=</span> (edges[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>] <span class="op">.+</span> edges[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>]) <span class="op">./</span> <span class="fl">2</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>cate_est <span class="op">=</span> [<span class="fu">mean</span>((Y1 <span class="op">.-</span> Y0)[(X <span class="op">.&gt;=</span> edges[k]) <span class="op">.&amp;</span> (X <span class="op">.&lt;</span> edges[k<span class="op">+</span><span class="fl">1</span>])])</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            for k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nbins]</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.2: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">4</span>], <span class="fu">τ</span>(<span class="fl">0.2</span>))</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.8: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">16</span>], <span class="fu">τ</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CATE at x=0.2: estimated 1.35, true 1.40
+CATE at x=0.8: estimated 2.55, true 2.60</code></pre>
+</div>
+</div>
+</section>
+<section id="qte-quantile-treatment-effect" class="level3" data-number="2.2.5">
+<h3 data-number="2.2.5" class="anchored" data-anchor-id="qte-quantile-treatment-effect"><span class="header-section-number">2.2.5</span> QTE — quantile treatment effect</h3>
+<p><span class="math display">\[
+\text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau)
+\]</span></p>
+<p>The difference between the <span class="math inline">\(\tau\)</span>-th quantile of the treated marginal distribution and the <span class="math inline">\(\tau\)</span>-th quantile of the control marginal. Note that QTE compares <strong>distributions</strong> (one quantile to one quantile) — it does not track individuals across the two potential outcomes.</p>
+<div id="qte" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>qte_grid <span class="op">=</span> <span class="fl">0.05</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">0.95</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>qte_est  <span class="op">=</span> [<span class="fu">quantile</span>(Y1, q) <span class="op">-</span> <span class="fu">quantile</span>(Y0, q) for q <span class="kw">in</span> qte_grid]</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.10) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.10</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.10</span>))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.50) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.50</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.50</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.90) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.90</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.90</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>QTE(0.10) = 1.702
+QTE(0.50) = 1.991
+QTE(0.90) = 2.285</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="all-five-estimands-on-one-plot" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="all-five-estimands-on-one-plot"><span class="header-section-number">2.3</span> All five estimands on one plot</h2>
+<div id="cell-estimand-plot" class="cell" data-cache="true" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>ax1 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X (covariate)"</span>, ylabel <span class="op">=</span> <span class="st">"Effect"</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"CATE(x) vs scalar estimands"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax1, centers, cate_est, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"CATE(x)"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax1, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fu">τ</span>(<span class="fl">0</span>), <span class="fu">τ</span>(<span class="fl">1</span>)], color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dot, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [ate_true], color <span class="op">=</span> <span class="op">:</span>black,     linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"ATE"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [att_true], color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"ATT"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [late_true], color <span class="op">=</span> <span class="op">:</span>seagreen,  linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"LATE"</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax1, position <span class="op">=</span> <span class="op">:</span>lt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], xlabel <span class="op">=</span> <span class="st">"Quantile τ"</span>, ylabel <span class="op">=</span> <span class="st">"QTE(τ)"</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"QTE — distribution-level effect"</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, <span class="fu">collect</span>(qte_grid), qte_est, color <span class="op">=</span> <span class="op">:</span>purple, linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax2, [ate_true], color <span class="op">=</span> <span class="op">:</span>black, linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="fu">text!</span>(ax2, <span class="fl">0.05</span>, ate_true <span class="op">+</span> <span class="fl">0.05</span>; text <span class="op">=</span> <span class="st">"ATE"</span>, color <span class="op">=</span> <span class="op">:</span>black, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
+
+<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div id="estimand-plot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="causal-estimands_files/figure-html/estimand-plot-output-2.svg" class="img-fluid figure-img"></p>
+<figcaption>Five views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(τ) shows how the effect varies across the outcome distribution. Each curve answers a different question.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The left panel makes the conceptual point clearly. <strong>ATE</strong>, <strong>ATT</strong>, and <strong>LATE</strong> each collapse the heterogeneous τ(<span class="math inline">\(x\)</span>) curve into a single number — but they collapse it differently. ATE averages over the full population’s <span class="math inline">\(X\)</span> distribution. ATT averages over the treated subpopulation. LATE averages over compliers.</p>
+<p><strong>CATE</strong> keeps the heterogeneity along <span class="math inline">\(X\)</span> explicit. <strong>QTE</strong> (right panel) keeps heterogeneity along the outcome distribution explicit. Neither nests the others: CATE and QTE answer fundamentally different questions about heterogeneity (covariate-level vs distribution-level).</p>
+</section>
+<section id="when-the-estimands-differ" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="when-the-estimands-differ"><span class="header-section-number">2.4</span> When the estimands differ</h2>
+<p>In this DGP all four scalar estimands are similar because:</p>
+<ul>
+<li><span class="math inline">\(X\)</span> is uniform on [0, 1] (so ATE = average of τ over uniform <span class="math inline">\(X\)</span> = 2)</li>
+<li>Treatment selection is on <span class="math inline">\(U\)</span> (unobserved type), not <span class="math inline">\(X\)</span> (which drives τ), so ATT ≈ ATE</li>
+<li>The instrument shifts compliers uniformly across <span class="math inline">\(X\)</span>, so LATE ≈ ATE</li>
+</ul>
+<p>Change any of these assumptions and the estimands diverge. To see this, modify the DGP so that high-<span class="math inline">\(X\)</span> individuals are more likely to take treatment:</p>
+<div id="dgp-selective" class="cell" data-cache="true" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>U2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>Z2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Bernoulli</span>(<span class="fl">0.5</span>), n)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># High X → much more likely to take treatment (selection on X, the modifier)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>pD0_2 <span class="op">=</span> @. <span class="fu">clamp</span>(<span class="fl">0.10</span> <span class="op">+</span> <span class="fl">0.20</span> <span class="op">*</span> U2 <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> X2, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>pD1_2 <span class="op">=</span> @. <span class="fu">clamp</span>(pD0_2 <span class="op">+</span> <span class="fl">0.50</span>, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>D0_2  <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD0_2</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>D1_2  <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD1_2</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>D2    <span class="op">=</span> <span class="fu">ifelse</span>.(Z2 <span class="op">.==</span> <span class="fl">1</span>, D1_2, D0_2)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>Y0_2  <span class="op">=</span> <span class="fl">0.5</span> <span class="op">.*</span> X2 <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> U2 <span class="op">.+</span> <span class="fu">randn</span>(n)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>Y1_2  <span class="op">=</span> Y0_2 <span class="op">.+</span> <span class="fu">τ</span>.(X2)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>Y2    <span class="op">=</span> <span class="fu">ifelse</span>.(D2, Y1_2, Y0_2)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>ate2  <span class="op">=</span> <span class="fu">mean</span>(Y1_2 <span class="op">.-</span> Y0_2)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>att2  <span class="op">=</span> <span class="fu">mean</span>(Y1_2[D2] <span class="op">.-</span> Y0_2[D2])</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>late2 <span class="op">=</span> <span class="fu">mean</span>((Y1_2 <span class="op">.-</span> Y0_2)[(D1_2 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0_2 <span class="op">.==</span> <span class="fl">0</span>)])</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Selection-on-X DGP:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  ATE  = %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate2)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  ATT  = %.3f (now higher because treated have higher X → larger τ)</span><span class="sc">\n</span><span class="st">"</span>, att2)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  LATE = %.3f (compliers' mean X)</span><span class="sc">\n</span><span class="st">"</span>, late2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Selection-on-X DGP:
+  ATE  = 1.999
+  ATT  = 2.123 (now higher because treated have higher X → larger τ)
+  LATE = 1.916 (compliers' mean X)</code></pre>
+</div>
+</div>
+<p>Now ATT exceeds ATE because the treated subpopulation has higher <span class="math inline">\(X\)</span> and therefore larger treatment effects. The choice between reporting ATE and ATT is no longer cosmetic — it changes what the policy implication is.</p>
+</section>
+<section id="which-estimand-should-you-choose" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="which-estimand-should-you-choose"><span class="header-section-number">2.5</span> Which estimand should you choose?</h2>
+<p>The right estimand depends on the policy question:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Policy question</th>
+<th>Right estimand</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>“What if we treated everyone?”</td>
+<td>ATE</td>
+</tr>
+<tr class="even">
+<td>“What did treating the currently-treated achieve?”</td>
+<td>ATT</td>
+</tr>
+<tr class="odd">
+<td>“What can the instrument tell us?” (e.g.&nbsp;policy expansion that’s already in place)</td>
+<td>LATE</td>
+</tr>
+<tr class="even">
+<td>“Who benefits most?”</td>
+<td>CATE(x)</td>
+</tr>
+<tr class="odd">
+<td>“Does the effect vary across the outcome distribution?”</td>
+<td>QTE(τ)</td>
+</tr>
+<tr class="even">
+<td>“What is the distribution of individual effects?”</td>
+<td>Often unidentifiable; bounds required</td>
+</tr>
+</tbody>
+</table>
+<p>The same applied paper can defensibly report multiple estimands. The blog chapter on Proposition 99 reported the same-data-different-estimators exercise — DiD, SC, SDiD, TASC all targeting ATT under different assumptions. That is one direction. The complementary direction is to keep the estimator fixed and report multiple estimands: a regression with heterogeneous effects can yield ATE, ATT, and CATE(<span class="math inline">\(x\)</span>) jointly.</p>
+</section>
+<section id="summary" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">2.6</span> Summary</h2>
+<ul>
+<li><strong>ATE / ATT / LATE</strong> are different scalar averages of the underlying heterogeneous treatment effect. They coincide only under strong homogeneity or specific selection structure.</li>
+<li><strong>CATE(<span class="math inline">\(x\)</span>)</strong> and <strong>QTE(<span class="math inline">\(\tau\)</span>)</strong> preserve the heterogeneity, along different dimensions: covariates vs the outcome distribution.</li>
+<li>IV regressions estimate LATE, not ATE. Reporting an IV coefficient as “the” causal effect is a category error when effects are heterogeneous.</li>
+<li>Picking the right estimand is the substantive step. The estimator question — OLS, IV, matching, AIPW, TMLE — only makes sense once the estimand is fixed.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="references"><span class="header-section-number">2.7</span> References</h2>
+<ul>
+<li>Imbens, G. W., &amp; Angrist, J. D. (1994). Identification and estimation of local average treatment effects. <em>Econometrica</em>, 62(2), 467–475.</li>
+<li>Heckman, J. J., &amp; Vytlacil, E. (2005). Structural equations, treatment effects, and econometric policy evaluation. <em>Econometrica</em>, 73(3), 669–738.</li>
+<li>Athey, S., &amp; Imbens, G. W. (2017). The state of applied econometrics: causality and policy evaluation. <em>Journal of Economic Perspectives</em>, 31(2), 3–32.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./identification.html" class="pagination-link" aria-label="Identification &amp; Potential Outcomes">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./graphs-identification-estimation.html" class="pagination-link" aria-label="DAGs, ADMGs, Identification, and Estimation">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

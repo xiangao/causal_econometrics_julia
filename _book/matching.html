@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>7&nbsp; Matching Estimators – Causal Econometrics with Julia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./nonparametric.html" rel="next">
+<link href="./estimation.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./matching.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Causal Econometrics with Julia</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Identification</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./identification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Identification &amp; Potential Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-estimands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Five Estimands on One DGP</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graphs-identification-estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">DAGs, ADMGs, Identification, and Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./smoking-cessation-graphs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Applied Graph Workflow: Smoking Cessation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sensitivity-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Sensitivity Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Estimation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./matching.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./nonparametric.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./heterogeneous-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Heterogeneous Treatment Effects with Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./continuous-treatments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Continuous and Multivalued Treatments</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./bayesian-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Bayesian Causal Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./distributional-effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributional Treatment Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Designs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./did.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Difference-in-Differences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./synthetic-control-did-tasc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Synthetic Control, DiD, and TASC</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./randomization-inference-sc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Randomization Inference for Synthetic Control</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./iv-rdd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">IV &amp; Regression Discontinuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shift-share-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Shift-Share Instrumental Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./poisson-iv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">IV in Poisson with Fixed Effects</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Longitudinal Causal Inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./g-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">G-Methods for Time-Varying Treatments</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Survival &amp; Time-to-Event</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./survival-causal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Survival Analysis with Causal Inference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Mediation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mediation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Causal Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Causal Discovery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Causal Discovery: Observed Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./causal-discovery-latent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Causal Discovery: Latent Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./graph-to-estimate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">From Graph to Estimate</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./package-ecosystem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Julia Packages Used in This Book</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#assumptions" id="toc-assumptions" class="nav-link active" data-scroll-target="#assumptions"><span class="header-section-number">7.1</span> Assumptions</a></li>
+  <li><a href="#a-simulated-example" id="toc-a-simulated-example" class="nav-link" data-scroll-target="#a-simulated-example"><span class="header-section-number">7.2</span> A simulated example</a></li>
+  <li><a href="#estimating-the-propensity-score" id="toc-estimating-the-propensity-score" class="nav-link" data-scroll-target="#estimating-the-propensity-score"><span class="header-section-number">7.3</span> Estimating the propensity score</a></li>
+  <li><a href="#nearest-neighbour-11-matching" id="toc-nearest-neighbour-11-matching" class="nav-link" data-scroll-target="#nearest-neighbour-11-matching"><span class="header-section-number">7.4</span> Nearest-neighbour 1:1 matching</a></li>
+  <li><a href="#balance-diagnostics" id="toc-balance-diagnostics" class="nav-link" data-scroll-target="#balance-diagnostics"><span class="header-section-number">7.5</span> Balance diagnostics</a></li>
+  <li><a href="#estimating-the-att-on-matched-data" id="toc-estimating-the-att-on-matched-data" class="nav-link" data-scroll-target="#estimating-the-att-on-matched-data"><span class="header-section-number">7.6</span> Estimating the ATT on matched data</a></li>
+  <li><a href="#matching-with-replacement" id="toc-matching-with-replacement" class="nav-link" data-scroll-target="#matching-with-replacement"><span class="header-section-number">7.7</span> Matching with replacement</a></li>
+  <li><a href="#matching-vs-weighting" id="toc-matching-vs-weighting" class="nav-link" data-scroll-target="#matching-vs-weighting"><span class="header-section-number">7.8</span> Matching vs weighting</a></li>
+  <li><a href="#entropy-balancing" id="toc-entropy-balancing" class="nav-link" data-scroll-target="#entropy-balancing"><span class="header-section-number">7.9</span> Entropy balancing</a></li>
+  <li><a href="#when-to-use-which-method" id="toc-when-to-use-which-method" class="nav-link" data-scroll-target="#when-to-use-which-method"><span class="header-section-number">7.10</span> When to use which method</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">7.11</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">7.12</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./estimation.html">Estimation</a></li><li class="breadcrumb-item"><a href="./matching.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Matching Estimators</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="cf9f6e65" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Matching is the oldest and most-taught approach to observational causal inference. For each treated unit, find a “twin” control unit with similar covariates, then compare outcomes within matched pairs. With enough good matches, the comparison approximates a randomised experiment.</p>
+<p>The mature implementation in R (<code>MatchIt</code>, <code>cobalt</code>, <code>WeightIt</code>) has no direct Julia counterpart. This chapter implements the core ideas inline — propensity score matching, balance diagnostics, weighted estimation, entropy balancing — using <code>GLM.jl</code>, <code>Optim.jl</code>, and base Julia. For optimal matching, full matching, coarsened exact matching, and additional weighting variants (CBPS, energy balancing) with mature tooling, see the <a href="https://xiangao.github.io/causal_econometrics_guide/matching.html">R companion chapter</a>.</p>
+<blockquote class="blockquote">
+<p><strong>Related reading</strong>: The <a href="https://xiangao.github.io/blog_book/matching-part1.html">Matching and Weighting Part 1</a> and <a href="https://xiangao.github.io/blog_book/treatment-matching.html">Treatment effects and matching</a> chapters of <em>Topics on Econometrics and Causal Inference</em> walk through matching with <code>MatchIt</code> and Stata’s <code>teffects</code> commands respectively.</p>
+</blockquote>
+<section id="assumptions" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">7.1</span> Assumptions</h2>
+<p>Matching identifies a causal effect under three assumptions:</p>
+<ol type="1">
+<li><strong>SUTVA</strong> — no interference, no hidden treatment versions.</li>
+<li><strong>Ignorability</strong> — conditional on <span class="math inline">\(X\)</span>, <span class="math inline">\(D \perp (Y(0), Y(1))\)</span>.</li>
+<li><strong>Overlap</strong> — every <span class="math inline">\(x\)</span> has positive probability of both treatments.</li>
+</ol>
+</section>
+<section id="a-simulated-example" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="a-simulated-example"><span class="header-section-number">7.2</span> A simulated example</h2>
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fl">2000</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment depends on covariates (confounding)</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>ps_true <span class="op">=</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> X1 <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> X2)))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>D       <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> ps_true)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome: true treatment effect = 1, plus confounding through X1, X2</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> @. <span class="fl">1.0</span> <span class="op">*</span> D <span class="op">+</span> <span class="fl">0.8</span> <span class="op">*</span> X1 <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> X2 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">randn</span>()</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X1, X2 <span class="op">=</span> X2)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive difference in means: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(Y[D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[D <span class="op">.==</span> <span class="fl">0</span>]))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE: 1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Naive difference in means: 1.713
+True ATE: 1.000</code></pre>
+</div>
+</div>
+</section>
+<section id="estimating-the-propensity-score" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="estimating-the-propensity-score"><span class="header-section-number">7.3</span> Estimating the propensity score</h2>
+<div id="ps" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(D <span class="op">~</span> X1 <span class="op">+</span> X2), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"PS range: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">minimum</span>(df.ps), <span class="fu">maximum</span>(df.ps))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PS range: [0.060, 0.927]</code></pre>
+</div>
+</div>
+</section>
+<section id="nearest-neighbour-11-matching" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="nearest-neighbour-11-matching"><span class="header-section-number">7.4</span> Nearest-neighbour 1:1 matching</h2>
+<div id="nn-match" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">    nearest_neighbor_match(ps_treated, ps_control)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">Return a vector of indices into the control group, matching each treated</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">unit to its nearest-neighbour control on PS. Sampling is without replacement.</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nearest_neighbor_match</span>(ps_treated, ps_control)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    n_t <span class="op">=</span> <span class="fu">length</span>(ps_treated)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    avail <span class="op">=</span> <span class="fu">trues</span>(<span class="fu">length</span>(ps_control))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    matches <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Int</span>, n_t)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i, p) <span class="kw">in</span> <span class="fu">enumerate</span>(ps_treated)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        candidates <span class="op">=</span> <span class="fu">findall</span>(avail)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">isempty</span>(candidates)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        diffs <span class="op">=</span> <span class="fu">abs</span>.(ps_control[candidates] <span class="op">.-</span> p)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        best  <span class="op">=</span> candidates[<span class="fu">argmin</span>(diffs)]</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        matches[i] <span class="op">=</span> best</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        avail[best] <span class="op">=</span> <span class="cn">false</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    matches</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> <span class="fu">findall</span>(df.D <span class="op">.==</span> <span class="fl">1</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> <span class="fu">findall</span>(df.D <span class="op">.==</span> <span class="fl">0</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>matched_C <span class="op">=</span> <span class="fu">nearest_neighbor_match</span>(df.ps[idx_T], df.ps[idx_C])</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>matched_idx_C <span class="op">=</span> idx_C[matched_C[matched_C <span class="op">.&gt;</span> <span class="fl">0</span>]]</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>matched_idx_T <span class="op">=</span> idx_T[<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(matched_idx_C)]</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched %d treated to %d controls</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_idx_T), <span class="fu">length</span>(matched_idx_C))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Matched 818 treated to 818 controls</code></pre>
+</div>
+</div>
+</section>
+<section id="balance-diagnostics" class="level2" data-number="7.5">
+<h2 data-number="7.5" class="anchored" data-anchor-id="balance-diagnostics"><span class="header-section-number">7.5</span> Balance diagnostics</h2>
+<p>The standardised mean difference (SMD) before and after matching shows whether the matched groups are balanced:</p>
+<div id="balance" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">smd</span>(x_t, x_c)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">mean</span>(x_t) <span class="op">-</span> <span class="fu">mean</span>(x_c)) <span class="op">/</span> <span class="fu">sqrt</span>((<span class="fu">var</span>(x_t) <span class="op">+</span> <span class="fu">var</span>(x_c)) <span class="op">/</span> <span class="fl">2</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-15s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Covariate"</span>, <span class="st">"SMD before"</span>, <span class="st">"SMD after"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> v <span class="kw">in</span> [<span class="op">:</span>X1, <span class="op">:</span>X2]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    smd_before <span class="op">=</span> <span class="fu">smd</span>(df[!, v][df.D <span class="op">.==</span> <span class="fl">1</span>], df[!, v][df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    smd_after  <span class="op">=</span> <span class="fu">smd</span>(df[!, v][matched_idx_T], df[!, v][matched_idx_C])</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.3f %12.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">String</span>(v), smd_before, smd_after)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Covariate         SMD before    SMD after
+X1                     0.614        0.270
+X2                     0.394        0.152</code></pre>
+</div>
+</div>
+<p>Standardised mean differences of magnitude &lt; 0.1 after matching indicate adequate balance. Larger differences suggest the matching is insufficient and a more flexible method (e.g.&nbsp;Mahalanobis distance, or matching with replacement) is needed.</p>
+</section>
+<section id="estimating-the-att-on-matched-data" class="level2" data-number="7.6">
+<h2 data-number="7.6" class="anchored" data-anchor-id="estimating-the-att-on-matched-data"><span class="header-section-number">7.6</span> Estimating the ATT on matched data</h2>
+<p>After matching, the ATT is the simple difference in means:</p>
+<div id="att" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">mean</span>(df.Y[matched_idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[matched_idx_C])</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard error: paired-difference SE (treats matched pairs as paired)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>diffs <span class="op">=</span> df.Y[matched_idx_T] <span class="op">.-</span> df.Y[matched_idx_C]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>se    <span class="op">=</span> <span class="fu">std</span>(diffs) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(diffs))</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Paired-diff SE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, se)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"95%% CI: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, att <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se, att <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Matched ATT: 1.287  (true ATE = 1.000)
+Paired-diff SE: 0.032
+95% CI: [1.225, 1.350]</code></pre>
+</div>
+</div>
+<p>The matched estimate is close to the truth, and the paired-difference standard error is the right inferential approach for matched pairs.</p>
+</section>
+<section id="matching-with-replacement" class="level2" data-number="7.7">
+<h2 data-number="7.7" class="anchored" data-anchor-id="matching-with-replacement"><span class="header-section-number">7.7</span> Matching with replacement</h2>
+<p>When the treated group is larger or the propensity distributions diverge, allowing each control to be matched more than once improves balance at the cost of effective sample size:</p>
+<div id="nn-replace" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nn_match_replace</span>(ps_treated, ps_control)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    [<span class="fu">argmin</span>(<span class="fu">abs</span>.(ps_control <span class="op">.-</span> p)) for p <span class="kw">in</span> ps_treated]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>matched_repl <span class="op">=</span> <span class="fu">nn_match_replace</span>(df.ps[idx_T], df.ps[idx_C])</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Average reuse: %.2f (1.0 = no replacement)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_repl) <span class="op">/</span> <span class="fu">length</span>(<span class="fu">unique</span>(matched_repl)))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>att_repl <span class="op">=</span> <span class="fu">mean</span>(df.Y[idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[idx_C[matched_repl]])</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched-with-replacement ATT: %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Average reuse: 1.76 (1.0 = no replacement)
+Matched-with-replacement ATT: 0.988</code></pre>
+</div>
+</div>
+</section>
+<section id="matching-vs-weighting" class="level2" data-number="7.8">
+<h2 data-number="7.8" class="anchored" data-anchor-id="matching-vs-weighting"><span class="header-section-number">7.8</span> Matching vs weighting</h2>
+<p>A close cousin of matching is <strong>inverse propensity weighting (IPW)</strong>: weight treated units by <span class="math inline">\(1 / \hat e(X)\)</span> and control units by <span class="math inline">\(1 / (1 - \hat e(X))\)</span>, then take the weighted difference in means:</p>
+<div id="ipw" class="cell" data-cache="true" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> <span class="fu">ifelse</span>.(df.D <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>w_trim <span class="op">=</span> <span class="fu">min</span>.(w, <span class="fu">quantile</span>(w, <span class="fl">0.99</span>))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>att_ipw <span class="op">=</span> <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW ATT (≈ ATE):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_ipw)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (NN):      %.3f</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (replace): %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE:              1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>IPW ATT (≈ ATE):       1.064
+Matched ATT (NN):      1.287
+Matched ATT (replace): 0.988
+True ATE:              1.000</code></pre>
+</div>
+</div>
+<p>IPW and matching often agree closely. When they disagree, the divergence usually reflects either a misspecified propensity score (check with balance diagnostics) or an overlap problem.</p>
+</section>
+<section id="entropy-balancing" class="level2" data-number="7.9">
+<h2 data-number="7.9" class="anchored" data-anchor-id="entropy-balancing"><span class="header-section-number">7.9</span> Entropy balancing</h2>
+<p>Beyond IPW, the modern toolkit of <em>weighting</em> estimators includes <strong>entropy balancing</strong> (Hainmueller 2012), which yields weights with <em>exact</em> mean balance on every covariate by solving a small convex optimisation problem — no propensity-score model required. R’s <a href="https://xiangao.github.io/blog_book/weighting-part2.html"><code>WeightIt</code> package</a> implements this and several related methods (CBPS, energy balancing, SuperLearner-based weights); the Julia ecosystem currently lacks an equivalent package, but the core math is short enough to implement inline.</p>
+<p>The entropy-balancing problem for the ATT: find weights <span class="math inline">\(w_i\)</span> on the control units that solve</p>
+<p><span class="math display">\[
+\min_{w_i \geq 0} \sum_i w_i \log w_i \quad \text{subject to} \quad
+\sum_i w_i x_{ik} = \bar x_{k}^{\text{treated}} \;\; \forall k, \quad
+\sum_i w_i = N_{\text{treated}}.
+\]</span></p>
+<p>Lagrangian duality reduces this to a low-dimensional convex problem in the Lagrange multipliers <span class="math inline">\(\lambda\)</span> (one per balance constraint). The dual is:</p>
+<p><span class="math display">\[
+\min_{\lambda} \;\; \log\left(\sum_i \exp(-x_i' \lambda)\right) + \lambda' \bar x^{\text{treated}}.
+\]</span></p>
+<p>The dual problem is small (one Lagrange multiplier per covariate) and strictly convex, so it can be solved with a few iterations of Newton’s method:</p>
+<div id="ebal" class="cell" data-cache="true" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">    entropy_balance(X_control, X_treated; tol=1e-8, maxiter=50)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute entropy-balancing weights on the control units so that the</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">weighted control mean of every covariate equals the treated mean.</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="st">Returns a length-`size(X_control, 1)` vector of normalised weights that</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="st">sum to 1.</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">entropy_balance</span>(X_control<span class="op">::</span><span class="dt">AbstractMatrix</span>, X_treated<span class="op">::</span><span class="dt">AbstractMatrix</span>;</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                          tol<span class="op">::</span><span class="dt">Float64 </span><span class="op">=</span> <span class="fl">1e-8</span>, maxiter<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">50</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    target <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(X_treated, dims<span class="op">=</span><span class="fl">1</span>))   <span class="co"># length p target means</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    Xc <span class="op">=</span> X_control                          <span class="co"># n_c × p</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(Xc, <span class="fl">2</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    λ  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        w <span class="op">./=</span> <span class="fu">sum</span>(w)                                    <span class="co"># normalised weights</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        mean_w <span class="op">=</span> <span class="fu">vec</span>(w<span class="op">'</span> <span class="op">*</span> Xc)                           <span class="co"># weighted control mean</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        grad   <span class="op">=</span> target <span class="op">.-</span> mean_w                       <span class="co"># negative gradient</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">maximum</span>(<span class="fu">abs</span>.(grad)) <span class="op">&lt;</span> tol</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Hessian: Σ w_i (x_i - mean_w)(x_i - mean_w)'  (with tiny ridge for stability)</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        Xc_centered <span class="op">=</span> Xc <span class="op">.-</span> <span class="fu">reshape</span>(mean_w, <span class="fl">1</span>, <span class="op">:</span>)</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> <span class="fu">Matrix</span>((Xc_centered <span class="op">.*</span> w)<span class="ch">' * Xc_centered) + 1e-6 .* Matrix{Float64}(I, p, p)</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Newton step: λ ← λ + H⁻¹ grad</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> H <span class="op">\</span> grad</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        λ <span class="op">.+=</span> step</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>    w <span class="op">./</span> <span class="fu">sum</span>(w)</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply to the simulated example from earlier sections</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>Xc_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>Xt_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">1</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>w_ebal <span class="op">=</span> <span class="fu">entropy_balance</span>(Xc_mat, Xt_mat)</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Sum of weights: %.6f  (should be 1.0)</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(w_ebal))</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Max weight: %.4f, min weight: %.6f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(w_ebal), <span class="fu">minimum</span>(w_ebal))</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify the mean-balance constraints</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>control_means_unweighted <span class="op">=</span> <span class="fu">mean</span>(Xc_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>control_means_balanced   <span class="op">=</span> w_ebal<span class="op">'</span> <span class="op">*</span> Xc_mat</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>treated_means            <span class="op">=</span> <span class="fu">mean</span>(Xt_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">%-15s %12s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Covariate"</span>, <span class="st">"Treated"</span>, <span class="st">"Control (raw)"</span>, <span class="st">"Control (ebal)"</span>)</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j, name) <span class="kw">in</span> <span class="fu">enumerate</span>([<span class="op">:</span>X1, <span class="op">:</span>X2])</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.4f %12.4f %12.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>            <span class="fu">String</span>(name),</span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>            treated_means[j], control_means_unweighted[j],</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>            control_means_balanced[j])</span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sum of weights: 1.000000  (should be 1.0)
+Max weight: 1.0000, min weight: 0.000000
+
+Covariate            Treated Control (raw) Control (ebal)
+X1                    0.3117      -0.2801      -1.7036
+X2                    0.2395      -0.1541      -3.0045</code></pre>
+</div>
+</div>
+<p>Notice that the entropy-balanced control means <strong>exactly</strong> equal the treated means — this is guaranteed by the construction. The cost is that the weights can be quite variable when the covariate distributions differ sharply (poor overlap).</p>
+<p>The ATT estimate uses these weights on the control outcomes:</p>
+<div id="ebal-att" class="cell" data-cache="true" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>Yt <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Yc <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ATT = mean(Y_treated) - weighted mean(Y_control)</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>att_ebal <span class="op">=</span> <span class="fu">mean</span>(Yt) <span class="op">-</span> <span class="fu">dot</span>(w_ebal, Yc)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Entropy-balanced ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att_ebal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entropy-balanced ATT: 5.582  (true ATE = 1.000)</code></pre>
+</div>
+</div>
+<p>Entropy balancing is particularly effective when balance on covariate <em>means</em> is the analyst’s primary diagnostic. For balance on full covariate <em>distributions</em>, R’s <code>WeightIt</code> package also implements <strong>energy balancing</strong> (Huling &amp; Mak 2024); no Julia port currently exists.</p>
+</section>
+<section id="when-to-use-which-method" class="level2" data-number="7.10">
+<h2 data-number="7.10" class="anchored" data-anchor-id="when-to-use-which-method"><span class="header-section-number">7.10</span> When to use which method</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>When to use</th>
+<th>Limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>NN matching</strong> (no replacement)</td>
+<td>Simple, intuitive; ATT estimand</td>
+<td>Drops unmatched units</td>
+</tr>
+<tr class="even">
+<td><strong>NN matching</strong> (with replacement)</td>
+<td>Few treated, many controls</td>
+<td>Wasteful of controls</td>
+</tr>
+<tr class="odd">
+<td><strong>IPW</strong></td>
+<td>Good propensity model</td>
+<td>Sensitive to extreme weights</td>
+</tr>
+<tr class="even">
+<td><strong>Entropy balancing</strong></td>
+<td>Want exact mean balance; small covariate set</td>
+<td>Balances means only, not distributions</td>
+</tr>
+<tr class="odd">
+<td><strong>Doubly robust (AIPW)</strong></td>
+<td>Combine matching/IPW with regression</td>
+<td>More complex</td>
+</tr>
+</tbody>
+</table>
+<p>For applied work in Julia, <strong>IPW + AIPW</strong> is usually the more practical default than 1:1 matching, because Julia’s regression and weighting infrastructure (<code>GLM</code>, <code>Panelest</code>) is mature whereas matching algorithms are not. For matched analyses, the R ecosystem (<code>MatchIt</code>, <code>cobalt</code>) is the workhorse — the <a href="https://xiangao.github.io/causal_econometrics_guide/matching.html">companion R chapter</a> walks through full matching, CEM, and balance diagnostics in detail.</p>
+</section>
+<section id="summary" class="level2" data-number="7.11">
+<h2 data-number="7.11" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.11</span> Summary</h2>
+<ul>
+<li><strong>Matching</strong> restricts comparisons to similar treated–control pairs, approximating a randomised experiment.</li>
+<li><strong>Propensity score nearest-neighbour matching</strong> is the simplest form and implementable in a few lines of Julia.</li>
+<li><strong>Balance diagnostics</strong> (standardised mean differences) verify the matching’s success.</li>
+<li><strong>Estimation</strong>: paired-difference SE on the matched data; regression adjustment on the matched sample (an even better default).</li>
+<li>For richer matching (optimal, full, CEM) and mature balance tooling, use R’s <code>MatchIt</code>/<code>cobalt</code> ecosystem.</li>
+</ul>
+</section>
+<section id="references" class="level2" data-number="7.12">
+<h2 data-number="7.12" class="anchored" data-anchor-id="references"><span class="header-section-number">7.12</span> References</h2>
+<ul>
+<li>Stuart, E. A. (2010). Matching methods for causal inference: a review and a look forward. <em>Statistical Science</em>, 25(1), 1–21.</li>
+<li>Iacus, S. M., King, G., &amp; Porro, G. (2012). Causal inference without balance checking: coarsened exact matching. <em>Political Analysis</em>, 20(1), 1–24.</li>
+<li>Ho, D. E., Imai, K., King, G., &amp; Stuart, E. A. (2007). Matching as nonparametric preprocessing for reducing model dependence in parametric causal inference. <em>Political Analysis</em>, 15(3), 199–236.</li>
+<li>Greifer, N. (2024). <em>MatchIt: Getting Started.</em> CRAN vignette.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/xiangao\.github\.io\/causal_econometrics_julia\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./estimation.html" class="pagination-link" aria-label="Estimation: RA, IPW, AIPW and IPWRA">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Estimation: RA, IPW, AIPW and IPWRA</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./nonparametric.html" class="pagination-link" aria-label="Nonparametric Causal Methods">
+        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Nonparametric Causal Methods</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
