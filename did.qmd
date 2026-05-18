@@ -424,4 +424,34 @@ emfx(mod_lin)
 
 The linear model estimates the ATT on the $\log(Y+1)$ scale — a different and less interpretable quantity than the Poisson log IRR.
 
+## Spatial Interference
+
+Everything in this chapter so far assumes SUTVA: one unit's outcome does not depend on another unit's treatment. With spatial spillovers — a treated municipality affecting deforestation in neighbouring untreated ones, a vaccinated household reducing transmission to nearby households, a labour-market policy in one commuting zone changing flows to its neighbours — the canonical DiD estimand loses its causal interpretation. Section 3.1 of Xu [-@xu2023] shows that ignoring interference produces an estimand that is, in general, neither a direct nor a spillover effect.
+
+Xu [-@xu2023; -@xu2026] develops a doubly robust DiD that keeps the identifying logic of conditional parallel trends but adds an exposure mapping $G_{it} = G(i, W_{-it})$ for unit $i$'s neighbourhood treatment status. The estimand is the **direct ATT at exposure level $g$**,
+
+$$ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{it}(\infty, g) \mid z_i, C_i = c, G_{it} = g], $$
+
+where $C_i$ is unit $i$'s first treatment period (so $\{C_i > t\}$ is the not-yet-directly-treated comparison group), $S_M = \{C_i = c\} \cup \{C_i > t\}$, and $g$ is a chosen exposure level. The DR plug-in averages three pieces over $S_M$: an IPW term from the treated cohort, an IPW term from the not-yet-treated, and a regression-imputation term, with three propensity models ($\eta_{tc}$ for cohort, $\eta_{tcg}$ and $\eta_{t\infty g}$ for exposure) and two outcome-change regressions. It is consistent if either all three propensities or both outcome models are correctly specified.
+
+The companion package [`DidInterference.jl`](https://github.com/xiangao/DidInterference.jl) implements this. The 2×2 base case (Xu 2023):
+
+```{julia did_int_2x2_demo}
+#| eval: false
+using DidInterference, DataFrames
+
+res = did_int_2x2(panel;
+    yname     = :Y_post,
+    yname_pre = :Y_pre,
+    treat     = :W,
+    exposure  = :G,
+    g         = 1,
+    covariates = [:z1, :z2],
+    trim       = 0.01)   # Xu (2026) uses 0.01 in the Brazil application
+
+println(res.estimate, "  ", res.ci)
+```
+
+For staggered adoption (Xu 2026), `did_int_staggered()` loops over `(cohort, time)` cells with $t \geq c$, restricts to $S_M$ in each cell, fits the DR estimator, and aggregates across cells using joint-IF stacking (per-cell IFs share the never-treated comparison group, so independence-style SEs underestimate uncertainty noticeably). An R port with the same interface is available as [`didint`](https://github.com/xiangao/didint); its Brazil Amazon `Lista de Municípios Prioritários` vignette replicates Section III of Xu (2026) using the public Assunção-McMillan-Murphy-Souza-Rodrigues replication archive on Zenodo.
+
 Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.
