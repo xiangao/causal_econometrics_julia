@@ -5,9 +5,13 @@ bibliography: references.bib
 
 book:
   title: "Causal Econometrics with Julia"
+  author: "Xiang Ao"
   search: true
+  reader-mode: true
   page-navigation: true
   site-url: https://xiangao.github.io/causal_econometrics_julia/
+  repo-url: https://github.com/xiangao/causal_econometrics_julia/
+  repo-actions: [edit, issue]
   sidebar:
     tools:
       - icon: house-door-fill
@@ -58,8 +62,16 @@ book:
     - part: "Appendix"
       chapters:
         - package-ecosystem.qmd
+    - references.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: style.css
 
 execute:
   freeze: auto
+  warning: false
+  message: false
 
 jupyter: julia-1.12

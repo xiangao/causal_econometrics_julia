@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Xiang Ao">
 
 <title>Causal Econometrics with Julia</title>
 <style>
@@ -41,7 +42,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-6eb2a311e0ae5a9b436ea9f7e52955e6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -71,6 +72,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body class="nav-sidebar floating quarto-light">
@@ -98,9 +100,15 @@ ul.task-list li input[type="checkbox"] {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Causal Econometrics with Julia</a> 
-        <div class="sidebar-tools-main">
+        <div class="sidebar-tools-main tools-wide">
     <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
     <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
 </div>
     </div>
       </div>
@@ -355,6 +363,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -367,7 +381,7 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface">Preface</a></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -381,6 +395,12 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Xiang Ao </p>
+          </div>
+  </div>
     
   
     
@@ -393,16 +413,11 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="preface" class="level1 unnumbered">
 <h1 class="unnumbered">Preface</h1>
-<p>This is an introduction to causal econometrics with observational data. It covers the key frameworks, estimation strategies, and modern methods that allow researchers to make causal claims from non-experimental data.</p>
-<p>The material progresses from foundational concepts to advanced methods:</p>
-<ul>
-<li><strong>Foundations</strong>: The potential outcomes framework, identification assumptions, and core estimation strategies (regression adjustment, IPW, doubly robust methods).</li>
-<li><strong>Methods</strong>: Nonparametric estimators (influence function methods, TMLE, DoubleML).</li>
-<li><strong>Designs</strong>: Difference-in-differences (including staggered treatment timing), synthetic control, instrumental variables, and regression discontinuity.</li>
-<li><strong>Mediation</strong>: Classical SEM (via Lavaan.jl) and causal mediation analysis, including CDE, natural effects, and interventional effects estimated with Crumble.jl (recanting twin estimand).</li>
-<li><strong>Julia packages</strong>: A brief guide to the local Julia packages developed under <code>~/projects/software</code> and used throughout the examples.</li>
-</ul>
-<p>All examples use Julia with real and simulated datasets. The code was rewritten in Julia to make the examples fast, reproducible, and close to the estimators being taught. Throughout the book we rely heavily on custom Julia packages developed alongside this text: Lavaan.jl (SEM), Crumble.jl (causal mediation), CausalEstimate.jl (unified TMLE and AIPW estimation), CausalGraphs.jl (graph-based identification and estimation), Panelest.jl (panel regression), DiD.jl, SynthDiD.jl, TASC.jl, and RDRobust.jl.</p>
+<p>Most of what applied researchers want to know from data is causal. We want to know whether a program raised earnings, whether a drug reduced mortality, whether a policy changed behavior. With experimental data the answer can sometimes be read off a difference in means; with observational data it almost never can. The bulk of modern causal econometrics is the careful business of stating what would have to be true about the data-generating process for a number we can compute to mean what we want it to mean — and then estimating that number well.</p>
+<p>This book is a working guide to that business, written in Julia. It is aimed at applied researchers who already think in terms of regression and probability, and who want to see the methods carried out end to end rather than described in the abstract. Each chapter pairs a short account of the identifying assumptions with code that runs on a real or simulated dataset. The estimators are not treated as black boxes: where it matters, the underlying influence functions, score equations, and weighting schemes are written out so that the connection between the formula and the call to a Julia package is visible.</p>
+<p>Julia is not the usual choice for this material. R remains the default language of applied causal inference, and a companion R volume covers the same ground. The Julia version exists because some of the heavier estimators — TMLE on large samples, distributional difference-in-differences, fully Bayesian g-computation — are uncomfortably slow in R, and because Julia’s type system makes it possible to write small, focused estimation packages whose code is easy to read. Several such packages were written alongside this book and are used throughout: <code>CausalEstimate.jl</code> for unified TMLE and AIPW, <code>CausalGraphs.jl</code> for graph-based identification, <code>Lavaan.jl</code> for structural equation modeling, <code>Crumble.jl</code> for causal mediation, and a handful of smaller libraries for difference-in-differences, synthetic control, shift-share IV, and regression discontinuity. They are not requirements for following the text, but readers who want to see how an estimator is actually built will find the source short enough to read.</p>
+<p>The book is organized in the order in which an applied project usually runs. Part I, <em>Identification</em>, develops the potential-outcomes framework, the main causal estimands, and the use of graphs and sensitivity analysis to argue that a target effect is identified from the data at hand. Part II, <em>Estimation</em>, works through the main strategies — regression adjustment, matching and balancing weights, doubly robust estimators, methods for continuous and heterogeneous treatments, and Bayesian and distributional extensions. Part III, <em>Designs</em>, covers difference-in-differences (including staggered timing), synthetic control, instrumental variables, regression discontinuity, and shift-share designs. The remaining parts treat longitudinal and survival settings, mediation, and causal discovery. An appendix surveys the Julia packages used in the text.</p>
+<p>The book is meant to be read at a desk with Julia running. Source files, datasets, and a <code>Project.toml</code> that pins package versions are available in the repository linked above; the “Edit this page” link at the foot of each chapter goes directly to the corresponding <code>.qmd</code> file. Corrections and suggestions are welcome through the issues tracker.</p>
 
 
 </section>
@@ -822,4 +837,4 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-</body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

@@ -77,7 +77,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-32eb0491ff92b2250cfcea354b08ebf4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-6eb2a311e0ae5a9b436ea9f7e52955e6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -139,6 +139,7 @@ window.Quarto = {
 };
 </script>
 
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body class="nav-sidebar floating quarto-light">
@@ -166,9 +167,15 @@ window.Quarto = {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Causal Econometrics with Julia</a> 
-        <div class="sidebar-tools-main">
+        <div class="sidebar-tools-main tools-wide">
     <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
     <a href="https://github.com/xiangao/causal_econometrics_julia" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://github.com/xiangao/causal_econometrics_julia/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
 </div>
     </div>
       </div>
@@ -423,6 +430,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -441,7 +454,7 @@ window.Quarto = {
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">12.6</span> Summary</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">12.7</span> References</a></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/distributional-effects.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -465,7 +478,7 @@ window.Quarto = {
 </header>
 
 
-<div id="a86daf80" class="cell" data-execution_count="2">
+<div id="e26f1cd9" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -532,18 +545,10 @@ QTE(0.90)    = 0.535</code></pre>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">text!</span>(ax2, <span class="fl">0.05</span>, ate <span class="op">+</span> <span class="fl">0.02</span>; text <span class="op">=</span> <span class="st">"ATE"</span>, color <span class="op">=</span> <span class="op">:</span>gray40, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div id="plot-distributions" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="distributional-effects_files/figure-html/plot-distributions-output-2.svg" class="img-fluid figure-img"></p>
+<p><img src="distributional-effects_files/figure-html/plot-distributions-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Treated and control marginal distributions. The QTE curve traces the horizontal distance between the two CDFs at each quantile.</figcaption>
 </figure>
 </div>
@@ -567,7 +572,7 @@ QTE(0.90)    = 0.535</code></pre>
 <h2 data-number="12.3" class="anchored" data-anchor-id="distributional-did-with-engression"><span class="header-section-number">12.3</span> Distributional DiD with Engression</h2>
 <p>For panel data with treatment, <strong>distributional difference-in-differences</strong> extends the standard DiD identification idea from means to distributions. Lee &amp; Wooldridge (2025) propose a DiD construction in which the entire counterfactual distribution of the treated unit’s post-treatment outcome is estimated by combining its pre-treatment distribution with a distributional “trend” learned from the control units.</p>
 <p><code>Endid.jl</code> implements this using Engression — a stochastic neural network trained with the energy score, producing a generative model of <span class="math inline">\(Y \mid X\)</span> rather than a conditional mean. The trained model can sample counterfactual outcomes, from which the QTE curve follows by quantile differences.</p>
-<div id="595be002" class="cell" data-execution_count="5">
+<div id="d50fca29" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Endid</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel data: y outcome, id unit, time period, post 1 if post-treatment</span></span>
@@ -786,18 +791,10 @@ QTE(0.90)    = 0.535</code></pre>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">text!</span>(ax, <span class="fl">0.12</span>, <span class="fu">mean</span>(result.QTE_DiD) <span class="op">+</span> <span class="fl">0.02</span>;</span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      text <span class="op">=</span> <span class="st">"Mean QTE ≈ ATT"</span>, color <span class="op">=</span> <span class="op">:</span>gray40, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div id="qte-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="distributional-effects_files/figure-html/qte-plot-output-2.svg" class="img-fluid figure-img"></p>
+<p><img src="distributional-effects_files/figure-html/qte-plot-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Quantile treatment effects on the treated, estimated by DiD applied to each quantile. The treatment effect grows with the outcome, reflecting the underlying heterogeneity by unit type.</figcaption>
 </figure>
 </div>
@@ -1253,4 +1250,4 @@ QTE(0.90)    = 0.535</code></pre>
 
 
 
-</body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/distributional-effects.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

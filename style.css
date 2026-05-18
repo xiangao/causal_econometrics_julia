@@ -1,0 +1,46 @@
+/* Slightly more readable measure for body text */
+main {
+    max-width: 760px;
+}
+
+/* Calmer code blocks: less neon, more paper */
+div.sourceCode {
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+/* Block quotes: a clean left rule rather than the default beige block */
+blockquote {
+    border-left: 3px solid #ccc;
+    color: #555;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: normal;
+}
+
+/* Section headings: a touch more breathing room above */
+h2, h3 {
+    margin-top: 2em;
+}
+
+/* --- DataFrames.jl table polish --- */
+
+/* Hide the eltype row (Float64, Bool, etc.) under column names.
+   DataFrames emits a second header row without the .header class. */
+table.data-frame tr.columnLabelRow:not(.header) {
+    display: none;
+}
+
+/* Right-align column headers so they sit over right-aligned numeric data. */
+table.data-frame thead th {
+    text-align: right !important;
+}
+
+/* --- Suppress warning/deprecation noise in cell output --- */
+
+/* Hides Julia @warn output (Makie deprecations, package info messages).
+   Errors render in a different container, so this does not suppress them. */
+.cell-output-stderr {
+    display: none;
+}
