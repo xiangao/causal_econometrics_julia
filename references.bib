@@ -1,7 +1,929 @@
+% Bibliography for "Causal Econometrics with Julia"
+% Entries grouped by the chapter(s) they are most relevant to.
+% Comments are ignored by Pandoc/citeproc.
+
+% =====================================================================
+% Identification & potential outcomes (identification.qmd, causal-estimands.qmd)
+% =====================================================================
+
+@article{neyman1923,
+  author    = {Neyman, Jerzy},
+  title     = {On the Application of Probability Theory to Agricultural Experiments. {E}ssay on Principles. {S}ection 9},
+  journal   = {Statistical Science},
+  year      = {1990},
+  volume    = {5},
+  number    = {4},
+  pages     = {465--472},
+  note      = {Translated and reprinted; original 1923}
+}
+
+@article{rubin1974,
+  author    = {Rubin, Donald B.},
+  title     = {Estimating Causal Effects of Treatments in Randomized and Nonrandomized Studies},
+  journal   = {Journal of Educational Psychology},
+  year      = {1974},
+  volume    = {66},
+  number    = {5},
+  pages     = {688--701}
+}
+
+@article{holland1986,
+  author    = {Holland, Paul W.},
+  title     = {Statistics and Causal Inference},
+  journal   = {Journal of the American Statistical Association},
+  year      = {1986},
+  volume    = {81},
+  number    = {396},
+  pages     = {945--960}
+}
+
+@article{imbens2004,
+  author    = {Imbens, Guido W.},
+  title     = {Nonparametric Estimation of Average Treatment Effects under Exogeneity: A Review},
+  journal   = {Review of Economics and Statistics},
+  year      = {2004},
+  volume    = {86},
+  number    = {1},
+  pages     = {4--29}
+}
+
+@book{imbens-rubin-2015,
+  author    = {Imbens, Guido W. and Rubin, Donald B.},
+  title     = {Causal Inference for Statistics, Social, and Biomedical Sciences: An Introduction},
+  publisher = {Cambridge University Press},
+  year      = {2015}
+}
+
+@article{angrist-imbens-rubin-1996,
+  author    = {Angrist, Joshua D. and Imbens, Guido W. and Rubin, Donald B.},
+  title     = {Identification of Causal Effects Using Instrumental Variables},
+  journal   = {Journal of the American Statistical Association},
+  year      = {1996},
+  volume    = {91},
+  number    = {434},
+  pages     = {444--455}
+}
+
+% =====================================================================
+% DAGs, do-calculus, ID algorithm (graphs-identification-estimation.qmd,
+% smoking-cessation-graphs.qmd, graph-to-estimate.qmd)
+% =====================================================================
+
+@book{pearl2009,
+  author    = {Pearl, Judea},
+  title     = {Causality: Models, Reasoning, and Inference},
+  edition   = {2nd},
+  publisher = {Cambridge University Press},
+  year      = {2009}
+}
+
+@article{pearl1995,
+  author    = {Pearl, Judea},
+  title     = {Causal Diagrams for Empirical Research},
+  journal   = {Biometrika},
+  year      = {1995},
+  volume    = {82},
+  number    = {4},
+  pages     = {669--688}
+}
+
+@inproceedings{shpitser-pearl-2006,
+  author    = {Shpitser, Ilya and Pearl, Judea},
+  title     = {Identification of Joint Interventional Distributions in Recursive Semi-{M}arkovian Causal Models},
+  booktitle = {Proceedings of the 21st National Conference on Artificial Intelligence (AAAI)},
+  year      = {2006},
+  pages     = {1219--1226}
+}
+
+@article{textor-dagitty-2016,
+  author    = {Textor, Johannes and van der Zander, Benito and Gilthorpe, Mark S. and Li{\'s}kiewicz, Maciej and Ellison, George T. H.},
+  title     = {Robust Causal Inference Using Directed Acyclic Graphs: the {R} Package {dagitty}},
+  journal   = {International Journal of Epidemiology},
+  year      = {2016},
+  volume    = {45},
+  number    = {6},
+  pages     = {1887--1894}
+}
+
+% =====================================================================
+% Sensitivity analysis (sensitivity-analysis.qmd)
+% =====================================================================
+
+@article{cinelli-hazlett-2020,
+  author    = {Cinelli, Carlos and Hazlett, Chad},
+  title     = {Making Sense of Sensitivity: Extending Omitted Variable Bias},
+  journal   = {Journal of the Royal Statistical Society: Series B (Statistical Methodology)},
+  year      = {2020},
+  volume    = {82},
+  number    = {1},
+  pages     = {39--67}
+}
+
+@article{vanderweele-ding-2017,
+  author    = {VanderWeele, Tyler J. and Ding, Peng},
+  title     = {Sensitivity Analysis in Observational Research: Introducing the {E}-value},
+  journal   = {Annals of Internal Medicine},
+  year      = {2017},
+  volume    = {167},
+  number    = {4},
+  pages     = {268--274}
+}
+
+@book{rosenbaum-2002,
+  author    = {Rosenbaum, Paul R.},
+  title     = {Observational Studies},
+  edition   = {2nd},
+  publisher = {Springer},
+  year      = {2002}
+}
+
+% =====================================================================
+% IPW, AIPW, doubly robust estimation (estimation.qmd, nonparametric.qmd)
+% =====================================================================
+
+@article{rosenbaum-rubin-1983,
+  author    = {Rosenbaum, Paul R. and Rubin, Donald B.},
+  title     = {The Central Role of the Propensity Score in Observational Studies for Causal Effects},
+  journal   = {Biometrika},
+  year      = {1983},
+  volume    = {70},
+  number    = {1},
+  pages     = {41--55}
+}
+
+@article{robins-rotnitzky-zhao-1994,
+  author    = {Robins, James M. and Rotnitzky, Andrea and Zhao, Lue Ping},
+  title     = {Estimation of Regression Coefficients When Some Regressors Are Not Always Observed},
+  journal   = {Journal of the American Statistical Association},
+  year      = {1994},
+  volume    = {89},
+  number    = {427},
+  pages     = {846--866}
+}
+
+@article{bang-robins-2005,
+  author    = {Bang, Heejung and Robins, James M.},
+  title     = {Doubly Robust Estimation in Missing Data and Causal Inference Models},
+  journal   = {Biometrics},
+  year      = {2005},
+  volume    = {61},
+  number    = {4},
+  pages     = {962--973}
+}
+
+@article{kang-schafer-2007,
+  author    = {Kang, Joseph D. Y. and Schafer, Joseph L.},
+  title     = {Demystifying Double Robustness: A Comparison of Alternative Strategies for Estimating a Population Mean from Incomplete Data},
+  journal   = {Statistical Science},
+  year      = {2007},
+  volume    = {22},
+  number    = {4},
+  pages     = {523--539}
+}
+
+@article{vanderlaan-rubin-2006,
+  author    = {van der Laan, Mark J. and Rubin, Daniel},
+  title     = {Targeted Maximum Likelihood Learning},
+  journal   = {The International Journal of Biostatistics},
+  year      = {2006},
+  volume    = {2},
+  number    = {1}
+}
+
+@book{vanderlaan-rose-2011,
+  author    = {van der Laan, Mark J. and Rose, Sherri},
+  title     = {Targeted Learning: Causal Inference for Observational and Experimental Data},
+  publisher = {Springer},
+  year      = {2011}
+}
+
+@article{chernozhukov-2018-dml,
+  author    = {Chernozhukov, Victor and Chetverikov, Denis and Demirer, Mert and Duflo, Esther and Hansen, Christian and Newey, Whitney and Robins, James},
+  title     = {Double/Debiased Machine Learning for Treatment and Structural Parameters},
+  journal   = {The Econometrics Journal},
+  year      = {2018},
+  volume    = {21},
+  number    = {1},
+  pages     = {C1--C68}
+}
+
+@book{bickel-klaassen-ritov-wellner-1993,
+  author    = {Bickel, Peter J. and Klaassen, Chris A. J. and Ritov, Ya'acov and Wellner, Jon A.},
+  title     = {Efficient and Adaptive Estimation for Semiparametric Models},
+  publisher = {Johns Hopkins University Press},
+  year      = {1993}
+}
+
+@article{kennedy-2022-overview,
+  author    = {Kennedy, Edward H.},
+  title     = {Semiparametric Doubly Robust Targeted Double Machine Learning: A Review},
+  journal   = {arXiv preprint arXiv:2203.06469},
+  year      = {2022}
+}
+
+% =====================================================================
+% Matching, weighting, balancing (matching.qmd)
+% =====================================================================
+
+@article{abadie-imbens-2006,
+  author    = {Abadie, Alberto and Imbens, Guido W.},
+  title     = {Large Sample Properties of Matching Estimators for Average Treatment Effects},
+  journal   = {Econometrica},
+  year      = {2006},
+  volume    = {74},
+  number    = {1},
+  pages     = {235--267}
+}
+
+@article{ho-imai-king-stuart-2007,
+  author    = {Ho, Daniel E. and Imai, Kosuke and King, Gary and Stuart, Elizabeth A.},
+  title     = {Matching as Nonparametric Preprocessing for Reducing Model Dependence in Parametric Causal Inference},
+  journal   = {Political Analysis},
+  year      = {2007},
+  volume    = {15},
+  number    = {3},
+  pages     = {199--236}
+}
+
+@article{stuart-2010,
+  author    = {Stuart, Elizabeth A.},
+  title     = {Matching Methods for Causal Inference: A Review and a Look Forward},
+  journal   = {Statistical Science},
+  year      = {2010},
+  volume    = {25},
+  number    = {1},
+  pages     = {1--21}
+}
+
+@article{hainmueller-2012,
+  author    = {Hainmueller, Jens},
+  title     = {Entropy Balancing for Causal Effects: A Multivariate Reweighting Method to Produce Balanced Samples in Observational Studies},
+  journal   = {Political Analysis},
+  year      = {2012},
+  volume    = {20},
+  number    = {1},
+  pages     = {25--46}
+}
+
+@article{imai-ratkovic-2014-cbps,
+  author    = {Imai, Kosuke and Ratkovic, Marc},
+  title     = {Covariate Balancing Propensity Score},
+  journal   = {Journal of the Royal Statistical Society: Series B (Statistical Methodology)},
+  year      = {2014},
+  volume    = {76},
+  number    = {1},
+  pages     = {243--263}
+}
+
+@article{huling-mak-2024-energy,
+  author    = {Huling, Jared D. and Mak, Simon},
+  title     = {Energy Balancing of Covariate Distributions},
+  journal   = {Journal of Causal Inference},
+  year      = {2024},
+  volume    = {12},
+  number    = {1}
+}
+
+% =====================================================================
+% Heterogeneous effects, meta-learners, causal forests (heterogeneous-effects.qmd)
+% =====================================================================
+
+@article{wager-athey-2018,
+  author    = {Wager, Stefan and Athey, Susan},
+  title     = {Estimation and Inference of Heterogeneous Treatment Effects Using Random Forests},
+  journal   = {Journal of the American Statistical Association},
+  year      = {2018},
+  volume    = {113},
+  number    = {523},
+  pages     = {1228--1242}
+}
+
+@article{athey-tibshirani-wager-2019,
+  author    = {Athey, Susan and Tibshirani, Julie and Wager, Stefan},
+  title     = {Generalized Random Forests},
+  journal   = {Annals of Statistics},
+  year      = {2019},
+  volume    = {47},
+  number    = {2},
+  pages     = {1148--1178}
+}
+
+@article{kunzel-2019-metalearners,
+  author    = {K{\"u}nzel, S{\"o}ren R. and Sekhon, Jasjeet S. and Bickel, Peter J. and Yu, Bin},
+  title     = {Metalearners for Estimating Heterogeneous Treatment Effects Using Machine Learning},
+  journal   = {Proceedings of the National Academy of Sciences},
+  year      = {2019},
+  volume    = {116},
+  number    = {10},
+  pages     = {4156--4165}
+}
+
+@article{nie-wager-2021,
+  author    = {Nie, Xinkun and Wager, Stefan},
+  title     = {Quasi-Oracle Estimation of Heterogeneous Treatment Effects},
+  journal   = {Biometrika},
+  year      = {2021},
+  volume    = {108},
+  number    = {2},
+  pages     = {299--319}
+}
+
+@article{athey-wager-2021-policy,
+  author    = {Athey, Susan and Wager, Stefan},
+  title     = {Policy Learning with Observational Data},
+  journal   = {Econometrica},
+  year      = {2021},
+  volume    = {89},
+  number    = {1},
+  pages     = {133--161}
+}
+
+% =====================================================================
+% Continuous treatments (continuous-treatments.qmd)
+% =====================================================================
+
+@incollection{hirano-imbens-2004-gps,
+  author    = {Hirano, Keisuke and Imbens, Guido W.},
+  title     = {The Propensity Score with Continuous Treatments},
+  booktitle = {Applied Bayesian Modeling and Causal Inference from Incomplete-Data Perspectives},
+  publisher = {Wiley},
+  year      = {2004},
+  pages     = {73--84}
+}
+
+@article{kennedy-2017-continuous,
+  author    = {Kennedy, Edward H. and Ma, Zongming and McHugh, Matthew D. and Small, Dylan S.},
+  title     = {Non-Parametric Methods for Doubly Robust Estimation of Continuous Treatment Effects},
+  journal   = {Journal of the Royal Statistical Society: Series B (Statistical Methodology)},
+  year      = {2017},
+  volume    = {79},
+  number    = {4},
+  pages     = {1229--1245}
+}
+
+@incollection{diaz-vanderlaan-2018-lmtp,
+  author    = {D{\'\i}az, Iv{\'a}n and van der Laan, Mark J.},
+  title     = {Stochastic Treatment Regimes},
+  booktitle = {Targeted Learning in Data Science},
+  publisher = {Springer},
+  year      = {2018},
+  pages     = {219--232}
+}
+
+% =====================================================================
+% Bayesian causal inference (bayesian-causal.qmd)
+% =====================================================================
+
+@article{chipman-george-mcculloch-2010-bart,
+  author    = {Chipman, Hugh A. and George, Edward I. and McCulloch, Robert E.},
+  title     = {{BART}: {B}ayesian Additive Regression Trees},
+  journal   = {Annals of Applied Statistics},
+  year      = {2010},
+  volume    = {4},
+  number    = {1},
+  pages     = {266--298}
+}
+
+@article{hill-2011-bart,
+  author    = {Hill, Jennifer L.},
+  title     = {Bayesian Nonparametric Modeling for Causal Inference},
+  journal   = {Journal of Computational and Graphical Statistics},
+  year      = {2011},
+  volume    = {20},
+  number    = {1},
+  pages     = {217--240}
+}
+
+@article{hahn-murray-carvalho-2020-bcf,
+  author    = {Hahn, P. Richard and Murray, Jared S. and Carvalho, Carlos M.},
+  title     = {Bayesian Regression Tree Models for Causal Inference: Regularization, Confounding, and Heterogeneous Effects},
+  journal   = {Bayesian Analysis},
+  year      = {2020},
+  volume    = {15},
+  number    = {3},
+  pages     = {965--1056}
+}
+
+% =====================================================================
+% Distributional and quantile treatment effects (distributional-effects.qmd)
+% =====================================================================
+
+@article{chernozhukov-hansen-2005-qte,
+  author    = {Chernozhukov, Victor and Hansen, Christian},
+  title     = {An {IV} Model of Quantile Treatment Effects},
+  journal   = {Econometrica},
+  year      = {2005},
+  volume    = {73},
+  number    = {1},
+  pages     = {245--261}
+}
+
+@article{firpo-2007-qte,
+  author    = {Firpo, Sergio},
+  title     = {Efficient Semiparametric Estimation of Quantile Treatment Effects},
+  journal   = {Econometrica},
+  year      = {2007},
+  volume    = {75},
+  number    = {1},
+  pages     = {259--276}
+}
+
+@article{callaway-li-2019-qtt,
+  author    = {Callaway, Brantly and Li, Tong},
+  title     = {Quantile Treatment Effects in Difference in Differences Models with Panel Data},
+  journal   = {Quantitative Economics},
+  year      = {2019},
+  volume    = {10},
+  number    = {4},
+  pages     = {1579--1618}
+}
+
+% =====================================================================
+% Difference-in-differences, two-way fixed effects (did.qmd)
+% =====================================================================
+
+@article{goodman-bacon-2021,
+  author    = {Goodman-Bacon, Andrew},
+  title     = {Difference-in-Differences with Variation in Treatment Timing},
+  journal   = {Journal of Econometrics},
+  year      = {2021},
+  volume    = {225},
+  number    = {2},
+  pages     = {254--277}
+}
+
+@article{de-chaisemartin-dhaultfoeuille-2020,
+  author    = {de Chaisemartin, Cl{\'e}ment and D'Haultf{\oe}uille, Xavier},
+  title     = {Two-Way Fixed Effects Estimators with Heterogeneous Treatment Effects},
+  journal   = {American Economic Review},
+  year      = {2020},
+  volume    = {110},
+  number    = {9},
+  pages     = {2964--2996}
+}
+
+@article{callaway-santanna-2021,
+  author    = {Callaway, Brantly and Sant'Anna, Pedro H. C.},
+  title     = {Difference-in-Differences with Multiple Time Periods},
+  journal   = {Journal of Econometrics},
+  year      = {2021},
+  volume    = {225},
+  number    = {2},
+  pages     = {200--230}
+}
+
+@article{sun-abraham-2021,
+  author    = {Sun, Liyang and Abraham, Sarah},
+  title     = {Estimating Dynamic Treatment Effects in Event Studies with Heterogeneous Treatment Effects},
+  journal   = {Journal of Econometrics},
+  year      = {2021},
+  volume    = {225},
+  number    = {2},
+  pages     = {175--199}
+}
+
+@article{borusyak-jaravel-spiess-2024,
+  author    = {Borusyak, Kirill and Jaravel, Xavier and Spiess, Jann},
+  title     = {Revisiting Event Study Designs: Robust and Efficient Estimation},
+  journal   = {Review of Economic Studies},
+  year      = {2024},
+  volume    = {91},
+  number    = {6},
+  pages     = {3253--3285}
+}
+
+@article{wooldridge-2021-etwfe,
+  author    = {Wooldridge, Jeffrey M.},
+  title     = {Two-Way Fixed Effects, the Two-Way {M}undlak Regression, and Difference-in-Differences Estimators},
+  journal   = {SSRN Working Paper},
+  year      = {2021},
+  note      = {SSRN ID 3906345}
+}
+
+@article{roth-santanna-bilinski-poe-2023,
+  author    = {Roth, Jonathan and Sant'Anna, Pedro H. C. and Bilinski, Alyssa and Poe, John},
+  title     = {What's Trending in Difference-in-Differences? {A} Synthesis of the Recent Econometrics Literature},
+  journal   = {Journal of Econometrics},
+  year      = {2023},
+  volume    = {235},
+  number    = {2},
+  pages     = {2218--2244}
+}
+
+% =====================================================================
+% Synthetic control, synthetic DiD, TASC (synthetic-control-did-tasc.qmd,
+% randomization-inference-sc.qmd)
+% =====================================================================
+
+@article{abadie-gardeazabal-2003,
+  author    = {Abadie, Alberto and Gardeazabal, Javier},
+  title     = {The Economic Costs of Conflict: A Case Study of the {B}asque Country},
+  journal   = {American Economic Review},
+  year      = {2003},
+  volume    = {93},
+  number    = {1},
+  pages     = {113--132}
+}
+
+@article{abadie-diamond-hainmueller-2010,
+  author    = {Abadie, Alberto and Diamond, Alexis and Hainmueller, Jens},
+  title     = {Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of {C}alifornia's Tobacco Control Program},
+  journal   = {Journal of the American Statistical Association},
+  year      = {2010},
+  volume    = {105},
+  number    = {490},
+  pages     = {493--505}
+}
+
+@article{abadie-2021-sc-review,
+  author    = {Abadie, Alberto},
+  title     = {Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects},
+  journal   = {Journal of Economic Literature},
+  year      = {2021},
+  volume    = {59},
+  number    = {2},
+  pages     = {391--425}
+}
+
+@article{arkhangelsky-2021-sdid,
+  author    = {Arkhangelsky, Dmitry and Athey, Susan and Hirshberg, David A. and Imbens, Guido W. and Wager, Stefan},
+  title     = {Synthetic Difference-in-Differences},
+  journal   = {American Economic Review},
+  year      = {2021},
+  volume    = {111},
+  number    = {12},
+  pages     = {4088--4118}
+}
+
 @article{rho2026timeaware,
-  title = {Time-Aware Synthetic Control},
-  author = {Rho, Saeyoung and Illick, Cyrus and Narasipura, Samhitha and Abadie, Alberto and Hsu, Daniel and Misra, Vishal},
-  journal = {arXiv preprint arXiv:2601.03099},
-  year = {2026},
-  url = {https://arxiv.org/abs/2601.03099}
+  title     = {Time-Aware Synthetic Control},
+  author    = {Rho, Saeyoung and Illick, Cyrus and Narasipura, Samhitha and Abadie, Alberto and Hsu, Daniel and Misra, Vishal},
+  journal   = {arXiv preprint arXiv:2601.03099},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2601.03099}
+}
+
+@book{fisher-1935-doe,
+  author    = {Fisher, Ronald A.},
+  title     = {The Design of Experiments},
+  publisher = {Oliver and Boyd},
+  year      = {1935}
+}
+
+% =====================================================================
+% Instrumental variables and regression discontinuity (iv-rdd.qmd)
+% =====================================================================
+
+@article{imbens-angrist-1994-late,
+  author    = {Imbens, Guido W. and Angrist, Joshua D.},
+  title     = {Identification and Estimation of Local Average Treatment Effects},
+  journal   = {Econometrica},
+  year      = {1994},
+  volume    = {62},
+  number    = {2},
+  pages     = {467--475}
+}
+
+@book{angrist-pischke-2009,
+  author    = {Angrist, Joshua D. and Pischke, J{\"o}rn-Steffen},
+  title     = {Mostly Harmless Econometrics: An Empiricist's Companion},
+  publisher = {Princeton University Press},
+  year      = {2009}
+}
+
+@article{thistlethwaite-campbell-1960,
+  author    = {Thistlethwaite, Donald L. and Campbell, Donald T.},
+  title     = {Regression-Discontinuity Analysis: An Alternative to the Ex Post Facto Experiment},
+  journal   = {Journal of Educational Psychology},
+  year      = {1960},
+  volume    = {51},
+  number    = {6},
+  pages     = {309--317}
+}
+
+@article{imbens-lemieux-2008,
+  author    = {Imbens, Guido W. and Lemieux, Thomas},
+  title     = {Regression Discontinuity Designs: A Guide to Practice},
+  journal   = {Journal of Econometrics},
+  year      = {2008},
+  volume    = {142},
+  number    = {2},
+  pages     = {615--635}
+}
+
+@article{lee-2008,
+  author    = {Lee, David S.},
+  title     = {Randomized Experiments from Non-Random Selection in {U.S.} House Elections},
+  journal   = {Journal of Econometrics},
+  year      = {2008},
+  volume    = {142},
+  number    = {2},
+  pages     = {675--697}
+}
+
+@article{calonico-cattaneo-titiunik-2014,
+  author    = {Calonico, Sebastian and Cattaneo, Matias D. and Titiunik, Roc{\'\i}o},
+  title     = {Robust Nonparametric Confidence Intervals for Regression-Discontinuity Designs},
+  journal   = {Econometrica},
+  year      = {2014},
+  volume    = {82},
+  number    = {6},
+  pages     = {2295--2326}
+}
+
+% =====================================================================
+% Shift-share / Bartik IV (shift-share-iv.qmd)
+% =====================================================================
+
+@book{bartik-1991,
+  author    = {Bartik, Timothy J.},
+  title     = {Who Benefits from State and Local Economic Development Policies?},
+  publisher = {W.E. Upjohn Institute},
+  year      = {1991}
+}
+
+@article{goldsmith-pinkham-sorkin-swift-2020,
+  author    = {Goldsmith-Pinkham, Paul and Sorkin, Isaac and Swift, Henry},
+  title     = {Bartik Instruments: What, When, Why, and How},
+  journal   = {American Economic Review},
+  year      = {2020},
+  volume    = {110},
+  number    = {8},
+  pages     = {2586--2624}
+}
+
+@article{adao-kolesar-morales-2019,
+  author    = {Ad{\~a}o, Rodrigo and Koles{\'a}r, Michal and Morales, Eduardo},
+  title     = {Shift-Share Designs: Theory and Inference},
+  journal   = {Quarterly Journal of Economics},
+  year      = {2019},
+  volume    = {134},
+  number    = {4},
+  pages     = {1949--2010}
+}
+
+@article{borusyak-hull-jaravel-2022,
+  author    = {Borusyak, Kirill and Hull, Peter and Jaravel, Xavier},
+  title     = {Quasi-Experimental Shift-Share Research Designs},
+  journal   = {Review of Economic Studies},
+  year      = {2022},
+  volume    = {89},
+  number    = {1},
+  pages     = {181--213}
+}
+
+% =====================================================================
+% Poisson / count models with IV (poisson-iv.qmd)
+% =====================================================================
+
+@article{mullahy-1997,
+  author    = {Mullahy, John},
+  title     = {Instrumental-Variable Estimation of Count Data Models: Applications to Models of Cigarette Smoking Behavior},
+  journal   = {Review of Economics and Statistics},
+  year      = {1997},
+  volume    = {79},
+  number    = {4},
+  pages     = {586--593}
+}
+
+@article{windmeijer-santossilva-1997,
+  author    = {Windmeijer, Frank A. G. and Santos Silva, Jo{\~a}o M. C.},
+  title     = {Endogeneity in Count Data Models: An Application to Demand for Health Care},
+  journal   = {Journal of Applied Econometrics},
+  year      = {1997},
+  volume    = {12},
+  number    = {3},
+  pages     = {281--294}
+}
+
+% =====================================================================
+% Longitudinal / g-methods (g-methods.qmd)
+% =====================================================================
+
+@article{robins-1986-gformula,
+  author    = {Robins, James M.},
+  title     = {A New Approach to Causal Inference in Mortality Studies with a Sustained Exposure Period---Application to Control of the Healthy Worker Survivor Effect},
+  journal   = {Mathematical Modelling},
+  year      = {1986},
+  volume    = {7},
+  number    = {9--12},
+  pages     = {1393--1512}
+}
+
+@article{robins-hernan-brumback-2000-msm,
+  author    = {Robins, James M. and Hern{\'a}n, Miguel {\'A}. and Brumback, Babette},
+  title     = {Marginal Structural Models and Causal Inference in Epidemiology},
+  journal   = {Epidemiology},
+  year      = {2000},
+  volume    = {11},
+  number    = {5},
+  pages     = {550--560}
+}
+
+@article{vanderlaan-gruber-2012-ltmle,
+  author    = {van der Laan, Mark J. and Gruber, Susan},
+  title     = {Targeted Minimum Loss Based Estimation of Causal Effects of Multiple Time Point Interventions},
+  journal   = {The International Journal of Biostatistics},
+  year      = {2012},
+  volume    = {8},
+  number    = {1}
+}
+
+@book{hernan-robins-2020,
+  author    = {Hern{\'a}n, Miguel A. and Robins, James M.},
+  title     = {Causal Inference: What If},
+  publisher = {Chapman \& Hall/CRC},
+  year      = {2020}
+}
+
+% =====================================================================
+% Survival / time-to-event causal inference (survival-causal.qmd)
+% =====================================================================
+
+@article{cox-1972,
+  author    = {Cox, David R.},
+  title     = {Regression Models and Life-Tables},
+  journal   = {Journal of the Royal Statistical Society: Series B (Methodological)},
+  year      = {1972},
+  volume    = {34},
+  number    = {2},
+  pages     = {187--202}
+}
+
+@article{robins-finkelstein-2000-ipcw,
+  author    = {Robins, James M. and Finkelstein, Dianne M.},
+  title     = {Correcting for Noncompliance and Dependent Censoring in an {AIDS} Clinical Trial with Inverse Probability of Censoring Weighted Log-Rank Tests},
+  journal   = {Biometrics},
+  year      = {2000},
+  volume    = {56},
+  number    = {3},
+  pages     = {779--788}
+}
+
+@article{royston-parmar-2013-rmst,
+  author    = {Royston, Patrick and Parmar, Mahesh K. B.},
+  title     = {Restricted Mean Survival Time: An Alternative to the Hazard Ratio for the Design and Analysis of Randomized Trials with a Time-to-Event Outcome},
+  journal   = {BMC Medical Research Methodology},
+  year      = {2013},
+  volume    = {13},
+  pages     = {152}
+}
+
+@article{uno-2014-rmst,
+  author    = {Uno, Hajime and Claggett, Brian and Tian, Lu and Inoue, Eisuke and Gallo, Paul and Miyata, Toshio and Schrag, Deborah and Takeuchi, Masahiro and Uyama, Yoshiaki and Zhao, Lihui and Skali, Hicham and Solomon, Scott and Jacobus, Susanna and Hughes, Michael and Packer, Milton and Wei, Lee-Jen},
+  title     = {Moving Beyond the Hazard Ratio in Quantifying the Between-Group Difference in Survival Analysis},
+  journal   = {Journal of Clinical Oncology},
+  year      = {2014},
+  volume    = {32},
+  number    = {22},
+  pages     = {2380--2385}
+}
+
+% =====================================================================
+% Mediation (mediation.qmd)
+% =====================================================================
+
+@article{baron-kenny-1986,
+  author    = {Baron, Reuben M. and Kenny, David A.},
+  title     = {The Moderator-Mediator Variable Distinction in Social Psychological Research},
+  journal   = {Journal of Personality and Social Psychology},
+  year      = {1986},
+  volume    = {51},
+  number    = {6},
+  pages     = {1173--1182}
+}
+
+@inproceedings{pearl-2001-mediation,
+  author    = {Pearl, Judea},
+  title     = {Direct and Indirect Effects},
+  booktitle = {Proceedings of the 17th Conference on Uncertainty in Artificial Intelligence (UAI)},
+  year      = {2001},
+  pages     = {411--420}
+}
+
+@article{vanderweele-vansteelandt-2009,
+  author    = {VanderWeele, Tyler J. and Vansteelandt, Stijn},
+  title     = {Conceptual Issues Concerning Mediation, Interventions and Composition},
+  journal   = {Statistics and Its Interface},
+  year      = {2009},
+  volume    = {2},
+  number    = {4},
+  pages     = {457--468}
+}
+
+@article{vansteelandt-daniel-2017,
+  author    = {Vansteelandt, Stijn and Daniel, Rhian M.},
+  title     = {Interventional Effects for Mediation Analysis with Multiple Mediators},
+  journal   = {Epidemiology},
+  year      = {2017},
+  volume    = {28},
+  number    = {2},
+  pages     = {258--265}
+}
+
+@article{daniel-2015-mediation,
+  author    = {Daniel, Rhian M. and De Stavola, Bianca L. and Cousens, Simon N. and Vansteelandt, Stijn},
+  title     = {Causal Mediation Analysis with Multiple Mediators},
+  journal   = {Biometrics},
+  year      = {2015},
+  volume    = {71},
+  number    = {1},
+  pages     = {1--14}
+}
+
+% =====================================================================
+% Structural equation modelling (used by Lavaan.jl examples)
+% =====================================================================
+
+@article{rosseel-2012-lavaan,
+  author    = {Rosseel, Yves},
+  title     = {lavaan: An {R} Package for Structural Equation Modeling},
+  journal   = {Journal of Statistical Software},
+  year      = {2012},
+  volume    = {48},
+  number    = {2},
+  pages     = {1--36}
+}
+
+@book{bollen-1989,
+  author    = {Bollen, Kenneth A.},
+  title     = {Structural Equations with Latent Variables},
+  publisher = {Wiley},
+  year      = {1989}
+}
+
+% =====================================================================
+% Causal discovery: observed-variable algorithms (causal-discovery.qmd)
+% =====================================================================
+
+@book{spirtes-glymour-scheines-2000,
+  author    = {Spirtes, Peter and Glymour, Clark and Scheines, Richard},
+  title     = {Causation, Prediction, and Search},
+  edition   = {2nd},
+  publisher = {MIT Press},
+  year      = {2000}
+}
+
+@article{spirtes-glymour-1991-pc,
+  author    = {Spirtes, Peter and Glymour, Clark},
+  title     = {An Algorithm for Fast Recovery of Sparse Causal Graphs},
+  journal   = {Social Science Computer Review},
+  year      = {1991},
+  volume    = {9},
+  number    = {1},
+  pages     = {62--72}
+}
+
+@article{chickering-2002-ges,
+  author    = {Chickering, David Maxwell},
+  title     = {Optimal Structure Identification with Greedy Search},
+  journal   = {Journal of Machine Learning Research},
+  year      = {2002},
+  volume    = {3},
+  pages     = {507--554}
+}
+
+% =====================================================================
+% Causal discovery with latent confounders (causal-discovery-latent.qmd)
+% =====================================================================
+
+@inproceedings{spirtes-meek-richardson-1995-fci,
+  author    = {Spirtes, Peter and Meek, Christopher and Richardson, Thomas},
+  title     = {Causal Inference in the Presence of Latent Variables and Selection Bias},
+  booktitle = {Proceedings of the 11th Conference on Uncertainty in Artificial Intelligence (UAI)},
+  year      = {1995},
+  pages     = {499--506}
+}
+
+@article{colombo-maathuis-kalisch-richardson-2012-rfci,
+  author    = {Colombo, Diego and Maathuis, Marloes H. and Kalisch, Markus and Richardson, Thomas S.},
+  title     = {Learning High-Dimensional Directed Acyclic Graphs with Latent and Selection Variables},
+  journal   = {Annals of Statistics},
+  year      = {2012},
+  volume    = {40},
+  number    = {1},
+  pages     = {294--321}
+}
+
+@article{shimizu-2006-lingam,
+  author    = {Shimizu, Shohei and Hoyer, Patrik O. and Hyv{\"a}rinen, Aapo and Kerminen, Antti},
+  title     = {A Linear Non-{G}aussian Acyclic Model for Causal Discovery},
+  journal   = {Journal of Machine Learning Research},
+  year      = {2006},
+  volume    = {7},
+  pages     = {2003--2030}
+}
+
+% =====================================================================
+% Software / methodological note occasionally worth citing
+% =====================================================================
+
+@article{bezanson-2017-julia,
+  author    = {Bezanson, Jeff and Edelman, Alan and Karpinski, Stefan and Shah, Viral B.},
+  title     = {Julia: A Fresh Approach to Numerical Computing},
+  journal   = {SIAM Review},
+  year      = {2017},
+  volume    = {59},
+  number    = {1},
+  pages     = {65--98}
 }
