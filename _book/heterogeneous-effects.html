@@ -457,7 +457,6 @@ window.Quarto = {
   <li><a href="#policy-learning-who-should-we-treat" id="toc-policy-learning-who-should-we-treat" class="nav-link" data-scroll-target="#policy-learning-who-should-we-treat"><span class="header-section-number">9.12</span> Policy learning: who should we treat?</a></li>
   <li><a href="#causal-forests-with-panel-data" id="toc-causal-forests-with-panel-data" class="nav-link" data-scroll-target="#causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">9.14</span> Summary</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">9.15</span> References</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/heterogeneous-effects.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -483,7 +482,7 @@ window.Quarto = {
 </header>
 
 
-<div id="5c121f47" class="cell" data-execution_count="2">
+<div id="dd4471bc" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -505,7 +504,7 @@ window.Quarto = {
 <section id="the-data-generating-process" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">9.1</span> The data-generating process</h2>
 <p>Reuse the DGP from the estimands chapter, where the true CATE is <span class="math inline">\(\tau(x) = 1 + 2 x_1\)</span>:</p>
-<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<div id="dgp" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">5</span></span>
@@ -523,93 +522,79 @@ window.Quarto = {
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, true ATE = %.3f</span><span class="sc">\n</span><span class="st">"</span>, n, <span class="fu">mean</span>(tau))</span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.2: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.2</span>)</span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.8: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>n = 5000, true ATE = 2.009
-True CATE at X1 = 0.2: 1.40
-True CATE at X1 = 0.8: 2.60</code></pre>
-</div>
 </div>
 <p>The treatment is confounded through <span class="math inline">\(X_2\)</span> and the unobserved <span class="math inline">\(U\)</span>. We condition on <span class="math inline">\(X_2\)</span> to restore identification; we cannot condition on <span class="math inline">\(U\)</span>.</p>
 </section>
 <section id="a-wrapper-for-fitting-random-forests" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="a-wrapper-for-fitting-random-forests"><span class="header-section-number">9.2</span> A wrapper for fitting random forests</h2>
 <p>To keep the code compact, define a small helper that fits a random forest and returns the predictions:</p>
-<div id="helper" class="cell" data-cache="true" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> RFR <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500)</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">Fit a random forest on (Xtrain, ytrain) and return predictions at Xpredict.</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rf_fit_predict</span>(Xtrain, ytrain, Xpredict; n_trees<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    learner <span class="op">=</span> <span class="fu">RFR</span>(n_trees<span class="op">=</span>n_trees, max_depth<span class="op">=-</span><span class="fl">1</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    Xtrain_t <span class="op">=</span> MLJ.<span class="fu">table</span>(Xtrain)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    Xpred_t  <span class="op">=</span> MLJ.<span class="fu">table</span>(Xpredict)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    mach <span class="op">=</span> <span class="fu">machine</span>(learner, Xtrain_t, <span class="fu">Float64</span>.(ytrain))</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fit!</span>(mach, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> MLJ.<span class="fu">predict</span>(mach, Xpred_t)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="helper" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> RFR <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">Fit a random forest on (Xtrain, ytrain) and return predictions at Xpredict.</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rf_fit_predict</span>(Xtrain, ytrain, Xpredict; n_trees<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    learner <span class="op">=</span> <span class="fu">RFR</span>(n_trees<span class="op">=</span>n_trees, max_depth<span class="op">=-</span><span class="fl">1</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    Xtrain_t <span class="op">=</span> MLJ.<span class="fu">table</span>(Xtrain)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    Xpred_t  <span class="op">=</span> MLJ.<span class="fu">table</span>(Xpredict)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    mach <span class="op">=</span> <span class="fu">machine</span>(learner, Xtrain_t, <span class="fu">Float64</span>.(ytrain))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fit!</span>(mach, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> MLJ.<span class="fu">predict</span>(mach, Xpred_t)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="s-learner-single" class="level2" data-number="9.3">
 <h2 data-number="9.3" class="anchored" data-anchor-id="s-learner-single"><span class="header-section-number">9.3</span> S-learner (“single”)</h2>
 <p>Fit one regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\((D, X)\)</span>, then predict the difference between <span class="math inline">\(D = 1\)</span> and <span class="math inline">\(D = 0\)</span> for each <span class="math inline">\(x\)</span>:</p>
-<div id="s-learner" class="cell" data-cache="true" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_with_D <span class="op">=</span> <span class="fu">hcat</span>(D, X)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X1_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), X)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>X0_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">zeros</span>(n), X)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>mu1_S <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_with_D, Y, X1_test)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>mu0_S <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_with_D, Y, X0_test)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>tau_S <span class="op">=</span> mu1_S <span class="op">.-</span> mu0_S</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"S-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_S, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>S-learner CATE correlation with truth: 0.711</code></pre>
-</div>
+<div id="s-learner" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X_with_D <span class="op">=</span> <span class="fu">hcat</span>(D, X)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X1_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), X)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X0_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">zeros</span>(n), X)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>mu1_S <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_with_D, Y, X1_test)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>mu0_S <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_with_D, Y, X0_test)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>tau_S <span class="op">=</span> mu1_S <span class="op">.-</span> mu0_S</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"S-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_S, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The S-learner is simple but biased toward zero when the treatment effect is small relative to outcome variation, because the regression “ignores” the <span class="math inline">\(D\)</span> variable if it has little predictive value.</p>
 </section>
 <section id="t-learner-two" class="level2" data-number="9.4">
 <h2 data-number="9.4" class="anchored" data-anchor-id="t-learner-two"><span class="header-section-number">9.4</span> T-learner (“two”)</h2>
 <p>Fit two separate regressions, one on treated units and one on controls:</p>
-<div id="t-learner" class="cell" data-cache="true" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> D <span class="op">.==</span> <span class="fl">1</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> D <span class="op">.==</span> <span class="fl">0</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>mu1_T <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_T, <span class="op">:</span>], Y[idx_T], X)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>mu0_T <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_C, <span class="op">:</span>], Y[idx_C], X)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>tau_T <span class="op">=</span> mu1_T <span class="op">.-</span> mu0_T</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"T-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_T, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>T-learner CATE correlation with truth: 0.707</code></pre>
-</div>
+<div id="t-learner" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> D <span class="op">.==</span> <span class="fl">1</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> D <span class="op">.==</span> <span class="fl">0</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>mu1_T <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_T, <span class="op">:</span>], Y[idx_T], X)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>mu0_T <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_C, <span class="op">:</span>], Y[idx_C], X)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>tau_T <span class="op">=</span> mu1_T <span class="op">.-</span> mu0_T</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"T-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_T, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The T-learner avoids the bias-toward-zero of the S-learner but suffers when the treated and control distributions diverge: extrapolation errors compound when subtracting the two fitted functions.</p>
 </section>
 <section id="x-learner-künzel-et-al.-2019" class="level2" data-number="9.5">
 <h2 data-number="9.5" class="anchored" data-anchor-id="x-learner-künzel-et-al.-2019"><span class="header-section-number">9.5</span> X-learner (Künzel et al.&nbsp;2019)</h2>
 <p>The X-learner imputes the missing potential outcomes using the T-learner fits, then regresses the resulting pseudo-outcomes on <span class="math inline">\(X\)</span> separately within each arm, and combines them with weights from the propensity score:</p>
-<div id="x-learner" class="cell" data-cache="true" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: pseudo-outcomes</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>D1_pseudo <span class="op">=</span> Y[idx_T] <span class="op">.-</span> mu0_T[idx_T]      <span class="co"># observed - imputed Y(0)</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>D0_pseudo <span class="op">=</span> mu1_T[idx_C] <span class="op">.-</span> Y[idx_C]      <span class="co"># imputed Y(1) - observed</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: regress pseudo-outcomes on X in each arm</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>tau_X1 <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_T, <span class="op">:</span>], D1_pseudo, X)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>tau_X0 <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_C, <span class="op">:</span>], D0_pseudo, X)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: weight by propensity score</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>e_hat <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, D, X)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>e_hat <span class="op">=</span> <span class="fu">clamp</span>.(e_hat, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>tau_X <span class="op">=</span> e_hat <span class="op">.*</span> tau_X0 <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> e_hat) <span class="op">.*</span> tau_X1</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"X-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_X, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>X-learner CATE correlation with truth: 0.906</code></pre>
-</div>
+<div id="x-learner" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: pseudo-outcomes</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>D1_pseudo <span class="op">=</span> Y[idx_T] <span class="op">.-</span> mu0_T[idx_T]      <span class="co"># observed - imputed Y(0)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>D0_pseudo <span class="op">=</span> mu1_T[idx_C] <span class="op">.-</span> Y[idx_C]      <span class="co"># imputed Y(1) - observed</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: regress pseudo-outcomes on X in each arm</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>tau_X1 <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_T, <span class="op">:</span>], D1_pseudo, X)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>tau_X0 <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[idx_C, <span class="op">:</span>], D0_pseudo, X)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: weight by propensity score</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>e_hat <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, D, X)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>e_hat <span class="op">=</span> <span class="fu">clamp</span>.(e_hat, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>tau_X <span class="op">=</span> e_hat <span class="op">.*</span> tau_X0 <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> e_hat) <span class="op">.*</span> tau_X1</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"X-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_X, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The X-learner is particularly effective when the propensity score is far from 0.5 (so one treatment arm is much smaller than the other) — common in observational studies.</p>
 </section>
@@ -621,34 +606,31 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \text{weight}_i = (D_i - \hat e(X_i))^2,
 \]</span></p>
 <p>where <span class="math inline">\(\hat m(x) = \mathbb{E}[Y \mid X = x]\)</span> and <span class="math inline">\(\hat e(x) = \mathbb{E}[D \mid X = x]\)</span> are cross-fitted nuisance estimates.</p>
-<div id="r-learner" class="cell" data-cache="true" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cross-fitting: 2 folds</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>folds  <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, n)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>m_hat  <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    m_hat[test]    <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], Y[train], X[test, <span class="op">:</span>])</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    e_hat_cv[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], D[train], X[test, <span class="op">:</span>])</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">clamp</span>.(e_hat_cv, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>pseudo_R   <span class="op">=</span> (Y <span class="op">.-</span> m_hat) <span class="op">./</span> (D <span class="op">.-</span> e_hat_cv)</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>weights_R  <span class="op">=</span> (D <span class="op">.-</span> e_hat_cv) <span class="op">.^</span> <span class="fl">2</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted regression: use random forest with per-sample weights via</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted bootstrap (cheap approximation: oversample by sqrt(weight))</span></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># For exact weighted regression, MLJ regressors can take a weights argument.</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co"># We approximate here with unweighted RF on pseudo_R (the R-learner identity</span></span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co"># holds in expectation; the weighting reduces variance).</span></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>tau_R <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_R, X)</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"R-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_R, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>R-learner CATE correlation with truth: 0.383</code></pre>
-</div>
+<div id="r-learner" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cross-fitting: 2 folds</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>folds  <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, n)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>m_hat  <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    m_hat[test]    <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], Y[train], X[test, <span class="op">:</span>])</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    e_hat_cv[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], D[train], X[test, <span class="op">:</span>])</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">clamp</span>.(e_hat_cv, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>pseudo_R   <span class="op">=</span> (Y <span class="op">.-</span> m_hat) <span class="op">./</span> (D <span class="op">.-</span> e_hat_cv)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>weights_R  <span class="op">=</span> (D <span class="op">.-</span> e_hat_cv) <span class="op">.^</span> <span class="fl">2</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted regression: use random forest with per-sample weights via</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted bootstrap (cheap approximation: oversample by sqrt(weight))</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># For exact weighted regression, MLJ regressors can take a weights argument.</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># We approximate here with unweighted RF on pseudo_R (the R-learner identity</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co"># holds in expectation; the weighting reduces variance).</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>tau_R <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_R, X)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"R-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_R, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The R-learner is doubly robust in a Neyman-orthogonality sense and tends to be the most efficient meta-learner in moderately well-overlapping data.</p>
 </section>
@@ -660,66 +642,47 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \frac{D_i (Y_i - \hat\mu_1(X_i))}{\hat e(X_i)} -
 \frac{(1 - D_i) (Y_i - \hat\mu_0(X_i))}{1 - \hat e(X_i)}.
 \]</span></p>
-<div id="dr-learner" class="cell" data-cache="true" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mu1_cf <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>mu0_cf <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>e_cf   <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    mu1_cf[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">1</span>), <span class="op">:</span>], Y[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">1</span>)],</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                                  X[test, <span class="op">:</span>])</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    mu0_cf[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">0</span>), <span class="op">:</span>], Y[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">0</span>)],</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>                                  X[test, <span class="op">:</span>])</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    e_cf[test]   <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], D[train], X[test, <span class="op">:</span>])</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>e_cf <span class="op">=</span> <span class="fu">clamp</span>.(e_cf, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>pseudo_DR <span class="op">=</span> @. (mu1_cf <span class="op">-</span> mu0_cf) <span class="op">+</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>               D <span class="op">*</span> (Y <span class="op">-</span> mu1_cf) <span class="op">/</span> e_cf <span class="op">-</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>               (<span class="fl">1</span> <span class="op">-</span> D) <span class="op">*</span> (Y <span class="op">-</span> mu0_cf) <span class="op">/</span> (<span class="fl">1</span> <span class="op">-</span> e_cf)</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>tau_DR <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_DR, X)</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"DR-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_DR, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>DR-learner CATE correlation with truth: 0.424</code></pre>
-</div>
+<div id="dr-learner" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mu1_cf <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mu0_cf <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>e_cf   <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    mu1_cf[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">1</span>), <span class="op">:</span>], Y[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">1</span>)],</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                                  X[test, <span class="op">:</span>])</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    mu0_cf[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">0</span>), <span class="op">:</span>], Y[train <span class="op">.&amp;</span> (D <span class="op">.==</span> <span class="fl">0</span>)],</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                                  X[test, <span class="op">:</span>])</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    e_cf[test]   <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], D[train], X[test, <span class="op">:</span>])</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>e_cf <span class="op">=</span> <span class="fu">clamp</span>.(e_cf, <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>pseudo_DR <span class="op">=</span> @. (mu1_cf <span class="op">-</span> mu0_cf) <span class="op">+</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>               D <span class="op">*</span> (Y <span class="op">-</span> mu1_cf) <span class="op">/</span> e_cf <span class="op">-</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>               (<span class="fl">1</span> <span class="op">-</span> D) <span class="op">*</span> (Y <span class="op">-</span> mu0_cf) <span class="op">/</span> (<span class="fl">1</span> <span class="op">-</span> e_cf)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>tau_DR <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_DR, X)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"DR-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_DR, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="comparing-all-five-estimators" class="level2" data-number="9.8">
 <h2 data-number="9.8" class="anchored" data-anchor-id="comparing-all-five-estimators"><span class="header-section-number">9.8</span> Comparing all five estimators</h2>
-<div id="cell-compare-plot" class="cell" data-cache="true" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">1000</span>, <span class="fl">700</span>))</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>labs <span class="op">=</span> [<span class="st">"S-learner"</span>, <span class="st">"T-learner"</span>, <span class="st">"X-learner"</span>, <span class="st">"R-learner"</span>, <span class="st">"DR-learner"</span>]</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> [tau_S, tau_T, tau_X, tau_R, tau_DR]</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i, (lab, pred)) <span class="kw">in</span> <span class="fu">enumerate</span>(<span class="fu">zip</span>(labs, preds))</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    row, col <span class="op">=</span> <span class="fu">divrem</span>(i <span class="op">-</span> <span class="fl">1</span>, <span class="fl">3</span>) <span class="op">.+</span> (<span class="fl">1</span>, <span class="fl">1</span>)</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[row, col],</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>              xlabel <span class="op">=</span> <span class="st">"X1"</span>, ylabel <span class="op">=</span> <span class="st">"Estimated CATE"</span>,</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>              title <span class="op">=</span> lab)</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scatter!</span>(ax, X[<span class="op">:</span>, <span class="fl">1</span>], pred, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), markersize <span class="op">=</span> <span class="fl">4</span>)</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, <span class="fl">0</span><span class="op">:</span><span class="fl">0.01</span><span class="op">:</span><span class="fl">1</span>, x <span class="op">-&gt;</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span>x, color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>           linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="10">
-<div id="compare-plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="heterogeneous-effects_files/figure-html/compare-plot-output-2.svg" class="img-fluid figure-img"></p>
-<figcaption>Estimated CATE vs true τ(x) = 1 + 2 X₁ for each meta-learner. Red dashed line = ground truth.</figcaption>
-</figure>
-</div>
-</div>
+<div id="compare-plot" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">1000</span>, <span class="fl">700</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>labs <span class="op">=</span> [<span class="st">"S-learner"</span>, <span class="st">"T-learner"</span>, <span class="st">"X-learner"</span>, <span class="st">"R-learner"</span>, <span class="st">"DR-learner"</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> [tau_S, tau_T, tau_X, tau_R, tau_DR]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i, (lab, pred)) <span class="kw">in</span> <span class="fu">enumerate</span>(<span class="fu">zip</span>(labs, preds))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    row, col <span class="op">=</span> <span class="fu">divrem</span>(i <span class="op">-</span> <span class="fl">1</span>, <span class="fl">3</span>) <span class="op">.+</span> (<span class="fl">1</span>, <span class="fl">1</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[row, col],</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>              xlabel <span class="op">=</span> <span class="st">"X1"</span>, ylabel <span class="op">=</span> <span class="st">"Estimated CATE"</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>              title <span class="op">=</span> lab)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scatter!</span>(ax, X[<span class="op">:</span>, <span class="fl">1</span>], pred, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), markersize <span class="op">=</span> <span class="fl">4</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, <span class="fl">0</span><span class="op">:</span><span class="fl">0.01</span><span class="op">:</span><span class="fl">1</span>, x <span class="op">-&gt;</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span>x, color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>           linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="best-linear-projection-blp" class="level2" data-number="9.9">
@@ -729,92 +692,59 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \text{BLP}(X) = \arg\min_{\beta} \mathbb{E}\left[(\tau(X) - X'\beta)^2\right].
 \]</span></p>
 <p>A doubly-robust BLP uses the DR-learner pseudo-outcomes:</p>
-<div id="blp" class="cell" data-cache="true" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>blp_df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">hcat</span>(pseudo_DR, X), [<span class="op">:</span>tau_pseudo, <span class="op">:</span>X1, <span class="op">:</span>X2, <span class="op">:</span>X3, <span class="op">:</span>X4, <span class="op">:</span>X5])</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>blp_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(tau_pseudo <span class="op">~</span> X1 <span class="op">+</span> X2 <span class="op">+</span> X3 <span class="op">+</span> X4 <span class="op">+</span> X5), blp_df)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(blp_fit))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>StatsBase.CoefTable(Any[[1.0491980280052309, 2.06880499005843, 0.025224040596492147, 0.1168049914783185, -0.02064513179584383, -0.02313807841559642], [0.14016411913833968, 0.12069064903228814, 0.12127704834669321, 0.12248564191466972, 0.12274318018466555, 0.12274164025892546], [7.485496534028725, 17.141385903931685, 0.20798692696069326, 0.9536219074533758, -0.16819779123193232, -0.18851042210928803], [8.377346668013315e-14, 4.803247234253767e-64, 0.8352476560797701, 0.3403212164400472, 0.8664344895721525, 0.8504842058869386], [0.7744148053447648, 1.8321983200351033, -0.21253222958391252, -0.12332065281535344, -0.26127566418942966, -0.26376559187851634], [1.323981250665697, 2.3054116600817567, 0.2629803107768968, 0.35693063577199047, 0.219985400597742, 0.21748943504732351]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "X1", "X2", "X3", "X4", "X5"], 4, 3)</code></pre>
-</div>
+<div id="blp" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>blp_df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">hcat</span>(pseudo_DR, X), [<span class="op">:</span>tau_pseudo, <span class="op">:</span>X1, <span class="op">:</span>X2, <span class="op">:</span>X3, <span class="op">:</span>X4, <span class="op">:</span>X5])</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>blp_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(tau_pseudo <span class="op">~</span> X1 <span class="op">+</span> X2 <span class="op">+</span> X3 <span class="op">+</span> X4 <span class="op">+</span> X5), blp_df)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(blp_fit))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The BLP coefficient on <span class="math inline">\(X_1\)</span> should be close to 2 (the true slope of the CATE) and statistically significant; the coefficients on <span class="math inline">\(X_2\)</span> through <span class="math inline">\(X_5\)</span> should be close to 0. This is a clean test for heterogeneity along specific covariates.</p>
 </section>
 <section id="clan-testing-for-heterogeneity" class="level2" data-number="9.10">
 <h2 data-number="9.10" class="anchored" data-anchor-id="clan-testing-for-heterogeneity"><span class="header-section-number">9.10</span> CLAN: testing for heterogeneity</h2>
 <p>A formal test of heterogeneity is the <strong>CLAN</strong> (Classification Analysis) proposed by Chernozhukov-Demirer-Duflo-Fernandez-Val (2018). Bin the population by predicted CATE, then estimate the average treatment effect in each bin. If the bin-specific ATEs are statistically different, there is heterogeneity.</p>
-<div id="clan" class="cell" data-cache="true" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>quintile_edges <span class="op">=</span> <span class="fu">quantile</span>(tau_DR, <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length <span class="op">=</span> nq <span class="op">+</span> <span class="fl">1</span>))</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">searchsortedfirst</span>.(<span class="fu">Ref</span>(quintile_edges), tau_DR) <span class="op">.-</span> <span class="fl">1</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">clamp</span>.(quintiles, <span class="fl">1</span>, nq)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># AIPW-style ATE within each quintile using the DR pseudo-outcomes</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">quintile_ate</span>(tau_pseudo, idx)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    n_q <span class="op">=</span> <span class="fu">sum</span>(idx)</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    est <span class="op">=</span> <span class="fu">mean</span>(tau_pseudo[idx])</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    sd  <span class="op">=</span> <span class="fu">std</span>(tau_pseudo[idx]) <span class="op">/</span> <span class="fu">sqrt</span>(n_q)</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (est <span class="op">=</span> est, se <span class="op">=</span> sd)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>clan_df <span class="op">=</span> <span class="fu">DataFrame</span>(quintile <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>nq,</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                    ATE <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).est for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq],</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                    SE  <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).se  for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq])</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>clan_df.lo <span class="op">=</span> clan_df.ATE <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>clan_df.hi <span class="op">=</span> clan_df.ATE <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Quintile"</span>, <span class="st">"ATE"</span>, <span class="st">"SE"</span>, <span class="st">"95% LB"</span>, <span class="st">"95% UB"</span>)</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="fu">eachrow</span>(clan_df)</span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-10d %8.3f %8.3f %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>            row.quintile, row.ATE, row.SE, row.lo, row.hi)</span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Quintile        ATE       SE   95% LB   95% UB
-1            -1.173    0.068   -1.307   -1.039
-2             1.122    0.023    1.076    1.168
-3             2.131    0.023    2.086    2.176
-4             3.265    0.024    3.218    3.312
-5             5.363    0.055    5.255    5.471</code></pre>
-</div>
+<div id="clan" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>quintile_edges <span class="op">=</span> <span class="fu">quantile</span>(tau_DR, <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length <span class="op">=</span> nq <span class="op">+</span> <span class="fl">1</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">searchsortedfirst</span>.(<span class="fu">Ref</span>(quintile_edges), tau_DR) <span class="op">.-</span> <span class="fl">1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">clamp</span>.(quintiles, <span class="fl">1</span>, nq)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># AIPW-style ATE within each quintile using the DR pseudo-outcomes</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">quintile_ate</span>(tau_pseudo, idx)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    n_q <span class="op">=</span> <span class="fu">sum</span>(idx)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    est <span class="op">=</span> <span class="fu">mean</span>(tau_pseudo[idx])</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    sd  <span class="op">=</span> <span class="fu">std</span>(tau_pseudo[idx]) <span class="op">/</span> <span class="fu">sqrt</span>(n_q)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (est <span class="op">=</span> est, se <span class="op">=</span> sd)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>clan_df <span class="op">=</span> <span class="fu">DataFrame</span>(quintile <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>nq,</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>                    ATE <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).est for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq],</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>                    SE  <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).se  for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq])</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>clan_df.lo <span class="op">=</span> clan_df.ATE <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>clan_df.hi <span class="op">=</span> clan_df.ATE <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Quintile"</span>, <span class="st">"ATE"</span>, <span class="st">"SE"</span>, <span class="st">"95% LB"</span>, <span class="st">"95% UB"</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="fu">eachrow</span>(clan_df)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-10d %8.3f %8.3f %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>            row.quintile, row.ATE, row.SE, row.lo, row.hi)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Quintile 5 should give a significantly larger ATE than quintile 1 — a formal test for whether the heterogeneity is real (rather than estimation noise).</p>
 </section>
 <section id="variable-importance-which-covariate-drives-heterogeneity" class="level2" data-number="9.11">
 <h2 data-number="9.11" class="anchored" data-anchor-id="variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</h2>
 <p>A natural diagnostic: regress the DR pseudo-outcomes on each covariate <em>separately</em> and look at the partial <span class="math inline">\(R^2\)</span>:</p>
-<div id="var-importance" class="cell" data-cache="true" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">single_var_r2</span>(target, x)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    df_one <span class="op">=</span> <span class="fu">DataFrame</span>(t <span class="op">=</span> target, x <span class="op">=</span> x)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(t <span class="op">~</span> x), df_one)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1</span> <span class="op">-</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(fit))) <span class="op">/</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(target <span class="op">.-</span> <span class="fu">mean</span>(target)))</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>vi <span class="op">=</span> [<span class="fu">single_var_r2</span>(pseudo_DR, X[<span class="op">:</span>, j]) for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p]</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>vi_df <span class="op">=</span> <span class="fu">DataFrame</span>(variable <span class="op">=</span> [<span class="st">"X</span><span class="sc">$</span>j<span class="st">"</span> for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p], R2 <span class="op">=</span> vi)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(vi_df, <span class="op">:</span>R2, rev <span class="op">=</span> <span class="cn">true</span>)</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(vi_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-bold">5×2 DataFrame</span>
-
-<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> variable </span><span class="ansi-bold"> R2          </span>
-
-<span class="ansi-bold">     </span>│<span class="ansi-bright-black-fg"> String   </span><span class="ansi-bright-black-fg"> Float64     </span>
-
-─────┼───────────────────────
-
-   1 │ X1        0.0556742
-
-   2 │ X3        0.000222108
-
-   3 │ X5        5.35887e-5
-
-   4 │ X2        2.49949e-5
-
-   5 │ X4        2.04448e-5
-</pre>
-</div>
-</div>
+<div id="var-importance" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">single_var_r2</span>(target, x)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    df_one <span class="op">=</span> <span class="fu">DataFrame</span>(t <span class="op">=</span> target, x <span class="op">=</span> x)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(t <span class="op">~</span> x), df_one)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1</span> <span class="op">-</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(fit))) <span class="op">/</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(target <span class="op">.-</span> <span class="fu">mean</span>(target)))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>vi <span class="op">=</span> [<span class="fu">single_var_r2</span>(pseudo_DR, X[<span class="op">:</span>, j]) for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>vi_df <span class="op">=</span> <span class="fu">DataFrame</span>(variable <span class="op">=</span> [<span class="st">"X</span><span class="sc">$</span>j<span class="st">"</span> for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p], R2 <span class="op">=</span> vi)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(vi_df, <span class="op">:</span>R2, rev <span class="op">=</span> <span class="cn">true</span>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(vi_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><span class="math inline">\(X_1\)</span> should top the list. In real applications, this is a useful guide to which covariates carry heterogeneity.</p>
 </section>
@@ -825,36 +755,31 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \pi^*(x) = \mathbb{1}\{\tau(x) &gt; c\}.
 \]</span></p>
 <p>For interpretability, restrict to a shallow decision rule. A simple approach: pick a single covariate threshold that maximises welfare.</p>
-<div id="policy" class="cell" data-cache="true" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimal individualised policy (using estimated CATE)</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>treat_optimal <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>welfare_opt   <span class="op">=</span> <span class="fu">mean</span>((treat_optimal <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                     (treat_optimal <span class="op">.==</span> <span class="fl">0</span>) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive "treat everyone" policy</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>welfare_all   <span class="op">=</span> <span class="fu">mean</span>(pseudo_DR <span class="op">.-</span> cost)</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold rule on X1</span></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">threshold_welfare</span>(thresh)</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    treat <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> thresh</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> treat) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">threshold_welfare</span>(t) for t <span class="kw">in</span> threshes]</span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                  %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat if τ̂(x) &gt; %.2f):           %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, welfare_opt)</span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Welfare (treat everyone):                  1.642
-Welfare (treat if τ̂(x) &gt; 0.50):           1.921
-Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
-</div>
+<div id="policy" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimal individualised policy (using estimated CATE)</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>treat_optimal <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>welfare_opt   <span class="op">=</span> <span class="fu">mean</span>((treat_optimal <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                     (treat_optimal <span class="op">.==</span> <span class="fl">0</span>) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive "treat everyone" policy</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>welfare_all   <span class="op">=</span> <span class="fu">mean</span>(pseudo_DR <span class="op">.-</span> cost)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold rule on X1</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">threshold_welfare</span>(thresh)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    treat <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> thresh</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> treat) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">threshold_welfare</span>(t) for t <span class="kw">in</span> threshes]</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                  %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat if τ̂(x) &gt; %.2f):           %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, welfare_opt)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The optimal policy treats only individuals whose estimated CATE exceeds the cost. The interpretable threshold rule on <span class="math inline">\(X_1\)</span> alone is a reasonable compromise between welfare and explainability.</p>
 <p>For a richer treatment of policy trees with IPW and AIPW losses (using R’s <code>policytree</code> package), see the <a href="https://xiangao.github.io/blog_book/policytree.html">companion blog chapter on <code>policytree</code></a>. For a cross-software comparison of CATE estimators (including Stata 19’s new <code>cate</code> command), see the <a href="https://xiangao.github.io/blog_book/stata-cate.html">Stata CATE blog chapter</a>.</p>
@@ -862,66 +787,57 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
 <section id="causal-forests-with-panel-data" class="level2" data-number="9.13">
 <h2 data-number="9.13" class="anchored" data-anchor-id="causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</h2>
 <p>When the data are a panel — repeated observations on the same units — and the unobserved unit effects are correlated with treatment or covariates, the cross-sectional CATE methods above can be biased. The classical fix is the <strong>within-transform</strong>: demean each variable by its unit-level mean before applying the meta-learner.</p>
-<div id="panel-dgp" class="cell" data-cache="true" data-execution_count="15">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2024</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>n_firms <span class="op">=</span> <span class="fl">200</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>n_t     <span class="op">=</span> <span class="fl">5</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>N       <span class="op">=</span> n_firms <span class="op">*</span> n_t</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>firm_id  <span class="op">=</span> <span class="fu">repeat</span>(<span class="fl">1</span><span class="op">:</span>n_firms, inner <span class="op">=</span> n_t)</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>unit_fe  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.5</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>V1_firm  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.0</span></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>V1_panel <span class="op">=</span> V1_firm[firm_id] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(N)</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id]))))</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> W_panel <span class="op">.+</span></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           tau_panel <span class="op">.*</span> (W_panel <span class="op">.-</span> <span class="fu">mean</span>(W_panel)) <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>True panel ATE: 0.655</code></pre>
-</div>
+<div id="panel-dgp" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2024</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>n_firms <span class="op">=</span> <span class="fl">200</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>n_t     <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>N       <span class="op">=</span> n_firms <span class="op">*</span> n_t</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>firm_id  <span class="op">=</span> <span class="fu">repeat</span>(<span class="fl">1</span><span class="op">:</span>n_firms, inner <span class="op">=</span> n_t)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>unit_fe  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.5</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>V1_firm  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.0</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>V1_panel <span class="op">=</span> V1_firm[firm_id] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(N)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id]))))</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> W_panel <span class="op">.+</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>           tau_panel <span class="op">.*</span> (W_panel <span class="op">.-</span> <span class="fu">mean</span>(W_panel)) <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>A naive T-learner on the panel ignores the firm fixed effects:</p>
-<div id="panel-naive" class="cell" data-cache="true" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>idx_C_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">0</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>mu1_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_T_p, <span class="op">:</span>], df_panel.Y[idx_T_p],</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>mu0_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_C_p, <span class="op">:</span>], df_panel.Y[idx_C_p],</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>tau_naive <span class="op">=</span> mu1_naive <span class="op">.-</span> mu0_naive</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Naive panel T-learner ATE: 1.775  (true = 0.655)</code></pre>
-</div>
+<div id="panel-naive" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>idx_C_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">0</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>mu1_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_T_p, <span class="op">:</span>], df_panel.Y[idx_T_p],</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>mu0_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_C_p, <span class="op">:</span>], df_panel.Y[idx_C_p],</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>tau_naive <span class="op">=</span> mu1_naive <span class="op">.-</span> mu0_naive</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The within-transform removes unit-level variation, leaving only the panel’s within-firm signal for CATE estimation:</p>
-<div id="panel-within" class="cell" data-cache="true" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within transformation: subtract firm means</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>df_dm <span class="op">=</span> <span class="fu">combine</span>(<span class="fu">groupby</span>(df_panel, <span class="op">:</span>firm),</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>Y  <span class="op">=&gt;</span> (y <span class="op">-&gt;</span> y <span class="op">.-</span> <span class="fu">mean</span>(y)) <span class="op">=&gt;</span> <span class="op">:</span>Y_dm,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>W  <span class="op">=&gt;</span> (w <span class="op">-&gt;</span> w <span class="op">.-</span> <span class="fu">mean</span>(w)) <span class="op">=&gt;</span> <span class="op">:</span>W_dm,</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>V1 <span class="op">=&gt;</span> (v <span class="op">-&gt;</span> v <span class="op">.-</span> <span class="fu">mean</span>(v)) <span class="op">=&gt;</span> <span class="op">:</span>V1_dm)</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>X_dm <span class="op">=</span> <span class="fu">reshape</span>(df_dm.V1_dm, N, <span class="fl">1</span>)</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>idx_T_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&gt;</span> <span class="fl">0</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>idx_C_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&lt;=</span> <span class="fl">0</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>mu1_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_T_dm, <span class="op">:</span>], df_dm.Y_dm[idx_T_dm], X_dm)</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>mu0_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_C_dm, <span class="op">:</span>], df_dm.Y_dm[idx_C_dm], X_dm)</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Within-transform T-learner ATE: 1.283  (true = 0.655)</code></pre>
-</div>
+<div id="panel-within" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within transformation: subtract firm means</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>df_dm <span class="op">=</span> <span class="fu">combine</span>(<span class="fu">groupby</span>(df_panel, <span class="op">:</span>firm),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>Y  <span class="op">=&gt;</span> (y <span class="op">-&gt;</span> y <span class="op">.-</span> <span class="fu">mean</span>(y)) <span class="op">=&gt;</span> <span class="op">:</span>Y_dm,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>W  <span class="op">=&gt;</span> (w <span class="op">-&gt;</span> w <span class="op">.-</span> <span class="fu">mean</span>(w)) <span class="op">=&gt;</span> <span class="op">:</span>W_dm,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>V1 <span class="op">=&gt;</span> (v <span class="op">-&gt;</span> v <span class="op">.-</span> <span class="fu">mean</span>(v)) <span class="op">=&gt;</span> <span class="op">:</span>V1_dm)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>X_dm <span class="op">=</span> <span class="fu">reshape</span>(df_dm.V1_dm, N, <span class="fl">1</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>idx_T_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&gt;</span> <span class="fl">0</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>idx_C_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&lt;=</span> <span class="fl">0</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>mu1_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_T_dm, <span class="op">:</span>], df_dm.Y_dm[idx_T_dm], X_dm)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>mu0_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_C_dm, <span class="op">:</span>], df_dm.Y_dm[idx_C_dm], X_dm)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The within-transform recovers the panel ATE because firm fixed effects are differenced out. The cost is variance: each unit contributes only its <em>within-firm</em> variation, so effective sample size shrinks.</p>
 <p>For R’s <code>grf::causal_forest</code>, the cleaner approach is passing <code>clusters = firm_id</code> so the forest’s honest sample-splitting keeps each firm’s observations in the same training fold. The Julia ecosystem currently lacks a native equivalent — see the <a href="https://xiangao.github.io/blog_book/causal-forest-panel.html">companion blog chapter on causal forests in panel data</a> and the <a href="https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html">R companion to this chapter</a> for the GRF-based workflow.</p>
@@ -935,17 +851,6 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
 <li><strong>CLAN</strong> (quintile-binned ATEs) provides a formal test for heterogeneity.</li>
 <li><strong>Policy learning</strong> translates a CATE into a treatment-assignment rule; even a simple threshold rule on the most-heterogeneous covariate often achieves most of the welfare gain.</li>
 <li>For applied work: estimate CATE with at least two methods, report BLP coefficients and quintile-binned ATEs, and use an interpretable rule when treatment-assignment recommendations are needed.</li>
-</ul>
-</section>
-<section id="references" class="level2" data-number="9.15">
-<h2 data-number="9.15" class="anchored" data-anchor-id="references"><span class="header-section-number">9.15</span> References</h2>
-<ul>
-<li>Wager, S., &amp; Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. <em>JASA</em>, 113(523), 1228–1242.</li>
-<li>Künzel, S. R., Sekhon, J. S., Bickel, P. J., &amp; Yu, B. (2019). Metalearners for estimating heterogeneous treatment effects using machine learning. <em>PNAS</em>, 116(10), 4156–4165.</li>
-<li>Nie, X., &amp; Wager, S. (2021). Quasi-oracle estimation of heterogeneous treatment effects. <em>Biometrika</em>, 108(2), 299–319.</li>
-<li>Kennedy, E. H. (2020). Towards optimal doubly robust estimation of heterogeneous causal effects. <em>arXiv:2004.14497</em>.</li>
-<li>Athey, S., &amp; Wager, S. (2021). Policy learning with observational data. <em>Econometrica</em>, 89(1), 133–161.</li>
-<li>Chernozhukov, V., Demirer, M., Duflo, E., &amp; Fernandez-Val, I. (2018). Generic machine learning inference on heterogeneous treatment effects in randomized experiments. <em>NBER Working Paper 24678</em>.</li>
 </ul>
 
 

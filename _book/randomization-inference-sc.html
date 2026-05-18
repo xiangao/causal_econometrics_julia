@@ -453,7 +453,6 @@ window.Quarto = {
   <li><a href="#tasc-posterior-as-bayesian-alternative" id="toc-tasc-posterior-as-bayesian-alternative" class="nav-link" data-scroll-target="#tasc-posterior-as-bayesian-alternative"><span class="header-section-number">15.4</span> TASC posterior as Bayesian alternative</a></li>
   <li><a href="#how-the-two-inference-strategies-compare" id="toc-how-the-two-inference-strategies-compare" class="nav-link" data-scroll-target="#how-the-two-inference-strategies-compare"><span class="header-section-number">15.5</span> How the two inference strategies compare</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">15.6</span> Summary</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">15.7</span> References</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/randomization-inference-sc.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -479,7 +478,7 @@ window.Quarto = {
 </header>
 
 
-<div id="5994f000" class="cell" data-execution_count="2">
+<div id="43e73824" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -499,7 +498,7 @@ window.Quarto = {
 <h2 data-number="15.1" class="anchored" data-anchor-id="the-placebo-test"><span class="header-section-number">15.1</span> The placebo test</h2>
 <p>The randomization-inference idea is simple. For each control unit <span class="math inline">\(\ell\)</span> in the donor pool, pretend <span class="math inline">\(\ell\)</span> was treated and re-run synthetic control, leaving <span class="math inline">\(\ell\)</span> out of its own donor pool. This produces a “placebo estimate” — the gap between <span class="math inline">\(\ell\)</span>’s observed outcome and a synthetic <span class="math inline">\(\ell\)</span> built from the other donors. Repeat for every control unit. The resulting collection of placebo estimates is the empirical null distribution under sharp-null (no effect anywhere).</p>
 <p>If the <em>true</em> treatment effect is zero, California’s estimated effect should look like one of the placebos. If California’s effect is large relative to the placebo distribution, that is evidence against the null.</p>
-<div id="setup-prop99" class="cell" data-cache="true" data-execution_count="3">
+<div id="setup-prop99" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Y    <span class="op">=</span> setup.Y</span>
@@ -515,89 +514,62 @@ window.Quarto = {
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>ca_effect <span class="op">=</span> <span class="fu">mean</span>(ca_obs[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]) <span class="op">-</span> <span class="fu">mean</span>(ca_cfact[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"California ATT (SC): %.2f packs per capita</span><span class="sc">\n</span><span class="st">"</span>, ca_effect)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>California ATT (SC): -19.62 packs per capita</code></pre>
-</div>
 </div>
 <p>Now run the placebo: each control state takes a turn as the “treated” unit.</p>
-<div id="placebo-units" class="cell" data-cache="true" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">run_placebo</span>(Y, N0, T0, treated_idx)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Swap treated_idx into the last row (treated slot); remaining donors fill 1..N0-1</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    donor_idx <span class="op">=</span> <span class="fu">setdiff</span>(<span class="fl">1</span><span class="op">:</span>N0, treated_idx)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    Y_perm    <span class="op">=</span> <span class="fu">vcat</span>(Y[donor_idx, <span class="op">:</span>], Y[treated_idx<span class="op">:</span>treated_idx, <span class="op">:</span>])</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    fit       <span class="op">=</span> <span class="fu">sc_estimate</span>(Y_perm, <span class="fu">length</span>(donor_idx), T0)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    treated   <span class="op">=</span> <span class="fu">vec</span>(Y_perm[<span class="kw">end</span>, <span class="op">:</span>])</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    cfact     <span class="op">=</span> <span class="fu">vec</span>(fit.weights.omega<span class="op">'</span> <span class="op">*</span> Y_perm[<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(donor_idx), <span class="op">:</span>])</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> treated, cfact</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>placebo_effects <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>placebo_paths   <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(<span class="cn">undef</span>, N0, <span class="fu">size</span>(Y, <span class="fl">2</span>))</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>placebo_cfacts  <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(<span class="cn">undef</span>, N0, <span class="fu">size</span>(Y, <span class="fl">2</span>))</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    treated_i, cfact_i <span class="op">=</span> <span class="fu">run_placebo</span>(Y, N0, T0, i)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    placebo_paths[i, <span class="op">:</span>]  <span class="op">=</span> treated_i <span class="op">.-</span> cfact_i</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    placebo_cfacts[i, <span class="op">:</span>] <span class="op">=</span> cfact_i</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(placebo_effects, <span class="fu">mean</span>(treated_i[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> cfact_i[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]))</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># California's treatment effect path</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>ca_gap <span class="op">=</span> ca_obs <span class="op">.-</span> ca_cfact</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"California ATT:        %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_effect)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo distribution mean: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(placebo_effects))</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo distribution sd:   %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(placebo_effects))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>California ATT:        -19.62
-Placebo distribution mean: 0.32
-Placebo distribution sd:   10.76</code></pre>
-</div>
+<div id="placebo-units" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">run_placebo</span>(Y, N0, T0, treated_idx)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Swap treated_idx into the last row (treated slot); remaining donors fill 1..N0-1</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    donor_idx <span class="op">=</span> <span class="fu">setdiff</span>(<span class="fl">1</span><span class="op">:</span>N0, treated_idx)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    Y_perm    <span class="op">=</span> <span class="fu">vcat</span>(Y[donor_idx, <span class="op">:</span>], Y[treated_idx<span class="op">:</span>treated_idx, <span class="op">:</span>])</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    fit       <span class="op">=</span> <span class="fu">sc_estimate</span>(Y_perm, <span class="fu">length</span>(donor_idx), T0)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    treated   <span class="op">=</span> <span class="fu">vec</span>(Y_perm[<span class="kw">end</span>, <span class="op">:</span>])</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    cfact     <span class="op">=</span> <span class="fu">vec</span>(fit.weights.omega<span class="op">'</span> <span class="op">*</span> Y_perm[<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(donor_idx), <span class="op">:</span>])</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> treated, cfact</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>placebo_effects <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>placebo_paths   <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(<span class="cn">undef</span>, N0, <span class="fu">size</span>(Y, <span class="fl">2</span>))</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>placebo_cfacts  <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(<span class="cn">undef</span>, N0, <span class="fu">size</span>(Y, <span class="fl">2</span>))</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    treated_i, cfact_i <span class="op">=</span> <span class="fu">run_placebo</span>(Y, N0, T0, i)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    placebo_paths[i, <span class="op">:</span>]  <span class="op">=</span> treated_i <span class="op">.-</span> cfact_i</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    placebo_cfacts[i, <span class="op">:</span>] <span class="op">=</span> cfact_i</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(placebo_effects, <span class="fu">mean</span>(treated_i[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> cfact_i[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]))</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># California's treatment effect path</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>ca_gap <span class="op">=</span> ca_obs <span class="op">.-</span> ca_cfact</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"California ATT:        %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_effect)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo distribution mean: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(placebo_effects))</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo distribution sd:   %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(placebo_effects))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="the-two-sided-p-value" class="level3" data-number="15.1.1">
 <h3 data-number="15.1.1" class="anchored" data-anchor-id="the-two-sided-p-value"><span class="header-section-number">15.1.1</span> The two-sided p-value</h3>
 <p>A Fisher-style exact <span class="math inline">\(p\)</span>-value is the fraction of placebo effects at least as extreme (in absolute value) as the observed effect:</p>
-<div id="pvalue" class="cell" data-cache="true" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>p_value <span class="op">=</span> <span class="fu">mean</span>(<span class="fu">abs</span>.(placebo_effects) <span class="op">.&gt;=</span> <span class="fu">abs</span>(ca_effect))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Two-sided p-value: %.3f</span><span class="sc">\n</span><span class="st">"</span>, p_value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Two-sided p-value: 0.053</code></pre>
-</div>
+<div id="pvalue" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>p_value <span class="op">=</span> <span class="fu">mean</span>(<span class="fu">abs</span>.(placebo_effects) <span class="op">.&gt;=</span> <span class="fu">abs</span>(ca_effect))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Two-sided p-value: %.3f</span><span class="sc">\n</span><span class="st">"</span>, p_value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>With 38 donor states, the smallest possible <span class="math inline">\(p\)</span>-value is <span class="math inline">\(1/39 \approx 0.026\)</span> (California plus 38 placebos). A <span class="math inline">\(p\)</span>-value at this floor means the observed effect is more extreme than every placebo — strong evidence against the sharp null.</p>
 </section>
 <section id="the-placebo-plot" class="level3" data-number="15.1.2">
 <h3 data-number="15.1.2" class="anchored" data-anchor-id="the-placebo-plot"><span class="header-section-number">15.1.2</span> The placebo plot</h3>
 <p>The canonical Abadie-Diamond-Hainmueller figure overlays each placebo’s gap trajectory in grey on California’s gap in black. If the black line falls outside the cloud of grey, the effect is unusual relative to what shocks to random control states produce.</p>
-<div id="cell-placebo-plot" class="cell" data-cache="true" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">740</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Year"</span>, ylabel <span class="op">=</span> <span class="st">"Gap: observed − synthetic"</span>,</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Placebo gap trajectories"</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, years, placebo_paths[i, <span class="op">:</span>],</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>           color <span class="op">=</span> (<span class="op">:</span>grey, <span class="fl">0.35</span>), linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, ca_gap, color <span class="op">=</span> <span class="op">:</span>black, linewidth <span class="op">=</span> <span class="fl">2.5</span>, label <span class="op">=</span> <span class="st">"California"</span>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax, [<span class="fl">0.0</span>]; color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dot, linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [years[T0] <span class="op">+</span> <span class="fl">0.5</span>]; color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>lb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="6">
-<div id="placebo-plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="randomization-inference-sc_files/figure-html/placebo-plot-output-2.svg" class="img-fluid figure-img"></p>
-<figcaption>California’s treatment-effect gap (black) vs placebo gaps from each donor state (grey). The vertical dashed line marks 1989.</figcaption>
-</figure>
-</div>
-</div>
+<div id="placebo-plot" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">740</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Year"</span>, ylabel <span class="op">=</span> <span class="st">"Gap: observed − synthetic"</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Placebo gap trajectories"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, years, placebo_paths[i, <span class="op">:</span>],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>           color <span class="op">=</span> (<span class="op">:</span>grey, <span class="fl">0.35</span>), linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, ca_gap, color <span class="op">=</span> <span class="op">:</span>black, linewidth <span class="op">=</span> <span class="fl">2.5</span>, label <span class="op">=</span> <span class="st">"California"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax, [<span class="fl">0.0</span>]; color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dot, linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [years[T0] <span class="op">+</span> <span class="fl">0.5</span>]; color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>lb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -609,150 +581,97 @@ Placebo distribution sd:   10.76</code></pre>
                               {\frac{1}{T_0}\sum_{t \le T_0} (Y_{\ell t} - \hat Y_{\ell t})^2}.
 \]</span></p>
 <p>A large ratio means post-treatment gap is large <em>relative to</em> pre-treatment fit. The MSPE ratio test compares California’s ratio to the distribution of placebo ratios.</p>
-<div id="mspe-test" class="cell" data-cache="true" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">mspe_ratio</span>(treated, cfact, T0)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pre  <span class="op">=</span> <span class="fu">mean</span>((treated[<span class="fl">1</span><span class="op">:</span>T0] <span class="op">.-</span> cfact[<span class="fl">1</span><span class="op">:</span>T0])<span class="op">.^</span><span class="fl">2</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    post <span class="op">=</span> <span class="fu">mean</span>((treated[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> cfact[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])<span class="op">.^</span><span class="fl">2</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> post <span class="op">/</span> <span class="fu">max</span>(pre, <span class="fu">eps</span>())</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>ca_ratio <span class="op">=</span> <span class="fu">mspe_ratio</span>(ca_obs, ca_cfact, T0)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>placebo_ratios <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    treated_i, cfact_i <span class="op">=</span> <span class="fu">run_placebo</span>(Y, N0, T0, i)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(placebo_ratios, <span class="fu">mspe_ratio</span>(treated_i, cfact_i, T0))</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>p_ratio <span class="op">=</span> <span class="fu">mean</span>(placebo_ratios <span class="op">.&gt;=</span> ca_ratio)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"California MSPE ratio: %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_ratio)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo ratio 75th pct: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(placebo_ratios, <span class="fl">0.75</span>))</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo ratio max:     %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(placebo_ratios))</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"One-sided p-value (ratio): %.3f</span><span class="sc">\n</span><span class="st">"</span>, p_ratio)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>California MSPE ratio: 154.94
-Placebo ratio 75th pct: 35.00
-Placebo ratio max:     536.00
-One-sided p-value (ratio): 0.053</code></pre>
-</div>
+<div id="mspe-test" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">mspe_ratio</span>(treated, cfact, T0)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    pre  <span class="op">=</span> <span class="fu">mean</span>((treated[<span class="fl">1</span><span class="op">:</span>T0] <span class="op">.-</span> cfact[<span class="fl">1</span><span class="op">:</span>T0])<span class="op">.^</span><span class="fl">2</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    post <span class="op">=</span> <span class="fu">mean</span>((treated[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> cfact[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])<span class="op">.^</span><span class="fl">2</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> post <span class="op">/</span> <span class="fu">max</span>(pre, <span class="fu">eps</span>())</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>ca_ratio <span class="op">=</span> <span class="fu">mspe_ratio</span>(ca_obs, ca_cfact, T0)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>placebo_ratios <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    treated_i, cfact_i <span class="op">=</span> <span class="fu">run_placebo</span>(Y, N0, T0, i)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(placebo_ratios, <span class="fu">mspe_ratio</span>(treated_i, cfact_i, T0))</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>p_ratio <span class="op">=</span> <span class="fu">mean</span>(placebo_ratios <span class="op">.&gt;=</span> ca_ratio)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"California MSPE ratio: %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_ratio)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo ratio 75th pct: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(placebo_ratios, <span class="fl">0.75</span>))</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo ratio max:     %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(placebo_ratios))</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"One-sided p-value (ratio): %.3f</span><span class="sc">\n</span><span class="st">"</span>, p_ratio)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The MSPE ratio test typically gives a smaller <span class="math inline">\(p\)</span>-value than the raw-effect test because it down-weights placebos whose synthetic controls fit poorly in the pre-period.</p>
-<div id="cell-mspe-plot" class="cell" data-cache="true" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">360</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Post/Pre MSPE ratio"</span>,</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>           ylabel <span class="op">=</span> <span class="st">"Count"</span>, title <span class="op">=</span> <span class="st">"MSPE ratio distribution"</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist!</span>(ax, placebo_ratios, bins <span class="op">=</span> <span class="fl">20</span>, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.6</span>))</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [ca_ratio]; color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"California"</span>)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="8">
-<div id="mspe-plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="randomization-inference-sc_files/figure-html/mspe-plot-output-2.svg" class="img-fluid figure-img"></p>
-<figcaption>Distribution of post/pre MSPE ratios across donor states (histogram). California’s ratio is the red dashed line.</figcaption>
-</figure>
-</div>
-</div>
+<div id="mspe-plot" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">360</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Post/Pre MSPE ratio"</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>           ylabel <span class="op">=</span> <span class="st">"Count"</span>, title <span class="op">=</span> <span class="st">"MSPE ratio distribution"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist!</span>(ax, placebo_ratios, bins <span class="op">=</span> <span class="fl">20</span>, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.6</span>))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [ca_ratio]; color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"California"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="time-placebo" class="level2" data-number="15.3">
 <h2 data-number="15.3" class="anchored" data-anchor-id="time-placebo"><span class="header-section-number">15.3</span> Time placebo</h2>
 <p>Another robustness check moves the treatment date backward into the pre-period and asks whether the SC framework “finds” an effect there too. If yes, the post-treatment effect is suspect because the synthetic-control method is detecting differences that pre-date Proposition 99.</p>
-<div id="time-placebo" class="cell" data-cache="true" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pretend treatment started in 1980 instead of 1989</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>T0_placebo <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="fl">1980</span>), years) <span class="op">-</span> <span class="fl">1</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>Y_pre      <span class="op">=</span> Y[<span class="op">:</span>, <span class="fl">1</span><span class="op">:</span>T0]   <span class="co"># cut off real treatment period</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>fit_pre    <span class="op">=</span> <span class="fu">sc_estimate</span>(Y_pre, N0, T0_placebo)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>ca_pre     <span class="op">=</span> <span class="fu">vec</span>(Y_pre[N0 <span class="op">+</span> <span class="fl">1</span>, <span class="op">:</span>])</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>ca_pre_cf  <span class="op">=</span> <span class="fu">vec</span>(fit_pre.weights.omega<span class="op">'</span> <span class="op">*</span> Y_pre[<span class="fl">1</span><span class="op">:</span>N0, <span class="op">:</span>])</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>placebo_effect_time <span class="op">=</span> <span class="fu">mean</span>(ca_pre[(T0_placebo <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> ca_pre_cf[(T0_placebo <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Time-placebo effect (treatment moved to 1980): %.2f</span><span class="sc">\n</span><span class="st">"</span>, placebo_effect_time)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Real effect (treatment in 1989):               %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_effect)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Time-placebo effect (treatment moved to 1980): -3.31
-Real effect (treatment in 1989):               -19.62</code></pre>
-</div>
+<div id="time-placebo" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pretend treatment started in 1980 instead of 1989</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>T0_placebo <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="fl">1980</span>), years) <span class="op">-</span> <span class="fl">1</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>Y_pre      <span class="op">=</span> Y[<span class="op">:</span>, <span class="fl">1</span><span class="op">:</span>T0]   <span class="co"># cut off real treatment period</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>fit_pre    <span class="op">=</span> <span class="fu">sc_estimate</span>(Y_pre, N0, T0_placebo)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>ca_pre     <span class="op">=</span> <span class="fu">vec</span>(Y_pre[N0 <span class="op">+</span> <span class="fl">1</span>, <span class="op">:</span>])</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>ca_pre_cf  <span class="op">=</span> <span class="fu">vec</span>(fit_pre.weights.omega<span class="op">'</span> <span class="op">*</span> Y_pre[<span class="fl">1</span><span class="op">:</span>N0, <span class="op">:</span>])</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>placebo_effect_time <span class="op">=</span> <span class="fu">mean</span>(ca_pre[(T0_placebo <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> ca_pre_cf[(T0_placebo <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Time-placebo effect (treatment moved to 1980): %.2f</span><span class="sc">\n</span><span class="st">"</span>, placebo_effect_time)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Real effect (treatment in 1989):               %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_effect)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The time-placebo effect is much smaller in magnitude than the real effect, giving additional confidence that the 1989 break is genuine.</p>
 </section>
 <section id="tasc-posterior-as-bayesian-alternative" class="level2" data-number="15.4">
 <h2 data-number="15.4" class="anchored" data-anchor-id="tasc-posterior-as-bayesian-alternative"><span class="header-section-number">15.4</span> TASC posterior as Bayesian alternative</h2>
 <p>The synthetic-control chapter introduced TASC, which models the panel as a linear Gaussian state-space process and returns a posterior distribution over the counterfactual path. The 95% posterior band is a Bayesian analogue to the randomization-inference confidence statement — under the SSM assumptions, the true counterfactual is within the band with 95% posterior probability.</p>
-<div id="tasc-band" class="cell" data-cache="true" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(Y[(N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], Y[<span class="fl">1</span><span class="op">:</span>N0, <span class="op">:</span>])</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>tasc_model <span class="op">=</span> <span class="fu">fit_tasc</span>(Y_tasc; d <span class="op">=</span> <span class="fl">2</span>, T0 <span class="op">=</span> T0, n_em <span class="op">=</span> <span class="fl">200</span>, tol <span class="op">=</span> <span class="fl">1e-3</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>tasc_pred  <span class="op">=</span> <span class="fu">predict_counterfactual</span>(tasc_model, Y_tasc)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>tasc_cfact <span class="op">=</span> <span class="fu">vec</span>(tasc_pred.target)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>tasc_se    <span class="op">=</span> <span class="fu">sqrt</span>.(<span class="fu">max</span>.(<span class="fu">vec</span>(tasc_pred.variance), <span class="fl">0.0</span>))</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>tasc_lower <span class="op">=</span> tasc_cfact <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> tasc_se</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>tasc_upper <span class="op">=</span> tasc_cfact <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> tasc_se</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># At each post-treatment year, is California outside the band?</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>years_post <span class="op">=</span> years[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>outside    <span class="op">=</span> (ca_obs[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.&lt;</span> tasc_lower[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]) <span class="op">.|</span></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>             (ca_obs[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.&gt;</span> tasc_upper[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Years California is outside the 95%% band: %d/%d</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sum</span>(outside), <span class="fu">length</span>(outside))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>TASC EM did not converge after 200 iterations; try increasing n_em or loosening tol.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Main.TASC ~/projects/software/TASC.jl/src/TASC.jl:450</span>
-</pre>
+<div id="tasc-band" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(Y[(N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], Y[<span class="fl">1</span><span class="op">:</span>N0, <span class="op">:</span>])</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>tasc_model <span class="op">=</span> <span class="fu">fit_tasc</span>(Y_tasc; d <span class="op">=</span> <span class="fl">2</span>, T0 <span class="op">=</span> T0, n_em <span class="op">=</span> <span class="fl">200</span>, tol <span class="op">=</span> <span class="fl">1e-3</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>tasc_pred  <span class="op">=</span> <span class="fu">predict_counterfactual</span>(tasc_model, Y_tasc)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>tasc_cfact <span class="op">=</span> <span class="fu">vec</span>(tasc_pred.target)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>tasc_se    <span class="op">=</span> <span class="fu">sqrt</span>.(<span class="fu">max</span>.(<span class="fu">vec</span>(tasc_pred.variance), <span class="fl">0.0</span>))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>tasc_lower <span class="op">=</span> tasc_cfact <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> tasc_se</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>tasc_upper <span class="op">=</span> tasc_cfact <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> tasc_se</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># At each post-treatment year, is California outside the band?</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>years_post <span class="op">=</span> years[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>outside    <span class="op">=</span> (ca_obs[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.&lt;</span> tasc_lower[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>]) <span class="op">.|</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>             (ca_obs[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.&gt;</span> tasc_upper[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Years California is outside the 95%% band: %d/%d</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sum</span>(outside), <span class="fu">length</span>(outside))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Years California is outside the 95% band: 12/12</code></pre>
-</div>
-</div>
-<div id="cell-combined-plot" class="cell" data-cache="true" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert placebo gaps to counterfactual paths for visualisation</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">420</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Year"</span>, ylabel <span class="op">=</span> <span class="st">"Packs per capita"</span>,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Frequentist placebo cloud vs Bayesian posterior band"</span>)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Placebo counterfactuals (treated outcome minus gap, mapped to California's level)</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    cf <span class="op">=</span> placebo_cfacts[i, <span class="op">:</span>] <span class="op">.+</span> (ca_obs[T0] <span class="op">-</span> placebo_cfacts[i, T0])</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, years, cf, color <span class="op">=</span> (<span class="op">:</span>grey, <span class="fl">0.20</span>), linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">band!</span>(ax, years, tasc_lower, tasc_upper;</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> (<span class="op">:</span>seagreen, <span class="fl">0.25</span>), label <span class="op">=</span> <span class="st">"TASC 95% interval"</span>)</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, ca_obs;    color <span class="op">=</span> <span class="op">:</span>black,     linewidth <span class="op">=</span> <span class="fl">3</span>, label <span class="op">=</span> <span class="st">"California"</span>)</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, ca_cfact;  color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"SC counterfactual"</span>)</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, tasc_cfact; color <span class="op">=</span> <span class="op">:</span>seagreen,  linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"TASC counterfactual"</span>)</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [years[T0] <span class="op">+</span> <span class="fl">0.5</span>]; color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>lb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="11">
-<div id="combined-plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="randomization-inference-sc_files/figure-html/combined-plot-output-2.svg" class="img-fluid figure-img"></p>
-<figcaption>California’s observed path (black) with TASC posterior band (green), classical SC counterfactual (blue), and placebo gap envelope (grey).</figcaption>
-</figure>
-</div>
-</div>
+<div id="combined-plot" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert placebo gaps to counterfactual paths for visualisation</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">420</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Year"</span>, ylabel <span class="op">=</span> <span class="st">"Packs per capita"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Frequentist placebo cloud vs Bayesian posterior band"</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Placebo counterfactuals (treated outcome minus gap, mapped to California's level)</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>N0</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    cf <span class="op">=</span> placebo_cfacts[i, <span class="op">:</span>] <span class="op">.+</span> (ca_obs[T0] <span class="op">-</span> placebo_cfacts[i, T0])</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lines!</span>(ax, years, cf, color <span class="op">=</span> (<span class="op">:</span>grey, <span class="fl">0.20</span>), linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="fu">band!</span>(ax, years, tasc_lower, tasc_upper;</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> (<span class="op">:</span>seagreen, <span class="fl">0.25</span>), label <span class="op">=</span> <span class="st">"TASC 95% interval"</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, ca_obs;    color <span class="op">=</span> <span class="op">:</span>black,     linewidth <span class="op">=</span> <span class="fl">3</span>, label <span class="op">=</span> <span class="st">"California"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, ca_cfact;  color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"SC counterfactual"</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, years, tasc_cfact; color <span class="op">=</span> <span class="op">:</span>seagreen,  linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"TASC counterfactual"</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="fu">vlines!</span>(ax, [years[T0] <span class="op">+</span> <span class="fl">0.5</span>]; color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">1</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>lb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="how-the-two-inference-strategies-compare" class="level2" data-number="15.5">
@@ -814,14 +733,6 @@ Real effect (treatment in 1989):               -19.62</code></pre>
 <li>The <strong>MSPE ratio test</strong> down-weights placebos whose synthetic controls fit their pre-period poorly — usually tightens the <span class="math inline">\(p\)</span>-value.</li>
 <li>The <strong>time placebo</strong> moves the treatment date earlier and checks for spurious effects in the placebo period.</li>
 <li><strong>TASC posterior bands</strong> give a parallel Bayesian inference that does not require the donor pool to be a randomization device — at the cost of an explicit generative model.</li>
-</ul>
-</section>
-<section id="references" class="level2" data-number="15.7">
-<h2 data-number="15.7" class="anchored" data-anchor-id="references"><span class="header-section-number">15.7</span> References</h2>
-<ul>
-<li>Abadie, A., Diamond, A., &amp; Hainmueller, J. (2010). Synthetic control methods for comparative case studies: estimating the effect of California’s tobacco control program. <em>Journal of the American Statistical Association</em>, 105(490), 493–505.</li>
-<li>Abadie, A., Diamond, A., &amp; Hainmueller, J. (2015). Comparative politics and the synthetic control method. <em>American Journal of Political Science</em>, 59(2), 495–510.</li>
-<li>Firpo, S., &amp; Possebom, V. (2018). Synthetic control method: inference, sensitivity analysis and confidence sets. <em>Journal of Causal Inference</em>, 6(2).</li>
 </ul>
 
 

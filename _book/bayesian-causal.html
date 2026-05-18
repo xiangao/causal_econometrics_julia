@@ -452,7 +452,6 @@ window.Quarto = {
   <li><a href="#when-to-use-bayesian-methods" id="toc-when-to-use-bayesian-methods" class="nav-link" data-scroll-target="#when-to-use-bayesian-methods"><span class="header-section-number">11.4</span> When to use Bayesian methods</a></li>
   <li><a href="#connections" id="toc-connections" class="nav-link" data-scroll-target="#connections"><span class="header-section-number">11.5</span> Connections</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">11.6</span> Summary</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">11.7</span> References</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/bayesian-causal.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -478,7 +477,7 @@ window.Quarto = {
 </header>
 
 
-<div id="0ff1a5a2" class="cell" data-execution_count="2">
+<div id="bb899f3f" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -500,7 +499,7 @@ window.Quarto = {
 </blockquote>
 <section id="setup" class="level2" data-number="11.1">
 <h2 data-number="11.1" class="anchored" data-anchor-id="setup"><span class="header-section-number">11.1</span> Setup</h2>
-<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<div id="dgp" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1500</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">3</span></span>
@@ -515,9 +514,6 @@ window.Quarto = {
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">1</span>], X2 <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">2</span>], X3 <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">3</span>])</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>True ATE = 0.901</code></pre>
-</div>
 </div>
 </section>
 <section id="bayesian-g-computation" class="level2" data-number="11.2">
@@ -530,97 +526,74 @@ window.Quarto = {
 <li>The posterior of the ATE is the distribution of <span class="math inline">\(\mathbb{E}[\hat Y(1) - \hat Y(0)]\)</span> across draws.</li>
 </ol>
 <p>A Bayesian linear regression with a flat prior implements this cleanly:</p>
-<div id="bayes-gcomp" class="cell" data-cache="true" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    bayes_linreg(X, y; n_samples=2000)</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">(flat → posterior matches frequentist OLS). Returns `n_samples` posterior</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">draws of (β, σ²).</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bayes_linreg</span>(X<span class="op">::</span><span class="dt">Matrix</span>, y<span class="op">::</span><span class="dt">Vector</span>; n_samples<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">2000</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    n, p <span class="op">=</span> <span class="fu">size</span>(X)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    XtX_inv <span class="op">=</span> <span class="fu">inv</span>(X<span class="op">'</span> <span class="op">*</span> X)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    beta_hat <span class="op">=</span> XtX_inv <span class="op">*</span> X<span class="op">'</span> <span class="op">*</span> y</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    sse <span class="op">=</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(y <span class="op">.-</span> X <span class="op">*</span> beta_hat))</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># σ² ~ InverseGamma((n-p)/2, sse/2)</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    σ²_post <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">InverseGamma</span>((n <span class="op">-</span> p) <span class="op">/</span> <span class="fl">2</span>, sse <span class="op">/</span> <span class="fl">2</span>)) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples]</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># β | σ² ~ MultivariateNormal(beta_hat, σ² * XtX_inv)</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    betas <span class="op">=</span> <span class="fu">zeros</span>(n_samples, p)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        cov_mat <span class="op">=</span> σ²_post[i] <span class="op">.*</span> XtX_inv</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        betas[i, <span class="op">:</span>] <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">MvNormal</span>(beta_hat, <span class="fu">Symmetric</span>(cov_mat)))</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> betas, σ²_post</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on (D, X1, X2, X3, D*X1, D*X2, D*X3) — allow treatment effect heterogeneity</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>DesignMat <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), df.D, df.X1, df.X2, df.X3,</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                 df.D <span class="op">.*</span> df.X1, df.D <span class="op">.*</span> df.X2, df.D <span class="op">.*</span> df.X3)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>betas, σ²_draws <span class="op">=</span> <span class="fu">bayes_linreg</span>(DesignMat, df.Y; n_samples <span class="op">=</span> <span class="fl">2000</span>)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Counterfactual prediction matrices</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>X_treat   <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">ones</span>(n),  df.X1, df.X2, df.X3,</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>                 df.X1, df.X2, df.X3)           <span class="co"># D = 1, so D*X = X</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>X_control <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">zeros</span>(n), df.X1, df.X2, df.X3,</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n))  <span class="co"># D = 0</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Posterior ITEs: n_samples x n</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>ite_post <span class="op">=</span> (X_treat <span class="op">*</span> betas<span class="op">'</span>)<span class="ch">' .- (X_control * betas'</span>)<span class="ch">'</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE posterior: average over n at each draw</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>ate_post <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">2</span>))</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bayesian g-computation:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior mean ATE:  %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(ate_post))</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior SD:        %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(ate_post))</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  95%% CrI:             [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(ate_post, <span class="fl">0.025</span>), <span class="fu">quantile</span>(ate_post, <span class="fl">0.975</span>))</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  True ATE:            %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Bayesian g-computation:
-  Posterior mean ATE:  0.904
-  Posterior SD:        0.056
-  95% CrI:             [0.798, 1.016]
-  True ATE:            0.901</code></pre>
-</div>
+<div id="bayes-gcomp" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">    bayes_linreg(X, y; n_samples=2000)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">(flat → posterior matches frequentist OLS). Returns `n_samples` posterior</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">draws of (β, σ²).</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bayes_linreg</span>(X<span class="op">::</span><span class="dt">Matrix</span>, y<span class="op">::</span><span class="dt">Vector</span>; n_samples<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">2000</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    n, p <span class="op">=</span> <span class="fu">size</span>(X)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    XtX_inv <span class="op">=</span> <span class="fu">inv</span>(X<span class="op">'</span> <span class="op">*</span> X)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    beta_hat <span class="op">=</span> XtX_inv <span class="op">*</span> X<span class="op">'</span> <span class="op">*</span> y</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    sse <span class="op">=</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(y <span class="op">.-</span> X <span class="op">*</span> beta_hat))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># σ² ~ InverseGamma((n-p)/2, sse/2)</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    σ²_post <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">InverseGamma</span>((n <span class="op">-</span> p) <span class="op">/</span> <span class="fl">2</span>, sse <span class="op">/</span> <span class="fl">2</span>)) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples]</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># β | σ² ~ MultivariateNormal(beta_hat, σ² * XtX_inv)</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    betas <span class="op">=</span> <span class="fu">zeros</span>(n_samples, p)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        cov_mat <span class="op">=</span> σ²_post[i] <span class="op">.*</span> XtX_inv</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        betas[i, <span class="op">:</span>] <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">MvNormal</span>(beta_hat, <span class="fu">Symmetric</span>(cov_mat)))</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> betas, σ²_post</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on (D, X1, X2, X3, D*X1, D*X2, D*X3) — allow treatment effect heterogeneity</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>DesignMat <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), df.D, df.X1, df.X2, df.X3,</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                 df.D <span class="op">.*</span> df.X1, df.D <span class="op">.*</span> df.X2, df.D <span class="op">.*</span> df.X3)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>betas, σ²_draws <span class="op">=</span> <span class="fu">bayes_linreg</span>(DesignMat, df.Y; n_samples <span class="op">=</span> <span class="fl">2000</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Counterfactual prediction matrices</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>X_treat   <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">ones</span>(n),  df.X1, df.X2, df.X3,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>                 df.X1, df.X2, df.X3)           <span class="co"># D = 1, so D*X = X</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>X_control <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">zeros</span>(n), df.X1, df.X2, df.X3,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n))  <span class="co"># D = 0</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Posterior ITEs: n_samples x n</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>ite_post <span class="op">=</span> (X_treat <span class="op">*</span> betas<span class="op">'</span>)<span class="ch">' .- (X_control * betas'</span>)<span class="ch">'</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE posterior: average over n at each draw</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>ate_post <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">2</span>))</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bayesian g-computation:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior mean ATE:  %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(ate_post))</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior SD:        %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(ate_post))</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  95%% CrI:             [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(ate_post, <span class="fl">0.025</span>), <span class="fu">quantile</span>(ate_post, <span class="fl">0.975</span>))</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  True ATE:            %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The posterior 95% credible interval reports uncertainty about the ATE directly. With a flat prior the credible interval matches the frequentist confidence interval; with informative priors they diverge, and the Bayesian interval reflects prior + data.</p>
 <section id="individual-level-credible-intervals" class="level3" data-number="11.2.1">
 <h3 data-number="11.2.1" class="anchored" data-anchor-id="individual-level-credible-intervals"><span class="header-section-number">11.2.1</span> Individual-level credible intervals</h3>
-<div id="cell-ite-credible" class="cell" data-cache="true" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ite_mean <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">1</span>))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ite_lo   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.025</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ite_hi   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.975</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Sort by X1 for plotting</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>ord <span class="op">=</span> <span class="fu">sortperm</span>(df.X1)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X1"</span>, ylabel <span class="op">=</span> <span class="st">"ITE"</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>          title <span class="op">=</span> <span class="st">"Posterior ITEs vs truth"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">band!</span>(ax, df.X1[ord], ite_lo[ord], ite_hi[ord],</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), label <span class="op">=</span> <span class="st">"95% CrI"</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, df.X1, ite_mean, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.4</span>), markersize <span class="op">=</span> <span class="fl">3</span>,</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>         label <span class="op">=</span> <span class="st">"Posterior mean ITE"</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>], [<span class="fl">1</span> <span class="op">-</span> <span class="fl">6</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">6</span>], color <span class="op">=</span> <span class="op">:</span>firebrick,</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>       linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="5">
-<div id="ite-credible" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="bayesian-causal_files/figure-html/ite-credible-output-2.svg" class="img-fluid figure-img"></p>
-<figcaption>Posterior mean ITE vs true τ(x) = 1 + 2 X₁. Blue band shows 95% pointwise credible interval across posterior draws.</figcaption>
-</figure>
-</div>
-</div>
+<div id="ite-credible" class="cell" data-cache="true">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ite_mean <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">1</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ite_lo   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.025</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>ite_hi   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.975</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Sort by X1 for plotting</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>ord <span class="op">=</span> <span class="fu">sortperm</span>(df.X1)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X1"</span>, ylabel <span class="op">=</span> <span class="st">"ITE"</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>          title <span class="op">=</span> <span class="st">"Posterior ITEs vs truth"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">band!</span>(ax, df.X1[ord], ite_lo[ord], ite_hi[ord],</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), label <span class="op">=</span> <span class="st">"95% CrI"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, df.X1, ite_mean, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.4</span>), markersize <span class="op">=</span> <span class="fl">3</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>         label <span class="op">=</span> <span class="st">"Posterior mean ITE"</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>], [<span class="fl">1</span> <span class="op">-</span> <span class="fl">6</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">6</span>], color <span class="op">=</span> <span class="op">:</span>firebrick,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>       linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The blue ribbon shows pointwise 95% credible intervals; the red dashed line is the truth. Where the ribbon covers the truth, the posterior is well-calibrated.</p>
 </section>
@@ -731,15 +704,6 @@ window.Quarto = {
 <li><strong>Bayesian g-computation</strong> with a Normal-Inverse-Gamma conjugate prior is implementable in Julia in ~30 lines and gives valid credible intervals for the ATE.</li>
 <li><strong>For nonparametric flexibility</strong> (BART, BCF), R’s <code>BART</code> and <code>bcf</code> packages remain the workhorses — see the <a href="https://xiangao.github.io/causal_econometrics_guide/bayesian-causal.html">R companion chapter</a>.</li>
 <li><strong>For Numpyro-based Bayesian models in Python</strong>, see the <a href="https://xiangao.github.io/blog_book/numpyro.html">Using Numpyro</a> blog chapter.</li>
-</ul>
-</section>
-<section id="references" class="level2" data-number="11.7">
-<h2 data-number="11.7" class="anchored" data-anchor-id="references"><span class="header-section-number">11.7</span> References</h2>
-<ul>
-<li>Hill, J. L. (2011). Bayesian nonparametric modeling for causal inference. <em>JCGS</em>, 20(1), 217–240.</li>
-<li>Chipman, H. A., George, E. I., &amp; McCulloch, R. E. (2010). BART: Bayesian additive regression trees. <em>Annals of Applied Statistics</em>, 4(1), 266–298.</li>
-<li>Hahn, P. R., Murray, J. S., &amp; Carvalho, C. M. (2020). Bayesian regression tree models for causal inference: regularization, confounding, and heterogeneous effects. <em>Bayesian Analysis</em>, 15(3), 965–1056.</li>
-<li>McCandless, L. C., Gustafson, P., &amp; Levy, A. (2007). Bayesian sensitivity analysis for unmeasured confounding in observational studies. <em>Statistics in Medicine</em>, 26(11), 2331–2347.</li>
 </ul>
 
 
