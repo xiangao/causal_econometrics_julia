@@ -454,4 +454,67 @@ println(res.estimate, "  ", res.ci)
 
 For staggered adoption (Xu 2026), `did_int_staggered()` loops over `(cohort, time)` cells with $t \geq c$, restricts to $S_M$ in each cell, fits the DR estimator, and aggregates across cells using joint-IF stacking (per-cell IFs share the never-treated comparison group, so independence-style SEs underestimate uncertainty noticeably). An R port with the same interface is available as [`didint`](https://github.com/xiangao/didint); its Brazil Amazon `Lista de Municípios Prioritários` vignette replicates Section III of Xu (2026) using the public Assunção-McMillan-Murphy-Souza-Rodrigues replication archive on Zenodo.
 
+## Persistent Outcomes and Heterogeneous Dynamics
+
+Standard event-study TWFE regressions like
+
+$$ Y_{it} = \alpha_i + \gamma_t + \sum_{j} D_{it}^j \delta_j + X_{it}'\beta + U_{it} $$
+
+implicitly assume the residual has no serial dependence once unit and
+time fixed effects are absorbed. When outcomes are genuinely
+persistent — earnings, employment, consumption, anything with habits
+or adjustment costs — that assumption fails. The event-time dummies
+absorb persistence on top of the true causal effect, producing
+spurious pre-trends and biased post-treatment estimates whose bias
+grows geometrically with the event-time horizon
+(Botosaru and Liu 2025, Figure 1).
+
+Botosaru and Liu [-@botosaru-liu-2025] introduce a **dynamic panel
+with correlated random coefficients** that handles both persistence
+and unit-level heterogeneity in dynamic responses:
+
+$$ Y_{it} = \rho_Y Y_{i,t-1} + \alpha_i + \sum_j D_{it}^j \delta_{ij} + X_{it}'\beta + U_{it}, $$
+
+with a parsimonious AR(1) on the event-time effects to keep
+dimensionality manageable:
+
+$$ \delta_{ij} = \rho_\delta \delta_{i,j-1} + \varepsilon_{ij}, \quad j \geq 1. $$
+
+The latent $\lambda_i = (\alpha_i, \delta_{i0})$ is a unit-specific
+correlated random coefficient. A two-step semiparametric estimator:
+step 1 is **quasi-maximum likelihood** for the common parameters
+under a Gaussian working assumption on $\lambda_i$ (consistent under
+misspecification); step 2 is **Tweedie / Gaussian-conjugate empirical
+Bayes** for the unit-level posterior trajectories
+$\{\delta_{i,j}\}_{j=0}^J$.
+
+A companion note [@botosaru-liu-2026] adds a **homogeneous-feedback
+extension**: covariates $X_{it}$ are allowed to adjust endogenously to
+past $Y$ and treatment. Under the assumption that the covariate
+adjustment rule does not depend on $\lambda_i$ given the observable
+history, the likelihood factors into a structural piece and a feedback
+piece, yielding a clean decomposition of dynamic treatment effects
+into **direct** (through $\delta_{i,j}$) and **indirect** (through
+covariate feedback) components.
+
+The package [`TVHTE.jl`](https://github.com/xiangao/TVHTE.jl)
+implements both papers:
+
+```{julia tvhte_demo}
+#| eval: false
+using TVHTE
+
+# Fit on a panel with staggered cohorts and a covariate
+fit = tvhte(panel_Y, baseline_Y; t0 = cohort, J = max_event_time, X = panel_X)
+
+# Feedback model + direct/indirect counterfactual decomposition
+fb = fit_feedback(panel_Y, baseline_Y, panel_X, baseline_X)
+cf = simulate_counterfactual(fit, fb, alt_cohort)
+```
+
+An R port with the same API is at
+[`tvhte`](https://github.com/xiangao/tvhte); both packages have
+deployed docs at <https://xiangao.github.io/TVHTE.jl/> and
+<https://xiangao.github.io/tvhte/>.
+
 Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.

@@ -482,6 +482,7 @@ window.Quarto = {
   <li><a href="#comparison-linear-etwfe-on-logcount-1" id="toc-comparison-linear-etwfe-on-logcount-1" class="nav-link" data-scroll-target="#comparison-linear-etwfe-on-logcount-1"><span class="header-section-number">13.12.4</span> Comparison: linear ETWFE on log(count + 1)</a></li>
   </ul></li>
   <li><a href="#spatial-interference" id="toc-spatial-interference" class="nav-link" data-scroll-target="#spatial-interference"><span class="header-section-number">13.13</span> Spatial Interference</a></li>
+  <li><a href="#persistent-outcomes-and-heterogeneous-dynamics" id="toc-persistent-outcomes-and-heterogeneous-dynamics" class="nav-link" data-scroll-target="#persistent-outcomes-and-heterogeneous-dynamics"><span class="header-section-number">13.14</span> Persistent Outcomes and Heterogeneous Dynamics</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/did.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -507,7 +508,7 @@ window.Quarto = {
 </header>
 
 
-<div id="487a7f0f" class="cell">
+<div id="53575e10" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFramesMeta</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
@@ -610,36 +611,36 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="example-1-us-teen-employment" class="level2" data-number="13.10">
 <h2 data-number="13.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">13.10</span> Example 1: US Teen Employment</h2>
 <p>We’ll use the mpdta dataset on US teen employment from the did package. “Treatment” in this dataset refers to an increase in the minimum wage rate. Our goal is to estimate the effect of this minimum wage treatment (treat) on the log of teen employment (lemp). Notice that the panel ID is at the county level (countyreal), but treatment was staggered across cohorts (first_treat) so that a group of counties were treated at the same time. In addition to these staggered treatment effects, we also observe log population (lpop) as a potential control variable.</p>
-<div id="8a41e574" class="cell" data-cache="true">
+<div id="1f8407cc" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load mpdta dataset from the did R package (Callaway &amp; Sant'Anna 2021)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># US teen employment data; treatment = minimum wage increase</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mpdta <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/mpdta.csv"</span>, DataFrame)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rename!</span>(mpdta, <span class="st">"first.treat"</span> <span class="op">=&gt;</span> <span class="st">"first_treat"</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(mpdta, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="fba67930" class="cell" data-cache="true">
+<div id="472c1219" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>year), nrow)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>treat), nrow)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="198a9b66" class="cell" data-cache="true">
+<div id="c0253f04" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns enable StatsModels to generate cohort×time dummies (ETWFE)</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mpdta.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.first_treat)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mpdta.year_str <span class="op">=</span> <span class="fu">string</span>.(mpdta.year)</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>mod <span class="op">=</span> <span class="fu">feols</span>(mpdta, <span class="pp">@formula</span>(lemp <span class="op">~</span> lpop <span class="op">+</span> first_treat_str <span class="op">&amp;</span> year_str <span class="op">+</span> <span class="fu">fe</span>(countyreal) <span class="op">+</span> <span class="fu">fe</span>(year)), vcov <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>countyreal))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="70ef7120" class="cell" data-cache="true">
+<div id="4d289c20" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="8034ce75" class="cell" data-cache="true">
+<div id="8421d019" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="8f909e77" class="cell" data-cache="true">
+<div id="84d781ce" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="581dae6d" class="cell" data-cache="true">
+<div id="c20c8bb5" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
@@ -659,7 +660,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </section>
 <section id="example-2-staggered-did" class="level2" data-number="13.11">
 <h2 data-number="13.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">13.11</span> Example 2: Staggered DiD</h2>
-<div id="8fb58db6" class="cell" data-cache="true">
+<div id="468ae999" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>did_data <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">readstat</span>(<span class="st">"data/did_staggered_6.dta"</span>))</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>first_treat <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span></span>
@@ -675,10 +676,10 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(<span class="fu">select</span>(did_data, <span class="op">:</span>id, <span class="op">:</span>year, <span class="op">:</span>y, <span class="op">:</span>x, <span class="op">:</span>d4, <span class="op">:</span>d5, <span class="op">:</span>d6, <span class="op">:</span>te4, <span class="op">:</span>te5, <span class="op">:</span>te6, <span class="op">:</span>first_treat), <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="d9e0c956" class="cell" data-cache="true">
+<div id="c6cc4d27" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(did_data, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="327b394c" class="cell" data-cache="true">
+<div id="81f8b734" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rtransform</span>! did_data <span class="op">:</span>treated_cohort1 <span class="op">=</span> <span class="cf">begin</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">:</span>d4 <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="op">:</span>f04 <span class="op">==</span> <span class="fl">1</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"d4f04"</span></span>
@@ -711,11 +712,11 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort1), <span class="op">:</span>treated_cohort1), <span class="op">:</span>te4 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="07879681" class="cell" data-cache="true">
+<div id="180a1df6" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort2), <span class="op">:</span>treated_cohort2), <span class="op">:</span>te5 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean5)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort3), <span class="op">:</span>treated_cohort3), <span class="op">:</span>te6 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="8d114aaf" class="cell" data-cache="true">
+<div id="204f2be8" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># String columns needed for cohort×time ETWFE dummies</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>did_data.first_treat_str <span class="op">=</span> <span class="fu">string</span>.(did_data.first_treat)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>did_data.year_str <span class="op">=</span> <span class="fu">string</span>.(did_data.year)</span>
@@ -724,14 +725,14 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>mod <span class="op">=</span> <span class="fu">feols</span>(did_data, <span class="pp">@formula</span>(y <span class="op">~</span> x <span class="op">+</span> first_treat_str <span class="op">&amp;</span> year_str <span class="op">+</span> <span class="fu">fe</span>(id) <span class="op">+</span> <span class="fu">fe</span>(year)), vcov <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>id))</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="ed496d11" class="cell" data-cache="true">
+<div id="95f08e84" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="bb899149" class="cell" data-cache="true">
+<div id="6c874cad" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>mod_es</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="38be1b58" class="cell" data-cache="true">
+<div id="f729a189" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>mod_es2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -744,7 +745,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="simulated-example-staggered-count-data" class="level3" data-number="13.12.1">
 <h3 data-number="13.12.1" class="anchored" data-anchor-id="simulated-example-staggered-count-data"><span class="header-section-number">13.12.1</span> Simulated example: staggered count data</h3>
 <p>We simulate panel data with three treatment cohorts (treated in years 3, 4, 5) and a never-treated group. The true treatment effect is multiplicative: <span class="math inline">\(\exp(0.4) - 1 \approx 49\%\)</span> increase in counts. Parallel trends holds on the log scale.</p>
-<div id="18c3736f" class="cell" data-cache="true">
+<div id="9f1c5749" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>N_pois <span class="op">=</span> <span class="fl">600</span>; Tmax_pois <span class="op">=</span> <span class="fl">6</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>unit_fe_vals <span class="op">=</span> <span class="fu">randn</span>(N_pois) <span class="op">.*</span> <span class="fl">0.3</span></span>
@@ -765,12 +766,12 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="poisson-etwfe" class="level3" data-number="13.12.2">
 <h3 data-number="13.12.2" class="anchored" data-anchor-id="poisson-etwfe"><span class="header-section-number">13.12.2</span> Poisson ETWFE</h3>
 <p><code>etwfe()</code> handles formula construction, cohort FE + year FE, and post-treatment dummy creation automatically. Pass <code>family = "poisson"</code> for count outcomes.</p>
-<div id="1dbd944f" class="cell" data-cache="true">
+<div id="bfcc1117" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mod_pois <span class="op">=</span> <span class="fu">etwfe</span>(df_count, <span class="pp">@formula</span>(count <span class="op">~</span> <span class="fl">1</span>);</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                 gvar <span class="op">=</span> <span class="op">:</span>first_treat, tvar <span class="op">=</span> <span class="op">:</span>year,</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                 family <span class="op">=</span> <span class="st">"poisson"</span>, vcov <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>id))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="9b0d7ea0" class="cell" data-cache="true">
+<div id="23a75c03" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">emfx</span>(mod_pois)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATT (log scale):  %.4f  (SE = %.4f)</span><span class="sc">\n</span><span class="st">"</span>, att.estimate[<span class="fl">1</span>], att.std_error[<span class="fl">1</span>])</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IRR - 1:          %.4f  (true ≈ 0.492)</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">exp</span>(att.estimate[<span class="fl">1</span>]) <span class="op">-</span> <span class="fl">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -779,7 +780,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </section>
 <section id="event-study" class="level3" data-number="13.12.3">
 <h3 data-number="13.12.3" class="anchored" data-anchor-id="event-study"><span class="header-section-number">13.12.3</span> Event study</h3>
-<div id="897e485e" class="cell" data-cache="true">
+<div id="38707cc9" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mod_pois_es <span class="op">=</span> <span class="fu">emfx</span>(mod_pois, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>fig_p <span class="op">=</span> <span class="fu">Figure</span>()</span>
@@ -796,7 +797,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </section>
 <section id="comparison-linear-etwfe-on-logcount-1" class="level3" data-number="13.12.4">
 <h3 data-number="13.12.4" class="anchored" data-anchor-id="comparison-linear-etwfe-on-logcount-1"><span class="header-section-number">13.12.4</span> Comparison: linear ETWFE on log(count + 1)</h3>
-<div id="7a1fe249" class="cell" data-cache="true">
+<div id="ea93d510" class="cell" data-cache="true">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_count.log_count <span class="op">=</span> <span class="fu">log</span>.(df_count.count <span class="op">.+</span> <span class="fl">1</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>mod_lin <span class="op">=</span> <span class="fu">etwfe</span>(df_count, <span class="pp">@formula</span>(log_count <span class="op">~</span> <span class="fl">1</span>);</span>
@@ -814,7 +815,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <p><span class="math display">\[ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{it}(\infty, g) \mid z_i, C_i = c, G_{it} = g], \]</span></p>
 <p>where <span class="math inline">\(C_i\)</span> is unit <span class="math inline">\(i\)</span>’s first treatment period (so <span class="math inline">\(\{C_i &gt; t\}\)</span> is the not-yet-directly-treated comparison group), <span class="math inline">\(S_M = \{C_i = c\} \cup \{C_i &gt; t\}\)</span>, and <span class="math inline">\(g\)</span> is a chosen exposure level. The DR plug-in averages three pieces over <span class="math inline">\(S_M\)</span>: an IPW term from the treated cohort, an IPW term from the not-yet-treated, and a regression-imputation term, with three propensity models (<span class="math inline">\(\eta_{tc}\)</span> for cohort, <span class="math inline">\(\eta_{tcg}\)</span> and <span class="math inline">\(\eta_{t\infty g}\)</span> for exposure) and two outcome-change regressions. It is consistent if either all three propensities or both outcome models are correctly specified.</p>
 <p>The companion package <a href="https://github.com/xiangao/DidInterference.jl"><code>DidInterference.jl</code></a> implements this. The 2×2 base case (Xu 2023):</p>
-<div id="2c4ef646" class="cell">
+<div id="f7ace856" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DidInterference</span>, <span class="bu">DataFrames</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> <span class="fu">did_int_2x2</span>(panel;</span>
@@ -829,10 +830,40 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(res.estimate, <span class="st">"  "</span>, res.ci)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For staggered adoption (Xu 2026), <code>did_int_staggered()</code> loops over <code>(cohort, time)</code> cells with <span class="math inline">\(t \geq c\)</span>, restricts to <span class="math inline">\(S_M\)</span> in each cell, fits the DR estimator, and aggregates across cells using joint-IF stacking (per-cell IFs share the never-treated comparison group, so independence-style SEs underestimate uncertainty noticeably). An R port with the same interface is available as <a href="https://github.com/xiangao/didint"><code>didint</code></a>; its Brazil Amazon <code>Lista de Municípios Prioritários</code> vignette replicates Section III of Xu (2026) using the public Assunção-McMillan-Murphy-Souza-Rodrigues replication archive on Zenodo.</p>
+</section>
+<section id="persistent-outcomes-and-heterogeneous-dynamics" class="level2" data-number="13.14">
+<h2 data-number="13.14" class="anchored" data-anchor-id="persistent-outcomes-and-heterogeneous-dynamics"><span class="header-section-number">13.14</span> Persistent Outcomes and Heterogeneous Dynamics</h2>
+<p>Standard event-study TWFE regressions like</p>
+<p><span class="math display">\[ Y_{it} = \alpha_i + \gamma_t + \sum_{j} D_{it}^j \delta_j + X_{it}'\beta + U_{it} \]</span></p>
+<p>implicitly assume the residual has no serial dependence once unit and time fixed effects are absorbed. When outcomes are genuinely persistent — earnings, employment, consumption, anything with habits or adjustment costs — that assumption fails. The event-time dummies absorb persistence on top of the true causal effect, producing spurious pre-trends and biased post-treatment estimates whose bias grows geometrically with the event-time horizon (Botosaru and Liu 2025, Figure 1).</p>
+<p>Botosaru and Liu <span class="citation" data-cites="botosaru-liu-2025">(<a href="references.html#ref-botosaru-liu-2025" role="doc-biblioref">2025</a>)</span> introduce a <strong>dynamic panel with correlated random coefficients</strong> that handles both persistence and unit-level heterogeneity in dynamic responses:</p>
+<p><span class="math display">\[ Y_{it} = \rho_Y Y_{i,t-1} + \alpha_i + \sum_j D_{it}^j \delta_{ij} + X_{it}'\beta + U_{it}, \]</span></p>
+<p>with a parsimonious AR(1) on the event-time effects to keep dimensionality manageable:</p>
+<p><span class="math display">\[ \delta_{ij} = \rho_\delta \delta_{i,j-1} + \varepsilon_{ij}, \quad j \geq 1. \]</span></p>
+<p>The latent <span class="math inline">\(\lambda_i = (\alpha_i, \delta_{i0})\)</span> is a unit-specific correlated random coefficient. A two-step semiparametric estimator: step 1 is <strong>quasi-maximum likelihood</strong> for the common parameters under a Gaussian working assumption on <span class="math inline">\(\lambda_i\)</span> (consistent under misspecification); step 2 is <strong>Tweedie / Gaussian-conjugate empirical Bayes</strong> for the unit-level posterior trajectories <span class="math inline">\(\{\delta_{i,j}\}_{j=0}^J\)</span>.</p>
+<p>A companion note <span class="citation" data-cites="botosaru-liu-2026">(<a href="references.html#ref-botosaru-liu-2026" role="doc-biblioref">Botosaru and Liu 2026</a>)</span> adds a <strong>homogeneous-feedback extension</strong>: covariates <span class="math inline">\(X_{it}\)</span> are allowed to adjust endogenously to past <span class="math inline">\(Y\)</span> and treatment. Under the assumption that the covariate adjustment rule does not depend on <span class="math inline">\(\lambda_i\)</span> given the observable history, the likelihood factors into a structural piece and a feedback piece, yielding a clean decomposition of dynamic treatment effects into <strong>direct</strong> (through <span class="math inline">\(\delta_{i,j}\)</span>) and <strong>indirect</strong> (through covariate feedback) components.</p>
+<p>The package <a href="https://github.com/xiangao/TVHTE.jl"><code>TVHTE.jl</code></a> implements both papers:</p>
+<div id="19c0e224" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TVHTE</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on a panel with staggered cohorts and a covariate</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">tvhte</span>(panel_Y, baseline_Y; t0 <span class="op">=</span> cohort, J <span class="op">=</span> max_event_time, X <span class="op">=</span> panel_X)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Feedback model + direct/indirect counterfactual decomposition</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>fb <span class="op">=</span> <span class="fu">fit_feedback</span>(panel_Y, baseline_Y, panel_X, baseline_X)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>cf <span class="op">=</span> <span class="fu">simulate_counterfactual</span>(fit, fb, alt_cohort)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>An R port with the same API is at <a href="https://github.com/xiangao/tvhte"><code>tvhte</code></a>; both packages have deployed docs at <a href="https://xiangao.github.io/TVHTE.jl/" class="uri">https://xiangao.github.io/TVHTE.jl/</a> and <a href="https://xiangao.github.io/tvhte/" class="uri">https://xiangao.github.io/tvhte/</a>.</p>
 <p>Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-botosaru-liu-2025" class="csl-entry" role="listitem">
+Botosaru, Irene, and Laura Liu. 2025. <span>“Time-Varying Heterogeneous Treatment Effects in Event Studies.”</span> <em>arXiv Preprint arXiv:2509.13698</em>. <a href="https://arxiv.org/abs/2509.13698">https://arxiv.org/abs/2509.13698</a>.
+</div>
+<div id="ref-botosaru-liu-2026" class="csl-entry" role="listitem">
+———. 2026. <span>“Event Studies with Feedback.”</span> <em>AEA Papers and Proceedings</em> 116: 70–74. <a href="https://doi.org/10.1257/pandp.20261110">https://doi.org/10.1257/pandp.20261110</a>.
+</div>
 <div id="ref-xu2023" class="csl-entry" role="listitem">
 Xu, Ruonan. 2023. <span>“Difference-in-Differences with Interference.”</span> <em>arXiv Preprint arXiv:2306.12003</em>. <a href="https://arxiv.org/abs/2306.12003">https://arxiv.org/abs/2306.12003</a>.
 </div>
