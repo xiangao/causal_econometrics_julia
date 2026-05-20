@@ -32,11 +32,11 @@ include("../../software/ShiftShareIV.jl/src/ShiftShareIV.jl")
 using .ShiftShareIV
 ```
 
-Shift-share (or "Bartik") instruments combine local industry shares with
-national industry growth rates to construct an instrument for local
-employment shocks. They are workhorses in labour economics, trade, and urban
-economics — but the identifying assumptions and inference procedures have
-been reworked over the last five years. This chapter covers the modern view.
+Shift-share, or Bartik, instruments combine local industry shares with
+industry-level shocks. The idea is simple: a location with a large baseline
+share in an industry is more exposed to shocks in that industry. The
+difficult part is not constructing the instrument. The difficult part is
+stating what is assumed exogenous: the shares, the shocks, or both.
 
 ## The construction
 
@@ -48,11 +48,11 @@ $$
 B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 $$
 
-This is "shift-share" because it combines a local *share* with an industry-level
-*shift*. The classic application is Bartik (1991), who used local industry mix
-to predict employment growth. Autor, Dorn, and Hanson (2013) — "the China
-shock" — used local industry shares interacted with industry-level Chinese
-import growth in other rich countries.
+This is "shift-share" because it combines a local share with an
+industry-level shift. Bartik (1991) used local industry mix to predict local
+employment growth. Autor, Dorn, and Hanson (2013) used local industry shares
+interacted with industry-level Chinese import growth in other high-income
+countries.
 
 The first-stage regression is then
 
@@ -65,9 +65,8 @@ outcome of interest.
 
 ## Two identification views
 
-A 2020 paper by Goldsmith-Pinkham, Sorkin, and Swift (GPSS) and a 2022 paper
-by Borusyak, Hull, and Jaravel (BHJ) showed that shift-share IV has two
-distinct identification stories, with different validity conditions.
+There are two ways to justify a shift-share instrument. They put the
+exogeneity assumption on different objects.
 
 ### Share view (GPSS 2020)
 
@@ -82,21 +81,18 @@ $$
 $$
 
 where $\hat\beta_k$ is the just-identified IV using share $s_{\cdot k}$ alone
-and $\hat\alpha_k$ is the **Rotemberg weight**. This is the key diagnostic:
-which shares are driving the estimate?
+and $\hat\alpha_k$ is the **Rotemberg weight**. This gives an important
+diagnostic: which industry shares are driving the estimate?
 
 ### Shock view (BHJ 2022)
 
-Treat the shocks $g_k$ as the source of identifying variation — they should
-behave as-if randomly assigned across industries. Shares are exposure weights.
-Under this view, validity requires that shocks are uncorrelated with
-unobservables in the second stage, conditional on industry-level controls.
-BHJ derive an equivalent IV regression at the shock level (one observation
-per industry rather than per region), which is easier to validate.
+Treat the shocks $g_k$ as the source of identifying variation. Shares are
+exposure weights. Under this view, shocks should be uncorrelated with the
+second-stage unobservables, conditional on industry-level controls. BHJ show
+how to rewrite the regression at the shock level.
 
-The two views are not mutually exclusive but place the burden of
-exogeneity on different objects. In an application, you should defend at
-least one of them and report diagnostics for both.
+The two views are not mutually exclusive. In an application, we should be
+clear which one is being defended and report diagnostics for both.
 
 ## Inference
 
@@ -112,7 +108,7 @@ not capture. Two corrections are now standard:
 
 ## Simulation: build intuition
 
-Set up a small DGP with regions, industries, and a known causal effect.
+Use a small DGP with regions, industries, and a known causal effect.
 
 ```{julia}
 #| label: sim-data
@@ -169,7 +165,7 @@ end
 @printf("Shift-share IV estimate: %.4f\n", coef(ivss)[1])
 ```
 
-Two diagnostics jump out:
+Two diagnostics matter:
 
 1. **Weight concentration**: if one or two industries carry most of the
    weight, the identifying variation is essentially coming from those
@@ -227,11 +223,10 @@ iv_bad  = feiv(df_bad, @formula(Y ~ 1), endo = :X, inst = :B)
 @printf("Shift-share IV with bad share 1: %.3f\n", coef(iv_bad)[1])
 ```
 
-The estimate is biased — but the bias comes from a *single industry's share*
-covarying with unobservables. Rotemberg weights would have flagged industry 1
-as carrying disproportionate identifying weight; a robustness check that
-drops industry 1 (or applies BHJ shock-level inference) would detect the
-problem.
+The estimate is biased, and the bias comes from one industry's share being
+related to the error. Rotemberg weights would flag that industry as important.
+A leave-one-industry-out check would show how much the estimate depends on
+it.
 
 ## BHJ shock-level inference
 
@@ -262,10 +257,9 @@ observations), and testing shock-level exogeneity is more transparent.
 
 ## Empirical: the China shock (Autor, Dorn, Hanson 2013)
 
-The canonical shift-share application is ADH (2013). Local labour markets
-(commuting zones) are differently exposed to rising Chinese import
-competition because they had different baseline industry mixes. The
-instrument is
+The standard shift-share application is ADH (2013). Commuting zones are
+exposed differently to Chinese import competition because their baseline
+industry mixes differ. The instrument is
 
 $$
 \text{IV}_\ell \;=\; \sum_k \frac{L_{\ell k,\,1990}}{L_{\ell,\,1990}}\,
@@ -273,8 +267,8 @@ $$
 $$
 
 where the shocks $\Delta M^{\text{other}}_k$ are growth in Chinese imports
-into *other rich countries* (a "leave-one-out" construction that strips
-US-specific demand from the shocks).
+into other high-income countries. This leave-one-out construction removes
+US-specific demand from the shock.
 
 ```{julia}
 #| eval: false
@@ -311,7 +305,7 @@ iv_bhj_adh = feiv(collapsed_adh, @formula(Y_agg ~ 1),
                   endo = :X_agg, inst = :shock, weights = :weight)
 ```
 
-Modern best-practice extensions of the basic ADH regression:
+For a new shift-share paper, I would expect:
 
 1. **Rotemberg weights** (via `rotemberg_weights`): identify which industries
    drive the estimate; flag weight concentration and heterogeneous $\hat\beta_k$.
@@ -323,15 +317,10 @@ Modern best-practice extensions of the basic ADH regression:
 
 ## Summary
 
-- **Shift-share IV** = local shares × national shocks. Identifies effects of
-  local economic shocks by leveraging differences in industry mix.
-- **Two identification views**: shares exogenous (GPSS) or shocks as-if-random
-  (BHJ). Defend at least one; report diagnostics for both.
-- **Rotemberg weights** decompose the 2SLS estimate into industry-specific
-  just-identified IVs. Concentration warnings and heterogeneity warnings come
-  for free.
-- **Inference**: cluster-on-region underestimates uncertainty. Use BHJ
-  shock-level regressions, and if available, AKM standard errors.
-- **`ShiftShareIV.jl`**: provides `bartik_iv`, `rotemberg_weights`, and
-  `bhj_collapse`. `Panelest.jl` provides `feols`/`feiv` for the regressions.
-
+- Shift-share IV combines local shares and industry shocks.
+- The GPSS view puts exogeneity on shares; the BHJ view puts it on shocks.
+- Rotemberg weights show which industry shares drive the 2SLS estimate.
+- Region-level clustering is usually too optimistic. Use shock-level
+  inference and AKM standard errors when possible.
+- `ShiftShareIV.jl` provides `bartik_iv`, `rotemberg_weights`, and
+  `bhj_collapse`; `Panelest.jl` provides `feols` and `feiv`.

@@ -26,33 +26,29 @@ using CairoMakie
 using CSV
 ```
 
-When the outcome is **time-to-event** — death, hospital re-admission,
-employment termination, machine failure — standard causal inference
-methods need to be adapted. Some observations are *censored*: we know
-the event has not occurred by the end of follow-up, but not when it
-will. Regression on the event time would discard or mishandle censored
-observations and produce biased estimates.
+When the outcome is time-to-event, such as death, readmission, job exit, or
+machine failure, ordinary regression is not enough. Some observations are
+censored. We know the event had not happened by the end of follow-up, but we
+do not know the event time.
 
-This chapter implements the workhorses of survival-causal inference in
-Julia: Kaplan-Meier estimation, inverse probability weighting for the
-adjusted survival curve, and the restricted mean survival time (RMST)
-contrast. For Cox proportional-hazards modelling, R's `survival` package
-is more mature; for doubly-robust survival estimators, R's
-`riskRegression::ate` is the workhorse. The [companion R chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html)
-walks through these in detail.
+This Julia chapter implements Kaplan-Meier curves, IPW-adjusted survival
+curves, and RMST differences. For Cox models and doubly robust survival
+estimators, R's `survival` and `riskRegression` packages are still the more
+practical tools; see the
+[R companion chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html).
 
 ## The censoring problem
 
 We observe $\min(T_i, C_i)$ and $\delta_i = \mathbb{1}\{T_i \le C_i\}$,
-where $T_i$ is the event time and $C_i$ is the censoring time. The
-fundamental quantity of interest is the **survival function**
+where $T_i$ is the event time and $C_i$ is the censoring time. The main
+quantity of interest is the survival function
 
 $$
 S(t) = P(T > t)
 $$
 
-— the probability of surviving past time $t$. Causal contrasts on
-survival outcomes are typically expressed as:
+the probability of surviving past time $t$. Causal contrasts are usually
+reported as:
 
 - **Hazard ratio (HR)** — easy to estimate but hard to interpret
   causally (Hernán 2010).
@@ -76,8 +72,8 @@ n  = nrow(df)
 
 ## Kaplan-Meier estimator
 
-The Kaplan-Meier (KM) estimator computes $\hat S(t)$ nonparametrically.
-Implement it inline:
+The Kaplan-Meier estimator computes $\hat S(t)$ nonparametrically. It is
+short enough to implement directly:
 
 ```{julia}
 #| label: km
@@ -116,13 +112,13 @@ axislegend(ax, position = :rb, framevisible = false)
 fig
 ```
 
-The unadjusted KM curves show the *crude* survival gap — it includes
-both the causal effect and any baseline imbalance.
+The unadjusted KM curves are descriptive. They include both the treatment
+effect and baseline imbalance.
 
 ## IPW-adjusted survival
 
-To account for confounding, weight observations by the inverse
-propensity score before computing KM:
+To adjust for confounding, weight observations by the inverse propensity
+score before computing KM:
 
 ```{julia}
 #| label: ipw-survival
@@ -169,8 +165,8 @@ axislegend(ax2, position = :rb, framevisible = false)
 fig2
 ```
 
-The IPW-adjusted curves show the survival gap that the *causal* effect
-would produce, removing age and sex imbalance.
+The IPW-adjusted curves remove the age and sex imbalance that is in the
+propensity score model.
 
 ## Restricted Mean Survival Time
 
@@ -180,9 +176,9 @@ $$
 \text{RMST}(\tau) = E[\min(T, \tau)] = \int_0^\tau S(t) \, dt.
 $$
 
-The contrast $\Delta_{\text{RMST}}(\tau) = \text{RMST}_1(\tau) - \text{RMST}_0(\tau)$
-is interpretable as "years gained up to $\tau$" — a clean causal
-contrast that does not require the proportional hazards assumption.
+The contrast $\Delta_{\text{RMST}}(\tau)=\text{RMST}_1(\tau)-\text{RMST}_0(\tau)$
+is interpretable as years gained up to $\tau$. It does not require
+proportional hazards.
 
 Compute it by trapezoidal integration of the KM curve:
 
@@ -219,34 +215,30 @@ rmst_ctl_adj   = rmst(t_ctl_w, s_ctl_w, τ)
         rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj - rmst_ctl_adj)
 ```
 
-The IPW-adjusted RMST difference is the causal "years gained up to 5
-years" — directly interpretable for clinical or policy reporting.
+The IPW-adjusted RMST difference is the adjusted years-gained estimate up to
+5 years.
 
 ## Cox proportional hazards (regression adjustment)
 
-Fitting a Cox model in Julia requires `Survival.jl`, which has a more
-limited API than R's `survival::coxph`. The standard approach in Julia
-for survival-regression is either to:
+Julia's survival-regression tools are less mature than R's `survival::coxph`.
+In Julia, the choices are:
 
 - Use `Survival.jl` for basic Cox PH (limited adjustment capabilities).
 - Use a parametric Weibull/exponential model via `Distributions` and
   `Optim` directly.
 - Call out to R for serious survival modelling.
 
-For applied work where the Cox model with covariate adjustment is the
-target, R remains the practical choice. See the
+For applied work where the Cox model with covariate adjustment is the target,
+R remains the practical choice. See the
 [companion R chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html)
 for the full Cox + IPCW + doubly-robust workflow.
 
 ## Doubly-robust survival estimation
 
-R's `riskRegression::ate` provides a doubly-robust estimator that
-combines a Cox outcome model with a propensity score and a censoring
-model. The Julia ecosystem currently lacks an equivalent — implementing
-a doubly-robust survival estimator would be a substantial undertaking
-(requires careful handling of censoring weights at each event time).
+R's `riskRegression::ate` combines a Cox outcome model with a propensity
+score and censoring model. Julia does not currently have an equivalent.
 
-For now, the practical Julia workflow for survival-causal inference is:
+For now, the practical Julia workflow is:
 
 1. **Description**: unadjusted KM curves (this chapter).
 2. **Adjusted survival**: IPW-weighted KM (this chapter).
@@ -257,7 +249,7 @@ For now, the practical Julia workflow for survival-causal inference is:
 
 ## When to use these methods
 
-These methods are needed whenever:
+Use these methods when:
 
 1. The outcome is time-to-event with censoring.
 2. The treatment effect on survival probabilities or years-of-life is
@@ -269,14 +261,8 @@ methods are sufficient.
 
 ## Summary
 
-- **Survival outcomes** require methods that handle censoring.
-- **Kaplan-Meier** estimates $S(t)$ nonparametrically; can be
-  implemented inline in Julia in a few lines.
-- **IPW-adjusted KM**: weight observations by inverse propensity score
-  before computing the survival curve.
-- **RMST differences** (years gained up to $\tau$): interpretable
-  causal contrasts that don't require proportional hazards.
-- **For Cox PH regression with adjustment and doubly-robust survival**,
-  use R's mature `survival` + `riskRegression` ecosystem — see the
-  [companion R chapter](https://xiangao.github.io/causal_econometrics_guide/survival-causal.html).
-
+- Survival outcomes require methods that handle censoring.
+- Kaplan-Meier estimates the survival curve nonparametrically.
+- IPW-adjusted KM handles baseline confounding through weights.
+- RMST differences are often the clearest causal summary.
+- For Cox regression and doubly robust survival estimators, use R for now.

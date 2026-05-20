@@ -24,16 +24,18 @@ using Statistics
 using Logging
 ```
 
-The potential-outcomes chapter introduced the question: when can an observed
-data set tell us about $E[Y(1)-Y(0)]$? Graphs are one way to make the answer
-explicit. A graph records which variables are assumed to cause other variables,
+The potential-outcomes chapter asked when an observed data set can tell us
+about $E[Y(1)-Y(0)]$. Graphs give one way to state the assumptions behind the
+answer. A graph records which variables are allowed to cause other variables,
 and whether some observed variables may share unobserved common causes. Once
-the graph is stated, identification becomes a graph problem. Estimation is the
-next step: estimate the functional that the graph identified.
+the graph is stated, identification is a graph problem. Estimation comes after
+that: estimate the functional that the graph identified.
 
-In this chapter we use `CausalGraphs.jl` for the graph and identification
-steps, then `CausalEstimate.jl` for backdoor/a-fixable effects, and
-`CausalGraphs.estimate_causal` directly for p-fixable and nested-fixable effects.
+I use `CausalGraphs.jl` for the graph and identification steps, then
+`CausalEstimate.jl` for backdoor/a-fixable effects, and
+`CausalGraphs.estimate_causal` directly for p-fixable and nested-fixable
+effects. The order is the important part: graph first, identified functional
+second, estimator third.
 
 ```{julia}
 #| include: false
@@ -119,8 +121,7 @@ $$
 E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 $$
 
-So the graph has translated a causal query into a regression-style observed
-data functional.
+So the graph has translated a causal query into an observed-data functional.
 
 ## Estimating the DAG Effect with CausalEstimate
 
@@ -166,8 +167,9 @@ used that set. Access it via `dag_res.components[:adjustment_set]`.
 ## An ADMG: Front-Door Identification
 
 Now suppose treatment and outcome share an unobserved common cause. A simple
-DAG adjustment argument no longer works. The front-door ADMG has a mediator `M`
-that transmits the effect of `A` to `Y`, while `A` and `Y` are hidden-confounded:
+adjustment argument no longer works. The front-door ADMG has a mediator `M`
+that transmits the effect of `A` to `Y`, while `A` and `Y` are
+hidden-confounded:
 
 ```{julia}
 g_fd = make_graph(
@@ -245,13 +247,13 @@ end
 effect_table("Front-door ACE", fd_res[:TMLE])
 ```
 
-This is the main practical advantage of separating identification from
-estimation. The user states the graph once. The software checks the graph and
-routes the effect to the estimator that matches the identified functional.
+This is the practical advantage of separating identification from estimation.
+State the graph first. Then use the estimator that matches the identified
+functional.
 
 ## General ID Algorithm
 
-The specialized routes above are useful because they have named estimators:
+The named routes above are useful because they are easy to estimate:
 backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more
 general. The Pearl-Shpitser ID algorithm asks the broader question:
 
@@ -332,8 +334,8 @@ id_alg_bow = ID_algorithm(g_bow, :A, :Y)
  hedge = id_alg_bow.hedge)
 ```
 
-This is a feature, not a failure. If the graph does not justify the causal
-effect, the estimator should not manufacture one.
+This is a useful failure mode. If the graph does not justify the causal effect,
+the estimator should not manufacture one.
 
 ## Practical Workflow
 

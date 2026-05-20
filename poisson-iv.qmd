@@ -23,7 +23,11 @@ using Random, StatsBase, LinearAlgebra
 using Printf
 ```
 
-Poisson regression handles count and non-negative outcomes by specifying the conditional mean as an exponential function.  Because it is a quasi-MLE, it requires only the mean to be correct — no distributional assumption on the count.  When an explanatory variable is endogenous, we need an IV strategy adapted to the nonlinear mean.  This chapter covers two cases: a continuous endogenous variable (where the control function works exactly) and a binary endogenous variable (where three CF/IV approaches are available with different trade-offs).
+Poisson regression specifies the conditional mean as an exponential function.
+As a quasi-MLE, it needs the mean to be correct, not the full count
+distribution. If a regressor is endogenous, the IV strategy has to respect
+that nonlinear mean. I consider two cases: a continuous endogenous variable
+and a binary endogenous variable.
 
 
 ## The Control Function Framework

@@ -21,24 +21,20 @@ using CairoMakie
 using GLM
 ```
 
-Before choosing an estimator, we need to know what we are estimating. The
-applied causal-inference literature has accumulated a zoo of estimands —
-ATE, ATT, LATE, CATE, QTE — and beginners often treat them as competing
-answers to one question. They are not. Each is a separate target that the
-data may or may not pin down. The estimator choice flows from which estimand
-you want.
+Before choosing an estimator, we need to know the estimand. ATE, ATT,
+LATE, CATE and QTE are not five ways to estimate the same object. They are
+five different objects. Sometimes they are numerically close, but that is a
+feature of the data-generating process, not a general result.
 
-This chapter constructs one data-generating process where all five estimands
-are well-defined and computable. We then compute each one and discuss what
-the differences tell us.
+Here I use one simulated data set so we can calculate all of them. The
+simulation is useful because we observe both potential outcomes. In real
+data we do not, which is exactly why identification assumptions matter.
 
 ## The data-generating process
 
-Each individual $i$ has a baseline covariate $X_i$ (think: years of
-schooling), a latent type $U_i$ (think: ability), and a binary treatment
-$D_i$ (think: enrolling in a job-training programme). The instrument $Z_i$
-is a randomly offered programme slot — it shifts treatment but does not
-directly affect the outcome.
+Each person has an observed covariate $X_i$, an unobserved type $U_i$, and
+a binary treatment $D_i$. The instrument $Z_i$ is a random offer. It changes
+the probability of treatment, but it has no direct effect on the outcome.
 
 ```{julia}
 #| label: dgp
@@ -73,9 +69,9 @@ df = DataFrame(X=X, Z=Z, D=D, Y=Y)
 first(df, 6)
 ```
 
-Notice that we have full access to the potential outcomes `Y0` and `Y1` — a
-luxury only available in simulation. In real data we observe only one of
-them per unit, which is the fundamental problem of causal inference.
+In the simulated data we have `Y0` and `Y1` for every observation. That lets
+us calculate the true estimands directly. With real data, each observation
+only reveals one potential outcome.
 
 ## The five estimands
 
@@ -85,8 +81,8 @@ $$
 \text{ATE} = \mathbb{E}[Y(1) - Y(0)]
 $$
 
-The expected effect of treatment if everyone in the population were treated
-vs. if everyone were not.
+ATE is the mean effect in the whole population. It compares the mean outcome
+if everyone were treated with the mean outcome if nobody were treated.
 
 ```{julia}
 #| label: ate
@@ -105,8 +101,9 @@ $$
 \text{ATT} = \mathbb{E}[Y(1) - Y(0) \mid D = 1]
 $$
 
-The expected effect of treatment among those who actually took treatment.
-Differs from ATE when treatment uptake is selective.
+ATT is the mean effect for the units that actually took treatment. It differs
+from ATE when treatment selection is related to treatment-effect
+heterogeneity.
 
 ```{julia}
 #| label: att
@@ -116,10 +113,9 @@ att_true = mean(Y1[D] .- Y0[D])
 @printf("ATT (mean of Y1-Y0 conditional on D=1) = %.3f\n", att_true)
 ```
 
-The ATT here is similar to the ATE because the heterogeneity in τ depends
-on $X$ (uniform), and treatment selection depends on $U$ which is
-independent of $X$. If $X$ were correlated with $U$, ATT would diverge from
-ATE.
+Here ATT is close to ATE. The reason is mechanical: treatment effects depend
+on $X$, while selection into treatment depends on $U$, and $X$ is independent
+of $U$. If selection also depended on $X$, ATT would move away from ATE.
 
 ### LATE — local average treatment effect (Imbens-Angrist)
 
@@ -127,9 +123,9 @@ $$
 \text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid D(1) > D(0)]
 $$
 
-The effect among **compliers** — individuals whose treatment status changes
-with the instrument. The Wald estimator identifies LATE under the standard
-IV assumptions (exclusion, monotonicity, relevance).
+LATE is the mean effect for compliers, the units whose treatment status is
+changed by the instrument. Under the usual IV assumptions, the Wald estimator
+identifies this effect, not the ATE.
 
 ```{julia}
 #| label: late
@@ -146,10 +142,9 @@ wald = (mean(Y[Z .== 1]) - mean(Y[Z .== 0])) /
 @printf("Wald IV estimate (should match LATE): %.3f\n", wald)
 ```
 
-LATE is what an IV regression actually estimates under heterogeneous effects
-— **not** the ATE. The Wald estimator recovers LATE because the instrument
-only shifts the compliers' treatment status, so the IV "averages" the effect
-over that subpopulation.
+With heterogeneous effects, IV averages over the people moved by the
+instrument. In this example the Wald estimate matches the complier mean
+because $Z$ changes treatment only for that group.
 
 ### CATE — conditional average treatment effect
 
@@ -157,8 +152,8 @@ $$
 \text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
 $$
 
-The effect as a function of the covariate $X$. By construction in our DGP,
-CATE($x$) = $\tau(x) = 1 + 2x$.
+CATE keeps $X$ in the estimand. In this DGP, CATE($x$) is simply
+$\tau(x)=1+2x$.
 
 ```{julia}
 #| label: cate
@@ -182,10 +177,9 @@ $$
 \text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau)
 $$
 
-The difference between the $\tau$-th quantile of the treated marginal
-distribution and the $\tau$-th quantile of the control marginal. Note that
-QTE compares **distributions** (one quantile to one quantile) — it does
-not track individuals across the two potential outcomes.
+QTE compares the two marginal outcome distributions. It is the difference
+between a quantile under treatment and the same quantile under control. It
+does not follow the same person across the two potential outcomes.
 
 ```{julia}
 #| label: qte
@@ -225,29 +219,25 @@ text!(ax2, 0.05, ate_true + 0.05; text = "ATE", color = :black, fontsize = 11)
 fig
 ```
 
-The left panel makes the conceptual point clearly. **ATE**, **ATT**, and
-**LATE** each collapse the heterogeneous τ($x$) curve into a single number —
-but they collapse it differently. ATE averages over the full population's
-$X$ distribution. ATT averages over the treated subpopulation. LATE averages
-over compliers.
+The left panel shows why the scalar estimands can differ. ATE averages
+$\tau(x)$ over the whole population. ATT averages it over the treated.
+LATE averages it over compliers. CATE does not collapse the curve.
 
-**CATE** keeps the heterogeneity along $X$ explicit. **QTE** (right panel)
-keeps heterogeneity along the outcome distribution explicit. Neither nests
-the others: CATE and QTE answer fundamentally different questions about
-heterogeneity (covariate-level vs distribution-level).
+QTE, in the right panel, is different again. It describes how the treatment
+changes the outcome distribution. It is not a conditional treatment effect
+as a function of $X$.
 
 ## When the estimands differ
 
-In this DGP all four scalar estimands are similar because:
+In the first DGP the scalar estimands are close because:
 
 - $X$ is uniform on [0, 1] (so ATE = average of τ over uniform $X$ = 2)
 - Treatment selection is on $U$ (unobserved type), not $X$ (which drives τ),
   so ATT ≈ ATE
 - The instrument shifts compliers uniformly across $X$, so LATE ≈ ATE
 
-Change any of these assumptions and the estimands diverge. To see this,
-modify the DGP so that high-$X$ individuals are more likely to take
-treatment:
+If treatment selection depends on the effect modifier, the numbers separate.
+Here I make high-$X$ units more likely to take treatment:
 
 ```{julia}
 #| label: dgp-selective
@@ -278,13 +268,13 @@ late2 = mean((Y1_2 .- Y0_2)[(D1_2 .== 1) .& (D0_2 .== 0)])
 @printf("  LATE = %.3f (compliers' mean X)\n", late2)
 ```
 
-Now ATT exceeds ATE because the treated subpopulation has higher $X$ and
-therefore larger treatment effects. The choice between reporting ATE and
-ATT is no longer cosmetic — it changes what the policy implication is.
+Now ATT is larger than ATE. The treated group has higher $X$, and high $X$
+means a larger treatment effect. In this case reporting ATE or ATT changes
+the substantive answer.
 
 ## Which estimand should you choose?
 
-The right estimand depends on the policy question:
+The estimand should come from the research question:
 
 | Policy question | Right estimand |
 |---|---|
@@ -295,23 +285,16 @@ The right estimand depends on the policy question:
 | "Does the effect vary across the outcome distribution?" | QTE(τ) |
 | "What is the distribution of individual effects?" | Often unidentifiable; bounds required |
 
-The same applied paper can defensibly report multiple estimands. The blog
-chapter on Proposition 99 reported the same-data-different-estimators
-exercise — DiD, SC, SDiD, TASC all targeting ATT under different
-assumptions. That is one direction. The complementary direction is to keep
-the estimator fixed and report multiple estimands: a regression with
-heterogeneous effects can yield ATE, ATT, and CATE($x$) jointly.
+It is fine for one paper to report more than one estimand, as long as each is
+named correctly. What is not fine is to report the coefficient that is easiest
+to estimate and call it "the causal effect."
 
 ## Summary
 
-- **ATE / ATT / LATE** are different scalar averages of the underlying
-  heterogeneous treatment effect. They coincide only under strong
-  homogeneity or specific selection structure.
-- **CATE($x$)** and **QTE($\tau$)** preserve the heterogeneity, along
-  different dimensions: covariates vs the outcome distribution.
-- IV regressions estimate LATE, not ATE. Reporting an IV coefficient as
-  "the" causal effect is a category error when effects are heterogeneous.
-- Picking the right estimand is the substantive step. The estimator
-  question — OLS, IV, matching, AIPW, TMLE — only makes sense once the
-  estimand is fixed.
-
+- ATE, ATT and LATE are different averages of the individual treatment
+  effect.
+- CATE($x$) keeps heterogeneity by covariates. QTE($\tau$) describes changes
+  in the outcome distribution.
+- With heterogeneous effects, IV estimates LATE. It should not be described
+  as ATE unless extra assumptions justify that interpretation.
+- Estimator choice comes after the estimand is fixed.

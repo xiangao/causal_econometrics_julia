@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./causal-discovery-latent.html" rel="next">
 <link href="./mediation.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -489,7 +489,7 @@ window.Quarto = {
 </header>
 
 
-<div id="722a899e" class="cell" data-execution_count="2">
+<div id="823dce14" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -502,11 +502,11 @@ window.Quarto = {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>: Normal, quantile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>In earlier chapters we assumed the causal graph was known, or at least that a defensible DAG could be drawn from domain knowledge. But what if we want to <em>learn</em> the causal structure from observational data? This is the <strong>causal discovery</strong> problem.</p>
+<p>Earlier chapters assumed the graph was known, or at least that we could draw a defensible DAG from subject knowledge. Causal discovery asks what can be learned about the graph from observational data.</p>
 <section id="the-problem" class="level2" data-number="22.1">
 <h2 data-number="22.1" class="anchored" data-anchor-id="the-problem"><span class="header-section-number">22.1</span> The Problem</h2>
 <p>Given <span class="math inline">\(n\)</span> i.i.d. observations of <span class="math inline">\(p\)</span> variables <span class="math inline">\((X_1, \ldots, X_p)\)</span>, we want to recover the directed acyclic graph (DAG) <span class="math inline">\(G\)</span> that generated the data.</p>
-<p>There is a fundamental limit: observational data alone cannot distinguish between DAGs that encode the same conditional independence (CI) structure. The set of DAGs that are observationally equivalent is called a <strong>Markov equivalence class</strong> (MEC). The best we can do from data is to identify the MEC, represented as a <strong>Completed Partially Directed Acyclic Graph (CPDAG)</strong>.</p>
+<p>There is an important limit: observational data alone cannot distinguish between DAGs with the same conditional independence structure. The set of observationally equivalent DAGs is a <strong>Markov equivalence class</strong>. The data can identify this class, represented by a CPDAG, not necessarily the one true DAG.</p>
 <p>A CPDAG has the same skeleton (undirected edges) as all DAGs in its MEC. Some edges can be oriented (they have the same direction in every member of the MEC); others remain undirected because both directions are consistent with the CI structure.</p>
 <section id="why-some-edges-cannot-be-oriented" class="level3" data-number="22.1.1">
 <h3 data-number="22.1.1" class="anchored" data-anchor-id="why-some-edges-cannot-be-oriented"><span class="header-section-number">22.1.1</span> Why some edges cannot be oriented</h3>
@@ -526,7 +526,7 @@ window.Quarto = {
 <p>We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge <span class="math inline">\(j \to i\)</span> generates a structural equation</p>
 <p><span class="math display">\[X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)\]</span></p>
 <p>where coefficients <span class="math inline">\(\beta_{ji}\)</span> are drawn uniformly from <span class="math inline">\([-1, -0.25] \cup [0.25, 1]\)</span>.</p>
-<div id="9201c786" class="cell" data-execution_count="3">
+<div id="a0479d68" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -669,7 +669,7 @@ Figure&nbsp;22.1: True DAG used for simulation.
 </ul>
 <p>With <span class="math inline">\(n = 2000\)</span> and <span class="math inline">\(p = 8\)</span> we use <span class="math inline">\(\alpha = 0.01\)</span>, a common default. With smaller <span class="math inline">\(n\)</span> or larger <span class="math inline">\(p\)</span>, consider lowering <span class="math inline">\(\alpha\)</span> to avoid over-pruning.</p>
 <p>We wrap <code>fisher_z</code> in a counter to track exactly how many CI tests each algorithm calls:</p>
-<div id="d48cbbe4" class="cell" data-execution_count="5">
+<div id="027014e5" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">make_counted_ci</span>(data, sig)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">ci</span>(x, y, S, d)</span>
@@ -694,7 +694,7 @@ Figure&nbsp;22.1: True DAG used for simulation.
 <li>Identify colliders: if <span class="math inline">\(X - Z - Y\)</span> and <span class="math inline">\(X, Y\)</span> non-adjacent, orient as <span class="math inline">\(X \to Z \leftarrow Y\)</span> only if <span class="math inline">\(Z\)</span> was not in the separating set of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
 <li>Apply Meek’s orientation rules to propagate orientations without creating new colliders or cycles.</li>
 </ol>
-<div id="fd09b0c9" class="cell" data-execution_count="6">
+<div id="b3bb0256" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ci_pc, ctr_pc <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
@@ -742,7 +742,7 @@ Note
 <p>Variable <span class="math inline">\(X\)</span> is removable if, for every pair <span class="math inline">\(Y \in \text{Mb}(X)\)</span>, <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
 <p><span class="math display">\[\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W\]</span></p>
 <p>(Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.</p>
-<p><strong>The intuition behind removability:</strong> a variable <span class="math inline">\(X\)</span> is “removable” if its local neighbourhood structure can be fully characterized without creating ambiguity in the remaining graph. Think of it as peeling off leaf-like variables one at a time — each removal simplifies the problem rather than complicating it.</p>
+<p>A variable is removable if its local neighborhood can be learned before the rest of the graph is fully known. The algorithm removes such variables one at a time and records the local structure.</p>
 <p><strong>How it works, step by step:</strong></p>
 <ol type="1">
 <li>Estimate the Markov boundary <span class="math inline">\(\text{Mb}(X)\)</span> of each variable (all variables that, conditioned on, make <span class="math inline">\(X\)</span> independent of everything else).</li>
@@ -752,7 +752,7 @@ Note
 <li>Reconstruct the full CPDAG from the recorded local structures.</li>
 </ol>
 <p>The key efficiency advantage: RSL-D uses at most <span class="math inline">\(O(p \cdot d \cdot |\text{MB}|^2)\)</span> CI tests (where <span class="math inline">\(d\)</span> is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.</p>
-<div id="2665bdca" class="cell" data-execution_count="7">
+<div id="b682d6bf" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ci_rsl, ctr_rsl <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cpdag_rsl <span class="op">=</span> <span class="fu">rsld</span>(data_mat, ci_rsl)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>skel_rsl  <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_rsl)</span>
@@ -1183,7 +1183,7 @@ Note
 <li>The <strong>distribution of CI test counts</strong> (shown in <a href="#fig-mc-ci" class="quarto-xref">Figure&nbsp;<span>22.3</span></a>) shows whether the efficiency advantage is consistent or only appears on average.</li>
 <li>High variance in F1 across replications suggests the algorithms are sensitive to the particular random graph — denser or sparser graphs drawn from the same Erdős–Rényi model can be very different problems.</li>
 </ul>
-<div id="b3150410" class="cell" data-cache="true" data-execution_count="10">
+<div id="ce2ff5a4" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_once</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    adj  <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1230,19 +1230,11 @@ RSL-D          0.946      57.2</code></pre>
 <span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">axislegend</span>(ax)</span>
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    fig</span>
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div id="fig-mc-ci" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-mc-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="causal-discovery_files/figure-html/fig-mc-ci-output-2.svg" class="img-fluid figure-img">
+<img src="causal-discovery_files/figure-html/fig-mc-ci-output-1.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mc-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;22.3: Distribution of CI test counts over 100 replications. RSL-D consistently uses fewer CI tests.
@@ -1254,7 +1246,7 @@ Figure&nbsp;22.3: Distribution of CI test counts over 100 replications. RSL-D co
 </section>
 <section id="summary" class="level2" data-number="22.8">
 <h2 data-number="22.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">22.8</span> Summary</h2>
-<p>Both PC and RSL-D recover the Markov equivalence class from Gaussian observational data. The key practical difference is <strong>CI-test efficiency</strong>: RSL-D’s recursive removal approach uses far fewer tests than PC’s growing-set search, especially as <span class="math inline">\(p\)</span> and graph density increase.</p>
+<p>Both PC and RSL-D target the Markov equivalence class. The practical difference is computational: RSL-D usually uses fewer CI tests, especially as the graph gets denser.</p>
 <p><strong>From CPDAG to causal estimation:</strong> Once a CPDAG is in hand, the workflow continues as follows:</p>
 <ol type="1">
 <li><strong>Use background knowledge to orient undirected edges.</strong> Temporal ordering is the most common source: if <span class="math inline">\(X\)</span> is measured before <span class="math inline">\(Y\)</span>, the edge must be <span class="math inline">\(X \to Y\)</span>. Domain expertise, experimental context, or exclusion restrictions can orient others.</li>
@@ -1273,7 +1265,7 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p><strong>What cannot be recovered from observational data alone</strong></p>
-<p>Both algorithms identify the CPDAG — the equivalence class — not the true DAG. Certain edge orientations are fundamentally unidentifiable without additional assumptions such as non-Gaussian errors, temporal ordering, or interventional data.</p>
+<p>Both algorithms identify the CPDAG, not necessarily the true DAG. Some edge directions require extra assumptions, temporal ordering, or interventional data.</p>
 <p>The next chapter addresses a harder problem: recovering the causal skeleton when some variables are <em>unobserved</em>.</p>
 </div>
 </div>

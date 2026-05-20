@@ -19,17 +19,14 @@ using Statistics
 using CairoMakie
 ```
 
-The two previous chapters covered **discovery** — algorithms that learn a
-graph from data. Discovery returns a graph, but a graph is not yet an
-estimate. To go from the graph to an actionable number, we need two more
-steps:
+The previous chapters covered discovery: algorithms that learn a graph from
+data. But a graph is not an estimate. After we have a graph, we still need
+to ask two questions:
 
-1. **Identification** — given the graph and a target effect, is the effect a
-   function of the observed-data distribution? If yes, derive the
-   identifying functional. If no, declare non-identification (or place
-   bounds).
-2. **Estimation** — fit the identifying functional to data, ideally with a
-   doubly-robust or efficient estimator that yields a confidence interval.
+1. **Identification**: is the target effect a function of the observed-data
+   distribution?
+2. **Estimation**: once the identifying formula is known, estimate it from
+   the data.
 
 `CausalGraphs.jl` implements both steps for **acyclic directed mixed graphs
 (ADMGs)** — directed graphs that may also have bidirected edges representing
@@ -38,15 +35,14 @@ algorithms like FCI when there are latent confounders. They are also the
 natural way to encode researcher hypotheses about which arrows are causal
 and which open paths represent hidden confounding.
 
-This chapter walks through three workflows: backdoor identification, front-door
-identification, and the case where identification fails.
+Here are three cases: backdoor identification, front-door identification,
+and non-identification.
 
 ## Backdoor: a-fixable effects
 
-The simplest case. Treatment $A$ has measured parents, and the path
-$A \rightarrow Y$ has no shared hidden common cause with $A$ along its
-descendants. Standard backdoor adjustment applies. The package terminology
-is "**a-fixable**" (Bhattacharya, Nabi, Shpitser 2022).
+Start with the simple case. $X$ is a common cause of treatment $A$ and
+outcome $Y$, and $X$ is observed. Backdoor adjustment applies. In the package
+terminology this is `a_fixable`.
 
 ```{julia}
 #| label: backdoor-graph
@@ -93,20 +89,15 @@ result_bd = estimate_causal(
 @printf("  GCOMP ACE: %.3f\n", result_bd[:Gcomp].ACE)
 ```
 
-All four estimators recover the true ACE. TMLE and the one-step (AIPW)
-estimator are doubly robust and efficient — they return ACE estimates with
-analytic confidence intervals based on the efficient influence function.
-G-computation and IPW return only the point estimate; their standard errors
-would require a bootstrap and they are sensitive to misspecification of the
-outcome or propensity model respectively.
+All four estimators recover the true ACE in this simple example. TMLE and
+AIPW also return confidence intervals.
 
 ## Front-door: p-fixable effects
 
-Now suppose there is an *unmeasured* common cause $U$ of $A$ and $Y$, but a
-measured mediator $M$ lies on the causal path $A \rightarrow M \rightarrow Y$,
-with no arrow from $U$ to $M$ except through $A$. The classic example is
-Pearl's smoking/tar/cancer story. Standard backdoor adjustment fails because
-$U$ is unobserved, but the front-door criterion identifies the effect.
+Now suppose $A$ and $Y$ have an unmeasured common cause $U$, but there is a
+measured mediator $M$ on the path $A \rightarrow M \rightarrow Y$. Backdoor
+adjustment fails because $U$ is unobserved. The front-door formula can still
+identify the effect.
 
 In ADMG notation, the unmeasured confounder appears as a bidirected edge
 between $A$ and $Y$.
@@ -126,9 +117,8 @@ id_frontdoor = identify(g_frontdoor, :A, :Y)
 @printf("Identification strategy: %s\n", id_frontdoor.strategy)
 ```
 
-The package returns `p_fixable`, recognising the front-door structure.
-Estimation goes through a different functional than backdoor — it requires
-modelling $M$ as well as $Y$.
+The package returns `p_fixable`, recognizing the front-door structure. This
+uses a different functional than backdoor adjustment and must model $M$ too.
 
 ```{julia}
 #| label: frontdoor-sim
@@ -162,9 +152,8 @@ result_fd = estimate_causal(
         result_fd[:TMLE].ACE, result_fd[:TMLE].lower_ci, result_fd[:TMLE].upper_ci)
 ```
 
-Despite $U$ being unobserved, the front-door functional pins down the
-effect. A naïve OLS regression of $Y$ on $A$ here would be badly biased by
-the unobserved $U$:
+The front-door functional pins down the effect even though $U$ is unobserved.
+A naive mean difference is badly biased:
 
 ```{julia}
 #| label: frontdoor-naive
@@ -176,16 +165,12 @@ naive_ace = mean(Y[A .== 1]) - mean(Y[A .== 0])
 @printf("True ACE:                                 %.3f\n", true_ace_fd)
 ```
 
-The naïve difference is contaminated by the $U \rightarrow Y$ and
-$U \rightarrow A$ paths. The front-door TMLE undoes that confounding by
-using $M$ as the front-door variable.
+The naive difference is biased by the path through $U$.
 
 ## When identification fails
 
-Not every ADMG yields an identified effect. Suppose $A$ and $Y$ have a
-hidden common cause *and* there is no front-door mediator — every causal
-path from $A$ to $Y$ also passes through a hidden confounder. The effect is
-**not identified**.
+Not every graph identifies the effect. If $A$ and $Y$ have a hidden common
+cause and there is no front-door variable, the effect is not identified.
 
 ```{julia}
 #| label: not-identified
@@ -216,9 +201,8 @@ the non-identifiability, then either:
 3. Find an instrumental variable for a LATE-style identification (covered
    in the IV chapter)
 
-A hidden assumption that everyone tacitly makes — "of course the
-confounding is small" — is *not* identification. Either the graph supports
-the effect or it does not.
+Saying that the hidden confounding is probably small is sensitivity analysis,
+not identification.
 
 ## End-to-end: discover, identify, estimate
 
@@ -249,8 +233,8 @@ result = estimate_causal(
 )
 ```
 
-In practice, the discovered graph is almost never trusted blindly. The
-applied-research workflow is:
+In applied work, I would not trust the discovered graph blindly. A more
+reasonable workflow is:
 
 1. **Hypothesise** a graph based on subject-matter knowledge
 2. **Discover** a data-driven graph using PC/FCI/RSL-D
@@ -258,20 +242,12 @@ applied-research workflow is:
 4. **Identify** under both graphs separately
 5. **Estimate** under both, and report the range as part of the result
 
-If the estimate is robust to the choice of graph, the conclusion is
-strong. If it flips sign depending on which graph you use, the data alone
-is not enough to answer the question.
+If the estimate changes a lot across plausible graphs, the data alone is not
+settling the question.
 
 ## Why this matters
 
-The "graph → identification → estimation" pipeline is what closes the loop
-between causal-discovery papers and applied empirical work. Discovery
-algorithms have made enormous progress, but they have historically stopped
-at the graph. `CausalGraphs.jl` is one of the few packages — and the only
-Julia package — that automates the identification routing and connects it
-to efficient estimators.
-
-This matters substantively because:
+The graph-identification-estimation sequence matters because:
 
 - **Backdoor adjustment is not always available.** Many real DAGs have
   hidden confounders. Front-door, nested, and general ID algorithms are
@@ -288,15 +264,10 @@ This matters substantively because:
 
 ## Summary
 
-- **Discovery returns a graph; estimation returns a number.** The bridge is
-  the **identification** step.
-- `CausalGraphs.jl` implements automatic identification routing for ADMGs.
-  Given a graph and a treatment/outcome pair, `identify()` returns the
-  strategy (`a_fixable`, `p_fixable`, `nested_fixable`, `id_algorithm`, or
-  `not_identified`).
-- `estimate_causal()` then runs the appropriate efficient estimator: TMLE
-  or AIPW for backdoor/front-door, ANIPW for nested-fixable functionals.
-- **End-to-end workflow**: hypothesise a graph, run discovery as a check,
-  identify, estimate, and report the range across plausible graphs. This
-  is the modern alternative to "assume unconfoundedness and regress".
-
+- A graph is not an estimate. Identification is the bridge.
+- `CausalGraphs.jl` routes ADMGs to backdoor, front-door, nested, or
+  non-identified cases.
+- `estimate_causal()` then runs the estimator that matches the
+  identification strategy.
+- In applied work, hypothesize a graph, use discovery as a check, identify,
+  estimate, and report sensitivity to plausible graph choices.

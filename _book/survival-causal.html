@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./mediation.html" rel="next">
 <link href="./g-methods.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -483,7 +483,7 @@ window.Quarto = {
 </header>
 
 
-<div id="1af63e7f" class="cell">
+<div id="2ab8c6fc" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -494,15 +494,15 @@ window.Quarto = {
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>When the outcome is <strong>time-to-event</strong> — death, hospital re-admission, employment termination, machine failure — standard causal inference methods need to be adapted. Some observations are <em>censored</em>: we know the event has not occurred by the end of follow-up, but not when it will. Regression on the event time would discard or mishandle censored observations and produce biased estimates.</p>
-<p>This chapter implements the workhorses of survival-causal inference in Julia: Kaplan-Meier estimation, inverse probability weighting for the adjusted survival curve, and the restricted mean survival time (RMST) contrast. For Cox proportional-hazards modelling, R’s <code>survival</code> package is more mature; for doubly-robust survival estimators, R’s <code>riskRegression::ate</code> is the workhorse. The <a href="https://xiangao.github.io/causal_econometrics_guide/survival-causal.html">companion R chapter</a> walks through these in detail.</p>
+<p>When the outcome is time-to-event, such as death, readmission, job exit, or machine failure, ordinary regression is not enough. Some observations are censored. We know the event had not happened by the end of follow-up, but we do not know the event time.</p>
+<p>This Julia chapter implements Kaplan-Meier curves, IPW-adjusted survival curves, and RMST differences. For Cox models and doubly robust survival estimators, R’s <code>survival</code> and <code>riskRegression</code> packages are still the more practical tools; see the <a href="https://xiangao.github.io/causal_econometrics_guide/survival-causal.html">R companion chapter</a>.</p>
 <section id="the-censoring-problem" class="level2" data-number="20.1">
 <h2 data-number="20.1" class="anchored" data-anchor-id="the-censoring-problem"><span class="header-section-number">20.1</span> The censoring problem</h2>
-<p>We observe <span class="math inline">\(\min(T_i, C_i)\)</span> and <span class="math inline">\(\delta_i = \mathbb{1}\{T_i \le C_i\}\)</span>, where <span class="math inline">\(T_i\)</span> is the event time and <span class="math inline">\(C_i\)</span> is the censoring time. The fundamental quantity of interest is the <strong>survival function</strong></p>
+<p>We observe <span class="math inline">\(\min(T_i, C_i)\)</span> and <span class="math inline">\(\delta_i = \mathbb{1}\{T_i \le C_i\}\)</span>, where <span class="math inline">\(T_i\)</span> is the event time and <span class="math inline">\(C_i\)</span> is the censoring time. The main quantity of interest is the survival function</p>
 <p><span class="math display">\[
 S(t) = P(T &gt; t)
 \]</span></p>
-<p>— the probability of surviving past time <span class="math inline">\(t\)</span>. Causal contrasts on survival outcomes are typically expressed as:</p>
+<p>the probability of surviving past time <span class="math inline">\(t\)</span>. Causal contrasts are usually reported as:</p>
 <ul>
 <li><strong>Hazard ratio (HR)</strong> — easy to estimate but hard to interpret causally (Hernán 2010).</li>
 <li><strong>Restricted mean survival difference (RMST)</strong> — <span class="math inline">\(\int_0^\tau [S_1(t) - S_0(t)] dt\)</span> — interpretable as “years gained” up to time <span class="math inline">\(\tau\)</span>.</li>
@@ -511,96 +511,113 @@ S(t) = P(T &gt; t)
 </section>
 <section id="simulated-survival-data" class="level2" data-number="20.2">
 <h2 data-number="20.2" class="anchored" data-anchor-id="simulated-survival-data"><span class="header-section-number">20.2</span> Simulated survival data</h2>
-<div id="dgp" class="cell" data-cache="true">
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/survival_sim.csv"</span>, DataFrame)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fu">nrow</span>(df)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, events = %d (%.1f%%), censored = %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        n, <span class="fu">Int</span>(<span class="fu">sum</span>(df.event)), <span class="fl">100</span> <span class="op">*</span> <span class="fu">mean</span>(df.event), <span class="fu">Int</span>(<span class="fu">sum</span>(<span class="fl">1</span> <span class="op">.-</span> df.event)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n = 1500, events = 1500 (100.0%), censored = 0</code></pre>
+</div>
 </div>
 </section>
 <section id="kaplan-meier-estimator" class="level2" data-number="20.3">
 <h2 data-number="20.3" class="anchored" data-anchor-id="kaplan-meier-estimator"><span class="header-section-number">20.3</span> Kaplan-Meier estimator</h2>
-<p>The Kaplan-Meier (KM) estimator computes <span class="math inline">\(\hat S(t)\)</span> nonparametrically. Implement it inline:</p>
-<div id="km" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">    kaplan_meier(time, event)</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute Kaplan-Meier survival estimates at the unique event times.</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">Returns (times, survival).</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">kaplan_meier</span>(time, event)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    df_sort <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">DataFrame</span>(t <span class="op">=</span> time, d <span class="op">=</span> event), <span class="op">:</span>t)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    event_times <span class="op">=</span> <span class="fu">unique</span>(df_sort.t[df_sort.d <span class="op">.==</span> <span class="fl">1</span>])</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    survival <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> event_times</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        n_at_risk <span class="op">=</span> <span class="fu">sum</span>(df_sort.t <span class="op">.&gt;=</span> t)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        n_events  <span class="op">=</span> <span class="fu">sum</span>((df_sort.t <span class="op">.==</span> t) <span class="op">.&amp;</span> (df_sort.d <span class="op">.==</span> <span class="fl">1</span>))</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        s <span class="op">*=</span> <span class="fl">1</span> <span class="op">-</span> n_events <span class="op">/</span> n_at_risk</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(survival, s)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> event_times, survival</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>t_trt, s_trt <span class="op">=</span> <span class="fu">kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">1</span>], df.event[df.trt <span class="op">.==</span> <span class="fl">1</span>])</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>t_ctl, s_ctl <span class="op">=</span> <span class="fu">kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">0</span>], df.event[df.trt <span class="op">.==</span> <span class="fl">0</span>])</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Time (years)"</span>, ylabel <span class="op">=</span> <span class="st">"S(t)"</span>,</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>          title <span class="op">=</span> <span class="st">"Unadjusted Kaplan-Meier survival curves"</span>)</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax, t_ctl, s_ctl, color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Control"</span>)</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax, t_trt, s_trt, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Treatment"</span>)</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Kaplan-Meier estimator computes <span class="math inline">\(\hat S(t)\)</span> nonparametrically. It is short enough to implement directly:</p>
+<div id="cell-km" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    kaplan_meier(time, event)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute Kaplan-Meier survival estimates at the unique event times.</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">Returns (times, survival).</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">kaplan_meier</span>(time, event)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    df_sort <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">DataFrame</span>(t <span class="op">=</span> time, d <span class="op">=</span> event), <span class="op">:</span>t)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    event_times <span class="op">=</span> <span class="fu">unique</span>(df_sort.t[df_sort.d <span class="op">.==</span> <span class="fl">1</span>])</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    survival <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> event_times</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        n_at_risk <span class="op">=</span> <span class="fu">sum</span>(df_sort.t <span class="op">.&gt;=</span> t)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        n_events  <span class="op">=</span> <span class="fu">sum</span>((df_sort.t <span class="op">.==</span> t) <span class="op">.&amp;</span> (df_sort.d <span class="op">.==</span> <span class="fl">1</span>))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        s <span class="op">*=</span> <span class="fl">1</span> <span class="op">-</span> n_events <span class="op">/</span> n_at_risk</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(survival, s)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> event_times, survival</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>t_trt, s_trt <span class="op">=</span> <span class="fu">kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">1</span>], df.event[df.trt <span class="op">.==</span> <span class="fl">1</span>])</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>t_ctl, s_ctl <span class="op">=</span> <span class="fu">kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">0</span>], df.event[df.trt <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Time (years)"</span>, ylabel <span class="op">=</span> <span class="st">"S(t)"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>          title <span class="op">=</span> <span class="st">"Unadjusted Kaplan-Meier survival curves"</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax, t_ctl, s_ctl, color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Control"</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax, t_trt, s_trt, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Treatment"</span>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div>
+<figure class="figure">
+<p><img src="survival-causal_files/figure-html/km-output-1.svg" id="km" class="img-fluid figure-img"></p>
+</figure>
 </div>
-<p>The unadjusted KM curves show the <em>crude</em> survival gap — it includes both the causal effect and any baseline imbalance.</p>
+</div>
+</div>
+<p>The unadjusted KM curves are descriptive. They include both the treatment effect and baseline imbalance.</p>
 </section>
 <section id="ipw-adjusted-survival" class="level2" data-number="20.4">
 <h2 data-number="20.4" class="anchored" data-anchor-id="ipw-adjusted-survival"><span class="header-section-number">20.4</span> IPW-adjusted survival</h2>
-<p>To account for confounding, weight observations by the inverse propensity score before computing KM:</p>
-<div id="ipw-survival" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(trt <span class="op">~</span> age <span class="op">+</span> sex), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>df.ipw <span class="op">=</span> <span class="fu">ifelse</span>.(df.trt <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>df.ipw <span class="op">.=</span> <span class="fu">min</span>.(df.ipw, <span class="fu">quantile</span>(df.ipw, <span class="fl">0.99</span>))</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">    weighted_kaplan_meier(time, event, weights)</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">KM estimate with sample weights — used for IPW-adjusted survival.</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">weighted_kaplan_meier</span>(time, event, weights)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    df_sort <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">DataFrame</span>(t <span class="op">=</span> time, d <span class="op">=</span> event, w <span class="op">=</span> weights), <span class="op">:</span>t)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    event_times <span class="op">=</span> <span class="fu">unique</span>(df_sort.t[df_sort.d <span class="op">.==</span> <span class="fl">1</span>])</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    survival <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> event_times</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        w_at_risk <span class="op">=</span> <span class="fu">sum</span>(df_sort.w[df_sort.t <span class="op">.&gt;=</span> t])</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        w_events  <span class="op">=</span> <span class="fu">sum</span>(df_sort.w[(df_sort.t <span class="op">.==</span> t) <span class="op">.&amp;</span> (df_sort.d <span class="op">.==</span> <span class="fl">1</span>)])</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        s <span class="op">*=</span> <span class="fl">1</span> <span class="op">-</span> w_events <span class="op">/</span> w_at_risk</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(survival, s)</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> event_times, survival</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>t_trt_w, s_trt_w <span class="op">=</span> <span class="fu">weighted_kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">1</span>],</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                                          df.event[df.trt <span class="op">.==</span> <span class="fl">1</span>],</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>                                          df.ipw[df.trt <span class="op">.==</span> <span class="fl">1</span>])</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>t_ctl_w, s_ctl_w <span class="op">=</span> <span class="fu">weighted_kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">0</span>],</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>                                          df.event[df.trt <span class="op">.==</span> <span class="fl">0</span>],</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>                                          df.ipw[df.trt <span class="op">.==</span> <span class="fl">0</span>])</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>fig2 <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig2[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Time (years)"</span>, ylabel <span class="op">=</span> <span class="st">"S(t)"</span>,</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"IPW-adjusted Kaplan-Meier survival curves"</span>)</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax2, t_ctl_w, s_ctl_w, color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Control (IPW-adj)"</span>)</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax2, t_trt_w, s_trt_w, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Treatment (IPW-adj)"</span>)</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax2, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>fig2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To adjust for confounding, weight observations by the inverse propensity score before computing KM:</p>
+<div id="cell-ipw-survival" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(trt <span class="op">~</span> age <span class="op">+</span> sex), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>df.ipw <span class="op">=</span> <span class="fu">ifelse</span>.(df.trt <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>df.ipw <span class="op">.=</span> <span class="fu">min</span>.(df.ipw, <span class="fu">quantile</span>(df.ipw, <span class="fl">0.99</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">    weighted_kaplan_meier(time, event, weights)</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="st">KM estimate with sample weights — used for IPW-adjusted survival.</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">weighted_kaplan_meier</span>(time, event, weights)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    df_sort <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">DataFrame</span>(t <span class="op">=</span> time, d <span class="op">=</span> event, w <span class="op">=</span> weights), <span class="op">:</span>t)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    event_times <span class="op">=</span> <span class="fu">unique</span>(df_sort.t[df_sort.d <span class="op">.==</span> <span class="fl">1</span>])</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    survival <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> event_times</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        w_at_risk <span class="op">=</span> <span class="fu">sum</span>(df_sort.w[df_sort.t <span class="op">.&gt;=</span> t])</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        w_events  <span class="op">=</span> <span class="fu">sum</span>(df_sort.w[(df_sort.t <span class="op">.==</span> t) <span class="op">.&amp;</span> (df_sort.d <span class="op">.==</span> <span class="fl">1</span>)])</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        s <span class="op">*=</span> <span class="fl">1</span> <span class="op">-</span> w_events <span class="op">/</span> w_at_risk</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(survival, s)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> event_times, survival</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>t_trt_w, s_trt_w <span class="op">=</span> <span class="fu">weighted_kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">1</span>],</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>                                          df.event[df.trt <span class="op">.==</span> <span class="fl">1</span>],</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>                                          df.ipw[df.trt <span class="op">.==</span> <span class="fl">1</span>])</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>t_ctl_w, s_ctl_w <span class="op">=</span> <span class="fu">weighted_kaplan_meier</span>(df.time[df.trt <span class="op">.==</span> <span class="fl">0</span>],</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>                                          df.event[df.trt <span class="op">.==</span> <span class="fl">0</span>],</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>                                          df.ipw[df.trt <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>fig2 <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">700</span>, <span class="fl">400</span>))</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig2[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Time (years)"</span>, ylabel <span class="op">=</span> <span class="st">"S(t)"</span>,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"IPW-adjusted Kaplan-Meier survival curves"</span>)</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax2, t_ctl_w, s_ctl_w, color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Control (IPW-adj)"</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="fu">stairs!</span>(ax2, t_trt_w, s_trt_w, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="st">"Treatment (IPW-adj)"</span>)</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax2, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>fig2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div>
+<figure class="figure">
+<p><img src="survival-causal_files/figure-html/ipw-survival-output-1.svg" id="ipw-survival" class="img-fluid figure-img"></p>
+</figure>
 </div>
-<p>The IPW-adjusted curves show the survival gap that the <em>causal</em> effect would produce, removing age and sex imbalance.</p>
+</div>
+</div>
+<p>The IPW-adjusted curves remove the age and sex imbalance that is in the propensity score model.</p>
 </section>
 <section id="restricted-mean-survival-time" class="level2" data-number="20.5">
 <h2 data-number="20.5" class="anchored" data-anchor-id="restricted-mean-survival-time"><span class="header-section-number">20.5</span> Restricted Mean Survival Time</h2>
@@ -608,42 +625,48 @@ S(t) = P(T &gt; t)
 <p><span class="math display">\[
 \text{RMST}(\tau) = E[\min(T, \tau)] = \int_0^\tau S(t) \, dt.
 \]</span></p>
-<p>The contrast <span class="math inline">\(\Delta_{\text{RMST}}(\tau) = \text{RMST}_1(\tau) - \text{RMST}_0(\tau)\)</span> is interpretable as “years gained up to <span class="math inline">\(\tau\)</span>” — a clean causal contrast that does not require the proportional hazards assumption.</p>
+<p>The contrast <span class="math inline">\(\Delta_{\text{RMST}}(\tau)=\text{RMST}_1(\tau)-\text{RMST}_0(\tau)\)</span> is interpretable as years gained up to <span class="math inline">\(\tau\)</span>. It does not require proportional hazards.</p>
 <p>Compute it by trapezoidal integration of the KM curve:</p>
-<div id="rmst" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rmst</span>(times, survival, tau)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add time 0 and the truncation point, with appropriate S values</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    t_vec <span class="op">=</span> [<span class="fl">0.0</span>; times; tau]</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    s_vec <span class="op">=</span> [<span class="fl">1.0</span>; survival; survival[<span class="kw">end</span>]]</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Restrict to times ≤ tau</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> t_vec <span class="op">.&lt;=</span> tau</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    t_use <span class="op">=</span> t_vec[keep]</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    s_use <span class="op">=</span> s_vec[keep]</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the tau endpoint</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(t_use, tau)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(s_use, s_use[<span class="kw">end</span>])</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Trapezoidal area: width × left-height (since KM is step function)</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">diff</span>(t_use) <span class="op">.*</span> s_use[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>])</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>τ <span class="op">=</span> <span class="fl">5.0</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>rmst_trt_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_trt, s_trt, τ)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>rmst_ctl_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_ctl, s_ctl, τ)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>rmst_trt_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_trt_w, s_trt_w, τ)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>rmst_ctl_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_ctl_w, s_ctl_w, τ)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Unadjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        rmst_trt_unadj, rmst_ctl_unadj, rmst_trt_unadj <span class="op">-</span> rmst_ctl_unadj)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW-adjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj <span class="op">-</span> rmst_ctl_adj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="rmst" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rmst</span>(times, survival, tau)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add time 0 and the truncation point, with appropriate S values</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    t_vec <span class="op">=</span> [<span class="fl">0.0</span>; times; tau]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    s_vec <span class="op">=</span> [<span class="fl">1.0</span>; survival; survival[<span class="kw">end</span>]]</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Restrict to times ≤ tau</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> t_vec <span class="op">.&lt;=</span> tau</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    t_use <span class="op">=</span> t_vec[keep]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    s_use <span class="op">=</span> s_vec[keep]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the tau endpoint</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(t_use, tau)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(s_use, s_use[<span class="kw">end</span>])</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Trapezoidal area: width × left-height (since KM is step function)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">diff</span>(t_use) <span class="op">.*</span> s_use[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>])</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>τ <span class="op">=</span> <span class="fl">5.0</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>rmst_trt_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_trt, s_trt, τ)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>rmst_ctl_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_ctl, s_ctl, τ)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>rmst_trt_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_trt_w, s_trt_w, τ)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>rmst_ctl_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_ctl_w, s_ctl_w, τ)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Unadjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        rmst_trt_unadj, rmst_ctl_unadj, rmst_trt_unadj <span class="op">-</span> rmst_ctl_unadj)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW-adjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj <span class="op">-</span> rmst_ctl_adj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unadjusted RMST(τ=5):
+  Treatment: 0.289 years    Control: 0.260 years    Diff: 0.028
+IPW-adjusted RMST(τ=5):
+  Treatment: 0.310 years    Control: 0.253 years    Diff: 0.057</code></pre>
 </div>
-<p>The IPW-adjusted RMST difference is the causal “years gained up to 5 years” — directly interpretable for clinical or policy reporting.</p>
+</div>
+<p>The IPW-adjusted RMST difference is the adjusted years-gained estimate up to 5 years.</p>
 </section>
 <section id="cox-proportional-hazards-regression-adjustment" class="level2" data-number="20.6">
 <h2 data-number="20.6" class="anchored" data-anchor-id="cox-proportional-hazards-regression-adjustment"><span class="header-section-number">20.6</span> Cox proportional hazards (regression adjustment)</h2>
-<p>Fitting a Cox model in Julia requires <code>Survival.jl</code>, which has a more limited API than R’s <code>survival::coxph</code>. The standard approach in Julia for survival-regression is either to:</p>
+<p>Julia’s survival-regression tools are less mature than R’s <code>survival::coxph</code>. In Julia, the choices are:</p>
 <ul>
 <li>Use <code>Survival.jl</code> for basic Cox PH (limited adjustment capabilities).</li>
 <li>Use a parametric Weibull/exponential model via <code>Distributions</code> and <code>Optim</code> directly.</li>
@@ -653,8 +676,8 @@ S(t) = P(T &gt; t)
 </section>
 <section id="doubly-robust-survival-estimation" class="level2" data-number="20.7">
 <h2 data-number="20.7" class="anchored" data-anchor-id="doubly-robust-survival-estimation"><span class="header-section-number">20.7</span> Doubly-robust survival estimation</h2>
-<p>R’s <code>riskRegression::ate</code> provides a doubly-robust estimator that combines a Cox outcome model with a propensity score and a censoring model. The Julia ecosystem currently lacks an equivalent — implementing a doubly-robust survival estimator would be a substantial undertaking (requires careful handling of censoring weights at each event time).</p>
-<p>For now, the practical Julia workflow for survival-causal inference is:</p>
+<p>R’s <code>riskRegression::ate</code> combines a Cox outcome model with a propensity score and censoring model. Julia does not currently have an equivalent.</p>
+<p>For now, the practical Julia workflow is:</p>
 <ol type="1">
 <li><strong>Description</strong>: unadjusted KM curves (this chapter).</li>
 <li><strong>Adjusted survival</strong>: IPW-weighted KM (this chapter).</li>
@@ -664,7 +687,7 @@ S(t) = P(T &gt; t)
 </section>
 <section id="when-to-use-these-methods" class="level2" data-number="20.8">
 <h2 data-number="20.8" class="anchored" data-anchor-id="when-to-use-these-methods"><span class="header-section-number">20.8</span> When to use these methods</h2>
-<p>These methods are needed whenever:</p>
+<p>Use these methods when:</p>
 <ol type="1">
 <li>The outcome is time-to-event with censoring.</li>
 <li>The treatment effect on survival probabilities or years-of-life is the causal question.</li>
@@ -674,11 +697,11 @@ S(t) = P(T &gt; t)
 <section id="summary" class="level2" data-number="20.9">
 <h2 data-number="20.9" class="anchored" data-anchor-id="summary"><span class="header-section-number">20.9</span> Summary</h2>
 <ul>
-<li><strong>Survival outcomes</strong> require methods that handle censoring.</li>
-<li><strong>Kaplan-Meier</strong> estimates <span class="math inline">\(S(t)\)</span> nonparametrically; can be implemented inline in Julia in a few lines.</li>
-<li><strong>IPW-adjusted KM</strong>: weight observations by inverse propensity score before computing the survival curve.</li>
-<li><strong>RMST differences</strong> (years gained up to <span class="math inline">\(\tau\)</span>): interpretable causal contrasts that don’t require proportional hazards.</li>
-<li><strong>For Cox PH regression with adjustment and doubly-robust survival</strong>, use R’s mature <code>survival</code> + <code>riskRegression</code> ecosystem — see the <a href="https://xiangao.github.io/causal_econometrics_guide/survival-causal.html">companion R chapter</a>.</li>
+<li>Survival outcomes require methods that handle censoring.</li>
+<li>Kaplan-Meier estimates the survival curve nonparametrically.</li>
+<li>IPW-adjusted KM handles baseline confounding through weights.</li>
+<li>RMST differences are often the clearest causal summary.</li>
+<li>For Cox regression and doubly robust survival estimators, use R for now.</li>
 </ul>
 
 

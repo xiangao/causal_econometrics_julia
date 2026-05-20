@@ -22,12 +22,11 @@ using Printf
 using CairoMakie
 ```
 
-The previous chapters proceeded as if identification is binary: either a
-graph supports the effect or it doesn't. Applied work faces a more nuanced
-situation. We believe our identification strategy is *approximately*
-correct — there might be some residual confounding, but probably not much.
-The honest question is: **how much unmeasured confounding would be needed
-to overturn the conclusion?**
+The previous chapters often treat identification as yes or no. Applied work
+is usually less clean. We may believe the adjustment set is good, but still
+worry about some remaining confounding. Sensitivity analysis asks a practical
+question: how strong would unmeasured confounding have to be to change the
+conclusion?
 
 > **Related reading**: An extended R-based treatment of the
 > Cinelli-Hazlett robustness value with `sensemakr` and benchmark
@@ -35,12 +34,7 @@ to overturn the conclusion?**
 > [companion blog chapter on sensitivity analysis](https://xiangao.github.io/blog_book/sensitivity-analysis.html)
 > of *Topics on Econometrics and Causal Inference*.
 
-This is what sensitivity analysis answers. Rather than treating
-unconfoundedness as a binary assumption, it asks how strong the residual
-confounding would need to be — relative to observed covariates — to
-change the sign or significance of the estimate.
-
-We cover three complementary tools:
+Here I use three tools:
 
 1. **Cinelli-Hazlett (2020) omitted-variable bias bounds** — robustness
    values and benchmark comparisons for regression-based estimators.
@@ -49,13 +43,11 @@ We cover three complementary tools:
 3. **Rosenbaum bounds** — the critical odds ratio of hidden bias that
    would render a matched-sample test insignificant.
 
-No registered Julia package implements these directly, but all three have
-closed-form expressions that fit in a few lines of code.
+There is no standard Julia package for these, but the formulas are short.
 
 ## A simulated example
 
-We work with a simulation where the truth is known, so we can verify that
-the sensitivity-analysis output is informative:
+Use a simulation so the truth is known:
 
 ```{julia}
 #| label: dgp
@@ -79,16 +71,12 @@ df  = DataFrame(Y = Y, D = D, X1 = X1, X2 = X2, U = U)
         coef(lm(@formula(Y ~ D + X1 + X2 + U), df))[end])
 ```
 
-The adjusted regression overestimates the true effect because we cannot
-control for $U$. Sensitivity analysis quantifies how dramatic the bias
-could be without knowing $U$ directly.
+The adjusted regression is still biased because $U$ is unobserved.
 
 ## Cinelli-Hazlett robustness value
 
-Cinelli and Hazlett (2020) derive a single summary called the **robustness
-value (RV)**. It is the minimum partial $R^2$ that an unobserved
-confounder would need to have — both with the treatment and with the
-outcome — to bring the estimate to zero.
+The robustness value is the minimum partial $R^2$ an unobserved confounder
+would need with both treatment and outcome to bring the estimate to zero.
 
 The closed-form expression depends only on the t-statistic of the
 treatment coefficient and the regression's degrees of freedom:
@@ -133,14 +121,8 @@ rv5 = robustness_value(t_adj, df_resid; q=1.0 - 1.96/abs(t_adj))   # q to reach 
         rv5, 100rv5)
 ```
 
-The robustness value reports the minimum partial $R^2$ that a confounder
-would need to have with *both* treatment and outcome to drive the
-estimate to zero. If this number is large, the result is robust; if it
-is small, modest unmeasured confounding could overturn the conclusion.
-
-A useful interpretation: compare the RV to the partial $R^2$ values of
-the *observed* covariates. If the RV exceeds what any plausible observed
-covariate could achieve, the result is convincing.
+The useful interpretation is comparative: compare the RV to the partial
+$R^2$ values of observed covariates.
 
 ### Benchmarking against observed covariates
 
@@ -176,10 +158,8 @@ pR2_X1_D   = partial_r2(fit_D_full, fit_D_noX1)
         min(pR2_X1_Y, pR2_X1_D) > rv ? "YES — fragile result" : "NO — robust to this benchmark")
 ```
 
-The benchmark comparison turns an abstract robustness value into a
-substantive statement: "an unmeasured confounder as strong as $X_1$
-would (not) overturn the result." This is the *applied* statement that
-appears in real papers.
+The benchmark comparison turns the RV into a sentence: an unmeasured
+confounder as strong as $X_1$ would or would not overturn the result.
 
 ### A sensitivity contour plot
 
@@ -217,10 +197,9 @@ axislegend(ax, position = :rb, framevisible = false)
 fig
 ```
 
-A confounder that lies above-and-to-the-right of the contour labelled
-"0" would reduce the estimate to zero. The $X_1$ benchmark dot shows how
-strong the observed covariates are by comparison. The result is robust
-to confounders weaker than the dot; fragile to confounders stronger.
+A confounder above and to the right of the zero contour would reduce the
+estimate to zero. The benchmark dot shows the strength of an observed
+covariate for comparison.
 
 ## E-values
 
@@ -272,15 +251,9 @@ ev = evalue(1.40; lo = 1.20, hi = 1.62)
 @printf("E-value (CI):    %.2f\n", ev.e_ci)
 ```
 
-The interpretation: a confounder would need to be associated with
-**both** the treatment and the outcome by risk ratios of at least 2.18
-(above and beyond the measured confounders) to fully explain away the
-observed RR of 1.40. Rule of thumb: E-values $\geq 2$ are moderate
-evidence of robustness; values $\geq 4$ are strong.
-
-The E-value is widely adopted in epidemiology because its interpretation
-is *model-free*: it doesn't require specifying a parametric form for
-the unobserved confounder; it is a purely scale-based statement.
+The interpretation is on the risk-ratio scale: a hidden confounder would
+need associations of this size with both treatment and outcome to explain
+away the result.
 
 ## Rosenbaum bounds for matched studies
 
@@ -339,15 +312,13 @@ for (g, p) in zip(gammas[1:end-1], pvals[1:end-1])
 end
 ```
 
-If the critical $\Gamma$ exceeds 2, the result is robust to moderate
-hidden bias; if it is close to 1, even small unmeasured confounding
-could overturn the test result.
+If the critical $\Gamma$ is close to 1, small hidden bias could overturn the
+matched-pair result.
 
 ## Reporting practice
 
-Every observational causal estimate should be accompanied by *some*
-sensitivity analysis. A point estimate without one is a claim of
-certainty that the data cannot support. The minimum reasonable report:
+Most observational causal estimates should have some sensitivity analysis.
+A minimum report is:
 
 | Estimator family | What to report |
 |---|---|
@@ -355,26 +326,14 @@ certainty that the data cannot support. The minimum reasonable report:
 | Risk-ratio analysis | E-value (point + CI) |
 | Matched / pair-based test | Critical $\Gamma$ from Rosenbaum bounds |
 
-Most modern applied papers include at least one of these. When
-sensitivity analysis reveals fragility, the next steps are usually
-either (a) finding additional measured covariates to control for, or
-(b) reporting partial-identification bounds (Manski 1990, Lee 2009)
-as the honest range of effects consistent with the data.
+When the result is fragile, the next step is either to improve measurement
+and adjustment or to report partial-identification bounds.
 
 ## Summary
 
-- **Sensitivity analysis** quantifies how strong unobserved confounding
-  would need to be to overturn a result. It does not eliminate
-  unconfoundedness as an assumption — it quantifies how much we are
-  betting on it.
-- **Robustness value (RV)** (Cinelli-Hazlett 2020): closed-form
-  expression in t-stat and df; benchmark against observed covariates'
-  partial $R^2$.
-- **E-value** (VanderWeele-Ding 2017): closed-form scale-based statistic
-  for risk ratios; widely adopted in epidemiology.
-- **Rosenbaum bounds** (Rosenbaum 2002): hidden-bias parameter $\Gamma$
-  for matched studies; the critical $\Gamma$ is the threshold for
-  insignificance.
-- **All three have closed-form implementations** that fit in a few lines
-  of Julia code — no specialised package is required.
-
+- Sensitivity analysis asks how strong hidden confounding must be to change
+  the result.
+- Robustness values are useful for regression estimates.
+- E-values are useful for risk ratios.
+- Rosenbaum bounds are useful for matched pairs.
+- The basic formulas are easy to implement directly in Julia.

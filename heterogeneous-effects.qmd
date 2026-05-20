@@ -35,28 +35,23 @@ $$
 \text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
 $$
 
-as the effect of treatment for individuals with covariates $X = x$. There,
-we computed CATE from known potential outcomes — a luxury only simulation
-affords. In real data, $Y(0)$ and $Y(1)$ are never both observed, and CATE
-must be *estimated* from $(X, D, Y)$ without strong functional-form
-assumptions.
+as the effect of treatment for units with covariates $X=x$. In simulation
+we can compute CATE from known potential outcomes. In real data we observe
+only one potential outcome per unit, so CATE has to be estimated from
+$(X,D,Y)$.
 
-This chapter covers the **meta-learner** recipe: any flexible regression
-algorithm can be turned into a CATE estimator. We implement the five most
-common meta-learners — S-, T-, X-, R-, and DR-learners — using `MLJ` +
-`DecisionTree.jl`'s random forests as the base learner.
+Here I focus on meta-learners: recipes that turn a regression method
+into a CATE estimator. I implement S-, T-, X-, R-, and DR-learners using
+`MLJ` and `DecisionTree.jl` random forests.
 
-The chapter focuses on meta-learners rather than honest causal forests
-(Wager-Athey 2018) because Julia does not currently have a native
-implementation of honest sample-splitting trees. A T-learner with random
-forests provides a reasonable approximation; for production work with
-formal confidence intervals on CATE predictions, the R companion chapter
-covers `grf::causal_forest`.
+Julia does not currently have an equivalent of R's
+`grf::causal_forest` with honest sample splitting and CATE confidence
+intervals. For that workflow, use the R companion chapter.
 
 ## The data-generating process
 
-Reuse the DGP from the estimands chapter, where the true CATE is
-$\tau(x) = 1 + 2 x_1$:
+I reuse the DGP from the estimands chapter. The true CATE is
+$\tau(x)=1+2x_1$.
 
 ```{julia}
 #| label: dgp
@@ -81,13 +76,13 @@ Y    = ifelse.(D .== 1, Y1, Y0)
 @printf("True CATE at X1 = 0.8: %.2f\n", 1 + 2 * 0.8)
 ```
 
-The treatment is confounded through $X_2$ and the unobserved $U$. We
-condition on $X_2$ to restore identification; we cannot condition on $U$.
+Treatment is related to $X_2$ and the unobserved $U$. We condition on
+$X_2$, but not on $U$ because it is unobserved.
 
 ## A wrapper for fitting random forests
 
-To keep the code compact, define a small helper that fits a random forest
-and returns the predictions:
+To keep the code short, define a helper that fits a random forest and
+returns predictions.
 
 ```{julia}
 #| label: helper
@@ -130,9 +125,8 @@ tau_S = mu1_S .- mu0_S
 @printf("S-learner CATE correlation with truth: %.3f\n", cor(tau_S, tau))
 ```
 
-The S-learner is simple but biased toward zero when the treatment effect
-is small relative to outcome variation, because the regression "ignores"
-the $D$ variable if it has little predictive value.
+The S-learner is simple. Its weakness is that the model may treat $D$ as a
+minor predictor and shrink treatment effects toward zero.
 
 ## T-learner ("two")
 
@@ -152,15 +146,15 @@ tau_T = mu1_T .- mu0_T
 @printf("T-learner CATE correlation with truth: %.3f\n", cor(tau_T, tau))
 ```
 
-The T-learner avoids the bias-toward-zero of the S-learner but suffers
-when the treated and control distributions diverge: extrapolation errors
-compound when subtracting the two fitted functions.
+The T-learner gives treatment and control separate outcome models. It can
+work well, but it can extrapolate badly when treated and control covariate
+distributions do not overlap.
 
 ## X-learner (Künzel et al. 2019)
 
-The X-learner imputes the missing potential outcomes using the T-learner
-fits, then regresses the resulting pseudo-outcomes on $X$ separately
-within each arm, and combines them with weights from the propensity score:
+The X-learner starts from the T-learner. It imputes missing potential
+outcomes, creates pseudo-treatment effects, smooths them over $X$, and then
+combines the two arms with propensity-score weights.
 
 ```{julia}
 #| label: x-learner
@@ -182,14 +176,12 @@ tau_X = e_hat .* tau_X0 .+ (1 .- e_hat) .* tau_X1
 @printf("X-learner CATE correlation with truth: %.3f\n", cor(tau_X, tau))
 ```
 
-The X-learner is particularly effective when the propensity score is far
-from 0.5 (so one treatment arm is much smaller than the other) — common
-in observational studies.
+The X-learner is useful when one treatment arm is much smaller than the
+other.
 
 ## R-learner (Nie & Wager 2021)
 
-The R-learner uses Robinson's (1988) partialled-out residual approach.
-Define pseudo-outcomes that, in expectation, equal $\tau(X)$:
+The R-learner partials out the main effects of $X$ from both $Y$ and $D$:
 
 $$
 \tilde Y_i = \frac{Y_i - \hat m(X_i)}{D_i - \hat e(X_i)}, \qquad
@@ -229,13 +221,13 @@ tau_R = rf_fit_predict(X, pseudo_R, X)
 @printf("R-learner CATE correlation with truth: %.3f\n", cor(tau_R, tau))
 ```
 
-The R-learner is doubly robust in a Neyman-orthogonality sense and tends
-to be the most efficient meta-learner in moderately well-overlapping data.
+The R-learner is often stable when overlap is reasonable because nuisance
+model errors have only second-order effects on the target.
 
 ## DR-learner (Kennedy 2020)
 
-The DR-learner constructs AIPW-based pseudo-outcomes and regresses them
-on $X$:
+The DR-learner uses an AIPW-style pseudo-outcome and then regresses it on
+$X$:
 
 $$
 \tilde Y_i^{DR} = \hat\mu_1(X_i) - \hat\mu_0(X_i) +
@@ -295,10 +287,9 @@ fig
 
 ## Best Linear Projection (BLP)
 
-Even when CATE is high-dimensional, we often want a simple summary: how
-does the treatment effect change with each covariate? The **best linear
-projection** of CATE onto $X$ is the OLS regression of the pseudo-outcomes
-on the covariates:
+Even if CATE is nonlinear, we often want a regression-style summary: which
+covariates are associated with larger effects? The best linear projection is
+the OLS regression of pseudo-outcomes on covariates:
 
 $$
 \text{BLP}(X) = \arg\min_{\beta} \mathbb{E}\left[(\tau(X) - X'\beta)^2\right].
@@ -316,18 +307,13 @@ blp_fit = lm(@formula(tau_pseudo ~ X1 + X2 + X3 + X4 + X5), blp_df)
 println(coeftable(blp_fit))
 ```
 
-The BLP coefficient on $X_1$ should be close to 2 (the true slope of the
-CATE) and statistically significant; the coefficients on $X_2$ through
-$X_5$ should be close to 0. This is a clean test for heterogeneity along
-specific covariates.
+Here the coefficient on $X_1$ should be close to 2, and the coefficients on
+the other variables should be close to 0.
 
 ## CLAN: testing for heterogeneity
 
-A formal test of heterogeneity is the **CLAN** (Classification Analysis)
-proposed by Chernozhukov-Demirer-Duflo-Fernandez-Val (2018). Bin the
-population by predicted CATE, then estimate the average treatment effect
-in each bin. If the bin-specific ATEs are statistically different, there
-is heterogeneity.
+CLAN is a simple way to report heterogeneity. Sort observations by predicted
+CATE, split them into bins, and estimate the ATE in each bin.
 
 ```{julia}
 #| label: clan
@@ -359,14 +345,12 @@ for row in eachrow(clan_df)
 end
 ```
 
-Quintile 5 should give a significantly larger ATE than quintile 1 — a
-formal test for whether the heterogeneity is real (rather than estimation
-noise).
+Quintile 5 should have a larger ATE than quintile 1 in this simulation.
 
 ## Variable importance — which covariate drives heterogeneity?
 
-A natural diagnostic: regress the DR pseudo-outcomes on each covariate
-*separately* and look at the partial $R^2$:
+A simple diagnostic is to regress the DR pseudo-outcome on each covariate
+separately and compare $R^2$.
 
 ```{julia}
 #| label: var-importance
@@ -384,22 +368,19 @@ sort!(vi_df, :R2, rev = true)
 println(vi_df)
 ```
 
-$X_1$ should top the list. In real applications, this is a useful guide
-to which covariates carry heterogeneity.
+$X_1$ should be the most important variable in this simulation.
 
 ## Policy learning: who should we treat?
 
-A CATE estimate tells us the effect of treating each individual. But the
-**policy question** is often different: given a cost-benefit trade-off,
-*which* individuals should we treat? Define a treatment cost $c$ in
-outcome units; the optimal individualised policy is
+A CATE estimate is not yet a policy. If treatment has a cost, the policy
+question is who should be treated. Define a treatment cost $c$ in outcome
+units:
 
 $$
 \pi^*(x) = \mathbb{1}\{\tau(x) > c\}.
 $$
 
-For interpretability, restrict to a shallow decision rule. A simple
-approach: pick a single covariate threshold that maximises welfare.
+For interpretability, we can restrict the policy to a single threshold rule.
 
 ```{julia}
 #| label: policy
@@ -431,11 +412,9 @@ best_t   = threshes[argmax(welfares)]
         best_t, maximum(welfares))
 ```
 
-The optimal policy treats only individuals whose estimated CATE exceeds
-the cost. The interpretable threshold rule on $X_1$ alone is a
-reasonable compromise between welfare and explainability.
+The threshold rule gives up flexibility, but it is easy to explain.
 
-For a richer treatment of policy trees with IPW and AIPW losses (using
+For more on policy trees with IPW and AIPW losses (using
 R's `policytree` package), see the
 [companion blog chapter on `policytree`](https://xiangao.github.io/blog_book/policytree.html).
 For a cross-software comparison of CATE estimators (including Stata 19's
@@ -444,11 +423,9 @@ new `cate` command), see the
 
 ## Causal forests with panel data
 
-When the data are a panel — repeated observations on the same units —
-and the unobserved unit effects are correlated with treatment or
-covariates, the cross-sectional CATE methods above can be biased. The
-classical fix is the **within-transform**: demean each variable by its
-unit-level mean before applying the meta-learner.
+With panel data, unit effects can be correlated with treatment and
+covariates. A cross-sectional meta-learner can then be biased. The fixed
+effect adjustment is to demean by unit before applying the learner.
 
 ```{julia}
 #| label: panel-dgp
@@ -472,7 +449,7 @@ df_panel = DataFrame(firm = firm_id, V1 = V1_panel, W = W_panel, Y = Y_panel)
 @printf("True panel ATE: %.3f\n", mean(tau_panel))
 ```
 
-A naive T-learner on the panel ignores the firm fixed effects:
+A naive T-learner ignores the firm fixed effects:
 
 ```{julia}
 #| label: panel-naive
@@ -492,8 +469,8 @@ tau_naive = mu1_naive .- mu0_naive
         mean(tau_naive), mean(tau_panel))
 ```
 
-The within-transform removes unit-level variation, leaving only the
-panel's within-firm signal for CATE estimation:
+The within transformation removes firm-level variation and leaves the
+within-firm variation:
 
 ```{julia}
 #| label: panel-within
@@ -517,33 +494,22 @@ tau_dm = mu1_dm .- mu0_dm
         mean(tau_dm), mean(tau_panel))
 ```
 
-The within-transform recovers the panel ATE because firm fixed effects
-are differenced out. The cost is variance: each unit contributes only
-its *within-firm* variation, so effective sample size shrinks.
+The within transformation removes the fixed effects. The cost is variance,
+because identification now comes from within-firm variation.
 
-For R's `grf::causal_forest`, the cleaner approach is passing
-`clusters = firm_id` so the forest's honest sample-splitting keeps each
-firm's observations in the same training fold. The Julia ecosystem
-currently lacks a native equivalent — see the
+For R's `grf::causal_forest`, pass `clusters = firm_id` so the honest sample
+split keeps each firm's observations together. Julia does not currently have
+an equivalent; see the
 [companion blog chapter on causal forests in panel data](https://xiangao.github.io/blog_book/causal-forest-panel.html)
 and the [R companion to this chapter](https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html)
 for the GRF-based workflow.
 
 ## Summary
 
-- **Meta-learners** (S, T, X, R, DR) turn any regression algorithm into a
-  CATE estimator. R-learner and DR-learner exploit Neyman orthogonality
-  and cross-fitting for valid inference; X-learner helps with imbalanced
-  treatment arms.
-- All five fit on top of `MLJ` + random forests in Julia using ~10–30
-  lines each.
-- **Best Linear Projection (BLP)** gives a simple regression-style summary
-  of CATE — coefficients on how the effect varies with each covariate.
-- **CLAN** (quintile-binned ATEs) provides a formal test for heterogeneity.
-- **Policy learning** translates a CATE into a treatment-assignment rule;
-  even a simple threshold rule on the most-heterogeneous covariate often
-  achieves most of the welfare gain.
-- For applied work: estimate CATE with at least two methods, report BLP
-  coefficients and quintile-binned ATEs, and use an interpretable rule
-  when treatment-assignment recommendations are needed.
-
+- Meta-learners turn regression tools into CATE estimators.
+- In Julia they can be built with `MLJ` random forests, but there is no full
+  `grf` equivalent yet.
+- BLP and CLAN summarize heterogeneity in regression-style output.
+- Policy learning turns CATE estimates into treatment rules.
+- In applied work, compare at least two CATE estimators and report simple
+  heterogeneity summaries, not only a CATE scatterplot.

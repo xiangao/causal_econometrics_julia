@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./graph-to-estimate.html" rel="next">
 <link href="./causal-discovery.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -493,7 +493,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2df1d934" class="cell" data-execution_count="2">
+<div id="ac970de6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -507,12 +507,12 @@ window.Quarto = {
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Combinatorics</span>: powerset</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>: Normal, quantile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>In the previous chapter we assumed all causally relevant variables were observed. This assumption — called <strong>causal sufficiency</strong> — rarely holds in economics: unobserved ability confounds wage regressions, unobserved demand shocks confound price–quantity relationships, unobserved peer effects confound social network studies.</p>
-<p>When latent confounders exist, constraint-based discovery algorithms like PC and RSL-D return incorrect results. This chapter introduces two algorithms that handle the latent variable case.</p>
+<p>The previous chapter assumed all causally relevant variables were observed. That is a strong assumption. In economics, ability, demand shocks, and peer effects are often unobserved.</p>
+<p>When latent confounders exist, PC and RSL-D can give the wrong graph. Here I use algorithms designed for latent variables.</p>
 <section id="why-pc-fails-with-latent-variables" class="level3" data-number="23.0.1">
 <h3 data-number="23.0.1" class="anchored" data-anchor-id="why-pc-fails-with-latent-variables"><span class="header-section-number">23.0.1</span> Why PC fails with latent variables</h3>
 <p>Suppose the true graph is <span class="math inline">\(X \leftarrow U \rightarrow Y\)</span> where <span class="math inline">\(U\)</span> is unobserved. In the observed data, <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are marginally correlated (through <span class="math inline">\(U\)</span>) and no observed conditioning set separates them. PC will incorrectly draw an edge <span class="math inline">\(X - Y\)</span> and may orient it as <span class="math inline">\(X \to Y\)</span> or <span class="math inline">\(X \leftarrow Y\)</span>, neither of which exists in the truth.</p>
-<p>More subtly, conditioning on a collider that is a descendant of <span class="math inline">\(U\)</span> can <em>open</em> a path between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>, further distorting the CI structure that PC observes. With even a single hidden common cause, the d-separation statements in the observed data no longer correspond to those of any DAG over just the observed variables — they require the richer MAG representation.</p>
+<p>With even one hidden common cause, the conditional independences among observed variables may not correspond to any DAG on the observed variables alone. We need a MAG/PAG representation.</p>
 </section>
 <section id="maximal-ancestral-graphs-and-pags" class="level2" data-number="23.1">
 <h2 data-number="23.1" class="anchored" data-anchor-id="maximal-ancestral-graphs-and-pags"><span class="header-section-number">23.1</span> Maximal Ancestral Graphs and PAGs</h2>
@@ -522,7 +522,7 @@ window.Quarto = {
 <li><span class="math inline">\(X \leftrightarrow Y\)</span>: <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> have a common hidden ancestor (hidden confounder)</li>
 <li>No edge: <span class="math inline">\(X \perp\!\!\!\perp Y \mid Z\)</span> for some <span class="math inline">\(Z \subseteq \mathbf{O} \setminus \{X, Y\}\)</span></li>
 </ul>
-<p>The MAG over observed variables is the “shadow” of the full DAG: it summarizes all causal and confounding relationships that are visible in the observed data, without requiring us to know or name the latent variables.</p>
+<p>The MAG over observed variables summarizes the causal and confounding relationships visible in the observed data without naming the latent variables.</p>
 <p>Just as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have equivalence classes represented by <strong>Partial Ancestral Graphs (PAGs)</strong>. In a PAG, the mark <span class="math inline">\(\circ\)</span> on an edge endpoint means “could be arrowhead or tail in some member of the equivalence class.”</p>
 <table class="caption-top table">
 <colgroup>
@@ -570,7 +570,7 @@ window.Quarto = {
 <section id="simulation-with-hidden-variables" class="level2" data-number="23.2">
 <h2 data-number="23.2" class="anchored" data-anchor-id="simulation-with-hidden-variables"><span class="header-section-number">23.2</span> Simulation with Hidden Variables</h2>
 <p>We reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.</p>
-<div id="78a42747" class="cell" data-execution_count="3">
+<div id="cbf19129" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -594,7 +594,7 @@ window.Quarto = {
 <section id="true-structure-over-observed-variables" class="level3" data-number="23.2.1">
 <h3 data-number="23.2.1" class="anchored" data-anchor-id="true-structure-over-observed-variables"><span class="header-section-number">23.2.1</span> True structure over observed variables</h3>
 <p>Two observed variables are adjacent in the MAG iff no subset of the <em>observed</em> variables d-separates them in the full DAG.</p>
-<div id="4a84a7de" class="cell" data-execution_count="4">
+<div id="d57db40b" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>true_dag <span class="op">=</span> <span class="fu">SimpleDiGraph</span>(adj_mat)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">true_mag_skeleton</span>(dag, observed)</span>
@@ -809,7 +809,7 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 </section>
 <section id="fci-algorithm" class="level2" data-number="23.3">
 <h2 data-number="23.3" class="anchored" data-anchor-id="fci-algorithm"><span class="header-section-number">23.3</span> FCI Algorithm</h2>
-<p>The <strong>FCI algorithm</strong> (Fast Causal Inference; Spirtes, Meek &amp; Richardson, 1995) is the standard extension of PC to the latent variable case. Like PC, it starts from a complete graph and removes edges via CI tests. After skeleton discovery, it applies a richer set of orientation rules that can produce bidirected edges <span class="math inline">\(X \leftrightarrow Y\)</span> indicating hidden common causes.</p>
+<p>FCI is the extension of PC for latent variables. It starts from a complete graph, removes edges with CI tests, and then uses orientation rules that can produce bidirected edges for hidden common causes.</p>
 <p><strong>How FCI extends PC:</strong></p>
 <ol type="1">
 <li><strong>Phase 1 (skeleton):</strong> Same as PC — remove edges via CI tests with growing conditioning sets.</li>
@@ -817,8 +817,8 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 <li><strong>Phase 3 (collider detection):</strong> For each unshielded triple <span class="math inline">\(X \circ\!-\!\circ Z \circ\!-\!\circ Y\)</span> where <span class="math inline">\(X, Y\)</span> non-adjacent: orient as <span class="math inline">\(X \circ\!\to Z \leftarrow\!\circ Y\)</span> if <span class="math inline">\(Z\)</span> is not in the separating set of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
 <li><strong>Phase 4 (rule propagation):</strong> Apply 10 orientation rules that propagate known marks without creating contradictions, including rules that can produce definite <span class="math inline">\(\to\)</span> and <span class="math inline">\(\leftrightarrow\)</span> edges.</li>
 </ol>
-<p>The richer mark set (<span class="math inline">\(\to\)</span>, <span class="math inline">\(\leftarrow\)</span>, <span class="math inline">\(\circ\)</span>, <span class="math inline">\(\leftrightarrow\)</span>) allows FCI to express what is known vs.&nbsp;unknown — at the cost of more complex output to interpret.</p>
-<div id="a414efa5" class="cell" data-execution_count="6">
+<p>The extra marks let FCI say what is known and what remains uncertain, but the output is harder to read than a DAG.</p>
+<div id="01719f43" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>count_fci <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
@@ -877,7 +877,7 @@ Note
 <p><strong>L-MARVEL</strong> (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of exhaustive CI-test-based Markov boundary discovery, L-MARVEL uses a <strong>Gaussian precision matrix</strong> estimator:</p>
 <p><span class="math display">\[\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} &gt; \tau\right\}\]</span></p>
 <p>where <span class="math inline">\(\hat P = \hat\Sigma^{-1}\)</span> is the precision matrix and <span class="math inline">\(\tau\)</span> is a threshold from the Fisher-Z distribution.</p>
-<p><strong>Why the precision matrix?</strong> In a Gaussian linear model, the <span class="math inline">\((i,j)\)</span> entry of the precision matrix <span class="math inline">\(P = \Sigma^{-1}\)</span> is zero if and only if <span class="math inline">\(X_i \perp\!\!\!\perp X_j \mid \text{all other variables}\)</span>. The partial correlation <span class="math inline">\(P_{ij}/\sqrt{P_{ii}P_{jj}}\)</span> is therefore a one-shot test for Markov boundary membership, replacing the many conditioning-set CI tests that PC or FCI require to find the same information. This is the key computational saving.</p>
+<p>In a Gaussian linear model, a zero in the precision matrix means conditional independence given all other variables. L-MARVEL uses this fact to estimate Markov boundaries with fewer CI tests.</p>
 <p>The removability criterion changes for the latent case (Theorem 32). Recall: <span class="math inline">\(\text{Mb}(X)\)</span> is the Markov boundary of <span class="math inline">\(X\)</span> — the minimal conditioning set that screens <span class="math inline">\(X\)</span> off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and <span class="math inline">\(\text{Ne}(X)\)</span> is the set of variables directly adjacent to <span class="math inline">\(X\)</span> in the current skeleton. Variable <span class="math inline">\(X\)</span> is removable iff for every <span class="math inline">\(Y \in \text{Mb}(X)\)</span> and <span class="math inline">\(Z \in \text{Ne}(X)\)</span>:</p>
 <p><span class="math display">\[\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\!\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}\]</span></p>
 <p><strong>Intuition for the two conditions:</strong></p>
@@ -886,7 +886,7 @@ Note
 <li><strong>Condition 2</strong> is new and handles latent variables: if <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> are connected through a hidden common cause, conditioning on <em>any</em> subset of Mb<span class="math inline">\((X)\)</span> won’t separate them — but conditioning on <span class="math inline">\(X\)</span> itself would (because <span class="math inline">\(X\)</span> may block the latent path). Condition 2 catches this case.</li>
 </ul>
 <p>Together, the two conditions ensure that removing <span class="math inline">\(X\)</span> does not destroy information about the latent structure connecting its neighbours.</p>
-<div id="14b7dcc0" class="cell" data-execution_count="8">
+<div id="ca29c5c1" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>count_lm <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ci_lm <span class="op">=</span> (x, y, S, d) <span class="op">-&gt;</span> <span class="cf">begin</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    count_lm[] <span class="op">+=</span> <span class="fl">1</span></span>
@@ -1202,7 +1202,7 @@ Figure&nbsp;23.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 </section>
 <section id="monte-carlo-evaluation" class="level2" data-number="23.6">
 <h2 data-number="23.6" class="anchored" data-anchor-id="monte-carlo-evaluation"><span class="header-section-number">23.6</span> Monte Carlo Evaluation</h2>
-<div id="51ba6331" class="cell" data-cache="true" data-execution_count="11">
+<div id="5f34ff54" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_latent</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, n_latent<span class="op">=</span><span class="fl">2</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    adj       <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1255,19 +1255,11 @@ L-MARVEL         0.934      80.9</code></pre>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">axislegend</span>(ax)</span>
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    fig</span>
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-yellow-fg ansi-bold">┌ </span><span class="ansi-yellow-fg ansi-bold">Warning: </span>Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
-
-<span class="ansi-yellow-fg ansi-bold">└ </span><span class="ansi-bright-black-fg">@ Makie ~/.julia/packages/Makie/UjJJY/src/scenes.jl:238</span>
-</pre>
-</div>
-</div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <div id="fig-latent-mc" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-latent-mc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="causal-discovery-latent_files/figure-html/fig-latent-mc-output-2.svg" class="img-fluid figure-img">
+<img src="causal-discovery-latent_files/figure-html/fig-latent-mc-output-1.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-latent-mc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;23.4: CI test count distributions across 100 replications.
@@ -1327,7 +1319,7 @@ Figure&nbsp;23.4: CI test count distributions across 100 replications.
 </tr>
 </tbody>
 </table>
-<p>FCI and L-MARVEL address complementary needs. If you need to orient edges, use FCI. If you only need the skeleton and efficiency matters, L-MARVEL’s precision-matrix Markov boundary estimator reduces the CI test burden.</p>
+<p>FCI and L-MARVEL serve different purposes. Use FCI when orientations matter. Use L-MARVEL when the goal is a faster skeleton screen.</p>
 <section id="practical-decision-guide" class="level3" data-number="23.7.1">
 <h3 data-number="23.7.1" class="anchored" data-anchor-id="practical-decision-guide"><span class="header-section-number">23.7.1</span> Practical decision guide</h3>
 <p><strong>Use PC or RSL-D when:</strong> - You are confident in causal sufficiency (all relevant variables are measured) - You want a CPDAG that you can orient further with background knowledge - RSL-D is preferred over PC when <span class="math inline">\(p &gt; 10\)</span> or the graph may be moderately dense</p>
@@ -1336,14 +1328,14 @@ Figure&nbsp;23.4: CI test count distributions across 100 replications.
 </section>
 <section id="from-discovery-to-estimation" class="level3" data-number="23.7.2">
 <h3 data-number="23.7.2" class="anchored" data-anchor-id="from-discovery-to-estimation"><span class="header-section-number">23.7.2</span> From discovery to estimation</h3>
-<p>Causal discovery is a first step, not a final answer. The typical research workflow is:</p>
+<p>Causal discovery is a first step, not a final answer. A reasonable workflow is:</p>
 <ol type="1">
 <li><strong>Discover</strong> — run FCI or L-MARVEL to get candidate adjacencies and, if using FCI, some edge marks</li>
 <li><strong>Refine</strong> — apply temporal ordering, institutional knowledge, and exclusion restrictions to orient remaining edges</li>
 <li><strong>Identify</strong> — check whether the effect of interest is identified given the refined graph (backdoor, front-door, ID algorithm)</li>
 <li><strong>Estimate</strong> — use TMLE, AIPW, or the estimators in earlier chapters</li>
 </ol>
-<p>Causal discovery narrows the space of possible structures; domain knowledge finishes the job.</p>
+<p>Causal discovery narrows the space of possible structures. Domain knowledge still does the hard work.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1376,7 +1368,7 @@ Note
 </section>
 <section id="how-much-does-causal-discovery-help-in-economics" class="level2" data-number="23.8">
 <h2 data-number="23.8" class="anchored" data-anchor-id="how-much-does-causal-discovery-help-in-economics"><span class="header-section-number">23.8</span> How Much Does Causal Discovery Help in Economics?</h2>
-<p>An honest assessment: recovering even the true MAG skeleton is far from recovering the full DAG. Several layers of information remain missing:</p>
+<p>Recovering the MAG skeleton is still far from recovering the full DAG. Much is still missing:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
@@ -1415,7 +1407,7 @@ Note
 <li><p><strong>High-dimensional variable selection.</strong> With many candidate controls, knowing which pairs are conditionally independent prunes the problem before applying identification strategies. This is most useful in settings with <span class="math inline">\(p &gt; 20\)</span> variables where theory does not specify the full graph.</p></li>
 <li><p><strong>Hypothesis generation when theory is silent.</strong> For new economic phenomena — platform markets, fintech, peer effects in novel settings — where theory does not give a strong causal ordering, discovery algorithms generate hypotheses worth investigating with better-powered research designs.</p></li>
 </ol>
-<p><strong>The bottom line:</strong> causal discovery is a complement to the standard econometric toolkit — IV, RD, DiD, synthetic control — not a substitute. It is most useful as a diagnostic and hypothesis-generating tool early in a research project, before the hard work of finding credible identifying variation begins.</p>
+<p>Causal discovery is a complement to IV, RD, DiD, and synthetic control, not a substitute. It is most useful early in a project, as a diagnostic and hypothesis-generating tool.</p>
 
 
 </section>

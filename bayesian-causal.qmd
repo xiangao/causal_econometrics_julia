@@ -24,29 +24,27 @@ using Printf
 using CairoMakie
 ```
 
-Bayesian methods compute a full posterior distribution over the unknown
-quantities, providing credible intervals and natural uncertainty
-propagation. For causal inference, this means uncertainty about treatment
-effects can be reported at the *individual* level — not just aggregate
-ATEs — and downstream decisions (treatment recommendation, policy
-evaluation) can use the posterior directly.
+Bayesian methods return a posterior distribution, not only a point estimate
+and a standard error. For causal inference this is useful when we want
+uncertainty about individual treatment effects, policy values, or other
+derived quantities.
 
-The two workhorses in this area are:
+The two common models in this area are:
 
 1. **BART for causal inference** (Hill 2011) — Bayesian Additive
    Regression Trees as a flexible outcome model.
 2. **Bayesian Causal Forests** (BCF; Hahn-Murray-Carvalho 2020) — BART
    extended to separate prognostic and treatment-effect components.
 
-Both have mature R packages (`BART`, `bcf`). The Julia ecosystem
-currently lacks a comparable BART implementation; this chapter sketches
-the *concepts* with a simpler Bayesian linear-regression-based g-computation
-that captures the essential idea, and points to R for production work.
+Both have mature R packages (`BART`, `bcf`). Julia does not currently have a
+comparable BART/BCF workflow. So this chapter shows the basic Bayesian
+g-computation idea with a conjugate linear model, and points to R for the
+tree-based versions.
 
 > **Related reading**: For a hands-on Bayesian model with `Numpyro`, see
 > the [Using Numpyro](https://xiangao.github.io/blog_book/numpyro.html)
 > chapter in *Topics on Econometrics and Causal Inference*. The R
-> companion to this chapter walks through BART and BCF in detail.
+> R companion gives the BART and BCF version.
 
 ## Setup
 
@@ -72,16 +70,16 @@ df = DataFrame(Y = Y, D = D, X1 = X[:, 1], X2 = X[:, 2], X3 = X[:, 3])
 
 ## Bayesian g-computation
 
-The simplest Bayesian causal inference recipe is **Bayesian g-computation**:
+The simplest Bayesian causal inference recipe is Bayesian g-computation:
 
 1. Specify a Bayesian model for $\mathbb{E}[Y \mid D, X]$.
 2. Sample from the posterior of the regression parameters.
 3. For each posterior draw, compute counterfactual outcomes
    $\hat Y(1), \hat Y(0)$.
-4. The posterior of the ATE is the distribution of
-   $\mathbb{E}[\hat Y(1) - \hat Y(0)]$ across draws.
+4. The posterior of the ATE is the distribution of the average difference
+   across posterior draws.
 
-A Bayesian linear regression with a flat prior implements this cleanly:
+A Bayesian linear regression with a flat prior is enough to show the idea:
 
 ```{julia}
 #| label: bayes-gcomp
@@ -133,10 +131,9 @@ ate_post = vec(mean(ite_post, dims = 2))
 @printf("  True ATE:            %.3f\n", mean(tau))
 ```
 
-The posterior 95% credible interval reports uncertainty about the ATE
-directly. With a flat prior the credible interval matches the
-frequentist confidence interval; with informative priors they diverge,
-and the Bayesian interval reflects prior + data.
+With a flat prior, this credible interval is close to the usual frequentist
+interval. With informative priors, the posterior reflects both the prior and
+the data.
 
 ### Individual-level credible intervals
 
@@ -165,28 +162,23 @@ axislegend(ax, position = :rb, framevisible = false)
 fig
 ```
 
-The blue ribbon shows pointwise 95% credible intervals; the red dashed
-line is the truth. Where the ribbon covers the truth, the posterior is
-well-calibrated.
+The blue ribbon is the pointwise 95% credible interval. The red dashed line
+is the true treatment-effect function.
 
 ## Why use BART/BCF in R instead?
 
-The Bayesian linear g-computation above suffices when:
+The linear g-computation above is useful when:
 
-- The outcome model is well-approximated by a small number of
-  interactions.
-- The effect heterogeneity is along covariates the analyst has
-  pre-specified.
+- the outcome model can be approximated with a few interactions;
+- the effect modifiers are known in advance.
 
-For genuinely flexible nonparametric Bayesian causal inference, R's
-`BART` and `bcf` are the workhorses. They use sum-of-trees ensembles
-with weakly informative priors on tree structure, providing:
+For flexible Bayesian causal inference, R's `BART` and `bcf` are better
+tools. They use sums of regression trees and provide:
 
-- **Automatic flexibility**: no need to specify interactions.
-- **Posterior over individual effects**: native uncertainty at the unit
-  level, including for ITEs not detectable by linear models.
-- **BCF's separation prior**: regularises treatment-effect heterogeneity
-  separately from prognostic variation, reducing spurious effects.
+- flexible outcome models without manually specifying interactions;
+- posterior draws of individual treatment effects;
+- in BCF, separate priors for baseline prediction and treatment-effect
+  heterogeneity.
 
 Compare the rough sketch:
 
@@ -198,10 +190,8 @@ Compare the rough sketch:
 | Native ITE posterior with regularisation | (linear-model heterogeneity only) | ✓ |
 | Separation of prognostic and treatment effects | – | ✓ (BCF) |
 
-For now, Julia users wanting the full flexibility of BART/BCF should
-either call out to R or write a domain-specific package using `Turing.jl`
-or `Mamba.jl` (the latter is a substantial project — a future
-contribution to the Julia ecosystem).
+For now, Julia users who need BART/BCF should call out to R. Reimplementing
+these models in Julia would be a separate package project.
 
 ## When to use Bayesian methods
 
@@ -210,13 +200,12 @@ contribution to the Julia ecosystem).
 | Prior information matters | Asymptotic theory is well-understood |
 | Need full posterior for downstream decisions | Computational cost matters at scale |
 | Small sample, weak identification | Effects are well-identified |
-| Want native individual-level CrIs | Existing frequentist toolkit suffices |
+| Want individual-level CrIs | Existing frequentist toolkit suffices |
 
-The Bayesian approach offers outputs (posterior over individual effects,
-principled propagation of uncertainty into derived quantities) that are
-not natural for frequentist methods. For decision-theoretic applications
-— treatment-recommendation under cost-benefit trade-offs — the Bayesian
-posterior is the natural input.
+Bayesian methods are most useful when the posterior itself will be used:
+for treatment recommendations, policy values, or hierarchical models. If the
+target is just a well-identified ATE in a large sample, the frequentist tools
+are usually simpler.
 
 ## Connections
 
@@ -231,15 +220,10 @@ posterior is the natural input.
 
 ## Summary
 
-- **Bayesian causal inference** computes full posteriors over treatment
-  effects, providing credible intervals for both aggregate and
-  individual-level effects.
-- **Bayesian g-computation** with a Normal-Inverse-Gamma conjugate prior
-  is implementable in Julia in ~30 lines and gives valid credible
-  intervals for the ATE.
-- **For nonparametric flexibility** (BART, BCF), R's `BART` and `bcf`
-  packages remain the workhorses — see the
-  [R companion chapter](https://xiangao.github.io/causal_econometrics_guide/bayesian-causal.html).
-- **For Numpyro-based Bayesian models in Python**, see the
-  [Using Numpyro](https://xiangao.github.io/blog_book/numpyro.html) blog chapter.
-
+- Bayesian g-computation computes counterfactual outcomes for each posterior
+  draw.
+- A conjugate linear model is easy to implement in Julia and is useful for
+  exposition.
+- For BART and BCF, use the R packages for now.
+- For a Python/Numpyro Bayesian model, see the
+  [Using Numpyro](https://xiangao.github.io/blog_book/numpyro.html) chapter.

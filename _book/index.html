@@ -32,13 +32,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./identification.html" rel="next">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -77,6 +70,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 
 
 <link rel="stylesheet" href="style.css">
@@ -419,10 +419,10 @@ try {
 
 <section id="preface" class="level1 unnumbered">
 <h1 class="unnumbered">Preface</h1>
-<p>Most of what applied researchers want to know from data is causal. We want to know whether a program raised earnings, whether a drug reduced mortality, whether a policy changed behavior. With experimental data the answer can sometimes be read off a difference in means; with observational data it almost never can. The bulk of modern causal econometrics is the careful business of stating what would have to be true about the data-generating process for a number we can compute to mean what we want it to mean — and then estimating that number well.</p>
-<p>This book is a working guide to that business, written in Julia. It is aimed at applied researchers who already think in terms of regression and probability, and who want to see the methods carried out end to end rather than described in the abstract. Each chapter pairs a short account of the identifying assumptions with code that runs on a real or simulated dataset. The estimators are not treated as black boxes: where it matters, the underlying influence functions, score equations, and weighting schemes are written out so that the connection between the formula and the call to a Julia package is visible.</p>
+<p>Most applied questions are causal. Did a program raise earnings? Did a drug reduce mortality? Did a policy change behavior? With experimental data, a difference in means can sometimes answer the question. With observational data, it almost never can. Causal econometrics is the business of saying what would have to be true for a number we can compute to mean the causal object we want.</p>
+<p>This book is a working guide in Julia. It is for applied researchers who already know regression and probability, and who want to see the methods carried out end to end. Each chapter gives the identifying assumptions and then runs code on a real or simulated data set. Where it matters, the influence functions, score equations, and weighting schemes are written out so the link between the formula and the Julia call is visible.</p>
 <p>Julia is not the usual choice for this material. R remains the default language of applied causal inference, and a companion R volume covers the same ground. The Julia version exists because some of the heavier estimators — TMLE on large samples, distributional difference-in-differences, fully Bayesian g-computation — are uncomfortably slow in R, and because Julia’s type system makes it possible to write small, focused estimation packages whose code is easy to read. Several such packages were written alongside this book and are used throughout: <code>CausalEstimate.jl</code> for unified TMLE and AIPW, <code>CausalGraphs.jl</code> for graph-based identification, <code>Lavaan.jl</code> for structural equation modeling, <code>Crumble.jl</code> for causal mediation, and a handful of smaller libraries for difference-in-differences, synthetic control, shift-share IV, and regression discontinuity. They are not requirements for following the text, but readers who want to see how an estimator is actually built will find the source short enough to read.</p>
-<p>The book is organized in the order in which an applied project usually runs. Part I, <em>Identification</em>, develops the potential-outcomes framework, the main causal estimands, and the use of graphs and sensitivity analysis to argue that a target effect is identified from the data at hand. Part II, <em>Estimation</em>, works through the main strategies — regression adjustment, matching and balancing weights, doubly robust estimators, methods for continuous and heterogeneous treatments, and Bayesian and distributional extensions. Part III, <em>Designs</em>, covers difference-in-differences (including staggered timing), synthetic control, instrumental variables, regression discontinuity, and shift-share designs. The remaining parts treat longitudinal and survival settings, mediation, and causal discovery. An appendix surveys the Julia packages used in the text.</p>
+<p>The book is organized in the order in which an applied project usually runs. Part I is identification. Part II is estimation. Part III is designs: difference-in-differences, synthetic control, instrumental variables, regression discontinuity, and shift-share IV. The remaining parts cover longitudinal settings, survival outcomes, mediation, and causal discovery. The appendix lists the Julia packages used in the examples.</p>
 <p>The book is meant to be read at a desk with Julia running. Source files, datasets, and a <code>Project.toml</code> that pins package versions are available in the repository linked above; the “Edit this page” link at the foot of each chapter goes directly to the corresponding <code>.qmd</code> file. Corrections and suggestions are welcome through the issues tracker.</p>
 
 

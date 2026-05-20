@@ -22,14 +22,10 @@ using GLM
 using Printf
 ```
 
-All the methods covered so far have one feature in common: a single
-treatment decision at a single point in time. Real policy questions are
-often more complex. A patient receives a medication at multiple visits.
-A worker enrols in training programmes over several years. A student
-takes one course after another. The treatment evolves; covariates that
-respond to past treatment then influence future treatment. **Standard
-regression adjustment fails in this setting** — and the failure is not
-subtle.
+Most chapters so far use one treatment decision. Many real problems are
+longitudinal. Treatment changes over time, covariates respond to past
+treatment, and those covariates then affect future treatment. Standard
+regression adjustment can fail in this setting.
 
 > **Related reading**: The [g-estimation with time-varying covariates](https://xiangao.github.io/blog_book/g-estimation.html)
 > chapter of *Topics on Econometrics and Causal Inference* derives the
@@ -39,26 +35,20 @@ subtle.
 > [Longitudinal modified treatment policy (LMTP)](https://xiangao.github.io/blog_book/lmtp.html)
 > and in the [Continuous Treatments](continuous-treatments.qmd) chapter.
 
-This chapter covers the **g-methods** developed by Robins and collaborators
-to handle time-varying treatments and time-varying confounders:
+The main tools are:
 
-1. **The g-formula** (parametric g-computation) — simulate the outcome
-   under a hypothetical treatment regime by recursively integrating over
-   the time-varying covariates.
-2. **Inverse probability of treatment weighting (IPTW)** for time-varying
-   treatments — reweight to a population where treatment is unrelated to
-   past covariates.
-3. **Marginal structural models (MSMs)** — regression-style models for
-   the IPTW-weighted population.
+1. **G-formula**: simulate outcomes under a treatment regime.
+2. **IPTW**: reweight observations by the probability of their treatment
+   history.
+3. **Marginal structural models**: fit a treatment-history regression in the
+   weighted population.
 
-For doubly-robust longitudinal TMLE, R's `ltmle` package is currently the
-de facto standard; there is no Julia equivalent. The methods covered here
-— g-formula and MSM via IPTW — are the workhorses and translate cleanly
-to native Julia using `GLM.jl`.
+For longitudinal TMLE, use R's `ltmle` package; there is no Julia equivalent
+yet. The g-formula and IPTW/MSM translate directly to Julia with `GLM.jl`.
 
 ## The time-varying confounding problem
 
-A two-period example makes the failure of standard regression vivid:
+Consider a two-period example:
 
 - $L_0$: baseline covariate (e.g. health status at study entry)
 - $A_0$: treatment at time 0 (e.g. medication)
@@ -67,11 +57,10 @@ A two-period example makes the failure of standard regression vivid:
 - $A_1$: treatment at time 1, depends on $L_1$
 - $Y$: outcome at the end of follow-up
 
-$L_1$ is a **time-varying confounder**: it confounds $A_1 \to Y$ (so we
-need to condition on it), but it is *also* a mediator of $A_0 \to Y$ (so
-conditioning on it blocks the path we want to measure). Standard
-regression with $L_0, L_1$ as covariates over-controls; regression
-without $L_1$ leaves bias.
+$L_1$ is the problem variable. It confounds the effect of $A_1$ on $Y$, so
+we would like to adjust for it. But it is also affected by $A_0$, so
+adjusting for it blocks part of the effect of $A_0$. Regression without
+$L_1$ is confounded; regression with $L_1$ over-controls.
 
 ### Simulating the failure of standard regression
 
@@ -103,28 +92,28 @@ naive_with_L1 = lm(@formula(Y ~ A0 + A1 + L0 + L1), df)
         coef(naive_with_L1)[2] + coef(naive_with_L1)[3])
 ```
 
-Neither regression recovers the true total effect of 1.0:
+Neither regression recovers the true total effect:
 
 - Excluding $L_1$ leaves $L_1 \to A_1$ confounding that biases $A_1$.
 - Including $L_1$ blocks the $A_0 \to L_1 \to Y$ pathway, so the
   coefficient on $A_0$ now measures only the *direct* effect, not the
   total effect.
 
-The g-methods solve this.
+This is exactly the setting g-methods were designed for.
 
 ## Parametric g-formula
 
-The g-formula says:
+The g-formula writes the mean outcome under a treatment regime as:
 
 $$
 \mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]
 \prod_{t=0}^{K} f(l_t \mid \bar a_{t-1}, \bar l_{t-1}),
 $$
 
-where $\bar a = (a_0, a_1, \ldots, a_K)$ is a treatment regime and
-$\bar l$ the covariate history. The product is over all time points. In
-practice we fit models for each conditional distribution, then simulate
-the joint distribution under the counterfactual regime $\bar a$.
+where $\bar a=(a_0,a_1,\ldots,a_K)$ is a treatment regime and $\bar l$ is
+the covariate history. In practice we fit models for the time-varying
+covariates and the outcome, then simulate the data under the treatment
+regime.
 
 ```{julia}
 #| label: gformula
@@ -157,12 +146,12 @@ E_Y00 = g_compute(0.0, 0.0)
         E_Y11 - E_Y00)
 ```
 
-The g-formula recovers the true effect because it simulates $L_1$ under
-the counterfactual treatment regime, rather than conditioning on the
-observed $L_1$ (which would block the desired pathway).
+The important step is simulating $L_1$ under the counterfactual treatment.
+We do not condition on the observed $L_1$, because observed $L_1$ is partly
+a consequence of observed treatment.
 
-The g-formula handles any regime — that is its main strength. To estimate
-the effect of treating only at $t = 0$:
+The g-formula can handle other regimes too. For example, treat only at
+$t=0$:
 
 ```{julia}
 #| label: gformula-partial
@@ -176,16 +165,15 @@ E_Y10 = g_compute(1.0, 0.0)
 
 ## IPTW for time-varying treatments
 
-The IPTW approach reweights observations by the inverse of the
-probability of their *observed* treatment history given past covariates.
-The **stabilised weight** for unit $i$ is:
+IPTW reweights observations by the inverse probability of their observed
+treatment history. The stabilized weight is:
 
 $$
 SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t-1})}.
 $$
 
-The numerator uses past treatment alone; the denominator adds covariates.
-Stabilisation keeps the weights bounded.
+The numerator uses treatment history only. The denominator also conditions
+on covariate history.
 
 ```{julia}
 #| label: iptw
@@ -218,8 +206,8 @@ sw_trim = min.(sw, quantile(sw, 0.99))
 
 ## Marginal structural models
 
-With stabilised weights in hand, the **marginal structural model** is a
-weighted regression of $Y$ on treatment history:
+With stabilized weights, the marginal structural model is a weighted
+regression of $Y$ on treatment history:
 
 ```{julia}
 #| label: msm
@@ -233,9 +221,8 @@ println(coeftable(msm_fit))
         coef(msm_fit)[2] + coef(msm_fit)[3])
 ```
 
-The MSM recovers the total effect because the IPTW reweighting effectively
-breaks the $L_1 \to A_1$ arrow in the reweighted population — making
-treatment independent of past covariates.
+The weighted population is constructed so treatment is no longer associated
+with past covariates. That is why the MSM targets the total effect.
 
 ## Hernán-style g-estimation: when to use which
 
@@ -244,20 +231,17 @@ treatment independent of past covariates.
 | **G-formula** | Handles arbitrary regimes; transparent | Sensitive to model misspecification on $L_t$ and $Y$ |
 | **IPTW + MSM** | Simple, intuitive; valid with correct propensity model | Variance large with extreme weights |
 
-In practice, reporting **both** is the standard. Agreement is reassuring;
-disagreement suggests model misspecification in at least one of them.
+In practice, reporting both is useful. Agreement is reassuring; disagreement
+suggests model misspecification in at least one of them.
 
-For doubly-robust efficient estimation, longitudinal TMLE combines both.
-The current state-of-the-art implementation is R's `ltmle` package; a
-Julia port would be a valuable addition to the ecosystem but does not yet
-exist. The companion R chapter walks through the `ltmle` workflow.
+For longitudinal TMLE, use R's `ltmle` package. A Julia port would be useful
+but does not exist yet.
 
 ## A robustness check: g-formula with covariates only
 
-Even when researchers don't want to fully implement IPTW + MSM, the
-g-formula offers a useful robustness check on standard regression. If
-the standard regression and the g-formula disagree, the gap is a
-diagnostic for time-varying confounding bias.
+Even without IPTW + MSM, the g-formula is a useful check on standard
+regression. If standard regression and the g-formula disagree, that gap is a
+warning about time-varying confounding.
 
 ```{julia}
 #| label: comparison
@@ -282,16 +266,15 @@ the divergence is the bias.
 
 ## When to reach for these methods
 
-G-methods are needed whenever:
+Use g-methods when:
 
 1. There is a time-varying confounder $L_t$ that is affected by past
    treatment $A_{t-1}$ and itself affects subsequent treatment $A_t$.
 2. The research question concerns a *sustained* or *dynamic* treatment
    regime, not a single decision at a single time.
 
-This includes most clinical follow-up studies, longitudinal observational
-studies of education and labour market policies, and any setting where
-treatment evolves with the unit's response.
+This includes many clinical follow-up studies and longitudinal studies of
+education or labor-market policies.
 
 For a one-shot treatment, the methods from the
 [Estimation](estimation.qmd) and [Nonparametric Causal Methods](nonparametric.qmd)
@@ -300,18 +283,10 @@ justified when the time-varying confounder problem is present.
 
 ## Summary
 
-- **Standard regression fails** with time-varying confounders that are
-  themselves affected by past treatment.
-- **G-formula** (parametric g-computation): simulate the outcome under a
-  hypothetical regime by integrating over the time-varying covariates.
-  ~30 lines of native Julia.
-- **IPTW + MSM**: reweight the population so treatment is independent of
-  past covariates; then fit a regression on the weighted sample. Built
-  with `GLM.jl`.
-- **Longitudinal TMLE**: doubly-robust efficient estimator combining
-  g-computation and IPTW. Currently best implemented in R's `ltmle`
-  package; a native Julia version is a valuable open ecosystem project.
-- **Reporting practice**: report both g-formula and MSM. Agreement is
-  reassuring; disagreement is informative — it usually points to model
-  misspecification.
-
+- Standard regression fails when a time-varying confounder is itself
+  affected by past treatment.
+- G-formula simulates outcomes under treatment regimes.
+- IPTW + MSM reweights the population and then fits a weighted treatment
+  history model.
+- Longitudinal TMLE is best handled in R's `ltmle` package for now.
+- Disagreement across estimators is useful information, not just a nuisance.

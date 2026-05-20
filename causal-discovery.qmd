@@ -75,13 +75,19 @@ using DataFrames
 using Distributions: Normal, quantile
 ```
 
-In earlier chapters we assumed the causal graph was known, or at least that a defensible DAG could be drawn from domain knowledge. But what if we want to *learn* the causal structure from observational data? This is the **causal discovery** problem.
+Earlier chapters assumed the graph was known, or at least that we could draw
+a defensible DAG from subject knowledge. Causal discovery asks what can be
+learned about the graph from observational data.
 
 ## The Problem
 
 Given $n$ i.i.d. observations of $p$ variables $(X_1, \ldots, X_p)$, we want to recover the directed acyclic graph (DAG) $G$ that generated the data.
 
-There is a fundamental limit: observational data alone cannot distinguish between DAGs that encode the same conditional independence (CI) structure. The set of DAGs that are observationally equivalent is called a **Markov equivalence class** (MEC). The best we can do from data is to identify the MEC, represented as a **Completed Partially Directed Acyclic Graph (CPDAG)**.
+There is an important limit: observational data alone cannot distinguish
+between DAGs with the same conditional independence structure. The set of
+observationally equivalent DAGs is a **Markov equivalence class**. The data
+can identify this class, represented by a CPDAG, not necessarily the one true
+DAG.
 
 A CPDAG has the same skeleton (undirected edges) as all DAGs in its MEC. Some edges can be oriented (they have the same direction in every member of the MEC); others remain undirected because both directions are consistent with the CI structure.
 
@@ -213,7 +219,9 @@ $$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \pe
 
 (Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.
 
-**The intuition behind removability:** a variable $X$ is "removable" if its local neighbourhood structure can be fully characterized without creating ambiguity in the remaining graph. Think of it as peeling off leaf-like variables one at a time — each removal simplifies the problem rather than complicating it.
+A variable is removable if its local neighborhood can be learned before the
+rest of the graph is fully known. The algorithm removes such variables one
+at a time and records the local structure.
 
 **How it works, step by step:**
 
@@ -341,7 +349,9 @@ end
 
 ## Summary
 
-Both PC and RSL-D recover the Markov equivalence class from Gaussian observational data. The key practical difference is **CI-test efficiency**: RSL-D's recursive removal approach uses far fewer tests than PC's growing-set search, especially as $p$ and graph density increase.
+Both PC and RSL-D target the Markov equivalence class. The practical
+difference is computational: RSL-D usually uses fewer CI tests, especially as
+the graph gets denser.
 
 **From CPDAG to causal estimation:** Once a CPDAG is in hand, the workflow continues as follows:
 
@@ -354,7 +364,9 @@ If some edges remain undirected after exhausting background knowledge, you can e
 ::: {.callout-note}
 **What cannot be recovered from observational data alone**
 
-Both algorithms identify the CPDAG — the equivalence class — not the true DAG. Certain edge orientations are fundamentally unidentifiable without additional assumptions such as non-Gaussian errors, temporal ordering, or interventional data.
+Both algorithms identify the CPDAG, not necessarily the true DAG. Some edge
+directions require extra assumptions, temporal ordering, or interventional
+data.
 
 The next chapter addresses a harder problem: recovering the causal skeleton when some variables are *unobserved*.
 :::

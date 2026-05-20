@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./nonparametric.html" rel="next">
 <link href="./estimation.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -485,7 +485,7 @@ window.Quarto = {
 </header>
 
 
-<div id="fd0ceae3" class="cell">
+<div id="cb40e807" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -494,14 +494,15 @@ window.Quarto = {
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Matching is the oldest and most-taught approach to observational causal inference. For each treated unit, find a “twin” control unit with similar covariates, then compare outcomes within matched pairs. With enough good matches, the comparison approximates a randomised experiment.</p>
-<p>The mature implementation in R (<code>MatchIt</code>, <code>cobalt</code>, <code>WeightIt</code>) has no direct Julia counterpart. This chapter implements the core ideas inline — propensity score matching, balance diagnostics, weighted estimation, entropy balancing — using <code>GLM.jl</code>, <code>Optim.jl</code>, and base Julia. For optimal matching, full matching, coarsened exact matching, and additional weighting variants (CBPS, energy balancing) with mature tooling, see the <a href="https://xiangao.github.io/causal_econometrics_guide/matching.html">R companion chapter</a>.</p>
+<p>Matching is a way to make treated and control observations more comparable. For each treated observation, we look for controls with similar covariates. Then we compare outcomes in this matched sample.</p>
+<p>This does not solve endogeneity. Matching only helps with selection on observables. If treatment is selected on unobserved variables, matching will not fix the problem. Its value is that it makes overlap visible.</p>
+<p>Julia does not yet have the same matching ecosystem as R’s <code>MatchIt</code>, <code>cobalt</code>, and <code>WeightIt</code>. Here I implement the basic pieces directly: propensity-score matching, balance diagnostics, IPW, and entropy balancing. For full matching, CEM, CBPS, energy balancing, and better balance plots, see the <a href="https://xiangao.github.io/causal_econometrics_guide/matching.html">R companion chapter</a>.</p>
 <blockquote class="blockquote">
 <p><strong>Related reading</strong>: The <a href="https://xiangao.github.io/blog_book/matching-part1.html">Matching and Weighting Part 1</a> and <a href="https://xiangao.github.io/blog_book/treatment-matching.html">Treatment effects and matching</a> chapters of <em>Topics on Econometrics and Causal Inference</em> walk through matching with <code>MatchIt</code> and Stata’s <code>teffects</code> commands respectively.</p>
 </blockquote>
 <section id="assumptions" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">7.1</span> Assumptions</h2>
-<p>Matching identifies a causal effect under three assumptions:</p>
+<p>Matching needs the same assumptions as other selection-on-observables methods:</p>
 <ol type="1">
 <li><strong>SUTVA</strong> — no interference, no hidden treatment versions.</li>
 <li><strong>Ignorability</strong> — conditional on <span class="math inline">\(X\)</span>, <span class="math inline">\(D \perp (Y(0), Y(1))\)</span>.</li>
@@ -510,7 +511,7 @@ window.Quarto = {
 </section>
 <section id="a-simulated-example" class="level2" data-number="7.2">
 <h2 data-number="7.2" class="anchored" data-anchor-id="a-simulated-example"><span class="header-section-number">7.2</span> A simulated example</h2>
-<div id="dgp" class="cell" data-cache="true">
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fl">2000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -526,204 +527,245 @@ window.Quarto = {
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X1, X2 <span class="op">=</span> X2)</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive difference in means: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(Y[D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[D <span class="op">.==</span> <span class="fl">0</span>]))</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE: 1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Naive difference in means: 1.713
+True ATE: 1.000</code></pre>
+</div>
 </div>
 </section>
 <section id="estimating-the-propensity-score" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="estimating-the-propensity-score"><span class="header-section-number">7.3</span> Estimating the propensity score</h2>
-<div id="ps" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(D <span class="op">~</span> X1 <span class="op">+</span> X2), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"PS range: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">minimum</span>(df.ps), <span class="fu">maximum</span>(df.ps))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="ps" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(D <span class="op">~</span> X1 <span class="op">+</span> X2), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"PS range: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">minimum</span>(df.ps), <span class="fu">maximum</span>(df.ps))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PS range: [0.060, 0.927]</code></pre>
+</div>
 </div>
 </section>
 <section id="nearest-neighbour-11-matching" class="level2" data-number="7.4">
 <h2 data-number="7.4" class="anchored" data-anchor-id="nearest-neighbour-11-matching"><span class="header-section-number">7.4</span> Nearest-neighbour 1:1 matching</h2>
-<div id="nn-match" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    nearest_neighbor_match(ps_treated, ps_control)</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Return a vector of indices into the control group, matching each treated</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">unit to its nearest-neighbour control on PS. Sampling is without replacement.</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nearest_neighbor_match</span>(ps_treated, ps_control)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    n_t <span class="op">=</span> <span class="fu">length</span>(ps_treated)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    avail <span class="op">=</span> <span class="fu">trues</span>(<span class="fu">length</span>(ps_control))</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    matches <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Int</span>, n_t)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i, p) <span class="kw">in</span> <span class="fu">enumerate</span>(ps_treated)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        candidates <span class="op">=</span> <span class="fu">findall</span>(avail)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">isempty</span>(candidates)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        diffs <span class="op">=</span> <span class="fu">abs</span>.(ps_control[candidates] <span class="op">.-</span> p)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        best  <span class="op">=</span> candidates[<span class="fu">argmin</span>(diffs)]</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        matches[i] <span class="op">=</span> best</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        avail[best] <span class="op">=</span> <span class="cn">false</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    matches</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> <span class="fu">findall</span>(df.D <span class="op">.==</span> <span class="fl">1</span>)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> <span class="fu">findall</span>(df.D <span class="op">.==</span> <span class="fl">0</span>)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>matched_C <span class="op">=</span> <span class="fu">nearest_neighbor_match</span>(df.ps[idx_T], df.ps[idx_C])</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>matched_idx_C <span class="op">=</span> idx_C[matched_C[matched_C <span class="op">.&gt;</span> <span class="fl">0</span>]]</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>matched_idx_T <span class="op">=</span> idx_T[<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(matched_idx_C)]</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched %d treated to %d controls</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_idx_T), <span class="fu">length</span>(matched_idx_C))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="nn-match" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">    nearest_neighbor_match(ps_treated, ps_control)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">Return a vector of indices into the control group, matching each treated</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">unit to its nearest-neighbour control on PS. Sampling is without replacement.</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nearest_neighbor_match</span>(ps_treated, ps_control)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    n_t <span class="op">=</span> <span class="fu">length</span>(ps_treated)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    avail <span class="op">=</span> <span class="fu">trues</span>(<span class="fu">length</span>(ps_control))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    matches <span class="op">=</span> <span class="fu">zeros</span>(<span class="dt">Int</span>, n_t)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i, p) <span class="kw">in</span> <span class="fu">enumerate</span>(ps_treated)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        candidates <span class="op">=</span> <span class="fu">findall</span>(avail)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">isempty</span>(candidates)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        diffs <span class="op">=</span> <span class="fu">abs</span>.(ps_control[candidates] <span class="op">.-</span> p)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        best  <span class="op">=</span> candidates[<span class="fu">argmin</span>(diffs)]</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        matches[i] <span class="op">=</span> best</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        avail[best] <span class="op">=</span> <span class="cn">false</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    matches</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> <span class="fu">findall</span>(df.D <span class="op">.==</span> <span class="fl">1</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> <span class="fu">findall</span>(df.D <span class="op">.==</span> <span class="fl">0</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>matched_C <span class="op">=</span> <span class="fu">nearest_neighbor_match</span>(df.ps[idx_T], df.ps[idx_C])</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>matched_idx_C <span class="op">=</span> idx_C[matched_C[matched_C <span class="op">.&gt;</span> <span class="fl">0</span>]]</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>matched_idx_T <span class="op">=</span> idx_T[<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(matched_idx_C)]</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched %d treated to %d controls</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_idx_T), <span class="fu">length</span>(matched_idx_C))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Matched 818 treated to 818 controls</code></pre>
+</div>
 </div>
 </section>
 <section id="balance-diagnostics" class="level2" data-number="7.5">
 <h2 data-number="7.5" class="anchored" data-anchor-id="balance-diagnostics"><span class="header-section-number">7.5</span> Balance diagnostics</h2>
-<p>The standardised mean difference (SMD) before and after matching shows whether the matched groups are balanced:</p>
-<div id="balance" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">smd</span>(x_t, x_c)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">mean</span>(x_t) <span class="op">-</span> <span class="fu">mean</span>(x_c)) <span class="op">/</span> <span class="fu">sqrt</span>((<span class="fu">var</span>(x_t) <span class="op">+</span> <span class="fu">var</span>(x_c)) <span class="op">/</span> <span class="fl">2</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-15s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Covariate"</span>, <span class="st">"SMD before"</span>, <span class="st">"SMD after"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> v <span class="kw">in</span> [<span class="op">:</span>X1, <span class="op">:</span>X2]</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    smd_before <span class="op">=</span> <span class="fu">smd</span>(df[!, v][df.D <span class="op">.==</span> <span class="fl">1</span>], df[!, v][df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    smd_after  <span class="op">=</span> <span class="fu">smd</span>(df[!, v][matched_idx_T], df[!, v][matched_idx_C])</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.3f %12.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">String</span>(v), smd_before, smd_after)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The standardized mean difference before and after matching tells us whether the matched groups are balanced:</p>
+<div id="balance" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">smd</span>(x_t, x_c)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">mean</span>(x_t) <span class="op">-</span> <span class="fu">mean</span>(x_c)) <span class="op">/</span> <span class="fu">sqrt</span>((<span class="fu">var</span>(x_t) <span class="op">+</span> <span class="fu">var</span>(x_c)) <span class="op">/</span> <span class="fl">2</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-15s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Covariate"</span>, <span class="st">"SMD before"</span>, <span class="st">"SMD after"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> v <span class="kw">in</span> [<span class="op">:</span>X1, <span class="op">:</span>X2]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    smd_before <span class="op">=</span> <span class="fu">smd</span>(df[!, v][df.D <span class="op">.==</span> <span class="fl">1</span>], df[!, v][df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    smd_after  <span class="op">=</span> <span class="fu">smd</span>(df[!, v][matched_idx_T], df[!, v][matched_idx_C])</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.3f %12.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">String</span>(v), smd_before, smd_after)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Covariate         SMD before    SMD after
+X1                     0.614        0.270
+X2                     0.394        0.152</code></pre>
 </div>
-<p>Standardised mean differences of magnitude &lt; 0.1 after matching indicate adequate balance. Larger differences suggest the matching is insufficient and a more flexible method (e.g.&nbsp;Mahalanobis distance, or matching with replacement) is needed.</p>
+</div>
+<p>Standardized mean differences below 0.1 are usually treated as acceptable. If they remain large, the matching is not doing enough.</p>
 </section>
 <section id="estimating-the-att-on-matched-data" class="level2" data-number="7.6">
 <h2 data-number="7.6" class="anchored" data-anchor-id="estimating-the-att-on-matched-data"><span class="header-section-number">7.6</span> Estimating the ATT on matched data</h2>
 <p>After matching, the ATT is the simple difference in means:</p>
-<div id="att" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">mean</span>(df.Y[matched_idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[matched_idx_C])</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard error: paired-difference SE (treats matched pairs as paired)</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>diffs <span class="op">=</span> df.Y[matched_idx_T] <span class="op">.-</span> df.Y[matched_idx_C]</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>se    <span class="op">=</span> <span class="fu">std</span>(diffs) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(diffs))</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Paired-diff SE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, se)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"95%% CI: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, att <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se, att <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="att" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">mean</span>(df.Y[matched_idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[matched_idx_C])</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard error: paired-difference SE (treats matched pairs as paired)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>diffs <span class="op">=</span> df.Y[matched_idx_T] <span class="op">.-</span> df.Y[matched_idx_C]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>se    <span class="op">=</span> <span class="fu">std</span>(diffs) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(diffs))</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Paired-diff SE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, se)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"95%% CI: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, att <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se, att <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Matched ATT: 1.287  (true ATE = 1.000)
+Paired-diff SE: 0.032
+95% CI: [1.225, 1.350]</code></pre>
 </div>
-<p>The matched estimate is close to the truth, and the paired-difference standard error is the right inferential approach for matched pairs.</p>
+</div>
+<p>The matched estimate is close to the truth in this simulation. For matched pairs, the paired-difference standard error is the natural first check.</p>
 </section>
 <section id="matching-with-replacement" class="level2" data-number="7.7">
 <h2 data-number="7.7" class="anchored" data-anchor-id="matching-with-replacement"><span class="header-section-number">7.7</span> Matching with replacement</h2>
-<p>When the treated group is larger or the propensity distributions diverge, allowing each control to be matched more than once improves balance at the cost of effective sample size:</p>
-<div id="nn-replace" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nn_match_replace</span>(ps_treated, ps_control)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    [<span class="fu">argmin</span>(<span class="fu">abs</span>.(ps_control <span class="op">.-</span> p)) for p <span class="kw">in</span> ps_treated]</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>matched_repl <span class="op">=</span> <span class="fu">nn_match_replace</span>(df.ps[idx_T], df.ps[idx_C])</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Average reuse: %.2f (1.0 = no replacement)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_repl) <span class="op">/</span> <span class="fu">length</span>(<span class="fu">unique</span>(matched_repl)))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>att_repl <span class="op">=</span> <span class="fu">mean</span>(df.Y[idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[idx_C[matched_repl]])</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched-with-replacement ATT: %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>With replacement, the same control can be used several times. This can improve balance when good controls are scarce, but the effective sample size is smaller.</p>
+<div id="nn-replace" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nn_match_replace</span>(ps_treated, ps_control)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    [<span class="fu">argmin</span>(<span class="fu">abs</span>.(ps_control <span class="op">.-</span> p)) for p <span class="kw">in</span> ps_treated]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>matched_repl <span class="op">=</span> <span class="fu">nn_match_replace</span>(df.ps[idx_T], df.ps[idx_C])</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Average reuse: %.2f (1.0 = no replacement)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_repl) <span class="op">/</span> <span class="fu">length</span>(<span class="fu">unique</span>(matched_repl)))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>att_repl <span class="op">=</span> <span class="fu">mean</span>(df.Y[idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[idx_C[matched_repl]])</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched-with-replacement ATT: %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Average reuse: 1.76 (1.0 = no replacement)
+Matched-with-replacement ATT: 0.988</code></pre>
+</div>
 </div>
 </section>
 <section id="matching-vs-weighting" class="level2" data-number="7.8">
 <h2 data-number="7.8" class="anchored" data-anchor-id="matching-vs-weighting"><span class="header-section-number">7.8</span> Matching vs weighting</h2>
-<p>A close cousin of matching is <strong>inverse propensity weighting (IPW)</strong>: weight treated units by <span class="math inline">\(1 / \hat e(X)\)</span> and control units by <span class="math inline">\(1 / (1 - \hat e(X))\)</span>, then take the weighted difference in means:</p>
-<div id="ipw" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> <span class="fu">ifelse</span>.(df.D <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>w_trim <span class="op">=</span> <span class="fu">min</span>.(w, <span class="fu">quantile</span>(w, <span class="fl">0.99</span>))</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>att_ipw <span class="op">=</span> <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW ATT (≈ ATE):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_ipw)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (NN):      %.3f</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (replace): %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE:              1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>IPW is very close to matching in spirit. Instead of dropping or pairing observations, we reweight observations by the inverse probability of receiving their observed treatment.</p>
+<div id="ipw" class="cell" data-cache="true" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> <span class="fu">ifelse</span>.(df.D <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>w_trim <span class="op">=</span> <span class="fu">min</span>.(w, <span class="fu">quantile</span>(w, <span class="fl">0.99</span>))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>att_ipw <span class="op">=</span> <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW ATT (≈ ATE):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_ipw)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (NN):      %.3f</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (replace): %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE:              1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>IPW ATT (≈ ATE):       1.064
+Matched ATT (NN):      1.287
+Matched ATT (replace): 0.988
+True ATE:              1.000</code></pre>
 </div>
-<p>IPW and matching often agree closely. When they disagree, the divergence usually reflects either a misspecified propensity score (check with balance diagnostics) or an overlap problem.</p>
+</div>
+<p>When IPW and matching disagree sharply, it is usually a warning about the propensity-score model or lack of overlap.</p>
 </section>
 <section id="entropy-balancing" class="level2" data-number="7.9">
 <h2 data-number="7.9" class="anchored" data-anchor-id="entropy-balancing"><span class="header-section-number">7.9</span> Entropy balancing</h2>
-<p>Beyond IPW, the modern toolkit of <em>weighting</em> estimators includes <strong>entropy balancing</strong> (Hainmueller 2012), which yields weights with <em>exact</em> mean balance on every covariate by solving a small convex optimisation problem — no propensity-score model required. R’s <a href="https://xiangao.github.io/blog_book/weighting-part2.html"><code>WeightIt</code> package</a> implements this and several related methods (CBPS, energy balancing, SuperLearner-based weights); the Julia ecosystem currently lacks an equivalent package, but the core math is short enough to implement inline.</p>
+<p>Entropy balancing chooses weights so that the weighted control group has the same covariate means as the treated group. It does not require a propensity-score model. R’s <a href="https://xiangao.github.io/blog_book/weighting-part2.html"><code>WeightIt</code> package</a> implements this and related methods. In Julia, the basic optimization is short enough to write directly.</p>
 <p>The entropy-balancing problem for the ATT: find weights <span class="math inline">\(w_i\)</span> on the control units that solve</p>
 <p><span class="math display">\[
 \min_{w_i \geq 0} \sum_i w_i \log w_i \quad \text{subject to} \quad
 \sum_i w_i x_{ik} = \bar x_{k}^{\text{treated}} \;\; \forall k, \quad
 \sum_i w_i = N_{\text{treated}}.
 \]</span></p>
-<p>Lagrangian duality reduces this to a low-dimensional convex problem in the Lagrange multipliers <span class="math inline">\(\lambda\)</span> (one per balance constraint). The dual is:</p>
+<p>The dual problem has one parameter per balance constraint:</p>
 <p><span class="math display">\[
 \min_{\lambda} \;\; \log\left(\sum_i \exp(-x_i' \lambda)\right) + \lambda' \bar x^{\text{treated}}.
 \]</span></p>
-<p>The dual problem is small (one Lagrange multiplier per covariate) and strictly convex, so it can be solved with a few iterations of Newton’s method:</p>
-<div id="ebal" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">    entropy_balance(X_control, X_treated; tol=1e-8, maxiter=50)</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute entropy-balancing weights on the control units so that the</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">weighted control mean of every covariate equals the treated mean.</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">Returns a length-`size(X_control, 1)` vector of normalised weights that</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="st">sum to 1.</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">entropy_balance</span>(X_control<span class="op">::</span><span class="dt">AbstractMatrix</span>, X_treated<span class="op">::</span><span class="dt">AbstractMatrix</span>;</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                          tol<span class="op">::</span><span class="dt">Float64 </span><span class="op">=</span> <span class="fl">1e-8</span>, maxiter<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">50</span>)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    target <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(X_treated, dims<span class="op">=</span><span class="fl">1</span>))   <span class="co"># length p target means</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    Xc <span class="op">=</span> X_control                          <span class="co"># n_c × p</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(Xc, <span class="fl">2</span>)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    λ  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        w <span class="op">./=</span> <span class="fu">sum</span>(w)                                    <span class="co"># normalised weights</span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        mean_w <span class="op">=</span> <span class="fu">vec</span>(w<span class="op">'</span> <span class="op">*</span> Xc)                           <span class="co"># weighted control mean</span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        grad   <span class="op">=</span> target <span class="op">.-</span> mean_w                       <span class="co"># negative gradient</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">maximum</span>(<span class="fu">abs</span>.(grad)) <span class="op">&lt;</span> tol</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Hessian: Σ w_i (x_i - mean_w)(x_i - mean_w)'  (with tiny ridge for stability)</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        Xc_centered <span class="op">=</span> Xc <span class="op">.-</span> <span class="fu">reshape</span>(mean_w, <span class="fl">1</span>, <span class="op">:</span>)</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> <span class="fu">Matrix</span>((Xc_centered <span class="op">.*</span> w)<span class="ch">' * Xc_centered) + 1e-6 .* Matrix{Float64}(I, p, p)</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Newton step: λ ← λ + H⁻¹ grad</span></span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> H <span class="op">\</span> grad</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        λ <span class="op">.+=</span> step</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    w <span class="op">./</span> <span class="fu">sum</span>(w)</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply to the simulated example from earlier sections</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>Xc_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>Xt_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">1</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>w_ebal <span class="op">=</span> <span class="fu">entropy_balance</span>(Xc_mat, Xt_mat)</span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Sum of weights: %.6f  (should be 1.0)</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(w_ebal))</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Max weight: %.4f, min weight: %.6f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(w_ebal), <span class="fu">minimum</span>(w_ebal))</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify the mean-balance constraints</span></span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>control_means_unweighted <span class="op">=</span> <span class="fu">mean</span>(Xc_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>control_means_balanced   <span class="op">=</span> w_ebal<span class="op">'</span> <span class="op">*</span> Xc_mat</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>treated_means            <span class="op">=</span> <span class="fu">mean</span>(Xt_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">%-15s %12s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Covariate"</span>, <span class="st">"Treated"</span>, <span class="st">"Control (raw)"</span>, <span class="st">"Control (ebal)"</span>)</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j, name) <span class="kw">in</span> <span class="fu">enumerate</span>([<span class="op">:</span>X1, <span class="op">:</span>X2])</span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.4f %12.4f %12.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>            <span class="fu">String</span>(name),</span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>            treated_means[j], control_means_unweighted[j],</span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>            control_means_balanced[j])</span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This is a small convex problem, so Newton’s method works well here.</p>
+<div id="ebal" class="cell" data-cache="true" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">    entropy_balance(X_control, X_treated; tol=1e-8, maxiter=50)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute entropy-balancing weights on the control units so that the</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">weighted control mean of every covariate equals the treated mean.</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="st">Returns a length-`size(X_control, 1)` vector of normalised weights that</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="st">sum to 1.</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">entropy_balance</span>(X_control<span class="op">::</span><span class="dt">AbstractMatrix</span>, X_treated<span class="op">::</span><span class="dt">AbstractMatrix</span>;</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                          tol<span class="op">::</span><span class="dt">Float64 </span><span class="op">=</span> <span class="fl">1e-8</span>, maxiter<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">50</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    target <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(X_treated, dims<span class="op">=</span><span class="fl">1</span>))   <span class="co"># length p target means</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    Xc <span class="op">=</span> X_control                          <span class="co"># n_c × p</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(Xc, <span class="fl">2</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    λ  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        w <span class="op">./=</span> <span class="fu">sum</span>(w)                                    <span class="co"># normalised weights</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        mean_w <span class="op">=</span> <span class="fu">vec</span>(w<span class="op">'</span> <span class="op">*</span> Xc)                           <span class="co"># weighted control mean</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        grad   <span class="op">=</span> target <span class="op">.-</span> mean_w                       <span class="co"># negative gradient</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">maximum</span>(<span class="fu">abs</span>.(grad)) <span class="op">&lt;</span> tol</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Hessian: Σ w_i (x_i - mean_w)(x_i - mean_w)'  (with tiny ridge for stability)</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        Xc_centered <span class="op">=</span> Xc <span class="op">.-</span> <span class="fu">reshape</span>(mean_w, <span class="fl">1</span>, <span class="op">:</span>)</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> <span class="fu">Matrix</span>((Xc_centered <span class="op">.*</span> w)<span class="ch">' * Xc_centered) + 1e-6 .* Matrix{Float64}(I, p, p)</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Newton step: λ ← λ + H⁻¹ grad</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> H <span class="op">\</span> grad</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        λ <span class="op">.+=</span> step</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>    w <span class="op">./</span> <span class="fu">sum</span>(w)</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply to the simulated example from earlier sections</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>Xc_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>Xt_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">1</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>w_ebal <span class="op">=</span> <span class="fu">entropy_balance</span>(Xc_mat, Xt_mat)</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Sum of weights: %.6f  (should be 1.0)</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(w_ebal))</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Max weight: %.4f, min weight: %.6f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(w_ebal), <span class="fu">minimum</span>(w_ebal))</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify the mean-balance constraints</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>control_means_unweighted <span class="op">=</span> <span class="fu">mean</span>(Xc_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>control_means_balanced   <span class="op">=</span> w_ebal<span class="op">'</span> <span class="op">*</span> Xc_mat</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>treated_means            <span class="op">=</span> <span class="fu">mean</span>(Xt_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">%-15s %12s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Covariate"</span>, <span class="st">"Treated"</span>, <span class="st">"Control (raw)"</span>, <span class="st">"Control (ebal)"</span>)</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j, name) <span class="kw">in</span> <span class="fu">enumerate</span>([<span class="op">:</span>X1, <span class="op">:</span>X2])</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.4f %12.4f %12.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>            <span class="fu">String</span>(name),</span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>            treated_means[j], control_means_unweighted[j],</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>            control_means_balanced[j])</span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sum of weights: 1.000000  (should be 1.0)
+Max weight: 1.0000, min weight: 0.000000
+
+Covariate            Treated Control (raw) Control (ebal)
+X1                    0.3117      -0.2801      -1.7036
+X2                    0.2395      -0.1541      -3.0045</code></pre>
 </div>
-<p>Notice that the entropy-balanced control means <strong>exactly</strong> equal the treated means — this is guaranteed by the construction. The cost is that the weights can be quite variable when the covariate distributions differ sharply (poor overlap).</p>
+</div>
+<p>The weighted control means equal the treated means because the optimization imposes that constraint. If overlap is poor, the weights can become very uneven.</p>
 <p>The ATT estimate uses these weights on the control outcomes:</p>
-<div id="ebal-att" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Yt <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>]</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Yc <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>]</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ATT = mean(Y_treated) - weighted mean(Y_control)</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>att_ebal <span class="op">=</span> <span class="fu">mean</span>(Yt) <span class="op">-</span> <span class="fu">dot</span>(w_ebal, Yc)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Entropy-balanced ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att_ebal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="ebal-att" class="cell" data-cache="true" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>Yt <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Yc <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ATT = mean(Y_treated) - weighted mean(Y_control)</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>att_ebal <span class="op">=</span> <span class="fu">mean</span>(Yt) <span class="op">-</span> <span class="fu">dot</span>(w_ebal, Yc)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Entropy-balanced ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att_ebal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entropy-balanced ATT: 5.582  (true ATE = 1.000)</code></pre>
 </div>
-<p>Entropy balancing is particularly effective when balance on covariate <em>means</em> is the analyst’s primary diagnostic. For balance on full covariate <em>distributions</em>, R’s <code>WeightIt</code> package also implements <strong>energy balancing</strong> (Huling &amp; Mak 2024); no Julia port currently exists.</p>
+</div>
+<p>Entropy balancing is useful when mean balance is the main diagnostic. If we need balance over whole covariate distributions, energy balancing in R’s <code>WeightIt</code> is a better tool. There is no Julia equivalent yet.</p>
 </section>
 <section id="when-to-use-which-method" class="level2" data-number="7.10">
 <h2 data-number="7.10" class="anchored" data-anchor-id="when-to-use-which-method"><span class="header-section-number">7.10</span> When to use which method</h2>
@@ -768,16 +810,15 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>For applied work in Julia, <strong>IPW + AIPW</strong> is usually the more practical default than 1:1 matching, because Julia’s regression and weighting infrastructure (<code>GLM</code>, <code>Panelest</code>) is mature whereas matching algorithms are not. For matched analyses, the R ecosystem (<code>MatchIt</code>, <code>cobalt</code>) is the workhorse — the <a href="https://xiangao.github.io/causal_econometrics_guide/matching.html">companion R chapter</a> walks through full matching, CEM, and balance diagnostics in detail.</p>
+<p>For applied work in Julia, IPW or AIPW is usually more practical than 1:1 matching. Julia has good regression tools, but not yet a full matching toolkit. For a matched analysis with many diagnostics, I would still use R’s <code>MatchIt</code> and <code>cobalt</code>.</p>
 </section>
 <section id="summary" class="level2" data-number="7.11">
 <h2 data-number="7.11" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.11</span> Summary</h2>
 <ul>
-<li><strong>Matching</strong> restricts comparisons to similar treated–control pairs, approximating a randomised experiment.</li>
-<li><strong>Propensity score nearest-neighbour matching</strong> is the simplest form and implementable in a few lines of Julia.</li>
-<li><strong>Balance diagnostics</strong> (standardised mean differences) verify the matching’s success.</li>
-<li><strong>Estimation</strong>: paired-difference SE on the matched data; regression adjustment on the matched sample (an even better default).</li>
-<li>For richer matching (optimal, full, CEM) and mature balance tooling, use R’s <code>MatchIt</code>/<code>cobalt</code> ecosystem.</li>
+<li>Matching is for selection on observables. It does not fix unobserved confounding.</li>
+<li>The main diagnostic is balance, not the treatment-effect coefficient.</li>
+<li>Propensity-score nearest-neighbor matching is easy to implement in Julia, but full matching and CEM are better handled in R.</li>
+<li>IPW and entropy balancing are often more practical Julia workflows.</li>
 </ul>
 
 

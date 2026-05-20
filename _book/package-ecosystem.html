@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./references.html" rel="next">
 <link href="./graph-to-estimate.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 
 
 <link rel="stylesheet" href="style.css">
@@ -457,7 +457,7 @@ try {
 </header>
 
 
-<p>This book relies on a small Julia causal econometrics stack developed alongside the examples. The packages live under <code>~/projects/software</code> and are loaded through this book’s local Julia environment. The goal is not to replace the broader Julia ecosystem, but to fill the gaps that matter for the workflows in this text: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.</p>
+<p>This appendix lists the Julia packages used in the book. Several were written alongside the examples and live under <code>~/projects/software</code>. They fill the gaps needed for the workflows here: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.</p>
 <p>The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as <code>../../software/Panelest.jl</code>, which resolves to <code>~/projects/software/Panelest.jl</code>.</p>
 <section id="working-with-the-environment" class="level2" data-number="25.1">
 <h2 data-number="25.1" class="anchored" data-anchor-id="working-with-the-environment"><span class="header-section-number">25.1</span> Working With The Environment</h2>
@@ -534,7 +534,7 @@ try {
 </section>
 <section id="panelest.jl" class="level2" data-number="25.3">
 <h2 data-number="25.3" class="anchored" data-anchor-id="panelest.jl"><span class="header-section-number">25.3</span> Panelest.jl</h2>
-<p><code>Panelest.jl</code> is the workhorse for regression models with high-dimensional fixed effects. Its API is intentionally close to the formula style used throughout the book:</p>
+<p><code>Panelest.jl</code> handles the regression models with high-dimensional fixed effects. Its API stays close to the formula style used throughout the book:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span>, <span class="bu">Vcov</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">feols</span>(df, <span class="pp">@formula</span>(y <span class="op">~</span> x <span class="op">+</span> <span class="fu">fe</span>(id) <span class="op">+</span> <span class="fu">fe</span>(year)))</span>

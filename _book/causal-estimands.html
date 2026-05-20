@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./graphs-identification-estimation.html" rel="next">
 <link href="./identification.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,16 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -487,7 +490,7 @@ window.Quarto = {
 </header>
 
 
-<div id="14fef46a" class="cell">
+<div id="fa0d22e9" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -495,12 +498,12 @@ window.Quarto = {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Before choosing an estimator, we need to know what we are estimating. The applied causal-inference literature has accumulated a zoo of estimands — ATE, ATT, LATE, CATE, QTE — and beginners often treat them as competing answers to one question. They are not. Each is a separate target that the data may or may not pin down. The estimator choice flows from which estimand you want.</p>
-<p>This chapter constructs one data-generating process where all five estimands are well-defined and computable. We then compute each one and discuss what the differences tell us.</p>
+<p>Before choosing an estimator, we need to know the estimand. ATE, ATT, LATE, CATE and QTE are not five ways to estimate the same object. They are five different objects. Sometimes they are numerically close, but that is a feature of the data-generating process, not a general result.</p>
+<p>Here I use one simulated data set so we can calculate all of them. The simulation is useful because we observe both potential outcomes. In real data we do not, which is exactly why identification assumptions matter.</p>
 <section id="the-data-generating-process" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">2.1</span> The data-generating process</h2>
-<p>Each individual <span class="math inline">\(i\)</span> has a baseline covariate <span class="math inline">\(X_i\)</span> (think: years of schooling), a latent type <span class="math inline">\(U_i\)</span> (think: ability), and a binary treatment <span class="math inline">\(D_i\)</span> (think: enrolling in a job-training programme). The instrument <span class="math inline">\(Z_i\)</span> is a randomly offered programme slot — it shifts treatment but does not directly affect the outcome.</p>
-<div id="dgp" class="cell" data-cache="true">
+<p>Each person has an observed covariate <span class="math inline">\(X_i\)</span>, an unobserved type <span class="math inline">\(U_i\)</span>, and a binary treatment <span class="math inline">\(D_i\)</span>. The instrument <span class="math inline">\(Z_i\)</span> is a random offer. It changes the probability of treatment, but it has no direct effect on the outcome.</p>
+<div id="cell-dgp" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -528,8 +531,74 @@ window.Quarto = {
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(X<span class="op">=</span>X, Z<span class="op">=</span>Z, D<span class="op">=</span>D, Y<span class="op">=</span>Y)</span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="dgp" class="cell-output cell-output-display" data-execution_count="3">
+<div><div style="float: left;"><span>6×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Z</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">D</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Y</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Bool">Bool</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: right;">0.173575</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">1.08396</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: right;">0.321662</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">-1.93861</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: right;">0.258585</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">0.954567</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: right;">0.166439</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">1.64741</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: right;">0.527015</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">true</td>
+<td style="text-align: right;">3.5308</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: right;">0.483022</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">false</td>
+<td style="text-align: right;">0.286693</td>
+</tr>
+</tbody>
+</table>
 </div>
-<p>Notice that we have full access to the potential outcomes <code>Y0</code> and <code>Y1</code> — a luxury only available in simulation. In real data we observe only one of them per unit, which is the fundamental problem of causal inference.</p>
+</div>
+</div>
+<p>In the simulated data we have <code>Y0</code> and <code>Y1</code> for every observation. That lets us calculate the true estimands directly. With real data, each observation only reveals one potential outcome.</p>
 </section>
 <section id="the-five-estimands" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="the-five-estimands"><span class="header-section-number">2.2</span> The five estimands</h2>
@@ -538,13 +607,17 @@ window.Quarto = {
 <p><span class="math display">\[
 \text{ATE} = \mathbb{E}[Y(1) - Y(0)]
 \]</span></p>
-<p>The expected effect of treatment if everyone in the population were treated vs.&nbsp;if everyone were not.</p>
-<div id="ate" class="cell" data-cache="true">
+<p>ATE is the mean effect in the whole population. It compares the mean outcome if everyone were treated with the mean outcome if nobody were treated.</p>
+<div id="ate" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ate_true <span class="op">=</span> <span class="fu">mean</span>(Y1 <span class="op">.-</span> Y0)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATE (population mean of Y1 - Y0) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate_true)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># What the integral over τ(X) should be: ∫(1 + 2x) dx on [0,1] = 1 + 1 = 2</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ATE (population mean of Y1 - Y0) = 2.002
+Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</code></pre>
+</div>
 </div>
 </section>
 <section id="att-average-treatment-effect-on-the-treated" class="level3" data-number="2.2.2">
@@ -552,49 +625,61 @@ window.Quarto = {
 <p><span class="math display">\[
 \text{ATT} = \mathbb{E}[Y(1) - Y(0) \mid D = 1]
 \]</span></p>
-<p>The expected effect of treatment among those who actually took treatment. Differs from ATE when treatment uptake is selective.</p>
-<div id="att" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>att_true <span class="op">=</span> <span class="fu">mean</span>(Y1[D] <span class="op">.-</span> Y0[D])</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATT (mean of Y1-Y0 conditional on D=1) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_true)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>ATT is the mean effect for the units that actually took treatment. It differs from ATE when treatment selection is related to treatment-effect heterogeneity.</p>
+<div id="att" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>att_true <span class="op">=</span> <span class="fu">mean</span>(Y1[D] <span class="op">.-</span> Y0[D])</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATT (mean of Y1-Y0 conditional on D=1) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_true)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ATT (mean of Y1-Y0 conditional on D=1) = 2.003</code></pre>
 </div>
-<p>The ATT here is similar to the ATE because the heterogeneity in τ depends on <span class="math inline">\(X\)</span> (uniform), and treatment selection depends on <span class="math inline">\(U\)</span> which is independent of <span class="math inline">\(X\)</span>. If <span class="math inline">\(X\)</span> were correlated with <span class="math inline">\(U\)</span>, ATT would diverge from ATE.</p>
+</div>
+<p>Here ATT is close to ATE. The reason is mechanical: treatment effects depend on <span class="math inline">\(X\)</span>, while selection into treatment depends on <span class="math inline">\(U\)</span>, and <span class="math inline">\(X\)</span> is independent of <span class="math inline">\(U\)</span>. If selection also depended on <span class="math inline">\(X\)</span>, ATT would move away from ATE.</p>
 </section>
 <section id="late-local-average-treatment-effect-imbens-angrist" class="level3" data-number="2.2.3">
 <h3 data-number="2.2.3" class="anchored" data-anchor-id="late-local-average-treatment-effect-imbens-angrist"><span class="header-section-number">2.2.3</span> LATE — local average treatment effect (Imbens-Angrist)</h3>
 <p><span class="math display">\[
 \text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid D(1) &gt; D(0)]
 \]</span></p>
-<p>The effect among <strong>compliers</strong> — individuals whose treatment status changes with the instrument. The Wald estimator identifies LATE under the standard IV assumptions (exclusion, monotonicity, relevance).</p>
-<div id="late" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>compliers <span class="op">=</span> (D1 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0 <span class="op">.==</span> <span class="fl">0</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>late_true <span class="op">=</span> <span class="fu">mean</span>(Y1[compliers] <span class="op">.-</span> Y0[compliers])</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"LATE (mean of Y1-Y0 conditional on complier status) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, late_true)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Share of compliers: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(compliers))</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Wald estimator from the data alone</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>wald <span class="op">=</span> (<span class="fu">mean</span>(Y[Z <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[Z <span class="op">.==</span> <span class="fl">0</span>])) <span class="op">/</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>       (<span class="fu">mean</span>(D[Z <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(D[Z <span class="op">.==</span> <span class="fl">0</span>]))</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Wald IV estimate (should match LATE): %.3f</span><span class="sc">\n</span><span class="st">"</span>, wald)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>LATE is the mean effect for compliers, the units whose treatment status is changed by the instrument. Under the usual IV assumptions, the Wald estimator identifies this effect, not the ATE.</p>
+<div id="late" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>compliers <span class="op">=</span> (D1 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0 <span class="op">.==</span> <span class="fl">0</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>late_true <span class="op">=</span> <span class="fu">mean</span>(Y1[compliers] <span class="op">.-</span> Y0[compliers])</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"LATE (mean of Y1-Y0 conditional on complier status) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, late_true)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Share of compliers: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(compliers))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Wald estimator from the data alone</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>wald <span class="op">=</span> (<span class="fu">mean</span>(Y[Z <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[Z <span class="op">.==</span> <span class="fl">0</span>])) <span class="op">/</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>       (<span class="fu">mean</span>(D[Z <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(D[Z <span class="op">.==</span> <span class="fl">0</span>]))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Wald IV estimate (should match LATE): %.3f</span><span class="sc">\n</span><span class="st">"</span>, wald)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>LATE (mean of Y1-Y0 conditional on complier status) = 2.001
+Share of compliers: 0.487
+Wald IV estimate (should match LATE): 1.974</code></pre>
 </div>
-<p>LATE is what an IV regression actually estimates under heterogeneous effects — <strong>not</strong> the ATE. The Wald estimator recovers LATE because the instrument only shifts the compliers’ treatment status, so the IV “averages” the effect over that subpopulation.</p>
+</div>
+<p>With heterogeneous effects, IV averages over the people moved by the instrument. In this example the Wald estimate matches the complier mean because <span class="math inline">\(Z\)</span> changes treatment only for that group.</p>
 </section>
 <section id="cate-conditional-average-treatment-effect" class="level3" data-number="2.2.4">
 <h3 data-number="2.2.4" class="anchored" data-anchor-id="cate-conditional-average-treatment-effect"><span class="header-section-number">2.2.4</span> CATE — conditional average treatment effect</h3>
 <p><span class="math display">\[
 \text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
 \]</span></p>
-<p>The effect as a function of the covariate <span class="math inline">\(X\)</span>. By construction in our DGP, CATE(<span class="math inline">\(x\)</span>) = <span class="math inline">\(\tau(x) = 1 + 2x\)</span>.</p>
-<div id="cate" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bin X and compute mean of (Y1 - Y0) in each bin</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>nbins <span class="op">=</span> <span class="fl">20</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span>nbins <span class="op">+</span> <span class="fl">1</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>centers <span class="op">=</span> (edges[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>] <span class="op">.+</span> edges[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>]) <span class="op">./</span> <span class="fl">2</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>cate_est <span class="op">=</span> [<span class="fu">mean</span>((Y1 <span class="op">.-</span> Y0)[(X <span class="op">.&gt;=</span> edges[k]) <span class="op">.&amp;</span> (X <span class="op">.&lt;</span> edges[k<span class="op">+</span><span class="fl">1</span>])])</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>            for k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nbins]</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.2: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">4</span>], <span class="fu">τ</span>(<span class="fl">0.2</span>))</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.8: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">16</span>], <span class="fu">τ</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>CATE keeps <span class="math inline">\(X\)</span> in the estimand. In this DGP, CATE(<span class="math inline">\(x\)</span>) is simply <span class="math inline">\(\tau(x)=1+2x\)</span>.</p>
+<div id="cate" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bin X and compute mean of (Y1 - Y0) in each bin</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>nbins <span class="op">=</span> <span class="fl">20</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span>nbins <span class="op">+</span> <span class="fl">1</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>centers <span class="op">=</span> (edges[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>] <span class="op">.+</span> edges[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>]) <span class="op">./</span> <span class="fl">2</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>cate_est <span class="op">=</span> [<span class="fu">mean</span>((Y1 <span class="op">.-</span> Y0)[(X <span class="op">.&gt;=</span> edges[k]) <span class="op">.&amp;</span> (X <span class="op">.&lt;</span> edges[k<span class="op">+</span><span class="fl">1</span>])])</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            for k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nbins]</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.2: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">4</span>], <span class="fu">τ</span>(<span class="fl">0.2</span>))</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.8: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">16</span>], <span class="fu">τ</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CATE at x=0.2: estimated 1.35, true 1.40
+CATE at x=0.8: estimated 2.55, true 2.60</code></pre>
+</div>
 </div>
 </section>
 <section id="qte-quantile-treatment-effect" class="level3" data-number="2.2.5">
@@ -602,80 +687,99 @@ window.Quarto = {
 <p><span class="math display">\[
 \text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau)
 \]</span></p>
-<p>The difference between the <span class="math inline">\(\tau\)</span>-th quantile of the treated marginal distribution and the <span class="math inline">\(\tau\)</span>-th quantile of the control marginal. Note that QTE compares <strong>distributions</strong> (one quantile to one quantile) — it does not track individuals across the two potential outcomes.</p>
-<div id="qte" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>qte_grid <span class="op">=</span> <span class="fl">0.05</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">0.95</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>qte_est  <span class="op">=</span> [<span class="fu">quantile</span>(Y1, q) <span class="op">-</span> <span class="fu">quantile</span>(Y0, q) for q <span class="kw">in</span> qte_grid]</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.10) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.10</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.10</span>))</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.50) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.50</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.50</span>))</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.90) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.90</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.90</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>QTE compares the two marginal outcome distributions. It is the difference between a quantile under treatment and the same quantile under control. It does not follow the same person across the two potential outcomes.</p>
+<div id="qte" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>qte_grid <span class="op">=</span> <span class="fl">0.05</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">0.95</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>qte_est  <span class="op">=</span> [<span class="fu">quantile</span>(Y1, q) <span class="op">-</span> <span class="fu">quantile</span>(Y0, q) for q <span class="kw">in</span> qte_grid]</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.10) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.10</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.10</span>))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.50) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.50</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.50</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"QTE(0.90) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(Y1, <span class="fl">0.90</span>) <span class="op">-</span> <span class="fu">quantile</span>(Y0, <span class="fl">0.90</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>QTE(0.10) = 1.702
+QTE(0.50) = 1.991
+QTE(0.90) = 2.285</code></pre>
+</div>
 </div>
 </section>
 </section>
 <section id="all-five-estimands-on-one-plot" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="all-five-estimands-on-one-plot"><span class="header-section-number">2.3</span> All five estimands on one plot</h2>
-<div id="estimand-plot" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>ax1 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X (covariate)"</span>, ylabel <span class="op">=</span> <span class="st">"Effect"</span>,</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"CATE(x) vs scalar estimands"</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax1, centers, cate_est, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"CATE(x)"</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax1, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fu">τ</span>(<span class="fl">0</span>), <span class="fu">τ</span>(<span class="fl">1</span>)], color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dot, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [ate_true], color <span class="op">=</span> <span class="op">:</span>black,     linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"ATE"</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [att_true], color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"ATT"</span>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [late_true], color <span class="op">=</span> <span class="op">:</span>seagreen,  linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"LATE"</span>)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax1, position <span class="op">=</span> <span class="op">:</span>lt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], xlabel <span class="op">=</span> <span class="st">"Quantile τ"</span>, ylabel <span class="op">=</span> <span class="st">"QTE(τ)"</span>,</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"QTE — distribution-level effect"</span>)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, <span class="fu">collect</span>(qte_grid), qte_est, color <span class="op">=</span> <span class="op">:</span>purple, linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax2, [ate_true], color <span class="op">=</span> <span class="op">:</span>black, linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="fu">text!</span>(ax2, <span class="fl">0.05</span>, ate_true <span class="op">+</span> <span class="fl">0.05</span>; text <span class="op">=</span> <span class="st">"ATE"</span>, color <span class="op">=</span> <span class="op">:</span>black, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="cell-estimand-plot" class="cell" data-cache="true" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>ax1 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X (covariate)"</span>, ylabel <span class="op">=</span> <span class="st">"Effect"</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"CATE(x) vs scalar estimands"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax1, centers, cate_est, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"CATE(x)"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax1, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fu">τ</span>(<span class="fl">0</span>), <span class="fu">τ</span>(<span class="fl">1</span>)], color <span class="op">=</span> <span class="op">:</span>firebrick, linestyle <span class="op">=</span> <span class="op">:</span>dot, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [ate_true], color <span class="op">=</span> <span class="op">:</span>black,     linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"ATE"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [att_true], color <span class="op">=</span> <span class="op">:</span>steelblue, linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"ATT"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax1, [late_true], color <span class="op">=</span> <span class="op">:</span>seagreen,  linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash, label <span class="op">=</span> <span class="st">"LATE"</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax1, position <span class="op">=</span> <span class="op">:</span>lt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], xlabel <span class="op">=</span> <span class="st">"Quantile τ"</span>, ylabel <span class="op">=</span> <span class="st">"QTE(τ)"</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"QTE — distribution-level effect"</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax2, <span class="fu">collect</span>(qte_grid), qte_est, color <span class="op">=</span> <span class="op">:</span>purple, linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax2, [ate_true], color <span class="op">=</span> <span class="op">:</span>black, linewidth <span class="op">=</span> <span class="fl">1.5</span>, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="fu">text!</span>(ax2, <span class="fl">0.05</span>, ate_true <span class="op">+</span> <span class="fl">0.05</span>; text <span class="op">=</span> <span class="st">"ATE"</span>, color <span class="op">=</span> <span class="op">:</span>black, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div id="estimand-plot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="causal-estimands_files/figure-html/estimand-plot-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Five views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(τ) shows how the effect varies across the outcome distribution. Each curve answers a different question.</figcaption>
+</figure>
 </div>
-<p>The left panel makes the conceptual point clearly. <strong>ATE</strong>, <strong>ATT</strong>, and <strong>LATE</strong> each collapse the heterogeneous τ(<span class="math inline">\(x\)</span>) curve into a single number — but they collapse it differently. ATE averages over the full population’s <span class="math inline">\(X\)</span> distribution. ATT averages over the treated subpopulation. LATE averages over compliers.</p>
-<p><strong>CATE</strong> keeps the heterogeneity along <span class="math inline">\(X\)</span> explicit. <strong>QTE</strong> (right panel) keeps heterogeneity along the outcome distribution explicit. Neither nests the others: CATE and QTE answer fundamentally different questions about heterogeneity (covariate-level vs distribution-level).</p>
+</div>
+</div>
+<p>The left panel shows why the scalar estimands can differ. ATE averages <span class="math inline">\(\tau(x)\)</span> over the whole population. ATT averages it over the treated. LATE averages it over compliers. CATE does not collapse the curve.</p>
+<p>QTE, in the right panel, is different again. It describes how the treatment changes the outcome distribution. It is not a conditional treatment effect as a function of <span class="math inline">\(X\)</span>.</p>
 </section>
 <section id="when-the-estimands-differ" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="when-the-estimands-differ"><span class="header-section-number">2.4</span> When the estimands differ</h2>
-<p>In this DGP all four scalar estimands are similar because:</p>
+<p>In the first DGP the scalar estimands are close because:</p>
 <ul>
 <li><span class="math inline">\(X\)</span> is uniform on [0, 1] (so ATE = average of τ over uniform <span class="math inline">\(X\)</span> = 2)</li>
 <li>Treatment selection is on <span class="math inline">\(U\)</span> (unobserved type), not <span class="math inline">\(X\)</span> (which drives τ), so ATT ≈ ATE</li>
 <li>The instrument shifts compliers uniformly across <span class="math inline">\(X\)</span>, so LATE ≈ ATE</li>
 </ul>
-<p>Change any of these assumptions and the estimands diverge. To see this, modify the DGP so that high-<span class="math inline">\(X\)</span> individuals are more likely to take treatment:</p>
-<div id="dgp-selective" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>U2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>Z2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Bernoulli</span>(<span class="fl">0.5</span>), n)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># High X → much more likely to take treatment (selection on X, the modifier)</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>pD0_2 <span class="op">=</span> @. <span class="fu">clamp</span>(<span class="fl">0.10</span> <span class="op">+</span> <span class="fl">0.20</span> <span class="op">*</span> U2 <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> X2, <span class="fl">0</span>, <span class="fl">1</span>)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>pD1_2 <span class="op">=</span> @. <span class="fu">clamp</span>(pD0_2 <span class="op">+</span> <span class="fl">0.50</span>, <span class="fl">0</span>, <span class="fl">1</span>)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>D0_2  <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD0_2</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>D1_2  <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD1_2</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>D2    <span class="op">=</span> <span class="fu">ifelse</span>.(Z2 <span class="op">.==</span> <span class="fl">1</span>, D1_2, D0_2)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>Y0_2  <span class="op">=</span> <span class="fl">0.5</span> <span class="op">.*</span> X2 <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> U2 <span class="op">.+</span> <span class="fu">randn</span>(n)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>Y1_2  <span class="op">=</span> Y0_2 <span class="op">.+</span> <span class="fu">τ</span>.(X2)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>Y2    <span class="op">=</span> <span class="fu">ifelse</span>.(D2, Y1_2, Y0_2)</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>ate2  <span class="op">=</span> <span class="fu">mean</span>(Y1_2 <span class="op">.-</span> Y0_2)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>att2  <span class="op">=</span> <span class="fu">mean</span>(Y1_2[D2] <span class="op">.-</span> Y0_2[D2])</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>late2 <span class="op">=</span> <span class="fu">mean</span>((Y1_2 <span class="op">.-</span> Y0_2)[(D1_2 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0_2 <span class="op">.==</span> <span class="fl">0</span>)])</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Selection-on-X DGP:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  ATE  = %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate2)</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  ATT  = %.3f (now higher because treated have higher X → larger τ)</span><span class="sc">\n</span><span class="st">"</span>, att2)</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  LATE = %.3f (compliers' mean X)</span><span class="sc">\n</span><span class="st">"</span>, late2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If treatment selection depends on the effect modifier, the numbers separate. Here I make high-<span class="math inline">\(X\)</span> units more likely to take treatment:</p>
+<div id="dgp-selective" class="cell" data-cache="true" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>U2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>Z2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Bernoulli</span>(<span class="fl">0.5</span>), n)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># High X → much more likely to take treatment (selection on X, the modifier)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>pD0_2 <span class="op">=</span> @. <span class="fu">clamp</span>(<span class="fl">0.10</span> <span class="op">+</span> <span class="fl">0.20</span> <span class="op">*</span> U2 <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> X2, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>pD1_2 <span class="op">=</span> @. <span class="fu">clamp</span>(pD0_2 <span class="op">+</span> <span class="fl">0.50</span>, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>D0_2  <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD0_2</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>D1_2  <span class="op">=</span> @. <span class="fu">rand</span>() <span class="op">&lt;</span> pD1_2</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>D2    <span class="op">=</span> <span class="fu">ifelse</span>.(Z2 <span class="op">.==</span> <span class="fl">1</span>, D1_2, D0_2)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>Y0_2  <span class="op">=</span> <span class="fl">0.5</span> <span class="op">.*</span> X2 <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> U2 <span class="op">.+</span> <span class="fu">randn</span>(n)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>Y1_2  <span class="op">=</span> Y0_2 <span class="op">.+</span> <span class="fu">τ</span>.(X2)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>Y2    <span class="op">=</span> <span class="fu">ifelse</span>.(D2, Y1_2, Y0_2)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>ate2  <span class="op">=</span> <span class="fu">mean</span>(Y1_2 <span class="op">.-</span> Y0_2)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>att2  <span class="op">=</span> <span class="fu">mean</span>(Y1_2[D2] <span class="op">.-</span> Y0_2[D2])</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>late2 <span class="op">=</span> <span class="fu">mean</span>((Y1_2 <span class="op">.-</span> Y0_2)[(D1_2 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0_2 <span class="op">.==</span> <span class="fl">0</span>)])</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Selection-on-X DGP:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  ATE  = %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate2)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  ATT  = %.3f (now higher because treated have higher X → larger τ)</span><span class="sc">\n</span><span class="st">"</span>, att2)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  LATE = %.3f (compliers' mean X)</span><span class="sc">\n</span><span class="st">"</span>, late2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Selection-on-X DGP:
+  ATE  = 1.999
+  ATT  = 2.123 (now higher because treated have higher X → larger τ)
+  LATE = 1.916 (compliers' mean X)</code></pre>
 </div>
-<p>Now ATT exceeds ATE because the treated subpopulation has higher <span class="math inline">\(X\)</span> and therefore larger treatment effects. The choice between reporting ATE and ATT is no longer cosmetic — it changes what the policy implication is.</p>
+</div>
+<p>Now ATT is larger than ATE. The treated group has higher <span class="math inline">\(X\)</span>, and high <span class="math inline">\(X\)</span> means a larger treatment effect. In this case reporting ATE or ATT changes the substantive answer.</p>
 </section>
 <section id="which-estimand-should-you-choose" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="which-estimand-should-you-choose"><span class="header-section-number">2.5</span> Which estimand should you choose?</h2>
-<p>The right estimand depends on the policy question:</p>
+<p>The estimand should come from the research question:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
@@ -714,15 +818,15 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>The same applied paper can defensibly report multiple estimands. The blog chapter on Proposition 99 reported the same-data-different-estimators exercise — DiD, SC, SDiD, TASC all targeting ATT under different assumptions. That is one direction. The complementary direction is to keep the estimator fixed and report multiple estimands: a regression with heterogeneous effects can yield ATE, ATT, and CATE(<span class="math inline">\(x\)</span>) jointly.</p>
+<p>It is fine for one paper to report more than one estimand, as long as each is named correctly. What is not fine is to report the coefficient that is easiest to estimate and call it “the causal effect.”</p>
 </section>
 <section id="summary" class="level2" data-number="2.6">
 <h2 data-number="2.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">2.6</span> Summary</h2>
 <ul>
-<li><strong>ATE / ATT / LATE</strong> are different scalar averages of the underlying heterogeneous treatment effect. They coincide only under strong homogeneity or specific selection structure.</li>
-<li><strong>CATE(<span class="math inline">\(x\)</span>)</strong> and <strong>QTE(<span class="math inline">\(\tau\)</span>)</strong> preserve the heterogeneity, along different dimensions: covariates vs the outcome distribution.</li>
-<li>IV regressions estimate LATE, not ATE. Reporting an IV coefficient as “the” causal effect is a category error when effects are heterogeneous.</li>
-<li>Picking the right estimand is the substantive step. The estimator question — OLS, IV, matching, AIPW, TMLE — only makes sense once the estimand is fixed.</li>
+<li>ATE, ATT and LATE are different averages of the individual treatment effect.</li>
+<li>CATE(<span class="math inline">\(x\)</span>) keeps heterogeneity by covariates. QTE(<span class="math inline">\(\tau\)</span>) describes changes in the outcome distribution.</li>
+<li>With heterogeneous effects, IV estimates LATE. It should not be described as ATE unless extra assumptions justify that interpretation.</li>
+<li>Estimator choice comes after the estimand is fixed.</li>
 </ul>
 
 

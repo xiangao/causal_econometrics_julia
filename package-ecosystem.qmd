@@ -1,6 +1,6 @@
 # Julia Packages Used in This Book
 
-This book relies on a small Julia causal econometrics stack developed alongside the examples. The packages live under `~/projects/software` and are loaded through this book's local Julia environment. The goal is not to replace the broader Julia ecosystem, but to fill the gaps that matter for the workflows in this text: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.
+This appendix lists the Julia packages used in the book. Several were written alongside the examples and live under `~/projects/software`. They fill the gaps needed for the workflows here: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.
 
 The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as `../../software/Panelest.jl`, which resolves to `~/projects/software/Panelest.jl`.
 
@@ -33,7 +33,7 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 
 ## Panelest.jl
 
-`Panelest.jl` is the workhorse for regression models with high-dimensional fixed effects. Its API is intentionally close to the formula style used throughout the book:
+`Panelest.jl` handles the regression models with high-dimensional fixed effects. Its API stays close to the formula style used throughout the book:
 
 ```julia
 using Panelest, Vcov

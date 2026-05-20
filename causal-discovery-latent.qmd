@@ -75,15 +75,20 @@ using Combinatorics: powerset
 using Distributions: Normal, quantile
 ```
 
-In the previous chapter we assumed all causally relevant variables were observed. This assumption — called **causal sufficiency** — rarely holds in economics: unobserved ability confounds wage regressions, unobserved demand shocks confound price–quantity relationships, unobserved peer effects confound social network studies.
+The previous chapter assumed all causally relevant variables were observed.
+That is a strong assumption. In economics, ability, demand shocks, and peer
+effects are often unobserved.
 
-When latent confounders exist, constraint-based discovery algorithms like PC and RSL-D return incorrect results. This chapter introduces two algorithms that handle the latent variable case.
+When latent confounders exist, PC and RSL-D can give the wrong graph. Here I
+use algorithms designed for latent variables.
 
 ### Why PC fails with latent variables
 
 Suppose the true graph is $X \leftarrow U \rightarrow Y$ where $U$ is unobserved. In the observed data, $X$ and $Y$ are marginally correlated (through $U$) and no observed conditioning set separates them. PC will incorrectly draw an edge $X - Y$ and may orient it as $X \to Y$ or $X \leftarrow Y$, neither of which exists in the truth.
 
-More subtly, conditioning on a collider that is a descendant of $U$ can *open* a path between $X$ and $Y$, further distorting the CI structure that PC observes. With even a single hidden common cause, the d-separation statements in the observed data no longer correspond to those of any DAG over just the observed variables — they require the richer MAG representation.
+With even one hidden common cause, the conditional independences among
+observed variables may not correspond to any DAG on the observed variables
+alone. We need a MAG/PAG representation.
 
 ## Maximal Ancestral Graphs and PAGs
 
@@ -93,7 +98,9 @@ With latent variables, the appropriate representation is a **Maximal Ancestral G
 - $X \leftrightarrow Y$: $X$ and $Y$ have a common hidden ancestor (hidden confounder)
 - No edge: $X \perp\!\!\!\perp Y \mid Z$ for some $Z \subseteq \mathbf{O} \setminus \{X, Y\}$
 
-The MAG over observed variables is the "shadow" of the full DAG: it summarizes all causal and confounding relationships that are visible in the observed data, without requiring us to know or name the latent variables.
+The MAG over observed variables summarizes the causal and confounding
+relationships visible in the observed data without naming the latent
+variables.
 
 Just as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have equivalence classes represented by **Partial Ancestral Graphs (PAGs)**. In a PAG, the mark $\circ$ on an edge endpoint means "could be arrowhead or tail in some member of the equivalence class."
 
@@ -167,7 +174,9 @@ side_by_side([
 
 ## FCI Algorithm
 
-The **FCI algorithm** (Fast Causal Inference; Spirtes, Meek & Richardson, 1995) is the standard extension of PC to the latent variable case. Like PC, it starts from a complete graph and removes edges via CI tests. After skeleton discovery, it applies a richer set of orientation rules that can produce bidirected edges $X \leftrightarrow Y$ indicating hidden common causes.
+FCI is the extension of PC for latent variables. It starts from a complete
+graph, removes edges with CI tests, and then uses orientation rules that can
+produce bidirected edges for hidden common causes.
 
 **How FCI extends PC:**
 
@@ -176,7 +185,8 @@ The **FCI algorithm** (Fast Causal Inference; Spirtes, Meek & Richardson, 1995) 
 3. **Phase 3 (collider detection):** For each unshielded triple $X \circ\!-\!\circ Z \circ\!-\!\circ Y$ where $X, Y$ non-adjacent: orient as $X \circ\!\to Z \leftarrow\!\circ Y$ if $Z$ is not in the separating set of $X$ and $Y$.
 4. **Phase 4 (rule propagation):** Apply 10 orientation rules that propagate known marks without creating contradictions, including rules that can produce definite $\to$ and $\leftrightarrow$ edges.
 
-The richer mark set ($\to$, $\leftarrow$, $\circ$, $\leftrightarrow$) allows FCI to express what is known vs. unknown — at the cost of more complex output to interpret.
+The extra marks let FCI say what is known and what remains uncertain, but the
+output is harder to read than a DAG.
 
 ```{julia}
 sig_level = 0.01
@@ -223,7 +233,9 @@ $$\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \ha
 
 where $\hat P = \hat\Sigma^{-1}$ is the precision matrix and $\tau$ is a threshold from the Fisher-Z distribution.
 
-**Why the precision matrix?** In a Gaussian linear model, the $(i,j)$ entry of the precision matrix $P = \Sigma^{-1}$ is zero if and only if $X_i \perp\!\!\!\perp X_j \mid \text{all other variables}$. The partial correlation $P_{ij}/\sqrt{P_{ii}P_{jj}}$ is therefore a one-shot test for Markov boundary membership, replacing the many conditioning-set CI tests that PC or FCI require to find the same information. This is the key computational saving.
+In a Gaussian linear model, a zero in the precision matrix means conditional
+independence given all other variables. L-MARVEL uses this fact to estimate
+Markov boundaries with fewer CI tests.
 
 The removability criterion changes for the latent case (Theorem 32). Recall: $\text{Mb}(X)$ is the Markov boundary of $X$ — the minimal conditioning set that screens $X$ off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and $\text{Ne}(X)$ is the set of variables directly adjacent to $X$ in the current skeleton. Variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X)$:
 
@@ -348,7 +360,8 @@ end
 | MB estimation | CI tests | CI tests | Precision matrix |
 | CI complexity | PC: $O(p^2 2^p)$ worst case; RSL-D: $O(p \cdot d \cdot |\text{MB}|^2)$ | Same as PC | Fewer (Gaussian MB pre-filters) |
 
-FCI and L-MARVEL address complementary needs. If you need to orient edges, use FCI. If you only need the skeleton and efficiency matters, L-MARVEL's precision-matrix Markov boundary estimator reduces the CI test burden.
+FCI and L-MARVEL serve different purposes. Use FCI when orientations matter.
+Use L-MARVEL when the goal is a faster skeleton screen.
 
 ### Practical decision guide
 
@@ -369,14 +382,16 @@ FCI and L-MARVEL address complementary needs. If you need to orient edges, use F
 
 ### From discovery to estimation
 
-Causal discovery is a first step, not a final answer. The typical research workflow is:
+Causal discovery is a first step, not a final answer. A reasonable workflow
+is:
 
 1. **Discover** — run FCI or L-MARVEL to get candidate adjacencies and, if using FCI, some edge marks
 2. **Refine** — apply temporal ordering, institutional knowledge, and exclusion restrictions to orient remaining edges
 3. **Identify** — check whether the effect of interest is identified given the refined graph (backdoor, front-door, ID algorithm)
 4. **Estimate** — use TMLE, AIPW, or the estimators in earlier chapters
 
-Causal discovery narrows the space of possible structures; domain knowledge finishes the job.
+Causal discovery narrows the space of possible structures. Domain knowledge
+still does the hard work.
 
 ::: {.callout-warning}
 **Sample size requirements**
@@ -392,7 +407,8 @@ FCI's PAG output distinguishes definite causes ($\to$), definite hidden common c
 
 ## How Much Does Causal Discovery Help in Economics?
 
-An honest assessment: recovering even the true MAG skeleton is far from recovering the full DAG. Several layers of information remain missing:
+Recovering the MAG skeleton is still far from recovering the full DAG. Much
+is still missing:
 
 | What is recovered | What is still missing |
 |---|---|
@@ -413,4 +429,6 @@ The core econometric question is almost always "what is the causal effect of $X$
 
 4. **Hypothesis generation when theory is silent.** For new economic phenomena — platform markets, fintech, peer effects in novel settings — where theory does not give a strong causal ordering, discovery algorithms generate hypotheses worth investigating with better-powered research designs.
 
-**The bottom line:** causal discovery is a complement to the standard econometric toolkit — IV, RD, DiD, synthetic control — not a substitute. It is most useful as a diagnostic and hypothesis-generating tool early in a research project, before the hard work of finding credible identifying variation begins.
+Causal discovery is a complement to IV, RD, DiD, and synthetic control, not a
+substitute. It is most useful early in a project, as a diagnostic and
+hypothesis-generating tool.

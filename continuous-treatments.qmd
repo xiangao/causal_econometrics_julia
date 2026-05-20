@@ -24,20 +24,21 @@ using Printf
 using CairoMakie
 ```
 
-The earlier chapters treated $D$ as binary. Real treatments are often
-*continuous* (dose, dollars, hours) or *multivalued* (one of several
-treatment arms). For these we estimate the entire **dose-response curve**
+So far most examples use a binary treatment. Many treatments are not binary:
+dose, dollars, hours, or a treatment with several levels. In those cases
+"the treatment effect" is not one number. We usually want a dose-response
+curve,
 
 $$
 \mu(d) = \mathbb{E}[Y(d)], \quad d \in \mathcal{D}.
 $$
 
-This chapter implements two workhorse approaches inline in Julia: the
-generalized propensity score (Hirano-Imbens 2004) and a doubly-robust
-extension. For modern modified-treatment-policy machinery (LMTP, Diaz-
-Hejazi 2020), R's `lmtp` package is the workhorse — covered in the
-[companion R chapter](https://xiangao.github.io/causal_econometrics_guide/continuous-treatments.html)
-and in [the longer LMTP blog chapter](https://xiangao.github.io/blog_book/lmtp.html).
+Here I implement two approaches directly in Julia: the generalized
+propensity score (Hirano-Imbens 2004) and a doubly-robust extension. For
+modified treatment policies and time-varying treatments, R's `lmtp` package
+is still the better practical tool; see the
+[R companion chapter](https://xiangao.github.io/causal_econometrics_guide/continuous-treatments.html)
+and the [LMTP blog chapter](https://xiangao.github.io/blog_book/lmtp.html).
 
 ## Setup
 
@@ -63,8 +64,8 @@ df = DataFrame(Y = Y, D = D, X1 = X1, X2 = X2)
 
 ## Naive regression vs adjusted regression
 
-A linear fit on $D$ alone is doubly biased (confounding plus model
-misspecification):
+A linear fit on $D$ alone has two problems: it ignores confounding by $X$,
+and it imposes a straight line on a nonlinear dose-response curve.
 
 ```{julia}
 #| label: naive
@@ -99,8 +100,9 @@ axislegend(ax, position = :rt, framevisible = false)
 fig
 ```
 
-Even the covariate-adjusted quadratic fit will leave bias if the true
-dose-response is not exactly quadratic.
+The quadratic adjusted model is better in this simulation because the true
+curve is quadratic. In real applications, the functional form is usually not
+known.
 
 ## Generalized Propensity Score (Hirano-Imbens 2004)
 
@@ -111,9 +113,9 @@ $$
 r(d, x) = f_{D \mid X}(d \mid x).
 $$
 
-Under unconfoundedness, conditioning on $r(D, X)$ alone identifies the
-dose-response curve. We estimate $r$ assuming $D \mid X \sim
-\mathcal{N}(\beta_0 + \beta'X, \sigma^2)$:
+Under unconfoundedness, the GPS plays the same role as the propensity score
+for binary treatment. I start with a normal model for treatment given
+covariates:
 
 ```{julia}
 #| label: gps
@@ -128,8 +130,9 @@ df.gps = @. pdf(Normal(d_pred, sigma_e), df.D)
         minimum(df.gps), mean(df.gps), maximum(df.gps))
 ```
 
-The Hirano-Imbens estimator regresses $Y$ on flexible functions of $(D,
-\hat r)$ and then averages across the GPS distribution at each $d$:
+The Hirano-Imbens estimator has two steps. First regress $Y$ on flexible
+functions of $D$ and the estimated GPS. Then, for each dose $d$, average the
+predicted outcome over the sample.
 
 ```{julia}
 #| label: hi-est
@@ -160,20 +163,19 @@ axislegend(ax2, position = :rt, framevisible = false)
 fig2
 ```
 
-The GPS estimator handles the curvature and does not require the
-researcher to specify the functional form of the dose-response.
+In this example the GPS estimator tracks the nonlinear curve much better
+than the naive linear regression.
 
 ## Doubly-robust dose-response (Kennedy 2017)
 
-The DR estimator combines an outcome model $\hat\mu(d, x)$ with the GPS
-$\hat r(d \mid x)$:
+The DR estimator is the continuous-treatment analogue of AIPW. It combines
+an outcome model $\hat\mu(d,x)$ with the GPS $\hat r(d \mid x)$:
 
 $$
 \hat\mu_{DR}(d) = \frac{1}{n} \sum_i \left[ \hat\mu(d, X_i) + K_h(D_i - d) \frac{Y_i - \hat\mu(D_i, X_i)}{\hat r(D_i \mid X_i)} \right]
 $$
 
-where $K_h$ is a Gaussian kernel of bandwidth $h$. The result is doubly
-robust and asymptotically normal.
+where $K_h$ is a kernel around dose $d$.
 
 ```{julia}
 #| label: dr-cont
@@ -210,21 +212,20 @@ axislegend(ax3, position = :rt, framevisible = false)
 fig3
 ```
 
-The DR estimator is consistent if *either* $\hat\mu$ or $\hat r$ is
-correctly specified, and efficient when both are. The kernel bandwidth
-$h$ controls the bias-variance trade-off.
+The DR estimator is consistent if either the outcome model or the GPS is
+correctly specified. The bandwidth $h$ trades bias against variance.
 
 ## Multivalued treatments
 
-For a discrete multivalued treatment $D \in \{0, 1, \ldots, K\}$, the
-generalised propensity score becomes a multinomial probability:
+For a discrete multivalued treatment $D \in \{0,1,\ldots,K\}$, the GPS is a
+multinomial probability:
 
 $$
 \hat r(d, x) = \widehat{P}(D = d \mid X = x).
 $$
 
-A multinomial regression supplies $\hat r$; the dose-response curve
-becomes the average treatment effect at each level:
+A multinomial regression supplies $\hat r$. The dose-response curve becomes
+the average outcome under each treatment level.
 
 ```{julia}
 #| label: multivalued
@@ -253,38 +254,31 @@ for r in eachrow(by_d)
 end
 ```
 
-In practice, regression-adjusted contrasts between adjacent levels
-(D = 1 vs D = 0, D = 2 vs D = 1, etc.) are the natural reporting unit
-for multivalued treatments.
+In practice, I would usually report adjusted contrasts between levels, such
+as $D=1$ versus $D=0$ or $D=2$ versus $D=1$.
 
 ## When to reach for these methods
 
-These methods are needed whenever:
+These methods are useful when:
 
-1. The treatment is continuous or multivalued.
-2. The research question concerns the *shape* of the dose-response
-   curve, not just a single binary contrast.
+1. Treatment is continuous or multivalued.
+2. The research question is about the shape of the dose-response curve, not
+   just one binary contrast.
 
 For binary treatments, the standard [Estimation](estimation.qmd) and
 [Heterogeneous Effects](heterogeneous-effects.qmd) methods are
 sufficient.
 
-For **time-varying** continuous treatments and modified-policy
-interventions that respect positivity, the LMTP framework
-(Diaz-Hejazi 2020) is the modern standard. Its R implementation
-(`lmtp` package) is mature; a Julia version is a valuable open
-ecosystem project.
+For time-varying continuous treatments and modified-policy interventions,
+use LMTP in R for now. A Julia version would be useful, but this book does
+not need to reimplement it.
 
 ## Summary
 
-- **Continuous and multivalued treatments** require estimating a
-  dose-response curve $\mu(d)$, not a single scalar.
-- **Generalized propensity score (Hirano-Imbens 2004)** extends
-  propensity-score methods to continuous $D$; implementable in a few
-  lines of Julia.
-- **Doubly-robust dose-response** (Kennedy 2017) adds an outcome model
-  to the GPS for robustness and efficiency; also implementable inline.
-- For **modified treatment policies** and **time-varying continuous
-  treatments**, use R's `lmtp` package — see the
-  [companion blog chapter](https://xiangao.github.io/blog_book/lmtp.html).
-
+- Continuous and multivalued treatments usually require a dose-response
+  curve, not a single coefficient.
+- GPS extends propensity-score logic to continuous treatments by modeling
+  the density of treatment given covariates.
+- Kennedy's DR estimator adds an outcome model to the GPS.
+- For modified treatment policies and time-varying continuous treatments,
+  use R's `lmtp` package.

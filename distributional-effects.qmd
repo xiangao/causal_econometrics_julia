@@ -19,22 +19,18 @@ using Statistics
 using CairoMakie
 ```
 
-The previous chapters focus on the average treatment effect (ATE) — a single
-scalar summary of how treatment shifts the outcome's mean. Many economic
-questions, however, are not about the mean. A policy that raises average
-earnings by \$2,000 looks different depending on whether the gain is
-concentrated at the top of the wage distribution or distributed across the
-bottom tail. A clinical intervention that improves the median patient may
-harm the 10th percentile. The ATE is silent about these questions; the
-distribution of treatment effects answers them.
+The previous chapters focus mostly on the average treatment effect. But many
+questions are not only about the mean. A policy can raise average earnings
+because high earners gain a lot, while low earners gain little. A clinical
+intervention can improve the median outcome but do nothing for the lower
+tail. To see this, we need distributional effects.
 
 ## Beyond the average
 
-The fundamental object of distributional analysis is the pair of marginal
-distributions $F_{Y(1)}$ and $F_{Y(0)}$ — what the outcome distribution would
-look like under universal treatment vs. universal control. From these we can
-read off any distributional summary: quantile differences, density shifts,
-inequality measures, or the entire CDF of treatment effects.
+The objects are the two marginal distributions $F_{Y(1)}$ and $F_{Y(0)}$:
+the outcome distribution if everyone were treated and if nobody were treated.
+From them we can compute quantile differences, density shifts, and inequality
+measures.
 
 The most common summary is the **quantile treatment effect** (QTE):
 
@@ -47,8 +43,7 @@ treated and control distributions. It is *not* the same as the average effect
 *at* a given pre-treatment quantile — QTE does not track individuals; it
 compares quantile to quantile across two marginal distributions.
 
-A simulation makes the contrast vivid. Consider a treatment whose effect
-grows with the outcome:
+Consider a treatment whose effect grows with the baseline outcome:
 
 ```{julia}
 #| label: sim-qte
@@ -77,9 +72,8 @@ qte_90  = quantile(Y1, 0.90) - quantile(Y0, 0.90)
 @printf("QTE(0.90)    = %.3f\n", qte_90)
 ```
 
-The ATE reports a single number; the QTEs reveal that the treatment effect
-nearly triples from the 25th to the 90th percentile. Reporting only the ATE
-hides the heterogeneity that is often the policy-relevant finding.
+The ATE is one number. The QTEs show that the effect is much larger near the
+top of the distribution.
 
 ```{julia}
 #| label: plot-distributions
@@ -106,22 +100,16 @@ text!(ax2, 0.05, ate + 0.02; text = "ATE", color = :gray40, fontsize = 11)
 fig
 ```
 
-The left panel shows that treatment shifts and stretches the outcome
-distribution rather than translating it. The right panel — the QTE curve —
-quantifies the stretching: low quantiles barely move, high quantiles move
-substantially. The dashed horizontal line is the ATE; reporting only that
-number erases the upward slope that is the entire story.
+The treatment shifts and stretches the distribution. The QTE curve shows
+that low quantiles move little and high quantiles move more.
 
 ## Identifying counterfactual distributions
 
-The QTE estimand requires knowing two marginal distributions, $F_{Y(1)}$ and
-$F_{Y(0)}$, but observational data shows us only $F_{Y \mid D=1}$ and
-$F_{Y \mid D=0}$. Recovering the counterfactual marginals requires the same
-ingredients as identifying the ATE — typically unconfoundedness or some
-research design — but applied to the entire distribution rather than the
-mean.
+QTE requires the two counterfactual marginal distributions. Observational
+data gives only $F_{Y \mid D=1}$ and $F_{Y \mid D=0}$. Identification needs
+the same kind of assumptions as ATE, but applied to the whole distribution.
 
-Three main approaches in the literature:
+Common approaches are:
 
 **Inverse propensity weighting on the CDF.** Estimate the propensity score
 $\hat\pi(x)$ and weight observations to construct counterfactual empirical
@@ -148,17 +136,13 @@ summary follows. This is the route taken by `Engression.jl` and by
 
 ## Distributional DiD with Engression
 
-For panel data with treatment, **distributional difference-in-differences**
-extends the standard DiD identification idea from means to distributions. Lee
-& Wooldridge (2025) propose a DiD construction in which the entire
-counterfactual distribution of the treated unit's post-treatment outcome is
-estimated by combining its pre-treatment distribution with a distributional
-"trend" learned from the control units.
+For panel data, distributional DiD extends the DiD idea from means to
+distributions. Instead of estimating only the counterfactual mean outcome, it
+estimates a counterfactual outcome distribution.
 
-`Endid.jl` implements this using Engression — a stochastic neural network
-trained with the energy score, producing a generative model of $Y \mid X$
-rather than a conditional mean. The trained model can sample counterfactual
-outcomes, from which the QTE curve follows by quantile differences.
+`Endid.jl` uses Engression for this. It learns a stochastic model for
+$Y \mid X$ rather than only a conditional mean. Counterfactual draws from
+that model give QTEs.
 
 ```{julia}
 #| eval: false
@@ -198,8 +182,7 @@ period.
 
 ## When QTE differs from ATT: a panel simulation
 
-To see when distributional analysis pays off, simulate panel data with a
-treatment effect that depends on the unit's underlying type:
+Now simulate panel data where the treatment effect depends on unit type:
 
 ```{julia}
 #| label: panel-sim
@@ -229,10 +212,8 @@ df = DataFrame(rows)
 first(df, 5)
 ```
 
-A standard ATT regression on this panel would report the mean of the
-heterogeneous effect — about 0.5 in this DGP, since `ability` is mean-zero.
-But the per-unit treatment effect ranges from very small (low-ability units)
-to large (high-ability units). The QTE curve reveals this gradient.
+A standard ATT regression reports the mean effect. Here that hides the fact
+that low-type and high-type units have different effects.
 
 ```{julia}
 #| label: empirical-qte
@@ -260,9 +241,8 @@ result = DataFrame(quantile = collect(τ_grid),
 result
 ```
 
-The estimated QTE curve traces out the underlying treatment-effect
-heterogeneity: large at the top, small at the bottom. A standard DiD would
-have reported a single mean ATT and missed this gradient entirely.
+The estimated QTE curve shows larger effects at the top of the outcome
+distribution.
 
 ```{julia}
 #| label: qte-plot
@@ -281,41 +261,27 @@ fig
 ```
 
 The simple quantile-DiD above ignores covariate adjustment and bootstrap
-inference. `Endid.jl` implements both: it conditions on covariates via the
-Engression network, then bootstraps over units to compute confidence
-intervals for each QTE. The fitted model also supports counterfactual
-sampling, so one can produce posterior predictive distributions of the
-treated outcome under both `D = 1` and `D = 0`.
+inference. `Endid.jl` adds both.
 
 ## Beyond QTE: posterior bands as distributional output
 
-The synthetic-control chapter introduced TASC, whose Kalman smoother returns
-a posterior variance at each post-treatment period. That posterior interval
-is another flavour of distributional output — not over quantiles of $Y$, but
-over the counterfactual *path* of a single treated unit. The two approaches
-answer different questions:
+TASC also produces more than a point estimate, but for a different object:
+the counterfactual path of one treated unit. QTE and TASC answer different
+questions:
 
 - **QTE / Engression DiD**: how does the treatment effect *vary across the
   marginal distribution of outcomes* when many units are treated?
 - **TASC posterior band**: how uncertain is the *single counterfactual path*
   when one unit is treated?
 
-Both move beyond a scalar point estimate. The right choice depends on the
-design: many treated units with heterogeneity → QTE; a single high-profile
-treated unit with serial dependence → TASC posterior.
+Use QTE when many treated units may have heterogeneous effects. Use TASC when
+the problem is a single treated unit with serial dependence.
 
 ## Summary
 
-- The **ATE** answers "by how much does treatment shift the average?" The
-  **QTE curve** answers the much richer question "how does treatment reshape
-  the entire distribution of outcomes?"
-- Identification of QTE under unconfoundedness mirrors ATE identification but
-  is applied to CDFs rather than conditional means.
-- **`Endid.jl`** implements distributional DiD via Engression: the
-  counterfactual treated distribution is learned by a stochastic neural
-  network, and QTE estimates plus bootstrap inference are returned.
-- Reporting the QTE curve alongside the ATT is good practice whenever
-  treatment effects might vary systematically with the outcome — wages,
-  test scores, health outcomes, sales — where the policy-relevant question
-  is often "who is helped?" not "by how much on average?"
-
+- ATE summarizes the mean. QTE summarizes changes across the outcome
+  distribution.
+- QTE identification uses the same assumptions as ATE, but for CDFs.
+- `Endid.jl` estimates distributional DiD through Engression.
+- Report QTEs when the effect may differ across wages, test scores, health
+  outcomes, sales, or other outcome distributions.

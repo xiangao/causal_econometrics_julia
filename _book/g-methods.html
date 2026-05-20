@@ -67,13 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <link href="./survival-causal.html" rel="next">
 <link href="./poisson-iv.html" rel="prev">
-<script>
-try {
-  if (window.localStorage) {
-    window.localStorage.setItem("quarto-reader-mode", "false");
-  }
-} catch (e) {}
-</script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -112,6 +105,13 @@ try {
     "search-label": "Search"
   }
 }</script>
+<script>
+try {
+  if (window.localStorage) {
+    window.localStorage.setItem("quarto-reader-mode", "false");
+  }
+} catch (e) {}
+</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -485,7 +485,7 @@ window.Quarto = {
 </header>
 
 
-<div id="d9ecce2e" class="cell">
+<div id="d7a2f4d9" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -494,20 +494,20 @@ window.Quarto = {
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>All the methods covered so far have one feature in common: a single treatment decision at a single point in time. Real policy questions are often more complex. A patient receives a medication at multiple visits. A worker enrols in training programmes over several years. A student takes one course after another. The treatment evolves; covariates that respond to past treatment then influence future treatment. <strong>Standard regression adjustment fails in this setting</strong> — and the failure is not subtle.</p>
+<p>Most chapters so far use one treatment decision. Many real problems are longitudinal. Treatment changes over time, covariates respond to past treatment, and those covariates then affect future treatment. Standard regression adjustment can fail in this setting.</p>
 <blockquote class="blockquote">
 <p><strong>Related reading</strong>: The <a href="https://xiangao.github.io/blog_book/g-estimation.html">g-estimation with time-varying covariates</a> chapter of <em>Topics on Econometrics and Causal Inference</em> derives the identification result and applies the parametric g-formula to a worked binary-treatment example. The LMTP framework for continuous and modified-policy interventions is covered in <a href="https://xiangao.github.io/blog_book/lmtp.html">Longitudinal modified treatment policy (LMTP)</a> and in the <a href="./continuous-treatments.html">Continuous Treatments</a> chapter.</p>
 </blockquote>
-<p>This chapter covers the <strong>g-methods</strong> developed by Robins and collaborators to handle time-varying treatments and time-varying confounders:</p>
+<p>The main tools are:</p>
 <ol type="1">
-<li><strong>The g-formula</strong> (parametric g-computation) — simulate the outcome under a hypothetical treatment regime by recursively integrating over the time-varying covariates.</li>
-<li><strong>Inverse probability of treatment weighting (IPTW)</strong> for time-varying treatments — reweight to a population where treatment is unrelated to past covariates.</li>
-<li><strong>Marginal structural models (MSMs)</strong> — regression-style models for the IPTW-weighted population.</li>
+<li><strong>G-formula</strong>: simulate outcomes under a treatment regime.</li>
+<li><strong>IPTW</strong>: reweight observations by the probability of their treatment history.</li>
+<li><strong>Marginal structural models</strong>: fit a treatment-history regression in the weighted population.</li>
 </ol>
-<p>For doubly-robust longitudinal TMLE, R’s <code>ltmle</code> package is currently the de facto standard; there is no Julia equivalent. The methods covered here — g-formula and MSM via IPTW — are the workhorses and translate cleanly to native Julia using <code>GLM.jl</code>.</p>
+<p>For longitudinal TMLE, use R’s <code>ltmle</code> package; there is no Julia equivalent yet. The g-formula and IPTW/MSM translate directly to Julia with <code>GLM.jl</code>.</p>
 <section id="the-time-varying-confounding-problem" class="level2" data-number="19.1">
 <h2 data-number="19.1" class="anchored" data-anchor-id="the-time-varying-confounding-problem"><span class="header-section-number">19.1</span> The time-varying confounding problem</h2>
-<p>A two-period example makes the failure of standard regression vivid:</p>
+<p>Consider a two-period example:</p>
 <ul>
 <li><span class="math inline">\(L_0\)</span>: baseline covariate (e.g.&nbsp;health status at study entry)</li>
 <li><span class="math inline">\(A_0\)</span>: treatment at time 0 (e.g.&nbsp;medication)</li>
@@ -515,10 +515,10 @@ window.Quarto = {
 <li><span class="math inline">\(A_1\)</span>: treatment at time 1, depends on <span class="math inline">\(L_1\)</span></li>
 <li><span class="math inline">\(Y\)</span>: outcome at the end of follow-up</li>
 </ul>
-<p><span class="math inline">\(L_1\)</span> is a <strong>time-varying confounder</strong>: it confounds <span class="math inline">\(A_1 \to Y\)</span> (so we need to condition on it), but it is <em>also</em> a mediator of <span class="math inline">\(A_0 \to Y\)</span> (so conditioning on it blocks the path we want to measure). Standard regression with <span class="math inline">\(L_0, L_1\)</span> as covariates over-controls; regression without <span class="math inline">\(L_1\)</span> leaves bias.</p>
+<p><span class="math inline">\(L_1\)</span> is the problem variable. It confounds the effect of <span class="math inline">\(A_1\)</span> on <span class="math inline">\(Y\)</span>, so we would like to adjust for it. But it is also affected by <span class="math inline">\(A_0\)</span>, so adjusting for it blocks part of the effect of <span class="math inline">\(A_0\)</span>. Regression without <span class="math inline">\(L_1\)</span> is confounded; regression with <span class="math inline">\(L_1\)</span> over-controls.</p>
 <section id="simulating-the-failure-of-standard-regression" class="level3" data-number="19.1.1">
 <h3 data-number="19.1.1" class="anchored" data-anchor-id="simulating-the-failure-of-standard-regression"><span class="header-section-number">19.1.1</span> Simulating the failure of standard regression</h3>
-<div id="dgp" class="cell" data-cache="true">
+<div id="dgp" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -541,104 +541,153 @@ window.Quarto = {
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (with L1): A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>],</span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True total effect of always-treated vs never-treated: 1.000
+
+Naive (no L1):   A0=0.944, A1=0.850, total=1.794
+Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 </div>
-<p>Neither regression recovers the true total effect of 1.0:</p>
+</div>
+<p>Neither regression recovers the true total effect:</p>
 <ul>
 <li>Excluding <span class="math inline">\(L_1\)</span> leaves <span class="math inline">\(L_1 \to A_1\)</span> confounding that biases <span class="math inline">\(A_1\)</span>.</li>
 <li>Including <span class="math inline">\(L_1\)</span> blocks the <span class="math inline">\(A_0 \to L_1 \to Y\)</span> pathway, so the coefficient on <span class="math inline">\(A_0\)</span> now measures only the <em>direct</em> effect, not the total effect.</li>
 </ul>
-<p>The g-methods solve this.</p>
+<p>This is exactly the setting g-methods were designed for.</p>
 </section>
 </section>
 <section id="parametric-g-formula" class="level2" data-number="19.2">
 <h2 data-number="19.2" class="anchored" data-anchor-id="parametric-g-formula"><span class="header-section-number">19.2</span> Parametric g-formula</h2>
-<p>The g-formula says:</p>
+<p>The g-formula writes the mean outcome under a treatment regime as:</p>
 <p><span class="math display">\[
 \mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]
 \prod_{t=0}^{K} f(l_t \mid \bar a_{t-1}, \bar l_{t-1}),
 \]</span></p>
-<p>where <span class="math inline">\(\bar a = (a_0, a_1, \ldots, a_K)\)</span> is a treatment regime and <span class="math inline">\(\bar l\)</span> the covariate history. The product is over all time points. In practice we fit models for each conditional distribution, then simulate the joint distribution under the counterfactual regime <span class="math inline">\(\bar a\)</span>.</p>
-<div id="gformula" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Fit nuisance models</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mod_L1 <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(L1 <span class="op">~</span> L0 <span class="op">+</span> A0), df)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>mod_Y  <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y  <span class="op">~</span> L0 <span class="op">+</span> A0 <span class="op">+</span> L1 <span class="op">+</span> A1), df)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Simulate counterfactual outcomes under a regime (a0, a1).</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The L1 distribution under A0 = a0 differs from the observed L1.</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">g_compute</span>(a0<span class="op">::</span><span class="dt">Real</span>, a1<span class="op">::</span><span class="dt">Real</span>; n_mc<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">100</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    sigma_L1 <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(mod_L1))) <span class="op">/</span> <span class="fu">dof_residual</span>(mod_L1))</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    Y_sim <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_mc</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        df_a0 <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> <span class="fu">fill</span>(a0, n))</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        L1_sim <span class="op">=</span> <span class="fu">predict</span>(mod_L1, df_a0) <span class="op">.+</span> sigma_L1 <span class="op">.*</span> <span class="fu">randn</span>(n)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        df_sim <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> <span class="fu">fill</span>(a0, n),</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                           L1 <span class="op">=</span> L1_sim, A1 <span class="op">=</span> <span class="fu">fill</span>(a1, n))</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        Y_sim <span class="op">.+=</span> <span class="fu">predict</span>(mod_Y, df_sim)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    Y_sim <span class="op">./=</span> n_mc</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">mean</span>(Y_sim)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>E_Y11 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">1.0</span>)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>E_Y00 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"G-formula estimate (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        E_Y11 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>where <span class="math inline">\(\bar a=(a_0,a_1,\ldots,a_K)\)</span> is a treatment regime and <span class="math inline">\(\bar l\)</span> is the covariate history. In practice we fit models for the time-varying covariates and the outcome, then simulate the data under the treatment regime.</p>
+<div id="gformula" class="cell" data-cache="true" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Fit nuisance models</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mod_L1 <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(L1 <span class="op">~</span> L0 <span class="op">+</span> A0), df)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mod_Y  <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y  <span class="op">~</span> L0 <span class="op">+</span> A0 <span class="op">+</span> L1 <span class="op">+</span> A1), df)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Simulate counterfactual outcomes under a regime (a0, a1).</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The L1 distribution under A0 = a0 differs from the observed L1.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">g_compute</span>(a0<span class="op">::</span><span class="dt">Real</span>, a1<span class="op">::</span><span class="dt">Real</span>; n_mc<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">100</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    sigma_L1 <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(mod_L1))) <span class="op">/</span> <span class="fu">dof_residual</span>(mod_L1))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    Y_sim <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_mc</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        df_a0 <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> <span class="fu">fill</span>(a0, n))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        L1_sim <span class="op">=</span> <span class="fu">predict</span>(mod_L1, df_a0) <span class="op">.+</span> sigma_L1 <span class="op">.*</span> <span class="fu">randn</span>(n)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        df_sim <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> <span class="fu">fill</span>(a0, n),</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                           L1 <span class="op">=</span> L1_sim, A1 <span class="op">=</span> <span class="fu">fill</span>(a1, n))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        Y_sim <span class="op">.+=</span> <span class="fu">predict</span>(mod_Y, df_sim)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    Y_sim <span class="op">./=</span> n_mc</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">mean</span>(Y_sim)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>E_Y11 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">1.0</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>E_Y00 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"G-formula estimate (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        E_Y11 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>G-formula estimate (always vs never): 1.483  (true = 1.000)</code></pre>
 </div>
-<p>The g-formula recovers the true effect because it simulates <span class="math inline">\(L_1\)</span> under the counterfactual treatment regime, rather than conditioning on the observed <span class="math inline">\(L_1\)</span> (which would block the desired pathway).</p>
-<p>The g-formula handles any regime — that is its main strength. To estimate the effect of treating only at <span class="math inline">\(t = 0\)</span>:</p>
-<div id="gformula-partial" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>E_Y10 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">0.0</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Effect of treating only at t=0: %.3f  (true = 0.5)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        E_Y10 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The important step is simulating <span class="math inline">\(L_1\)</span> under the counterfactual treatment. We do not condition on the observed <span class="math inline">\(L_1\)</span>, because observed <span class="math inline">\(L_1\)</span> is partly a consequence of observed treatment.</p>
+<p>The g-formula can handle other regimes too. For example, treat only at <span class="math inline">\(t=0\)</span>:</p>
+<div id="gformula-partial" class="cell" data-cache="true" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>E_Y10 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Effect of treating only at t=0: %.3f  (true = 0.5)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        E_Y10 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Effect of treating only at t=0: 1.005  (true = 0.5)</code></pre>
+</div>
 </div>
 </section>
 <section id="iptw-for-time-varying-treatments" class="level2" data-number="19.3">
 <h2 data-number="19.3" class="anchored" data-anchor-id="iptw-for-time-varying-treatments"><span class="header-section-number">19.3</span> IPTW for time-varying treatments</h2>
-<p>The IPTW approach reweights observations by the inverse of the probability of their <em>observed</em> treatment history given past covariates. The <strong>stabilised weight</strong> for unit <span class="math inline">\(i\)</span> is:</p>
+<p>IPTW reweights observations by the inverse probability of their observed treatment history. The stabilized weight is:</p>
 <p><span class="math display">\[
 SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t-1})}.
 \]</span></p>
-<p>The numerator uses past treatment alone; the denominator adds covariates. Stabilisation keeps the weights bounded.</p>
-<div id="iptw" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Numerator: P(A0) and P(A1 | A0)</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>n0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> <span class="fl">1</span>),  df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>n1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Denominator: P(A0 | L0) and P(A1 | A0, L0, L1)</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>d0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> L0),           df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0 <span class="op">+</span> L0 <span class="op">+</span> L1), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>p_n0 <span class="op">=</span> <span class="fu">predict</span>(n0); p_n1 <span class="op">=</span> <span class="fu">predict</span>(n1)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>p_d0 <span class="op">=</span> <span class="fu">predict</span>(d0); p_d1 <span class="op">=</span> <span class="fu">predict</span>(d1)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Probability of the OBSERVED treatment at each time</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>w0_num <span class="op">=</span> <span class="fu">ifelse</span>.(df.A0 <span class="op">.==</span> <span class="fl">1</span>, p_n0, <span class="fl">1</span> <span class="op">.-</span> p_n0)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>w0_den <span class="op">=</span> <span class="fu">ifelse</span>.(df.A0 <span class="op">.==</span> <span class="fl">1</span>, p_d0, <span class="fl">1</span> <span class="op">.-</span> p_d0)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>w1_num <span class="op">=</span> <span class="fu">ifelse</span>.(df.A1 <span class="op">.==</span> <span class="fl">1</span>, p_n1, <span class="fl">1</span> <span class="op">.-</span> p_n1)</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>w1_den <span class="op">=</span> <span class="fu">ifelse</span>.(df.A1 <span class="op">.==</span> <span class="fl">1</span>, p_d1, <span class="fl">1</span> <span class="op">.-</span> p_d1)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>sw <span class="op">=</span> (w0_num <span class="op">.*</span> w1_num) <span class="op">./</span> (w0_den <span class="op">.*</span> w1_den)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Weight summary: min=%.3f, mean=%.3f, max=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">minimum</span>(sw), <span class="fu">mean</span>(sw), <span class="fu">maximum</span>(sw))</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Trim extreme weights at 99th percentile</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>sw_trim <span class="op">=</span> <span class="fu">min</span>.(sw, <span class="fu">quantile</span>(sw, <span class="fl">0.99</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The numerator uses treatment history only. The denominator also conditions on covariate history.</p>
+<div id="cell-iptw" class="cell" data-cache="true" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Numerator: P(A0) and P(A1 | A0)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> <span class="fl">1</span>),  df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>n1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Denominator: P(A0 | L0) and P(A1 | A0, L0, L1)</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>d0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> L0),           df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0 <span class="op">+</span> L0 <span class="op">+</span> L1), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>p_n0 <span class="op">=</span> <span class="fu">predict</span>(n0); p_n1 <span class="op">=</span> <span class="fu">predict</span>(n1)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>p_d0 <span class="op">=</span> <span class="fu">predict</span>(d0); p_d1 <span class="op">=</span> <span class="fu">predict</span>(d1)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Probability of the OBSERVED treatment at each time</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>w0_num <span class="op">=</span> <span class="fu">ifelse</span>.(df.A0 <span class="op">.==</span> <span class="fl">1</span>, p_n0, <span class="fl">1</span> <span class="op">.-</span> p_n0)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>w0_den <span class="op">=</span> <span class="fu">ifelse</span>.(df.A0 <span class="op">.==</span> <span class="fl">1</span>, p_d0, <span class="fl">1</span> <span class="op">.-</span> p_d0)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>w1_num <span class="op">=</span> <span class="fu">ifelse</span>.(df.A1 <span class="op">.==</span> <span class="fl">1</span>, p_n1, <span class="fl">1</span> <span class="op">.-</span> p_n1)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>w1_den <span class="op">=</span> <span class="fu">ifelse</span>.(df.A1 <span class="op">.==</span> <span class="fl">1</span>, p_d1, <span class="fl">1</span> <span class="op">.-</span> p_d1)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>sw <span class="op">=</span> (w0_num <span class="op">.*</span> w1_num) <span class="op">./</span> (w0_den <span class="op">.*</span> w1_den)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Weight summary: min=%.3f, mean=%.3f, max=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">minimum</span>(sw), <span class="fu">mean</span>(sw), <span class="fu">maximum</span>(sw))</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Trim extreme weights at 99th percentile</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>sw_trim <span class="op">=</span> <span class="fu">min</span>.(sw, <span class="fu">quantile</span>(sw, <span class="fl">0.99</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Weight summary: min=0.284, mean=1.000, max=13.489</code></pre>
+</div>
+<div id="iptw" class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>5000-element Vector{Float64}:
+ 1.2320285379453222
+ 0.7918791756556957
+ 1.4947259119545413
+ 1.2957761198231386
+ 0.47742706181142075
+ 2.761282241893212
+ 0.9322305437789774
+ 0.758079673579434
+ 0.4446543045790307
+ 1.821169577919855
+ 1.0703793185873152
+ 1.0814119421933566
+ 0.8862804877411058
+ ⋮
+ 1.1814410813547576
+ 0.9407057320445324
+ 0.6072055546765932
+ 3.0826283622213997
+ 0.6439023204591842
+ 1.2723812770139957
+ 1.700832121460976
+ 1.390763055139526
+ 1.1802015422293588
+ 1.7280793712231706
+ 0.612366299960335
+ 2.803538167023195</code></pre>
+</div>
 </div>
 </section>
 <section id="marginal-structural-models" class="level2" data-number="19.4">
 <h2 data-number="19.4" class="anchored" data-anchor-id="marginal-structural-models"><span class="header-section-number">19.4</span> Marginal structural models</h2>
-<p>With stabilised weights in hand, the <strong>marginal structural model</strong> is a weighted regression of <span class="math inline">\(Y\)</span> on treatment history:</p>
-<div id="msm" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.sw <span class="op">=</span> sw_trim</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>msm_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(msm_fit))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>With stabilized weights, the marginal structural model is a weighted regression of <span class="math inline">\(Y\)</span> on treatment history:</p>
+<div id="msm" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.sw <span class="op">=</span> sw_trim</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>msm_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(msm_fit))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>StatsBase.CoefTable(Any[[-0.04989628698526234, 1.0455936766250338, 0.5477314823226674], [0.028823347044086425, 0.03993523083912306, 0.03916614787775476], [-1.7311066237014057, 26.18223695355993, 13.984818829573053], [0.0834956511758907, 1.5200922797061257e-141, 1.3152335380742825e-43], [-0.10640295676856143, 0.9673027377450147, 0.47094829050850884], [0.006610382798036753, 1.1238846155050528, 0.624514674136826]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "A0", "A1"], 4, 3)
+
+MSM total effect (always vs never): 1.593  (true = 1.000)</code></pre>
 </div>
-<p>The MSM recovers the total effect because the IPTW reweighting effectively breaks the <span class="math inline">\(L_1 \to A_1\)</span> arrow in the reweighted population — making treatment independent of past covariates.</p>
+</div>
+<p>The weighted population is constructed so treatment is no longer associated with past covariates. That is why the MSM targets the total effect.</p>
 </section>
 <section id="hernán-style-g-estimation-when-to-use-which" class="level2" data-number="19.5">
 <h2 data-number="19.5" class="anchored" data-anchor-id="hernán-style-g-estimation-when-to-use-which"><span class="header-section-number">19.5</span> Hernán-style g-estimation: when to use which</h2>
@@ -668,45 +717,52 @@ SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, 
 </tr>
 </tbody>
 </table>
-<p>In practice, reporting <strong>both</strong> is the standard. Agreement is reassuring; disagreement suggests model misspecification in at least one of them.</p>
-<p>For doubly-robust efficient estimation, longitudinal TMLE combines both. The current state-of-the-art implementation is R’s <code>ltmle</code> package; a Julia port would be a valuable addition to the ecosystem but does not yet exist. The companion R chapter walks through the <code>ltmle</code> workflow.</p>
+<p>In practice, reporting both is useful. Agreement is reassuring; disagreement suggests model misspecification in at least one of them.</p>
+<p>For longitudinal TMLE, use R’s <code>ltmle</code> package. A Julia port would be useful but does not exist yet.</p>
 </section>
 <section id="a-robustness-check-g-formula-with-covariates-only" class="level2" data-number="19.6">
 <h2 data-number="19.6" class="anchored" data-anchor-id="a-robustness-check-g-formula-with-covariates-only"><span class="header-section-number">19.6</span> A robustness check: g-formula with covariates only</h2>
-<p>Even when researchers don’t want to fully implement IPTW + MSM, the g-formula offers a useful robustness check on standard regression. If the standard regression and the g-formula disagree, the gap is a diagnostic for time-varying confounding bias.</p>
-<div id="comparison" class="cell" data-cache="true">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>g_total <span class="op">=</span> E_Y11 <span class="op">-</span> E_Y00</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>msm_total <span class="op">=</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>]</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.0</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (no L1):"</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (with L1):"</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"G-formula:"</span>, g_total)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"MSM (IPTW):"</span>, msm_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Even without IPTW + MSM, the g-formula is a useful check on standard regression. If standard regression and the g-formula disagree, that gap is a warning about time-varying confounding.</p>
+<div id="comparison" class="cell" data-cache="true" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>g_total <span class="op">=</span> E_Y11 <span class="op">-</span> E_Y00</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>msm_total <span class="op">=</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>]</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.0</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (no L1):"</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (with L1):"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"G-formula:"</span>, g_total)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"MSM (IPTW):"</span>, msm_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True total effect:             1.000
+Standard regression (no L1):   1.794  (wrong)
+Standard regression (with L1): 0.951  (wrong)
+G-formula:                     1.483  (correct)
+MSM (IPTW):                    1.593  (correct)</code></pre>
+</div>
 </div>
 <p>The standard regressions are wrong in opposite directions; the g-methods both recover the truth. When standard and g-formula estimates diverge, the divergence is the bias.</p>
 </section>
 <section id="when-to-reach-for-these-methods" class="level2" data-number="19.7">
 <h2 data-number="19.7" class="anchored" data-anchor-id="when-to-reach-for-these-methods"><span class="header-section-number">19.7</span> When to reach for these methods</h2>
-<p>G-methods are needed whenever:</p>
+<p>Use g-methods when:</p>
 <ol type="1">
 <li>There is a time-varying confounder <span class="math inline">\(L_t\)</span> that is affected by past treatment <span class="math inline">\(A_{t-1}\)</span> and itself affects subsequent treatment <span class="math inline">\(A_t\)</span>.</li>
 <li>The research question concerns a <em>sustained</em> or <em>dynamic</em> treatment regime, not a single decision at a single time.</li>
 </ol>
-<p>This includes most clinical follow-up studies, longitudinal observational studies of education and labour market policies, and any setting where treatment evolves with the unit’s response.</p>
+<p>This includes many clinical follow-up studies and longitudinal studies of education or labor-market policies.</p>
 <p>For a one-shot treatment, the methods from the <a href="./estimation.html">Estimation</a> and <a href="./nonparametric.html">Nonparametric Causal Methods</a> chapters are sufficient. The added complexity of g-methods is only justified when the time-varying confounder problem is present.</p>
 </section>
 <section id="summary" class="level2" data-number="19.8">
 <h2 data-number="19.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">19.8</span> Summary</h2>
 <ul>
-<li><strong>Standard regression fails</strong> with time-varying confounders that are themselves affected by past treatment.</li>
-<li><strong>G-formula</strong> (parametric g-computation): simulate the outcome under a hypothetical regime by integrating over the time-varying covariates. ~30 lines of native Julia.</li>
-<li><strong>IPTW + MSM</strong>: reweight the population so treatment is independent of past covariates; then fit a regression on the weighted sample. Built with <code>GLM.jl</code>.</li>
-<li><strong>Longitudinal TMLE</strong>: doubly-robust efficient estimator combining g-computation and IPTW. Currently best implemented in R’s <code>ltmle</code> package; a native Julia version is a valuable open ecosystem project.</li>
-<li><strong>Reporting practice</strong>: report both g-formula and MSM. Agreement is reassuring; disagreement is informative — it usually points to model misspecification.</li>
+<li>Standard regression fails when a time-varying confounder is itself affected by past treatment.</li>
+<li>G-formula simulates outcomes under treatment regimes.</li>
+<li>IPTW + MSM reweights the population and then fits a weighted treatment history model.</li>
+<li>Longitudinal TMLE is best handled in R’s <code>ltmle</code> package for now.</li>
+<li>Disagreement across estimators is useful information, not just a nuisance.</li>
 </ul>
 
 

@@ -25,36 +25,26 @@ include("../../software/TASC.jl/src/TASC.jl")
 using .TASC
 ```
 
-Synthetic control is most often applied in case studies with **one** treated
-unit (California, West Germany, Basque Country). Standard inference based on
-asymptotic normality is meaningless here — there is no sample of treated
-units to average over. The literature has converged on two distinct
-strategies:
+Synthetic control is often used when there is one treated unit: California,
+West Germany, the Basque Country. Usual large-sample standard errors are not
+very helpful because there is no large sample of treated units. Two
+approaches are common:
 
-- **Randomization inference** (Abadie, Diamond, Hainmueller 2010, 2015):
-  use the donor pool to construct a permutation-style null distribution.
-  Frequentist, distribution-free, makes no parametric assumptions on the
-  outcome process.
-- **Posterior inference** (TASC and other state-space approaches): treat the
-  counterfactual path as the unknown to be estimated and derive an explicit
-  posterior. Bayesian, conditional on a generative model.
+- **Randomization inference**: use donor units as placebos.
+- **Posterior inference**: put a model on the counterfactual path and compute
+  posterior uncertainty.
 
-This chapter walks through both on the Proposition 99 panel, then compares
-what they say.
+Here I use both on the Proposition 99 panel.
 
 ## The placebo test
 
-The randomization-inference idea is simple. For each control unit $\ell$ in
-the donor pool, pretend $\ell$ was treated and re-run synthetic control,
-leaving $\ell$ out of its own donor pool. This produces a "placebo
-estimate" — the gap between $\ell$'s observed outcome and a synthetic
-$\ell$ built from the other donors. Repeat for every control unit. The
-resulting collection of placebo estimates is the empirical null distribution
-under sharp-null (no effect anywhere).
+The placebo idea is simple. Take each control unit in turn, pretend it was
+treated, and re-run synthetic control. This produces a placebo gap for each
+donor. The collection of placebo gaps is the empirical null distribution
+under no effect.
 
-If the *true* treatment effect is zero, California's estimated effect should
-look like one of the placebos. If California's effect is large relative to
-the placebo distribution, that is evidence against the null.
+If California's gap is large relative to the placebo gaps, that is evidence
+against the no-effect null.
 
 ```{julia}
 #| label: setup-prop99
@@ -132,10 +122,8 @@ sharp null.
 
 ### The placebo plot
 
-The canonical Abadie-Diamond-Hainmueller figure overlays each placebo's gap
-trajectory in grey on California's gap in black. If the black line falls
-outside the cloud of grey, the effect is unusual relative to what shocks to
-random control states produce.
+The usual plot overlays the placebo gaps in grey and California's gap in
+black. If the black line is outside the grey cloud, California looks unusual.
 
 ```{julia}
 #| label: placebo-plot
@@ -198,9 +186,8 @@ p_ratio = mean(placebo_ratios .>= ca_ratio)
 @printf("One-sided p-value (ratio): %.3f\n", p_ratio)
 ```
 
-The MSPE ratio test typically gives a smaller $p$-value than the raw-effect
-test because it down-weights placebos whose synthetic controls fit poorly in
-the pre-period.
+The MSPE ratio discounts placebo states that were poorly fit before
+treatment.
 
 ```{julia}
 #| label: mspe-plot
@@ -219,10 +206,9 @@ fig
 
 ## Time placebo
 
-Another robustness check moves the treatment date backward into the
-pre-period and asks whether the SC framework "finds" an effect there too. If
-yes, the post-treatment effect is suspect because the synthetic-control
-method is detecting differences that pre-date Proposition 99.
+Another check moves the treatment date backward into the pre-period. If the
+method finds a large placebo effect before Proposition 99, the post-treatment
+effect is less credible.
 
 ```{julia}
 #| label: time-placebo
@@ -241,17 +227,13 @@ placebo_effect_time = mean(ca_pre[(T0_placebo + 1):end] .- ca_pre_cf[(T0_placebo
 @printf("Real effect (treatment in 1989):               %.2f\n", ca_effect)
 ```
 
-The time-placebo effect is much smaller in magnitude than the real effect,
-giving additional confidence that the 1989 break is genuine.
+Here the time-placebo effect is much smaller than the real effect.
 
 ## TASC posterior as Bayesian alternative
 
-The synthetic-control chapter introduced TASC, which models the panel as a
-linear Gaussian state-space process and returns a posterior distribution
-over the counterfactual path. The 95% posterior band is a Bayesian analogue
-to the randomization-inference confidence statement — under the SSM
-assumptions, the true counterfactual is within the band with 95% posterior
-probability.
+TASC models the panel with a linear Gaussian state-space process and returns
+a posterior distribution over the counterfactual path. This is model-based
+uncertainty, not a placebo distribution.
 
 ```{julia}
 #| label: tasc-band
@@ -311,31 +293,17 @@ fig
 | **Smallest p possible** | $1/(N_0 + 1)$ (here ~0.026) | N/A — continuous |
 | **Sensitivity to donor pool** | High (small N0 → coarse p) | Low (band reflects modelling) |
 
-The two strategies answer slightly different questions and rest on different
-assumptions. **Randomization inference** asks whether California's effect is
-unusual relative to the empirical distribution of placebo effects in the
-donor pool — a model-free statement at the cost of low power when the donor
-pool is small. **TASC posterior inference** asks whether the latent
-state-space model, fit to the entire pre-period panel, places California
-inside a band of plausible counterfactual paths — a powerful statement that
-requires the model to be approximately correct.
-
-A defensible applied paper reports both: randomization inference as the
-non-parametric robustness anchor, the posterior band as the more precise
-statement when one is willing to commit to a generative model.
+The two strategies answer different questions. Randomization inference asks
+whether California is unusual relative to donor-state placebos. TASC asks
+how uncertain the model is about California's counterfactual path. I would
+report both when using TASC.
 
 ## Summary
 
-- With one (or few) treated units, **classical asymptotic SEs are not
-  available**. The synthetic-control literature has standardised on
-  randomization inference instead.
-- **Unit placebo** swaps each control into the treated slot; the placebo
-  effect distribution is the empirical null.
-- The **MSPE ratio test** down-weights placebos whose synthetic controls
-  fit their pre-period poorly — usually tightens the $p$-value.
-- The **time placebo** moves the treatment date earlier and checks for
-  spurious effects in the placebo period.
-- **TASC posterior bands** give a parallel Bayesian inference that does not
-  require the donor pool to be a randomization device — at the cost of an
-  explicit generative model.
-
+- With one treated unit, randomization inference is more useful than
+  asymptotic standard errors.
+- Unit placebos give the empirical null distribution.
+- MSPE ratios account for pre-treatment fit.
+- Time placebos check whether the method finds effects before treatment.
+- TASC posterior bands give model-based uncertainty for the counterfactual
+  path.

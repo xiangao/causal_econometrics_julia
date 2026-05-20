@@ -426,9 +426,9 @@ The linear model estimates the ATT on the $\log(Y+1)$ scale — a different and 
 
 ## Spatial Interference
 
-Everything in this chapter so far assumes SUTVA: one unit's outcome does not depend on another unit's treatment. With spatial spillovers — a treated municipality affecting deforestation in neighbouring untreated ones, a vaccinated household reducing transmission to nearby households, a labour-market policy in one commuting zone changing flows to its neighbours — the canonical DiD estimand loses its causal interpretation. Section 3.1 of Xu [-@xu2023] shows that ignoring interference produces an estimand that is, in general, neither a direct nor a spillover effect.
+Everything in this chapter so far assumes SUTVA: one unit's outcome does not depend on another unit's treatment. That is not always plausible. A treated municipality may affect deforestation in nearby untreated municipalities. A vaccinated household may reduce transmission to nearby households. A labor-market policy in one commuting zone may change flows to its neighbors. With this kind of spatial spillover, the usual DiD estimand no longer has the interpretation we want. Xu [-@xu2023] shows that ignoring interference can produce an estimand that is neither a direct effect nor a spillover effect.
 
-Xu [-@xu2023; -@xu2026] develops a doubly robust DiD that keeps the identifying logic of conditional parallel trends but adds an exposure mapping $G_{it} = G(i, W_{-it})$ for unit $i$'s neighbourhood treatment status. The estimand is the **direct ATT at exposure level $g$**,
+Xu [-@xu2023; -@xu2026] develops a doubly robust DiD that keeps the identifying logic of conditional parallel trends but adds an exposure mapping $G_{it} = G(i, W_{-it})$ for unit $i$'s neighborhood treatment status. The estimand is the direct ATT at exposure level $g$,
 
 $$ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{it}(\infty, g) \mid z_i, C_i = c, G_{it} = g], $$
 
