@@ -490,7 +490,7 @@ window.Quarto = {
 </header>
 
 
-<div id="fa0d22e9" class="cell" data-execution_count="2">
+<div id="88fe6d30" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -825,7 +825,7 @@ QTE(0.90) = 2.285</code></pre>
 <ul>
 <li>ATE, ATT and LATE are different averages of the individual treatment effect.</li>
 <li>CATE(<span class="math inline">\(x\)</span>) keeps heterogeneity by covariates. QTE(<span class="math inline">\(\tau\)</span>) describes changes in the outcome distribution.</li>
-<li>With heterogeneous effects, IV estimates LATE. It should not be described as ATE unless extra assumptions justify that interpretation.</li>
+<li>With heterogeneous effects, IV estimates LATE. It should not be described as ATE unless extra assumptions justify that interpretation. The clean IV → LATE result here uses no covariates; once covariates are added linearly to TSLS, the LATE interpretation requires a <em>rich covariates</em> condition that is rarely defended. See the IV chapter section “When TSLS-with-Covariates Is <em>Actually</em> LATE” and Blandhol, Bonney, Mogstad &amp; Torgovitsky (2025).</li>
 <li>Estimator choice comes after the estimand is fixed.</li>
 </ul>
 
