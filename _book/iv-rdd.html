@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -463,13 +483,13 @@ window.Quarto = {
   <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">16.1.7</span> Example</a></li>
   <li><a href="#control-function-approach" id="toc-control-function-approach" class="nav-link" data-scroll-target="#control-function-approach"><span class="header-section-number">16.1.8</span> Control Function Approach</a></li>
   </ul></li>
-  <li><a href="#when-tsls-with-covariates-is-actually-late" id="toc-when-tsls-with-covariates-is-actually-late" class="nav-link" data-scroll-target="#when-tsls-with-covariates-is-actually-late"><span class="header-section-number">16.2</span> When TSLS-with-Covariates Is <em>Actually</em> LATE</a>
+  <li><a href="#when-2sls-with-covariates-is-actually-late" id="toc-when-2sls-with-covariates-is-actually-late" class="nav-link" data-scroll-target="#when-2sls-with-covariates-is-actually-late"><span class="header-section-number">16.2</span> When 2SLS with Covariates Is <em>Actually</em> LATE</a>
   <ul class="collapse">
-  <li><a href="#the-hidden-functional-form-assumption" id="toc-the-hidden-functional-form-assumption" class="nav-link" data-scroll-target="#the-hidden-functional-form-assumption"><span class="header-section-number">16.2.1</span> The Hidden Functional-Form Assumption</a></li>
-  <li><a href="#a-simulation-when-linear-tsls-misses" id="toc-a-simulation-when-linear-tsls-misses" class="nav-link" data-scroll-target="#a-simulation-when-linear-tsls-misses"><span class="header-section-number">16.2.2</span> A Simulation: When Linear TSLS Misses</a></li>
-  <li><a href="#a-diagnostic-reset-on-z-x" id="toc-a-diagnostic-reset-on-z-x" class="nav-link" data-scroll-target="#a-diagnostic-reset-on-z-x"><span class="header-section-number">16.2.3</span> A Diagnostic: RESET on <code>Z ~ X</code></a></li>
+  <li><a href="#why-the-linear-specification-hides-an-assumption" id="toc-why-the-linear-specification-hides-an-assumption" class="nav-link" data-scroll-target="#why-the-linear-specification-hides-an-assumption"><span class="header-section-number">16.2.1</span> Why the Linear Specification Hides an Assumption</a></li>
+  <li><a href="#a-simulation" id="toc-a-simulation" class="nav-link" data-scroll-target="#a-simulation"><span class="header-section-number">16.2.2</span> A Simulation</a></li>
+  <li><a href="#diagnostic-reset-on-z-x" id="toc-diagnostic-reset-on-z-x" class="nav-link" data-scroll-target="#diagnostic-reset-on-z-x"><span class="header-section-number">16.2.3</span> Diagnostic: RESET on Z ~ X</a></li>
   <li><a href="#what-to-do-instead" id="toc-what-to-do-instead" class="nav-link" data-scroll-target="#what-to-do-instead"><span class="header-section-number">16.2.4</span> What to Do Instead</a></li>
-  <li><a href="#why-this-matters-for-the-frdd-example-below" id="toc-why-this-matters-for-the-frdd-example-below" class="nav-link" data-scroll-target="#why-this-matters-for-the-frdd-example-below"><span class="header-section-number">16.2.5</span> Why This Matters for the FRDD Example Below</a></li>
+  <li><a href="#a-note-on-the-frdd-example" id="toc-a-note-on-the-frdd-example" class="nav-link" data-scroll-target="#a-note-on-the-frdd-example"><span class="header-section-number">16.2.5</span> A Note on the FRDD Example</a></li>
   <li><a href="#bottom-line" id="toc-bottom-line" class="nav-link" data-scroll-target="#bottom-line"><span class="header-section-number">16.2.6</span> Bottom Line</a></li>
   </ul></li>
   <li><a href="#regression-discontinuity-design" id="toc-regression-discontinuity-design" class="nav-link" data-scroll-target="#regression-discontinuity-design"><span class="header-section-number">16.3</span> Regression Discontinuity Design</a>
@@ -506,7 +526,7 @@ window.Quarto = {
 </header>
 
 
-<div id="996265c1" class="cell" data-execution_count="2">
+<div id="29633ad0" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span>, <span class="bu">Graphs</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>, <span class="bu">Random</span>, <span class="bu">LinearAlgebra</span></span>
@@ -524,7 +544,7 @@ window.Quarto = {
 <h2 data-number="16.1" class="anchored" data-anchor-id="instrumental-variables"><span class="header-section-number">16.1</span> Instrumental Variables</h2>
 <section id="uncontrolled-confounder" class="level3" data-number="16.1.1">
 <h3 data-number="16.1.1" class="anchored" data-anchor-id="uncontrolled-confounder"><span class="header-section-number">16.1.1</span> Uncontrolled Confounder</h3>
-<div id="1db69c1f" class="cell" data-message="false" data-execution_count="3">
+<div id="a6c82ae8" class="cell" data-message="false" data-execution_count="3">
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 <figure class="figure">
@@ -536,7 +556,7 @@ window.Quarto = {
 </section>
 <section id="why-does-iv-work" class="level3" data-number="16.1.2">
 <h3 data-number="16.1.2" class="anchored" data-anchor-id="why-does-iv-work"><span class="header-section-number">16.1.2</span> Why Does IV Work?</h3>
-<div id="b52d3522" class="cell" data-message="false" data-execution_count="4">
+<div id="a2962cc2" class="cell" data-message="false" data-execution_count="4">
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div>
 <figure class="figure">
@@ -650,7 +670,7 @@ window.Quarto = {
 </section>
 <section id="example" class="level3" data-number="16.1.7">
 <h3 data-number="16.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">16.1.7</span> Example</h3>
-<div id="0594e565" class="cell" data-message="false" data-execution_count="5">
+<div id="eedd265e" class="cell" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">66</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>nobs <span class="op">=</span> <span class="fl">10000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -684,7 +704,7 @@ window.Quarto = {
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: Regress outcome y on predicted w_hat</span></span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>tsls_manual <span class="op">=</span> <span class="fu">feols</span>(data, <span class="pp">@formula</span>(y <span class="op">~</span> w_hat));</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="34303e34" class="cell" data-message="false" data-execution_count="6">
+<div id="27cdc5d2" class="cell" data-message="false" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Biased OLS</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"── Biased OLS (w only) ──────────────────────"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(lm_biased)</span>
@@ -847,7 +867,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p>If we <em>knew</em> <span class="math inline">\(v\)</span>, controlling for it directly would eliminate the confounding channel. We don’t know <span class="math inline">\(v\)</span>, but the first-stage residual <span class="math inline">\(\hat{v} = w - \hat{w}\)</span> is a consistent estimate. Substituting into the structural equation:</p>
 <p><span class="math display">\[y = \alpha + \beta w + \rho\,\hat{v} + \text{error}.\]</span></p>
 <p>OLS on this <strong>augmented</strong> second stage gives a consistent <span class="math inline">\(\hat\beta\)</span> — identical to 2SLS by the Frisch–Waugh–Lovell (FWL) theorem. The coefficient <span class="math inline">\(\hat\rho\)</span> on <span class="math inline">\(\hat{v}\)</span> doubles as a <strong>Durbin–Wu–Hausman (DWH) endogeneity test</strong>: under <span class="math inline">\(H_0\)</span> (w is exogenous), <span class="math inline">\(\rho = 0\)</span>.</p>
-<div id="2ac8eda0" class="cell" data-message="false" data-execution_count="7">
+<div id="3f3b667f" class="cell" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">StatsBase</span>: coef, stderror, coefnames</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Control function: add first-stage residual v̂ to the second stage OLS</span></span>
@@ -890,27 +910,25 @@ Note
 </div>
 </section>
 </section>
-<section id="when-tsls-with-covariates-is-actually-late" class="level2" data-number="16.2">
-<h2 data-number="16.2" class="anchored" data-anchor-id="when-tsls-with-covariates-is-actually-late"><span class="header-section-number">16.2</span> When TSLS-with-Covariates Is <em>Actually</em> LATE</h2>
-<p>The clean LATE identification result above assumed a binary treatment, a binary instrument, and <strong>no covariates</strong>. In that world the Wald estimator <span class="math inline">\(E[Y|Z=1]-E[Y|Z=0]\)</span> over <span class="math inline">\(E[W|Z=1]-E[W|Z=0]\)</span> identifies the LATE under Imbens-Angrist assumptions.</p>
-<p>In practice almost no one uses IV that way. We add covariates to the second stage to defend conditional exogeneity:</p>
+<section id="when-2sls-with-covariates-is-actually-late" class="level2" data-number="16.2">
+<h2 data-number="16.2" class="anchored" data-anchor-id="when-2sls-with-covariates-is-actually-late"><span class="header-section-number">16.2</span> When 2SLS with Covariates Is <em>Actually</em> LATE</h2>
+<p>The LATE identification above is clean because we have no covariates. The Wald estimator gives us LATE, full stop. But in practice we usually add covariates to defend conditional exogeneity:</p>
 <p><span class="math display">\[
-Y \;=\; \beta\,W \;+\; \gamma^\top X \;+\; U, \qquad
-W \;=\; \pi\,Z \;+\; \delta^\top X \;+\; V.
+Y = \beta W + \gamma^\top X + U, \qquad W = \pi Z + \delta^\top X + V.
 \]</span></p>
-<p>It is widely taught — following Angrist &amp; Pischke (2009) — that this linear-IV specification still recovers a non-negatively weighted average of covariate-specific LATEs. Blandhol, Bonney, Mogstad and Torgovitsky (2025) show this is generally <strong>false</strong>.</p>
-<section id="the-hidden-functional-form-assumption" class="level3" data-number="16.2.1">
-<h3 data-number="16.2.1" class="anchored" data-anchor-id="the-hidden-functional-form-assumption"><span class="header-section-number">16.2.1</span> The Hidden Functional-Form Assumption</h3>
-<p>By the Frisch-Waugh-Lovell theorem, the IV estimand can be written</p>
+<p>Does 2SLS on this still give us a LATE? <span class="citation" data-cites="angrist-pischke-2009">Angrist and Pischke (<a href="references.html#ref-angrist-pischke-2009" role="doc-biblioref">2009</a>)</span> say it gives a weighted average of covariate-specific LATEs. <span class="citation" data-cites="blandhol-et-al-2025">Blandhol et al. (<a href="references.html#ref-blandhol-et-al-2025" role="doc-biblioref">2025</a>)</span> show that this is generally not true.</p>
+<section id="why-the-linear-specification-hides-an-assumption" class="level3" data-number="16.2.1">
+<h3 data-number="16.2.1" class="anchored" data-anchor-id="why-the-linear-specification-hides-an-assumption"><span class="header-section-number">16.2.1</span> Why the Linear Specification Hides an Assumption</h3>
+<p>By Frisch-Waugh-Lovell, the IV estimand is</p>
 <p><span class="math display">\[
-\beta_{iv} \;=\; \frac{E[\,Y\,\tilde Z\,]}{E[\,W\,\tilde Z\,]},
-\qquad \tilde Z \;\equiv\; Z - L[Z\mid X],
+\beta_{iv} = \frac{E[Y \tilde Z]}{E[W \tilde Z]}, \qquad \tilde Z = Z - L[Z \mid X],
 \]</span></p>
-<p>where <span class="math inline">\(L[Z\mid X]\)</span> is the <strong>linear</strong> projection of <span class="math inline">\(Z\)</span> on <span class="math inline">\(X\)</span> — i.e., the fitted values from a linear regression of <span class="math inline">\(Z\)</span> on <span class="math inline">\(X\)</span>. Blandhol et al.&nbsp;prove that <span class="math inline">\(\beta_{iv}\)</span> is a non-negatively weighted average of conditional LATEs <strong>if and only if</strong> the <em>rich covariates</em> condition holds:</p>
+<p>where <span class="math inline">\(L[Z \mid X]\)</span> is the <strong>linear</strong> projection of <span class="math inline">\(Z\)</span> on <span class="math inline">\(X\)</span>. So <span class="math inline">\(\tilde Z\)</span> is the part of <span class="math inline">\(Z\)</span> that a linear regression on <span class="math inline">\(X\)</span> cannot explain.</p>
+<p>What if the true <span class="math inline">\(E[Z \mid X]\)</span> is not linear in <span class="math inline">\(X\)</span>? Then <span class="math inline">\(L[Z \mid X] \neq E[Z \mid X]\)</span>, and the residual instrument <span class="math inline">\(\tilde Z\)</span> still picks up some of the conditional mean. The IV estimand then mixes treatment effects across compliance groups. <span class="citation" data-cites="blandhol-et-al-2025">Blandhol et al. (<a href="references.html#ref-blandhol-et-al-2025" role="doc-biblioref">2025</a>)</span> prove that <span class="math inline">\(\beta_{iv}\)</span> is a non-negatively weighted average of conditional LATEs only if the rich covariates condition holds:</p>
 <p><span class="math display">\[
-L[Z\mid X] \;=\; E[Z\mid X].
+L[Z \mid X] = E[Z \mid X].
 \]</span></p>
-<p>In words: the linear projection of <span class="math inline">\(Z\)</span> on <span class="math inline">\(X\)</span> must coincide with the true conditional mean of <span class="math inline">\(Z\)</span> given <span class="math inline">\(X\)</span>. This is <strong>not</strong> a property of the data generating process — it is a parametric assumption about the functional form you put into the regression. Under rich covariates, the linear first stage is correctly specified. Without it, <span class="math inline">\(L[Z\mid X]\)</span> omits curvature and interactions, and <span class="math inline">\(\beta_{iv}\)</span> generally mixes complier effects with always-/never-taker effects, with some always-taker terms entering with <strong>negative weights</strong>.</p>
+<p>This is a parametric assumption about <span class="math inline">\(E[Z \mid X]\)</span>. It is implicit in the linear-in-<span class="math inline">\(X\)</span> specification, and it is rarely defended. When it fails, <span class="math inline">\(\beta_{iv}\)</span> picks up treatment effects for always-takers as well as compliers, and some always-taker terms enter with negative weight.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -921,14 +939,14 @@ Warning
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>“Two-stage least squares with covariates estimates a LATE” is a claim that requires either (i) a saturated specification (one dummy per cell of <span class="math inline">\(X\)</span>), or (ii) the implicit, untested assertion that <span class="math inline">\(E[Z\mid X]\)</span> happens to be linear in <span class="math inline">\(X\)</span>. The widespread shorthand omits this caveat.</p>
+<p>“2SLS with covariates estimates LATE” is true only if <span class="math inline">\(X\)</span> enters saturated (one dummy per cell), or the true <span class="math inline">\(E[Z \mid X]\)</span> happens to be linear in <span class="math inline">\(X\)</span>.</p>
 </div>
 </div>
 </section>
-<section id="a-simulation-when-linear-tsls-misses" class="level3" data-number="16.2.2">
-<h3 data-number="16.2.2" class="anchored" data-anchor-id="a-simulation-when-linear-tsls-misses"><span class="header-section-number">16.2.2</span> A Simulation: When Linear TSLS Misses</h3>
-<p>We construct a DGP where conditional exogeneity holds given <span class="math inline">\(X\)</span>, but <span class="math inline">\(E[Z\mid X]\)</span> is genuinely nonlinear. A linear-in-<span class="math inline">\(X\)</span> TSLS specification therefore violates rich covariates. We compare four estimators against the true LATE.</p>
-<div id="13fb3874" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<section id="a-simulation" class="level3" data-number="16.2.2">
+<h3 data-number="16.2.2" class="anchored" data-anchor-id="a-simulation"><span class="header-section-number">16.2.2</span> A Simulation</h3>
+<p>We build a DGP where <span class="math inline">\(E[Z \mid X]\)</span> is wildly nonlinear in <span class="math inline">\(X\)</span>, so the linear-in-<span class="math inline">\(X\)</span> specification has to fail. Then we compare four estimators against the true LATE.</p>
+<div id="cb48b24d" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DecisionTree</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -975,8 +993,8 @@ Warning
 True unconditional LATE = 0.617</code></pre>
 </div>
 </div>
-<p>Now we compare four estimators. Julia has no equivalent of R’s <code>DoubleML</code> package, so we implement DDML PLIV manually via 5-fold cross-fitting with random-forest nuisance estimates — the same pattern the <code>nonparametric.qmd</code> chapter uses for DDML PLR.</p>
-<div id="1a3dbb0c" class="cell" data-cache="true" data-message="false" data-execution_count="9">
+<p>Now we compare four estimators. Julia has no equivalent of R’s <code>DoubleML</code> package, so we implement DDML PLIV manually with 5-fold cross-fitting using random-forest nuisance estimates. This is the same pattern the <code>nonparametric.qmd</code> chapter uses for DDML PLR.</p>
+<div id="4b7c4718" class="cell" data-cache="true" data-message="false" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper: TSLS via the matrix expression (X is the exogenous matrix incl. constant).</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">tsls_matrix</span>(Y, W, Z, Xmat)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    Wmat <span class="op">=</span> <span class="fu">hcat</span>(W, Xmat)</span>
@@ -1079,25 +1097,13 @@ True unconditional LATE = 0.617</code></pre>
 </div>
 </div>
 </div>
-<p>The linear-in-<span class="math inline">\(X\)</span> TSLS does not recover the true LATE. The polynomial specification, by adding flexibility, gets closer — and the cross-fitted nonparametric PLIV lands close to the polynomial estimate. The Wald estimator is badly off because <span class="math inline">\(Z\)</span> is not unconditionally exogenous.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The DDML PLIV estimand <span class="math inline">\(\beta_{\text{rich}}\)</span> is a <strong>weighted average of conditional LATEs</strong>, with weights determined by <span class="math inline">\(\text{Var}(Z\mid X)\cdot P(\text{complier}\mid X)\)</span>. This is non-negatively weighted (so weakly causal) but is generally <strong>not</strong> equal to the unconditional LATE — that is why the polynomial TSLS and DDML PLIV agree with each other but both miss the true LATE. To target the unconditional LATE itself, see the IPSW approach below.</p>
-</div>
-</div>
+<p>The linear-in-<span class="math inline">\(X\)</span> 2SLS does not recover the true LATE. The polynomial 2SLS is closer, and DDML PLIV is close to the polynomial estimate. The Wald estimator is far off because <span class="math inline">\(Z\)</span> is not unconditionally exogenous, and Wald has no way to use <span class="math inline">\(X\)</span>.</p>
+<p>What are the polynomial 2SLS and DDML PLIV estimating, if not LATE? Both target <span class="math inline">\(\beta_{rich}\)</span>, a weighted average of conditional LATEs with weights proportional to <span class="math inline">\(\text{Var}(Z \mid X) \cdot P(\text{complier} \mid X)\)</span>. It is non-negatively weighted, so it is weakly causal. But it is not the unconditional LATE we usually want.</p>
 </section>
-<section id="a-diagnostic-reset-on-z-x" class="level3" data-number="16.2.3">
-<h3 data-number="16.2.3" class="anchored" data-anchor-id="a-diagnostic-reset-on-z-x"><span class="header-section-number">16.2.3</span> A Diagnostic: RESET on <code>Z ~ X</code></h3>
-<p>The null hypothesis of rich covariates is equivalent to the null that the linear regression <span class="math inline">\(Z = \alpha + \delta^\top X\)</span> has no omitted nonlinear terms — exactly what Ramsey’s (1969) RESET test was designed to detect. Julia has no direct equivalent of R’s <code>lmtest::resettest()</code>, but the test is just an F-test of joint significance of higher powers of the regressors.</p>
-<div id="bc1e86fd" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<section id="diagnostic-reset-on-z-x" class="level3" data-number="16.2.3">
+<h3 data-number="16.2.3" class="anchored" data-anchor-id="diagnostic-reset-on-z-x"><span class="header-section-number">16.2.3</span> Diagnostic: RESET on Z ~ X</h3>
+<p>Rich covariates says <span class="math inline">\(E[Z \mid X]\)</span> is linear in <span class="math inline">\(X\)</span>. That is exactly the null of Ramsey’s RESET test <span class="citation" data-cites="ramsey-1969">(<a href="references.html#ref-ramsey-1969" role="doc-biblioref">Ramsey 1969</a>)</span>. Julia has no direct equivalent of R’s <code>lmtest::resettest()</code>, but the test is just an F-test of joint significance of higher powers of <span class="math inline">\(X\)</span>.</p>
+<div id="da66b8c1" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df_reset       <span class="op">=</span> <span class="fu">DataFrame</span>(Z <span class="op">=</span> <span class="fu">Float64</span>.(Z), X <span class="op">=</span> X, X2 <span class="op">=</span> X <span class="op">.^</span> <span class="fl">2</span>, X3 <span class="op">=</span> X <span class="op">.^</span> <span class="fl">3</span>)</span>
@@ -1115,40 +1121,29 @@ Note
 <pre><code>RESET-style F on Z ~ X (joint test of X^2, X^3): F = 131.57, p = 0</code></pre>
 </div>
 </div>
-<p>In our DGP the test rejects strongly, flagging the rich-covariates failure that we know is there by construction. The same test on real data is a cheap, principled check before reporting a LATE interpretation of a 2SLS coefficient.</p>
+<p>In our DGP it rejects strongly. The same test on real data is cheap, and it tells us whether the LATE interpretation is defensible before we report a 2SLS coefficient.</p>
 </section>
 <section id="what-to-do-instead" class="level3" data-number="16.2.4">
 <h3 data-number="16.2.4" class="anchored" data-anchor-id="what-to-do-instead"><span class="header-section-number">16.2.4</span> What to Do Instead</h3>
-<p>Blandhol et al.&nbsp;(2025) offer four practical steps for empirical work.</p>
+<p><span class="citation" data-cites="blandhol-et-al-2025">Blandhol et al. (<a href="references.html#ref-blandhol-et-al-2025" role="doc-biblioref">2025</a>)</span> give four steps for empirical work.</p>
 <ol type="1">
-<li><p><strong>Reconsider the role of covariates.</strong> If <span class="math inline">\(Z\)</span> is unconditionally exogenous, drop the covariates. Adding them for precision is fine; a kitchen-sink set of controls makes rich covariates <em>less</em> likely to hold.</p></li>
-<li><p><strong>Run the RESET test on <code>Z ~ X</code></strong> as above. If it does not reject, the linear-IV-as-LATE interpretation is defensible (subject to the usual IV assumptions).</p></li>
-<li><p><strong>If RESET rejects, report a partially-linear IV estimate alongside TSLS.</strong> This is what DDML PLIV delivers. In R: <code>DoubleML</code>, <code>ddml</code>. In Stata: <code>ddml</code> (Ahrens et al.&nbsp;2023). In Julia there is no first-class PLIV package; the manual cross-fitting routine above is the recommended approach, mirroring the DDML PLR pattern used elsewhere in this book.</p></li>
-<li><p><strong>For a binary instrument, also estimate the unconditional LATE directly.</strong> This can be done with DDML or with instrument propensity score weighting (IPSW; Słoczyński et al.&nbsp;2024):</p>
+<li><p><strong>Reconsider the covariates.</strong> If <span class="math inline">\(Z\)</span> is unconditionally exogenous, drop them. A kitchen-sink set of controls makes rich covariates <em>less</em> likely.</p></li>
+<li><p><strong>Run RESET on <code>Z ~ X</code>.</strong> If it does not reject, the linear-IV-as-LATE interpretation is defensible.</p></li>
+<li><p><strong>If RESET rejects, report DDML PLIV alongside 2SLS.</strong> Julia has no first-class PLIV package, so the manual cross-fitting above is the recommended route. In R the package is <code>DoubleML</code>; in Stata it is <code>ddml</code>. DDML PLIV targets <span class="math inline">\(\beta_{rich}\)</span>, a non-negatively weighted average of conditional LATEs.</p></li>
+<li><p><strong>For a binary instrument, also estimate the unconditional LATE.</strong> With instrument propensity score weighting <span class="citation" data-cites="sloczynski-2024">(<a href="references.html#ref-sloczynski-2024" role="doc-biblioref">Słoczyński 2024</a>)</span>,</p>
 <p><span class="math display">\[
-\hat\beta_{\text{late}}
-\;=\;
-\frac{\sum_i Y_i \big[Z_i / \hat p(X_i) - (1-Z_i) / (1 - \hat p(X_i))\big]}
-     {\sum_i W_i \big[Z_i / \hat p(X_i) - (1-Z_i) / (1 - \hat p(X_i))\big]}
+\hat\beta_{late} = \frac{\sum_i Y_i [Z_i/\hat p(X_i) - (1-Z_i)/(1-\hat p(X_i))]}{\sum_i W_i [Z_i/\hat p(X_i) - (1-Z_i)/(1-\hat p(X_i))]},
 \]</span></p>
-<p>where <span class="math inline">\(\hat p(X)\)</span> is a nonparametric estimate of <span class="math inline">\(P(Z = 1 \mid X)\)</span>. Stata’s <code>ipsw</code> package implements this; in Julia or R it is straightforward to construct point estimates by hand once <span class="math inline">\(\hat p(X)\)</span> is in place.</p></li>
+<p>where <span class="math inline">\(\hat p(X) = P(Z = 1 \mid X)\)</span> is estimated nonparametrically. Stata has <code>ipsw</code>. In Julia or R it is straightforward to build once <span class="math inline">\(\hat p(X)\)</span> is in hand.</p></li>
 </ol>
 </section>
-<section id="why-this-matters-for-the-frdd-example-below" class="level3" data-number="16.2.5">
-<h3 data-number="16.2.5" class="anchored" data-anchor-id="why-this-matters-for-the-frdd-example-below"><span class="header-section-number">16.2.5</span> Why This Matters for the FRDD Example Below</h3>
-<p>The fuzzy-RDD application at the end of this chapter instruments the treatment with an above-cutoff indicator while controlling for race, state of birth, and quarter-of-birth fixed effects. The instrument’s conditional mean given those covariates is unlikely to be linear in them — and indeed the 2SLS estimate and the local <code>RDRobust</code> estimate differ markedly. The original commentary attributes that gap to “sensitivity to model selection.” Rich-covariates failure is at least as plausible an explanation, and the RESET diagnostic above is the right first thing to run on that specification.</p>
+<section id="a-note-on-the-frdd-example" class="level3" data-number="16.2.5">
+<h3 data-number="16.2.5" class="anchored" data-anchor-id="a-note-on-the-frdd-example"><span class="header-section-number">16.2.5</span> A Note on the FRDD Example</h3>
+<p>The fuzzy-RDD example at the end of this chapter is 2SLS with race, state of birth, and quarter-of-birth fixed effects entered as covariates. The 2SLS estimate and the local <code>RDRobust</code> estimate differ. We called that “sensitivity to model selection” earlier. The rich-covariates story is at least as plausible an explanation, and the RESET test is the right first thing to run.</p>
 </section>
 <section id="bottom-line" class="level3" data-number="16.2.6">
 <h3 data-number="16.2.6" class="anchored" data-anchor-id="bottom-line"><span class="header-section-number">16.2.6</span> Bottom Line</h3>
-<ul>
-<li>“TSLS with covariates estimates a LATE” is true only under the rich-covariates condition, which is a parametric assumption on the conditional mean of the instrument.</li>
-<li>That assumption is rarely defended in published work and is often rejected by a simple RESET test.</li>
-<li>The practical alternatives — DDML PLIV for <span class="math inline">\(\beta_{\text{rich}}\)</span>, IPSW or DDML for the unconditional LATE — are available in mature R and Stata packages; in Julia they can be assembled from <code>MLJ</code> + cross-fitting as shown above.</li>
-<li>The criterion “non-negatively weighted average of conditional LATEs” is itself a weak one. Even when it holds, the estimand can differ substantially from the unconditional LATE that practitioners usually have in mind.</li>
-</ul>
-<blockquote class="blockquote">
-<p><strong>Reference.</strong> Blandhol, C., Bonney, J., Mogstad, M., &amp; Torgovitsky, A. (2025). <em>When is TSLS Actually LATE?</em> Working paper.</p>
-</blockquote>
+<p>“2SLS with covariates estimates LATE” needs the rich covariates condition. That condition is a parametric assumption on <span class="math inline">\(E[Z \mid X]\)</span> that researchers rarely defend, and a simple RESET test often rejects it. The honest alternatives are DDML PLIV for <span class="math inline">\(\beta_{rich}\)</span> and IPSW (or DDML) for the unconditional LATE. Even when rich covariates holds, <span class="math inline">\(\beta_{rich}\)</span> can be quite different from the unconditional LATE we usually care about.</p>
 </section>
 </section>
 <section id="regression-discontinuity-design" class="level2" data-number="16.3">
@@ -1159,7 +1154,7 @@ Note
 <p>We have a continuous variable <span class="math inline">\(X\)</span>, called the running variable, which determines the binary treatment <span class="math inline">\(W\)</span>. The treatment is assigned according to a threshold <span class="math inline">\(c\)</span>. The outcome variable <span class="math inline">\(Y\)</span> is a function of <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span>.</p>
 <p><span class="math display">\[ W=\mathbb{1}(X&gt;c)\]</span></p>
 <p>Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable <span class="math inline">\(X_i\)</span> is the difference in vote share between the Democratic and Republican parties in one election, with the threshold <span class="math inline">\(c = 0\)</span>. The outcome variable <span class="math inline">\(Y_i\)</span> is vote share at the second election.</p>
-<div id="38e34ef6" class="cell" data-message="false" data-execution_count="11">
+<div id="da00bf9c" class="cell" data-message="false" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>senate <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/rdrobust_senate.csv"</span>, DataFrame)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1197,7 +1192,7 @@ Note
 </section>
 <section id="estimation-of-srdd" class="level3" data-number="16.3.3">
 <h3 data-number="16.3.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">16.3.3</span> Estimation of SRDD</h3>
-<div id="794d78a6" class="cell" data-message="false" data-execution_count="12">
+<div id="cf970ae4" class="cell" data-message="false" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>GPA <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">4</span>), <span class="fl">1000</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>future_success <span class="op">=</span> <span class="fl">10</span> <span class="op">.+</span> <span class="fl">1.5</span> <span class="op">.*</span> GPA <span class="op">.+</span> <span class="fl">2</span> <span class="op">.*</span> (GPA <span class="op">.&lt;=</span> <span class="fl">3</span>) <span class="op">.+</span> <span class="fu">rand</span>(<span class="fu">Normal</span>(<span class="fl">0</span>, <span class="fl">1</span>), <span class="fl">1000</span>)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1224,7 +1219,7 @@ Note
 </div>
 </div>
 </div>
-<div id="50778c06" class="cell" data-message="false" data-execution_count="13">
+<div id="d4f5df5a" class="cell" data-message="false" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the sharp RDD model</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>rdd_gpa <span class="op">=</span> <span class="fu">rdrobust</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.Estimate.tau_us[<span class="fl">1</span>]</span>
@@ -1237,7 +1232,7 @@ P-value (robust)     = 0.0000</code></pre>
 </section>
 <section id="nonparametric-estimation" class="level3" data-number="16.3.4">
 <h3 data-number="16.3.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">16.3.4</span> Nonparametric Estimation</h3>
-<div id="52faa54e" class="cell" data-message="false" data-execution_count="14">
+<div id="eb1bfaac" class="cell" data-message="false" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>rdd_house <span class="op">=</span> <span class="fu">rdrobust</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (bias-corrected) = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_house.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1258,7 +1253,7 @@ P-value (robust)     = 0.0000</code></pre>
 <h3 data-number="16.3.6" class="anchored" data-anchor-id="frdd-example"><span class="header-section-number">16.3.6</span> FRDD Example</h3>
 <p>Fetter (2013)’s main question of interest is how much of the increase in the home ownership rate in the midcentury US was due to mortgage subsidies given out by the government.</p>
 <p>We’re using the running variable quarter of birth (qob), which has been centered on the quarter of birth you’d need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).</p>
-<div id="ad785d8a" class="cell" data-cache="true" data-message="false" data-execution_count="15">
+<div id="27297f15" class="cell" data-cache="true" data-message="false" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the real mortgages dataset (Fetter 2013) from causaldata R package</span></span>
@@ -1344,7 +1339,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="e7ba13dc" class="cell" data-cache="true" data-message="false" data-execution_count="16">
+<div id="dfcc9d2f" class="cell" data-cache="true" data-message="false" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: rdrobust uses a data-driven bandwidth — no global FE needed</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>m_rdd <span class="op">=</span> <span class="fu">rdrobust</span>(vet.home_ownership,</span>
@@ -1361,6 +1356,20 @@ RDRobust (FRDD) tau = 1.879</code></pre>
 <p>These two results are very different, which is one of RDD’s problems. It can be sensitive to model selection. For example, in the case of 2SLS, it’s a linear model. In the case of <code>rdrobust</code>, it’s a local regression, which can be sensitive to bandwidth selection.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-angrist-pischke-2009" class="csl-entry" role="listitem">
+Angrist, Joshua D., and Jörn-Steffen Pischke. 2009. <em>Mostly Harmless Econometrics: An Empiricist’s Companion</em>. Princeton University Press.
+</div>
+<div id="ref-blandhol-et-al-2025" class="csl-entry" role="listitem">
+Blandhol, Christine, John Bonney, Magne Mogstad, and Alexander Torgovitsky. 2025. <span>“When Is <span>TSLS</span> Actually <span>LATE</span>?”</span>
+</div>
+<div id="ref-ramsey-1969" class="csl-entry" role="listitem">
+Ramsey, J. B. 1969. <span>“Tests for Specification Errors in Classical Linear Least-Squares Regression Analysis.”</span> <em>Journal of the Royal Statistical Society, Series B</em> 31 (2): 350–71.
+</div>
+<div id="ref-sloczynski-2024" class="csl-entry" role="listitem">
+Słoczyński, Tymon. 2024. <span>“When Should We (Not) Interpret Linear <span>IV</span> Estimands as <span>LATE</span>?”</span> <em>Quantitative Economics</em>.
+</div>
+</div>
 </section>
 </section>
 

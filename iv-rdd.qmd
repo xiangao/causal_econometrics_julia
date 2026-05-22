@@ -258,43 +258,41 @@ In a nonlinear second stage, $\hat{v}$ must enter *inside* the link function
 beyond instrument exogeneity.  This is the subject of the next chapter.
 :::
 
-## When TSLS-with-Covariates Is *Actually* LATE
+## When 2SLS with Covariates Is *Actually* LATE
 
-The clean LATE identification result above assumed a binary treatment, a binary instrument, and **no covariates**. In that world the Wald estimator $E[Y|Z=1]-E[Y|Z=0]$ over $E[W|Z=1]-E[W|Z=0]$ identifies the LATE under Imbens-Angrist assumptions.
-
-In practice almost no one uses IV that way. We add covariates to the second stage to defend conditional exogeneity:
+The LATE identification above is clean because we have no covariates. The Wald estimator gives us LATE, full stop. But in practice we usually add covariates to defend conditional exogeneity:
 
 $$
-Y \;=\; \beta\,W \;+\; \gamma^\top X \;+\; U, \qquad
-W \;=\; \pi\,Z \;+\; \delta^\top X \;+\; V.
+Y = \beta W + \gamma^\top X + U, \qquad W = \pi Z + \delta^\top X + V.
 $$
 
-It is widely taught — following Angrist & Pischke (2009) — that this linear-IV specification still recovers a non-negatively weighted average of covariate-specific LATEs. Blandhol, Bonney, Mogstad and Torgovitsky (2025) show this is generally **false**.
+Does 2SLS on this still give us a LATE? @angrist-pischke-2009 say it gives a weighted average of covariate-specific LATEs. @blandhol-et-al-2025 show that this is generally not true.
 
-### The Hidden Functional-Form Assumption
+### Why the Linear Specification Hides an Assumption
 
-By the Frisch-Waugh-Lovell theorem, the IV estimand can be written
-
-$$
-\beta_{iv} \;=\; \frac{E[\,Y\,\tilde Z\,]}{E[\,W\,\tilde Z\,]},
-\qquad \tilde Z \;\equiv\; Z - L[Z\mid X],
-$$
-
-where $L[Z\mid X]$ is the **linear** projection of $Z$ on $X$ — i.e., the fitted values from a linear regression of $Z$ on $X$. Blandhol et al. prove that $\beta_{iv}$ is a non-negatively weighted average of conditional LATEs **if and only if** the *rich covariates* condition holds:
+By Frisch-Waugh-Lovell, the IV estimand is
 
 $$
-L[Z\mid X] \;=\; E[Z\mid X].
+\beta_{iv} = \frac{E[Y \tilde Z]}{E[W \tilde Z]}, \qquad \tilde Z = Z - L[Z \mid X],
 $$
 
-In words: the linear projection of $Z$ on $X$ must coincide with the true conditional mean of $Z$ given $X$. This is **not** a property of the data generating process — it is a parametric assumption about the functional form you put into the regression. Under rich covariates, the linear first stage is correctly specified. Without it, $L[Z\mid X]$ omits curvature and interactions, and $\beta_{iv}$ generally mixes complier effects with always-/never-taker effects, with some always-taker terms entering with **negative weights**.
+where $L[Z \mid X]$ is the **linear** projection of $Z$ on $X$. So $\tilde Z$ is the part of $Z$ that a linear regression on $X$ cannot explain.
+
+What if the true $E[Z \mid X]$ is not linear in $X$? Then $L[Z \mid X] \neq E[Z \mid X]$, and the residual instrument $\tilde Z$ still picks up some of the conditional mean. The IV estimand then mixes treatment effects across compliance groups. @blandhol-et-al-2025 prove that $\beta_{iv}$ is a non-negatively weighted average of conditional LATEs only if the rich covariates condition holds:
+
+$$
+L[Z \mid X] = E[Z \mid X].
+$$
+
+This is a parametric assumption about $E[Z \mid X]$. It is implicit in the linear-in-$X$ specification, and it is rarely defended. When it fails, $\beta_{iv}$ picks up treatment effects for always-takers as well as compliers, and some always-taker terms enter with negative weight.
 
 ::: {.callout-warning}
-"Two-stage least squares with covariates estimates a LATE" is a claim that requires either (i) a saturated specification (one dummy per cell of $X$), or (ii) the implicit, untested assertion that $E[Z\mid X]$ happens to be linear in $X$. The widespread shorthand omits this caveat.
+"2SLS with covariates estimates LATE" is true only if $X$ enters saturated (one dummy per cell), or the true $E[Z \mid X]$ happens to be linear in $X$.
 :::
 
-### A Simulation: When Linear TSLS Misses
+### A Simulation
 
-We construct a DGP where conditional exogeneity holds given $X$, but $E[Z\mid X]$ is genuinely nonlinear. A linear-in-$X$ TSLS specification therefore violates rich covariates. We compare four estimators against the true LATE.
+We build a DGP where $E[Z \mid X]$ is wildly nonlinear in $X$, so the linear-in-$X$ specification has to fail. Then we compare four estimators against the true LATE.
 
 ```{julia}
 #| warning: false
@@ -343,9 +341,7 @@ true_LATE = mean(τ[G .== :CP])
 @printf("True unconditional LATE = %.3f\n", true_LATE)
 ```
 
-Now we compare four estimators. Julia has no equivalent of R's `DoubleML` package, so we
-implement DDML PLIV manually via 5-fold cross-fitting with random-forest nuisance estimates —
-the same pattern the `nonparametric.qmd` chapter uses for DDML PLR.
+Now we compare four estimators. Julia has no equivalent of R's `DoubleML` package, so we implement DDML PLIV manually with 5-fold cross-fitting using random-forest nuisance estimates. This is the same pattern the `nonparametric.qmd` chapter uses for DDML PLR.
 
 ```{julia}
 #| warning: false
@@ -410,15 +406,13 @@ results = DataFrame(
 results
 ```
 
-The linear-in-$X$ TSLS does not recover the true LATE. The polynomial specification, by adding flexibility, gets closer — and the cross-fitted nonparametric PLIV lands close to the polynomial estimate. The Wald estimator is badly off because $Z$ is not unconditionally exogenous.
+The linear-in-$X$ 2SLS does not recover the true LATE. The polynomial 2SLS is closer, and DDML PLIV is close to the polynomial estimate. The Wald estimator is far off because $Z$ is not unconditionally exogenous, and Wald has no way to use $X$.
 
-::: {.callout-note}
-The DDML PLIV estimand $\beta_{\text{rich}}$ is a **weighted average of conditional LATEs**, with weights determined by $\text{Var}(Z\mid X)\cdot P(\text{complier}\mid X)$. This is non-negatively weighted (so weakly causal) but is generally **not** equal to the unconditional LATE — that is why the polynomial TSLS and DDML PLIV agree with each other but both miss the true LATE. To target the unconditional LATE itself, see the IPSW approach below.
-:::
+What are the polynomial 2SLS and DDML PLIV estimating, if not LATE? Both target $\beta_{rich}$, a weighted average of conditional LATEs with weights proportional to $\text{Var}(Z \mid X) \cdot P(\text{complier} \mid X)$. It is non-negatively weighted, so it is weakly causal. But it is not the unconditional LATE we usually want.
 
-### A Diagnostic: RESET on `Z ~ X`
+### Diagnostic: RESET on Z ~ X
 
-The null hypothesis of rich covariates is equivalent to the null that the linear regression $Z = \alpha + \delta^\top X$ has no omitted nonlinear terms — exactly what Ramsey's (1969) RESET test was designed to detect. Julia has no direct equivalent of R's `lmtest::resettest()`, but the test is just an F-test of joint significance of higher powers of the regressors.
+Rich covariates says $E[Z \mid X]$ is linear in $X$. That is exactly the null of Ramsey's RESET test [@ramsey-1969]. Julia has no direct equivalent of R's `lmtest::resettest()`, but the test is just an F-test of joint significance of higher powers of $X$.
 
 ```{julia}
 #| warning: false
@@ -439,38 +433,30 @@ pval           = 1 - cdf(FDist(q, n - k_u), F_stat)
         F_stat, pval)
 ```
 
-In our DGP the test rejects strongly, flagging the rich-covariates failure that we know is there by construction. The same test on real data is a cheap, principled check before reporting a LATE interpretation of a 2SLS coefficient.
+In our DGP it rejects strongly. The same test on real data is cheap, and it tells us whether the LATE interpretation is defensible before we report a 2SLS coefficient.
 
 ### What to Do Instead
 
-Blandhol et al. (2025) offer four practical steps for empirical work.
+@blandhol-et-al-2025 give four steps for empirical work.
 
-1. **Reconsider the role of covariates.** If $Z$ is unconditionally exogenous, drop the covariates. Adding them for precision is fine; a kitchen-sink set of controls makes rich covariates *less* likely to hold.
-2. **Run the RESET test on `Z ~ X`** as above. If it does not reject, the linear-IV-as-LATE interpretation is defensible (subject to the usual IV assumptions).
-3. **If RESET rejects, report a partially-linear IV estimate alongside TSLS.** This is what DDML PLIV delivers. In R: `DoubleML`, `ddml`. In Stata: `ddml` (Ahrens et al. 2023). In Julia there is no first-class PLIV package; the manual cross-fitting routine above is the recommended approach, mirroring the DDML PLR pattern used elsewhere in this book.
-4. **For a binary instrument, also estimate the unconditional LATE directly.** This can be done with DDML or with instrument propensity score weighting (IPSW; Słoczyński et al. 2024):
+1. **Reconsider the covariates.** If $Z$ is unconditionally exogenous, drop them. A kitchen-sink set of controls makes rich covariates *less* likely.
+2. **Run RESET on `Z ~ X`.** If it does not reject, the linear-IV-as-LATE interpretation is defensible.
+3. **If RESET rejects, report DDML PLIV alongside 2SLS.** Julia has no first-class PLIV package, so the manual cross-fitting above is the recommended route. In R the package is `DoubleML`; in Stata it is `ddml`. DDML PLIV targets $\beta_{rich}$, a non-negatively weighted average of conditional LATEs.
+4. **For a binary instrument, also estimate the unconditional LATE.** With instrument propensity score weighting [@sloczynski-2024],
 
    $$
-   \hat\beta_{\text{late}}
-   \;=\;
-   \frac{\sum_i Y_i \big[Z_i / \hat p(X_i) - (1-Z_i) / (1 - \hat p(X_i))\big]}
-        {\sum_i W_i \big[Z_i / \hat p(X_i) - (1-Z_i) / (1 - \hat p(X_i))\big]}
+   \hat\beta_{late} = \frac{\sum_i Y_i [Z_i/\hat p(X_i) - (1-Z_i)/(1-\hat p(X_i))]}{\sum_i W_i [Z_i/\hat p(X_i) - (1-Z_i)/(1-\hat p(X_i))]},
    $$
 
-   where $\hat p(X)$ is a nonparametric estimate of $P(Z = 1 \mid X)$. Stata's `ipsw` package implements this; in Julia or R it is straightforward to construct point estimates by hand once $\hat p(X)$ is in place.
+   where $\hat p(X) = P(Z = 1 \mid X)$ is estimated nonparametrically. Stata has `ipsw`. In Julia or R it is straightforward to build once $\hat p(X)$ is in hand.
 
-### Why This Matters for the FRDD Example Below
+### A Note on the FRDD Example
 
-The fuzzy-RDD application at the end of this chapter instruments the treatment with an above-cutoff indicator while controlling for race, state of birth, and quarter-of-birth fixed effects. The instrument's conditional mean given those covariates is unlikely to be linear in them — and indeed the 2SLS estimate and the local `RDRobust` estimate differ markedly. The original commentary attributes that gap to "sensitivity to model selection." Rich-covariates failure is at least as plausible an explanation, and the RESET diagnostic above is the right first thing to run on that specification.
+The fuzzy-RDD example at the end of this chapter is 2SLS with race, state of birth, and quarter-of-birth fixed effects entered as covariates. The 2SLS estimate and the local `RDRobust` estimate differ. We called that "sensitivity to model selection" earlier. The rich-covariates story is at least as plausible an explanation, and the RESET test is the right first thing to run.
 
 ### Bottom Line
 
-- "TSLS with covariates estimates a LATE" is true only under the rich-covariates condition, which is a parametric assumption on the conditional mean of the instrument.
-- That assumption is rarely defended in published work and is often rejected by a simple RESET test.
-- The practical alternatives — DDML PLIV for $\beta_{\text{rich}}$, IPSW or DDML for the unconditional LATE — are available in mature R and Stata packages; in Julia they can be assembled from `MLJ` + cross-fitting as shown above.
-- The criterion "non-negatively weighted average of conditional LATEs" is itself a weak one. Even when it holds, the estimand can differ substantially from the unconditional LATE that practitioners usually have in mind.
-
-> **Reference.** Blandhol, C., Bonney, J., Mogstad, M., & Torgovitsky, A. (2025). *When is TSLS Actually LATE?* Working paper.
+"2SLS with covariates estimates LATE" needs the rich covariates condition. That condition is a parametric assumption on $E[Z \mid X]$ that researchers rarely defend, and a simple RESET test often rejects it. The honest alternatives are DDML PLIV for $\beta_{rich}$ and IPSW (or DDML) for the unconditional LATE. Even when rich covariates holds, $\beta_{rich}$ can be quite different from the unconditional LATE we usually care about.
 
 ## Regression Discontinuity Design
 

@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -490,7 +510,7 @@ window.Quarto = {
 </header>
 
 
-<div id="88fe6d30" class="cell" data-execution_count="2">
+<div id="4bfe2e15" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -825,11 +845,16 @@ QTE(0.90) = 2.285</code></pre>
 <ul>
 <li>ATE, ATT and LATE are different averages of the individual treatment effect.</li>
 <li>CATE(<span class="math inline">\(x\)</span>) keeps heterogeneity by covariates. QTE(<span class="math inline">\(\tau\)</span>) describes changes in the outcome distribution.</li>
-<li>With heterogeneous effects, IV estimates LATE. It should not be described as ATE unless extra assumptions justify that interpretation. The clean IV → LATE result here uses no covariates; once covariates are added linearly to TSLS, the LATE interpretation requires a <em>rich covariates</em> condition that is rarely defended. See the IV chapter section “When TSLS-with-Covariates Is <em>Actually</em> LATE” and Blandhol, Bonney, Mogstad &amp; Torgovitsky (2025).</li>
+<li>With heterogeneous effects, IV estimates LATE. It should not be described as ATE unless extra assumptions justify that interpretation. This is the clean case with no covariates. Once we add covariates linearly to 2SLS, even LATE needs a <em>rich covariates</em> condition that is rarely defended. See <span class="citation" data-cites="blandhol-et-al-2025">Blandhol et al. (<a href="references.html#ref-blandhol-et-al-2025" role="doc-biblioref">2025</a>)</span> and the IV chapter section “When 2SLS with Covariates Is <em>Actually</em> LATE”.</li>
 <li>Estimator choice comes after the estimand is fixed.</li>
 </ul>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-blandhol-et-al-2025" class="csl-entry" role="listitem">
+Blandhol, Christine, John Bonney, Magne Mogstad, and Alexander Torgovitsky. 2025. <span>“When Is <span>TSLS</span> Actually <span>LATE</span>?”</span>
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->
