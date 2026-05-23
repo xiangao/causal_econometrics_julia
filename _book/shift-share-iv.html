@@ -492,7 +492,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3312b1aa" class="cell" data-execution_count="2">
+<div id="29dbd706" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -502,8 +502,7 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/ShiftShareIV.jl/src/ShiftShareIV.jl"</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.ShiftShareIV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">ShiftShareIV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Shift-share, or Bartik, instruments combine local industry shares with industry-level shocks. The idea is simple: a location with a large baseline share in an industry is more exposed to shocks in that industry. The difficult part is not constructing the instrument. The difficult part is stating what is assumed exogenous: the shares, the shocks, or both.</p>
 <section id="the-construction" class="level2" data-number="17.1">
@@ -769,7 +768,7 @@ BHJ shock-level IV:             0.537
                    \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
 \]</span></p>
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into other high-income countries. This leave-one-out construction removes US-specific demand from the shock.</p>
-<div id="1be6cfa9" class="cell" data-execution_count="9">
+<div id="eeac6f3b" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Files needed:</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   workfile_china.csv  (commuting zone data, 1990–2007)</span></span>

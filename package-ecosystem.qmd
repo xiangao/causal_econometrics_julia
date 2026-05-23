@@ -179,14 +179,13 @@ The most important functions are `panel_matrices`, `synthdid_estimate`, `sc_esti
 `TASC.jl` implements Time-Aware Synthetic Control. It keeps the same panel-data spirit as synthetic control, but models the untreated outcome panel with a low-rank linear Gaussian state-space model:
 
 ```julia
-include("../../software/TASC.jl/src/TASC.jl")
-using .TASC
+using TASC
 
 model = fit_tasc(Y; d = 2, T0 = 19)
 pred = predict_counterfactual(model, Y)
 ```
 
-The package exports `fit_tasc`, `predict_counterfactual`, `predict_post_intervention`, `tasc_plot`, classical synthetic-control baselines, HSVT/RSC-style denoising helpers, and synthetic data generators. In the synthetic-control chapter, the package is included from source so that the new local package can be used without forcing a full resolver update of the book environment.
+The package exports `fit_tasc`, `predict_counterfactual`, `predict_post_intervention`, `tasc_plot`, classical synthetic-control baselines, HSVT/RSC-style denoising helpers, and synthetic data generators. It is registered in the environment's `Project.toml` as a developed dependency.
 
 ## RDRobust.jl
 

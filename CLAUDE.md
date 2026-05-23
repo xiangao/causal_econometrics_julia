@@ -66,21 +66,9 @@
 | `Panelest.jl` | 0.1.3 | Pending #155060 | `feols`, `feiv`, `etwfe`, `emfx` |
 | `SynthDiD.jl` | 0.1.1 | Pending #155062 | `synthdid_estimate`, `sc_estimate`, `did_estimate`, `california_prop99` |
 | `CausalEstimate.jl` | 0.1.0 | Pending CausalGraphs merge | `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` |
-
-### Loaded via include() (not in Project.toml)
-
-| Package | Include path | Used in |
-|---|---|---|
-| `TASC.jl` | `../../software/TASC.jl/src/TASC.jl` | `synthetic-control-did-tasc.qmd`, `randomization-inference-sc.qmd` |
-| `ShiftShareIV.jl` | `../../software/ShiftShareIV.jl/src/ShiftShareIV.jl` | `shift-share-iv.qmd` |
-
-Note: `ShiftShareIV.jl` uses include() rather than Project.toml because the book
-environment has a pre-existing MLJ version conflict (Crumble 0.20 vs CausalEstimate 0.23)
-that blocks any `Pkg.develop` call.
-
-Note: MSC.jl cannot currently be included because adding its `Tables.jl`
-dependency triggers a version conflict between Crumble (MLJ 0.20) and
-CausalEstimate (MLJ 0.23) in the Manifest.
+| `TASC.jl` | 0.1.0 | Dev / Local | `fit_tasc`, `predict_counterfactual`, `tasc_plot` |
+| `ShiftShareIV.jl` | 0.1.0 | Dev / Local | shift-share IV, Rotemberg weights |
+| `MSC.jl` | 0.1.0 | Dev / Local | model selection control / synthetic controls |
 
 ### External (not our packages)
 
@@ -118,11 +106,10 @@ using Foo, Bar, ...
 ```
 Edit **both** when adding new packages to a chapter.
 
-### TASC.jl include pattern
+### TASC.jl import pattern
 ```julia
 #| include: false
-include("../../software/TASC.jl/src/TASC.jl")
-using .TASC
+using TASC
 ```
 TASC EM convergence: use `n_em=200, tol=1e-3` for Prop 99 (38 states × 31 years).
 `n_em=25` was too tight and now emits a `@warn`.
