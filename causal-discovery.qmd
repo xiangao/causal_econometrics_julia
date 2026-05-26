@@ -12,6 +12,7 @@ using LinearAlgebra
 using Random
 using Printf
 using DataFrames
+using CSV
 using Distributions: Normal, quantile
 
 # ── Graph conversion helpers ──────────────────────────────────────────────────
@@ -72,6 +73,7 @@ using LinearAlgebra
 using Random
 using Printf
 using DataFrames
+using CSV
 using Distributions: Normal, quantile
 ```
 
@@ -346,6 +348,229 @@ let
     fig
 end
 ```
+
+## Real Data: Student Performance in PISA
+
+The simulation had a luxury real research never does: a known true DAG, so we
+could score recovery with F1. On real data there is **no ground truth**, so the
+questions change. Instead of "how close is the estimate to the truth?" we ask:
+do PC and RSL-D *agree*; what can *background knowledge* orient; and is the
+structure *stable* under resampling?
+
+We illustrate on the OECD's **PISA 2022** assessment, restricted to **United
+States** students and six variables with a clear substantive ordering.
+
+| Node | Meaning | Role |
+|---|---|---|
+| `HISEI` | Highest parental occupational status (ISEI) | Family background |
+| `HOMEPOS` | Home possessions index | Family background |
+| `IMMIG` | Immigration status (1 native … 3 first-gen) | Demographic |
+| `GRADE` | Grade relative to modal grade for age | Schooling |
+| `GENDER` | 1 = female, 0 = male | Demographic |
+| `MATH` | Mean of the 10 mathematics plausible values | Outcome |
+
+```{julia}
+pisa   = CSV.read("data/pisa_usa2022.csv", DataFrame)
+plabs  = ["HISEI","HOMEPOS","IMMIG","GRADE","GENDER","MATH"]
+Xp     = Matrix{Float64}(pisa[:, plabs])
+wp     = Float64.(pisa.W)
+np_, pp_ = size(Xp)
+@printf "Students (complete cases): %d\n" np_
+```
+
+::: {.callout-note}
+**Three honesty caveats**, kept explicit:
+
+- **Plausible values.** Each student's ability is reported as 10 plausible
+  values (posterior draws), not one score. We use their mean, understating the
+  measurement variance; a full treatment runs discovery on each PV and pools.
+- **Categorical-as-Gaussian.** `IMMIG`, `GRADE`, `GENDER` are discrete; Fisher-Z
+  assumes joint Gaussianity — a standard but imperfect approximation.
+- **One country, one wave.** Pooling would inject country/time structure that
+  appears as spurious edges unless modelled as extra nodes.
+:::
+
+### Respecting the survey design
+
+PISA is not a simple random sample — students carry final weights `W_FSTUWT`.
+The CI tests are functions of the **covariance matrix** and a **sample size**,
+so we supply design-consistent inputs: a **weighted covariance/correlation**
+matrix, and **Kish's effective sample size**
+$n_{\text{eff}} = (\sum_i w_i)^2 / \sum_i w_i^2$.
+
+```{julia}
+mu_p  = (Xp' * wp) ./ sum(wp)
+Xc_p  = Xp .- mu_p'
+Sig_p = (Xc_p' * (wp .* Xc_p)) ./ sum(wp)      # design-weighted covariance
+sd_p  = sqrt.(diag(Sig_p)); Cw_p = Sig_p ./ (sd_p * sd_p')
+neff  = sum(wp)^2 / sum(wp .^ 2)
+@printf "Raw n = %d   Kish effective n = %.0f\n" np_ neff
+```
+
+```{julia}
+#| label: tbl-pisa-cor
+#| tbl-cap: "Design-weighted correlation matrix (PISA 2022, USA)."
+let dfc = DataFrame(Variable = plabs)
+    for (k, l) in enumerate(plabs); dfc[!, l] = round.(Cw_p[:, k], digits=2); end
+    dfc
+end
+```
+
+### Two algorithms on the weighted data
+
+The CI test recomputes correlations from a data matrix, so to honour the design
+we build a synthetic sample of $n_{\text{eff}}$ rows whose empirical covariance
+equals the design-weighted $\Sigma_w$ exactly (a Cholesky recolour). Both PC and
+RSL-D then run on these design-consistent inputs unchanged.
+
+```{julia}
+m_eff = round(Int, neff)
+Random.seed!(1)
+Z  = randn(m_eff, pp_); Z .-= mean(Z, dims=1)
+Z  = Z * inv(cholesky(Symmetric(cov(Z))).U)     # whiten
+Xw = Z * cholesky(Symmetric(Sig_p)).U .+ mu_p'  # recolour to weighted covariance
+@printf "Synthetic covariance reproduces Σ_w (max abs diff = %.1e)\n" maximum(abs.(cov(Xw) .- Sig_p))
+
+sig_p = 0.01
+ci_p(x, y, S, d) = fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig_p)
+
+cpdag_pcp  = pcalg(pp_, ci_p, Xw)
+cpdag_rslp = rsld(Xw, ci_p)
+skel_pcp   = SimpleGraph(cpdag_pcp)
+skel_rslp  = SimpleGraph(cpdag_rslp)
+
+common = length(intersect(Set(Tuple.(sort.([ [e.src,e.dst] for e in edges(skel_pcp)]))),
+                          Set(Tuple.(sort.([ [e.src,e.dst] for e in edges(skel_rslp)])))))
+@printf "Skeleton edges — PC: %d   RSL-D: %d   in both: %d\n" ne(skel_pcp) ne(skel_rslp) common
+```
+
+```{julia}
+#| label: fig-pisa-cpdags
+#| fig-cap: "Estimated CPDAGs from PC and RSL-D on PISA 2022 (USA). Blue directed edges are oriented; red double-headed edges are unoriented (both directions CI-equivalent). No true-DAG panel — on real data we have no ground truth."
+side_by_side([
+    (cpdag_to_admg(cpdag_pcp,  plabs), "PC — estimated CPDAG"),
+    (cpdag_to_admg(cpdag_rslp, plabs), "RSL-D — estimated CPDAG"),
+]; note="Red ↔ edges are unoriented (not confounded) — both directions are statistically equivalent.")
+```
+
+::: {.callout-important}
+**Read the disagreement, not just the agreement.** A purely data-driven method
+may orient an edge as `MATH → HISEI` — a child's test score causing their
+parent's occupational status. That is causally backwards, and no CI test can
+rule it out, because `HISEI → MATH` and `MATH → HISEI` are Markov-equivalent.
+This is exactly why background knowledge is not optional.
+:::
+
+### Orienting with background knowledge
+
+Sex and immigration background are fixed at birth; family socioeconomic status
+is established long before the test; grade precedes the assessment; the score is
+the outcome. That gives a **tier ordering**
+
+$$
+\{\text{GENDER}, \text{IMMIG}\} \prec \{\text{HISEI}, \text{HOMEPOS}\}
+\prec \text{GRADE} \prec \text{MATH}.
+$$
+
+A cross-tier edge must point earlier→later; a within-tier edge the ordering
+cannot decide. We impose this on the discovered **skeleton**, because the
+ordering is knowledge we hold independently of how the data oriented things.
+
+```{julia}
+tier_p = Dict("GENDER"=>0,"IMMIG"=>0,"HISEI"=>1,"HOMEPOS"=>1,"GRADE"=>2,"MATH"=>3)
+di_e = Tuple{Symbol,Symbol}[]; bi_e = Tuple{Symbol,Symbol}[]
+for e in edges(skel_pcp)
+    a, b = plabs[e.src], plabs[e.dst]
+    if tier_p[a] == tier_p[b]
+        push!(bi_e, (Symbol(a), Symbol(b)))          # within-tier: undirected
+    else
+        lo, hi = tier_p[a] < tier_p[b] ? (a, b) : (b, a)
+        push!(di_e, (Symbol(lo), Symbol(hi)))        # cross-tier: earlier → later
+    end
+end
+oriented_admg = make_graph(vertices=Symbol.(plabs), di_edges=di_e, bi_edges=bi_e)
+```
+
+::: {.callout-warning}
+**Where data-driven orientation disagreed with us.** Left to itself, an
+algorithm may orient `IMMIG–GRADE` as `GRADE → IMMIG` — schooling causing
+immigration status, which is impossible. No CI test could have prevented it: the
+two orientations are Markov-equivalent. Imposing the tier order overrides it.
+The lesson: **never ship a discovered orientation you have prior reason to
+disbelieve**.
+:::
+
+```{julia}
+#| label: fig-pisa-oriented
+#| fig-cap: "PC skeleton oriented by the temporal/logical tiers. Cross-tier edges point earlier-to-later; HISEI–HOMEPOS stays undirected (same tier, shown red)."
+draw_graph(oriented_admg; direction="LR")
+```
+
+Every edge into `MATH` is now a candidate causal parent of achievement — the
+bridge from discovery to estimation (back-door adjustment on the parents of the
+outcome). The only edge the ordering leaves undirected, `HISEI – HOMEPOS`, is
+two same-tier measures of family background that temporal logic cannot separate.
+
+### Stability: does the skeleton survive resampling?
+
+A single fit can be lucky. We resample students with replacement, re-estimate
+the **weighted** PC skeleton, and record how often each edge appears.
+
+```{julia}
+#| cache: true
+function weighted_skel(Xb, wb, labs, sig)
+    mu = (Xb' * wb) ./ sum(wb); Xc = Xb .- mu'
+    Σ  = (Xc' * (wb .* Xc)) ./ sum(wb)
+    m  = round(Int, sum(wb)^2 / sum(wb .^ 2))
+    Z  = randn(m, length(labs)); Z .-= mean(Z, dims=1)
+    Z  = Z * inv(cholesky(Symmetric(cov(Z))).U)
+    Xs = Z * cholesky(Symmetric(Σ)).U .+ mu'
+    ci(x, y, S, d) = fisher_z(x, y, collect(Int, S), Matrix{Float64}(d), sig)
+    SimpleGraph(pcalg(length(labs), ci, Xs))
+end
+
+B_pisa = 200
+adj_b  = Vector{Matrix{Float64}}(undef, B_pisa)   # one slot per replicate (race-free)
+Threads.@threads for b in 1:B_pisa
+    rng = MersenneTwister(1000 + b)
+    idx = rand(rng, 1:np_, np_)
+    g   = weighted_skel(Xp[idx, :], wp[idx], plabs, sig_p)
+    A   = zeros(pp_, pp_)
+    for e in edges(g); A[e.src, e.dst] += 1; A[e.dst, e.src] += 1; end
+    adj_b[b] = A
+end
+edge_freq = sum(adj_b) ./ B_pisa
+```
+
+```{julia}
+#| label: fig-pisa-stability
+#| fig-cap: "Bootstrap edge-selection frequency (weighted PC, 200 resamples). Edges near 1.0 are robust; near 0.5 are sample-dependent."
+#| fig-width: 7
+#| fig-height: 4
+edge_names = String[]; edge_vals = Float64[]
+for i in 1:pp_-1, j in i+1:pp_
+    if edge_freq[i, j] > 0
+        push!(edge_names, "$(plabs[i]) — $(plabs[j])")
+        push!(edge_vals,  edge_freq[i, j])
+    end
+end
+ord = sortperm(edge_vals)
+let
+    fig = Figure(size=(680, 380))
+    ax  = Axis(fig[1,1]; xlabel="Selection frequency across bootstrap resamples",
+               yticks=(1:length(ord), edge_names[ord]), title="Bootstrap edge stability (weighted PC)")
+    barplot!(ax, 1:length(ord), edge_vals[ord]; direction=:x, color=(:steelblue, 0.8))
+    vlines!(ax, [0.5]; linestyle=:dash, color=:gray)
+    xlims!(ax, 0, 1)
+    fig
+end
+```
+
+The family-background→math edges (`HISEI`, `HOMEPOS`) are the most stable
+features: the SES gradient in achievement is not an artefact. On real data,
+causal discovery is best read as **hypothesis generation** — it proposes a
+skeleton and the orientations the data support, which you then reconcile with
+subject-matter knowledge before estimating effects.
 
 ## Summary
 

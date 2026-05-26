@@ -165,4 +165,5 @@ When adding pre-treatment dummies for the event study, drop `t = g-1` (the perio
 - `data/mpdta.csv` — US teen employment (500 counties × 5 years)
 - `data/survival_sim.csv` — Shared survival simulation (Weibull, n=1500)
 - `data/shift_share_*.csv` — Shared shift-share simulation (n=500 regions, 20 industries)
+- `data/pisa_usa2022.csv` — **real** PISA data (USA 2022, 3,890 students; nodes HISEI, HOMEPOS, IMMIG, GRADE, GENDER, MATH = mean of 10 PVs; survey weight `W`). Used by `causal-discovery.qmd`'s real-data section (weighted PC + RSL-D, tier orientation, bootstrap stability). Generated from `~/projects/pisa-covid-did`; **`PARED` is absent in PISA 2022 — do not add it.** Same file as the R book.
 - Other datasets loaded inside chapters from CSV or generated synthetically

@@ -463,7 +463,14 @@ window.Quarto = {
   <li><a href="#rsl-d-algorithm" id="toc-rsl-d-algorithm" class="nav-link" data-scroll-target="#rsl-d-algorithm"><span class="header-section-number">22.5</span> RSL-D Algorithm</a></li>
   <li><a href="#comparison" id="toc-comparison" class="nav-link" data-scroll-target="#comparison"><span class="header-section-number">22.6</span> Comparison</a></li>
   <li><a href="#monte-carlo-evaluation" id="toc-monte-carlo-evaluation" class="nav-link" data-scroll-target="#monte-carlo-evaluation"><span class="header-section-number">22.7</span> Monte Carlo Evaluation</a></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">22.8</span> Summary</a></li>
+  <li><a href="#real-data-student-performance-in-pisa" id="toc-real-data-student-performance-in-pisa" class="nav-link" data-scroll-target="#real-data-student-performance-in-pisa"><span class="header-section-number">22.8</span> Real Data: Student Performance in PISA</a>
+  <ul class="collapse">
+  <li><a href="#respecting-the-survey-design" id="toc-respecting-the-survey-design" class="nav-link" data-scroll-target="#respecting-the-survey-design"><span class="header-section-number">22.8.1</span> Respecting the survey design</a></li>
+  <li><a href="#two-algorithms-on-the-weighted-data" id="toc-two-algorithms-on-the-weighted-data" class="nav-link" data-scroll-target="#two-algorithms-on-the-weighted-data"><span class="header-section-number">22.8.2</span> Two algorithms on the weighted data</a></li>
+  <li><a href="#orienting-with-background-knowledge" id="toc-orienting-with-background-knowledge" class="nav-link" data-scroll-target="#orienting-with-background-knowledge"><span class="header-section-number">22.8.3</span> Orienting with background knowledge</a></li>
+  <li><a href="#stability-does-the-skeleton-survive-resampling" id="toc-stability-does-the-skeleton-survive-resampling" class="nav-link" data-scroll-target="#stability-does-the-skeleton-survive-resampling"><span class="header-section-number">22.8.4</span> Stability: does the skeleton survive resampling?</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">22.9</span> Summary</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/causal-discovery.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -489,7 +496,7 @@ window.Quarto = {
 </header>
 
 
-<div id="823dce14" class="cell" data-execution_count="2">
+<div id="64c796bc" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -500,7 +507,8 @@ window.Quarto = {
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>: Normal, quantile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>: Normal, quantile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Earlier chapters assumed the graph was known, or at least that we could draw a defensible DAG from subject knowledge. Causal discovery asks what can be learned about the graph from observational data.</p>
 <section id="the-problem" class="level2" data-number="22.1">
@@ -526,7 +534,7 @@ window.Quarto = {
 <p>We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge <span class="math inline">\(j \to i\)</span> generates a structural equation</p>
 <p><span class="math display">\[X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)\]</span></p>
 <p>where coefficients <span class="math inline">\(\beta_{ji}\)</span> are drawn uniformly from <span class="math inline">\([-1, -0.25] \cup [0.25, 1]\)</span>.</p>
-<div id="a0479d68" class="cell" data-execution_count="3">
+<div id="5c3f41ee" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -669,7 +677,7 @@ Figure&nbsp;22.1: True DAG used for simulation.
 </ul>
 <p>With <span class="math inline">\(n = 2000\)</span> and <span class="math inline">\(p = 8\)</span> we use <span class="math inline">\(\alpha = 0.01\)</span>, a common default. With smaller <span class="math inline">\(n\)</span> or larger <span class="math inline">\(p\)</span>, consider lowering <span class="math inline">\(\alpha\)</span> to avoid over-pruning.</p>
 <p>We wrap <code>fisher_z</code> in a counter to track exactly how many CI tests each algorithm calls:</p>
-<div id="027014e5" class="cell" data-execution_count="5">
+<div id="43091c70" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">make_counted_ci</span>(data, sig)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">ci</span>(x, y, S, d)</span>
@@ -694,7 +702,7 @@ Figure&nbsp;22.1: True DAG used for simulation.
 <li>Identify colliders: if <span class="math inline">\(X - Z - Y\)</span> and <span class="math inline">\(X, Y\)</span> non-adjacent, orient as <span class="math inline">\(X \to Z \leftarrow Y\)</span> only if <span class="math inline">\(Z\)</span> was not in the separating set of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
 <li>Apply Meek’s orientation rules to propagate orientations without creating new colliders or cycles.</li>
 </ol>
-<div id="b3bb0256" class="cell" data-execution_count="6">
+<div id="4b1c45eb" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ci_pc, ctr_pc <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
@@ -752,7 +760,7 @@ Note
 <li>Reconstruct the full CPDAG from the recorded local structures.</li>
 </ol>
 <p>The key efficiency advantage: RSL-D uses at most <span class="math inline">\(O(p \cdot d \cdot |\text{MB}|^2)\)</span> CI tests (where <span class="math inline">\(d\)</span> is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.</p>
-<div id="b682d6bf" class="cell" data-execution_count="7">
+<div id="5d4051d0" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ci_rsl, ctr_rsl <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cpdag_rsl <span class="op">=</span> <span class="fu">rsld</span>(data_mat, ci_rsl)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>skel_rsl  <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_rsl)</span>
@@ -1183,7 +1191,7 @@ Note
 <li>The <strong>distribution of CI test counts</strong> (shown in <a href="#fig-mc-ci" class="quarto-xref">Figure&nbsp;<span>22.3</span></a>) shows whether the efficiency advantage is consistent or only appears on average.</li>
 <li>High variance in F1 across replications suggests the algorithms are sensitive to the particular random graph — denser or sparser graphs drawn from the same Erdős–Rényi model can be very different problems.</li>
 </ul>
-<div id="ce2ff5a4" class="cell" data-cache="true" data-execution_count="10">
+<div id="e4e2fad8" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_once</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    adj  <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1244,8 +1252,658 @@ Figure&nbsp;22.3: Distribution of CI test counts over 100 replications. RSL-D co
 </div>
 </div>
 </section>
-<section id="summary" class="level2" data-number="22.8">
-<h2 data-number="22.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">22.8</span> Summary</h2>
+<section id="real-data-student-performance-in-pisa" class="level2" data-number="22.8">
+<h2 data-number="22.8" class="anchored" data-anchor-id="real-data-student-performance-in-pisa"><span class="header-section-number">22.8</span> Real Data: Student Performance in PISA</h2>
+<p>The simulation had a luxury real research never does: a known true DAG, so we could score recovery with F1. On real data there is <strong>no ground truth</strong>, so the questions change. Instead of “how close is the estimate to the truth?” we ask: do PC and RSL-D <em>agree</em>; what can <em>background knowledge</em> orient; and is the structure <em>stable</em> under resampling?</p>
+<p>We illustrate on the OECD’s <strong>PISA 2022</strong> assessment, restricted to <strong>United States</strong> students and six variables with a clear substantive ordering.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Node</th>
+<th>Meaning</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>HISEI</code></td>
+<td>Highest parental occupational status (ISEI)</td>
+<td>Family background</td>
+</tr>
+<tr class="even">
+<td><code>HOMEPOS</code></td>
+<td>Home possessions index</td>
+<td>Family background</td>
+</tr>
+<tr class="odd">
+<td><code>IMMIG</code></td>
+<td>Immigration status (1 native … 3 first-gen)</td>
+<td>Demographic</td>
+</tr>
+<tr class="even">
+<td><code>GRADE</code></td>
+<td>Grade relative to modal grade for age</td>
+<td>Schooling</td>
+</tr>
+<tr class="odd">
+<td><code>GENDER</code></td>
+<td>1 = female, 0 = male</td>
+<td>Demographic</td>
+</tr>
+<tr class="even">
+<td><code>MATH</code></td>
+<td>Mean of the 10 mathematics plausible values</td>
+<td>Outcome</td>
+</tr>
+</tbody>
+</table>
+<div id="5e6d48e5" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>pisa   <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/pisa_usa2022.csv"</span>, DataFrame)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>plabs  <span class="op">=</span> [<span class="st">"HISEI"</span>,<span class="st">"HOMEPOS"</span>,<span class="st">"IMMIG"</span>,<span class="st">"GRADE"</span>,<span class="st">"GENDER"</span>,<span class="st">"MATH"</span>]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>Xp     <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(pisa[<span class="op">:</span>, plabs])</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>wp     <span class="op">=</span> <span class="fu">Float64</span>.(pisa.W)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>np_, pp_ <span class="op">=</span> <span class="fu">size</span>(Xp)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Students (complete cases): %d</span><span class="sc">\n</span><span class="st">"</span> np_</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Students (complete cases): 3890</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Three honesty caveats</strong>, kept explicit:</p>
+<ul>
+<li><strong>Plausible values.</strong> Each student’s ability is reported as 10 plausible values (posterior draws), not one score. We use their mean, understating the measurement variance; a full treatment runs discovery on each PV and pools.</li>
+<li><strong>Categorical-as-Gaussian.</strong> <code>IMMIG</code>, <code>GRADE</code>, <code>GENDER</code> are discrete; Fisher-Z assumes joint Gaussianity — a standard but imperfect approximation.</li>
+<li><strong>One country, one wave.</strong> Pooling would inject country/time structure that appears as spurious edges unless modelled as extra nodes.</li>
+</ul>
+</div>
+</div>
+<section id="respecting-the-survey-design" class="level3" data-number="22.8.1">
+<h3 data-number="22.8.1" class="anchored" data-anchor-id="respecting-the-survey-design"><span class="header-section-number">22.8.1</span> Respecting the survey design</h3>
+<p>PISA is not a simple random sample — students carry final weights <code>W_FSTUWT</code>. The CI tests are functions of the <strong>covariance matrix</strong> and a <strong>sample size</strong>, so we supply design-consistent inputs: a <strong>weighted covariance/correlation</strong> matrix, and <strong>Kish’s effective sample size</strong> <span class="math inline">\(n_{\text{eff}} = (\sum_i w_i)^2 / \sum_i w_i^2\)</span>.</p>
+<div id="abeda661" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mu_p  <span class="op">=</span> (Xp<span class="op">'</span> <span class="op">*</span> wp) <span class="op">./</span> <span class="fu">sum</span>(wp)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Xc_p  <span class="op">=</span> Xp <span class="op">.-</span> mu_p<span class="op">'</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>Sig_p <span class="op">=</span> (Xc_p<span class="op">'</span> <span class="op">*</span> (wp <span class="op">.*</span> Xc_p)) <span class="op">./</span> <span class="fu">sum</span>(wp)      <span class="co"># design-weighted covariance</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>sd_p  <span class="op">=</span> <span class="fu">sqrt</span>.(<span class="fu">diag</span>(Sig_p)); Cw_p <span class="op">=</span> Sig_p <span class="op">./</span> (sd_p <span class="op">*</span> sd_p<span class="op">'</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>neff  <span class="op">=</span> <span class="fu">sum</span>(wp)<span class="op">^</span><span class="fl">2</span> <span class="op">/</span> <span class="fu">sum</span>(wp <span class="op">.^</span> <span class="fl">2</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Raw n = %d   Kish effective n = %.0f</span><span class="sc">\n</span><span class="st">"</span> np_ neff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Raw n = 3890   Kish effective n = 3481</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> dfc <span class="op">=</span> <span class="fu">DataFrame</span>(Variable <span class="op">=</span> plabs)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k, l) <span class="kw">in</span> <span class="fu">enumerate</span>(plabs); dfc[!, l] <span class="op">=</span> <span class="fu">round</span>.(Cw_p[<span class="op">:</span>, k], digits<span class="op">=</span><span class="fl">2</span>); <span class="cf">end</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    dfc</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-pisa-cor" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-pisa-cor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;22.2: Design-weighted correlation matrix (PISA 2022, USA).
+</figcaption>
+<div aria-describedby="tbl-pisa-cor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display" data-execution_count="14">
+<div><div style="float: left;"><span>6×7 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Variable</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">HISEI</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">HOMEPOS</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">IMMIG</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">GRADE</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">GENDER</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">MATH</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">HISEI</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.33</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: left;">HOMEPOS</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.4</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: left;">IMMIG</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">-0.05</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: left;">GRADE</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.17</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: left;">GENDER</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">-0.09</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: left;">MATH</td>
+<td style="text-align: right;">0.33</td>
+<td style="text-align: right;">0.4</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">1.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="two-algorithms-on-the-weighted-data" class="level3" data-number="22.8.2">
+<h3 data-number="22.8.2" class="anchored" data-anchor-id="two-algorithms-on-the-weighted-data"><span class="header-section-number">22.8.2</span> Two algorithms on the weighted data</h3>
+<p>The CI test recomputes correlations from a data matrix, so to honour the design we build a synthetic sample of <span class="math inline">\(n_{\text{eff}}\)</span> rows whose empirical covariance equals the design-weighted <span class="math inline">\(\Sigma_w\)</span> exactly (a Cholesky recolour). Both PC and RSL-D then run on these design-consistent inputs unchanged.</p>
+<div id="c2925934" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>m_eff <span class="op">=</span> <span class="fu">round</span>(<span class="dt">Int</span>, neff)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Z  <span class="op">=</span> <span class="fu">randn</span>(m_eff, pp_); Z <span class="op">.-=</span> <span class="fu">mean</span>(Z, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>Z  <span class="op">=</span> Z <span class="op">*</span> <span class="fu">inv</span>(<span class="fu">cholesky</span>(<span class="fu">Symmetric</span>(<span class="fu">cov</span>(Z))).U)     <span class="co"># whiten</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>Xw <span class="op">=</span> Z <span class="op">*</span> <span class="fu">cholesky</span>(<span class="fu">Symmetric</span>(Sig_p)).U <span class="op">.+</span> mu_p<span class="op">'</span>  <span class="co"># recolour to weighted covariance</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Synthetic covariance reproduces Σ_w (max abs diff = %.1e)</span><span class="sc">\n</span><span class="st">"</span> <span class="fu">maximum</span>(<span class="fu">abs</span>.(<span class="fu">cov</span>(Xw) <span class="op">.-</span> Sig_p))</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>sig_p <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ci_p</span>(x, y, S, d) <span class="op">=</span> <span class="fu">fisher_z</span>(x, y, <span class="fu">collect</span>(<span class="dt">Int</span>, S), <span class="fu">Matrix</span><span class="dt">{Float64}</span>(d), sig_p)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>cpdag_pcp  <span class="op">=</span> <span class="fu">pcalg</span>(pp_, ci_p, Xw)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>cpdag_rslp <span class="op">=</span> <span class="fu">rsld</span>(Xw, ci_p)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>skel_pcp   <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_pcp)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>skel_rslp  <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_rslp)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>common <span class="op">=</span> <span class="fu">length</span>(<span class="fu">intersect</span>(<span class="fu">Set</span>(<span class="fu">Tuple</span>.(<span class="fu">sort</span>.([ [<span class="cn">e</span>.src,<span class="cn">e</span>.dst] for <span class="cn">e</span> <span class="kw">in</span> <span class="fu">edges</span>(skel_pcp)]))),</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">Set</span>(<span class="fu">Tuple</span>.(<span class="fu">sort</span>.([ [<span class="cn">e</span>.src,<span class="cn">e</span>.dst] for <span class="cn">e</span> <span class="kw">in</span> <span class="fu">edges</span>(skel_rslp)])))))</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Skeleton edges — PC: %d   RSL-D: %d   in both: %d</span><span class="sc">\n</span><span class="st">"</span> <span class="fu">ne</span>(skel_pcp) <span class="fu">ne</span>(skel_rslp) common</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Synthetic covariance reproduces Σ_w (max abs diff = 9.1e-13)
+Skeleton edges — PC: 9   RSL-D: 9   in both: 9</code></pre>
+</div>
+</div>
+<div id="cell-fig-pisa-cpdags" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">side_by_side</span>([</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">cpdag_to_admg</span>(cpdag_pcp,  plabs), <span class="st">"PC — estimated CPDAG"</span>),</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">cpdag_to_admg</span>(cpdag_rslp, plabs), <span class="st">"RSL-D — estimated CPDAG"</span>),</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>]; note<span class="op">=</span><span class="st">"Red ↔ edges are unoriented (not confounded) — both directions are statistically equivalent."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-pisa-cpdags" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="16">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pisa-cpdags-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div style="display:flex;gap:20px;flex-wrap:wrap;
+justify-content:center;align-items:flex-start"><div style="text-align:center;flex:1">
+<p style="margin:0 0 4px;font-weight:600">PC — estimated CPDAG</p><svg width="194pt" height="332pt" viewbox="0.00 0.00 193.50 332.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 328)">
+<title>%3</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-328 189.5,-328 189.5,4 -4,4"></polygon>
+<!-- HISEI -->
+<g id="node1" class="node">
+<title>HISEI</title>
+<text text-anchor="middle" x="29.5" y="-230.3" font-family="Times,serif" font-size="14.00">HISEI</text>
+</g>
+<!-- HOMEPOS -->
+<g id="node2" class="node">
+<title>HOMEPOS</title>
+<text text-anchor="middle" x="70.5" y="-86.3" font-family="Times,serif" font-size="14.00">HOMEPOS</text>
+</g>
+<!-- HISEI&#45;&gt;HOMEPOS -->
+<g id="edge1" class="edge">
+<title>HISEI-&gt;HOMEPOS</title>
+<path fill="none" stroke="blue" d="M32.55,-215.73C35.94,-197.64 41.94,-168.52 49.5,-144 52.18,-135.3 55.65,-126.01 58.99,-117.67"></path>
+<polygon fill="blue" stroke="blue" points="62.23,-119 62.8,-108.42 55.76,-116.33 62.23,-119"></polygon>
+</g>
+<!-- IMMIG -->
+<g id="node3" class="node">
+<title>IMMIG</title>
+<text text-anchor="middle" x="70.5" y="-14.3" font-family="Times,serif" font-size="14.00">IMMIG</text>
+</g>
+<!-- HISEI&#45;&gt;IMMIG -->
+<g id="edge2" class="edge">
+<title>HISEI-&gt;IMMIG</title>
+<path fill="none" stroke="blue" d="M22.43,-215.69C11.12,-185.23 -7.7,-120.67 13.5,-72 18.43,-60.68 27.11,-50.68 36.23,-42.51"></path>
+<polygon fill="blue" stroke="blue" points="38.49,-45.19 43.92,-36.09 34,-39.81 38.49,-45.19"></polygon>
+</g>
+<!-- MATH -->
+<g id="node6" class="node">
+<title>MATH</title>
+<text text-anchor="middle" x="89.5" y="-158.3" font-family="Times,serif" font-size="14.00">MATH</text>
+</g>
+<!-- HISEI&#45;&gt;MATH -->
+<g id="edge3" class="edge">
+<title>HISEI-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M44.33,-215.7C51.52,-207.3 60.3,-197.07 68.19,-187.86"></path>
+<polygon fill="blue" stroke="blue" points="70.99,-189.97 74.84,-180.1 65.67,-185.42 70.99,-189.97"></polygon>
+</g>
+<!-- HOMEPOS&#45;&gt;IMMIG -->
+<g id="edge4" class="edge">
+<title>HOMEPOS-&gt;IMMIG</title>
+<path fill="none" stroke="blue" d="M70.5,-71.7C70.5,-63.98 70.5,-54.71 70.5,-46.11"></path>
+<polygon fill="blue" stroke="blue" points="74,-46.1 70.5,-36.1 67,-46.1 74,-46.1"></polygon>
+</g>
+<!-- GRADE -->
+<g id="node4" class="node">
+<title>GRADE</title>
+<text text-anchor="middle" x="150.5" y="-230.3" font-family="Times,serif" font-size="14.00">GRADE</text>
+</g>
+<!-- GRADE&#45;&gt;IMMIG -->
+<g id="edge5" class="edge">
+<title>GRADE-&gt;IMMIG</title>
+<path fill="none" stroke="blue" d="M151.66,-215.89C152.99,-185.2 152.36,-119.54 127.5,-72 121.68,-60.87 112.57,-50.83 103.32,-42.56"></path>
+<polygon fill="blue" stroke="blue" points="105.5,-39.82 95.6,-36.05 100.99,-45.17 105.5,-39.82"></polygon>
+</g>
+<!-- GRADE&#45;&gt;MATH -->
+<g id="edge6" class="edge">
+<title>GRADE-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M135.42,-215.7C128.11,-207.3 119.19,-197.07 111.16,-187.86"></path>
+<polygon fill="blue" stroke="blue" points="113.61,-185.34 104.41,-180.1 108.34,-189.94 113.61,-185.34"></polygon>
+</g>
+<!-- GENDER -->
+<g id="node5" class="node">
+<title>GENDER</title>
+<text text-anchor="middle" x="118.5" y="-302.3" font-family="Times,serif" font-size="14.00">GENDER</text>
+</g>
+<!-- GENDER&#45;&gt;GRADE -->
+<g id="edge7" class="edge">
+<title>GENDER-&gt;GRADE</title>
+<path fill="none" stroke="blue" d="M126.41,-287.7C130.05,-279.73 134.45,-270.1 138.49,-261.26"></path>
+<polygon fill="blue" stroke="blue" points="141.71,-262.65 142.68,-252.1 135.34,-259.74 141.71,-262.65"></polygon>
+</g>
+<!-- GENDER&#45;&gt;MATH -->
+<g id="edge8" class="edge">
+<title>GENDER-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M114.46,-287.85C112.06,-277.49 109.01,-264.01 106.5,-252 102.19,-231.34 97.73,-207.89 94.46,-190.25"></path>
+<polygon fill="blue" stroke="blue" points="97.84,-189.3 92.59,-180.1 90.96,-190.56 97.84,-189.3"></polygon>
+</g>
+<!-- MATH&#45;&gt;HOMEPOS -->
+<g id="edge9" class="edge">
+<title>MATH-&gt;HOMEPOS</title>
+<path fill="none" stroke="blue" d="M84.8,-143.7C82.69,-135.9 80.14,-126.51 77.78,-117.83"></path>
+<polygon fill="blue" stroke="blue" points="81.14,-116.84 75.14,-108.1 74.38,-118.67 81.14,-116.84"></polygon>
+</g>
+</g>
+</svg></div><div style="text-align:center;flex:1">
+<p style="margin:0 0 4px;font-weight:600">RSL-D — estimated CPDAG</p><svg width="220pt" height="332pt" viewbox="0.00 0.00 220.25 332.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 328)">
+<title>%3</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-328 216.25,-328 216.25,4 -4,4"></polygon>
+<!-- HISEI -->
+<g id="node1" class="node">
+<title>HISEI</title>
+<text text-anchor="middle" x="52.25" y="-14.3" font-family="Times,serif" font-size="14.00">HISEI</text>
+</g>
+<!-- HOMEPOS -->
+<g id="node2" class="node">
+<title>HOMEPOS</title>
+<text text-anchor="middle" x="52.25" y="-302.3" font-family="Times,serif" font-size="14.00">HOMEPOS</text>
+</g>
+<!-- HOMEPOS&#45;&gt;HISEI -->
+<g id="edge1" class="edge">
+<title>HOMEPOS-&gt;HISEI</title>
+<path fill="none" stroke="blue" d="M43.18,-287.86C23.68,-248.63 -18.31,-149.73 9.25,-72 12.92,-61.68 19.54,-51.9 26.51,-43.61"></path>
+<polygon fill="blue" stroke="blue" points="29.13,-45.94 33.21,-36.16 23.92,-41.26 29.13,-45.94"></polygon>
+</g>
+<!-- IMMIG -->
+<g id="node3" class="node">
+<title>IMMIG</title>
+<text text-anchor="middle" x="52.25" y="-86.3" font-family="Times,serif" font-size="14.00">IMMIG</text>
+</g>
+<!-- HOMEPOS&#45;&gt;IMMIG -->
+<g id="edge2" class="edge">
+<title>HOMEPOS-&gt;IMMIG</title>
+<path fill="none" stroke="blue" d="M52.25,-287.85C52.25,-250.83 52.25,-163.18 52.25,-118.39"></path>
+<polygon fill="blue" stroke="blue" points="55.75,-118.23 52.25,-108.23 48.75,-118.23 55.75,-118.23"></polygon>
+</g>
+<!-- MATH -->
+<g id="node6" class="node">
+<title>MATH</title>
+<text text-anchor="middle" x="115.25" y="-230.3" font-family="Times,serif" font-size="14.00">MATH</text>
+</g>
+<!-- HOMEPOS&#45;&gt;MATH -->
+<g id="edge3" class="edge">
+<title>HOMEPOS-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M67.83,-287.7C75.46,-279.22 84.78,-268.86 93.13,-259.58"></path>
+<polygon fill="blue" stroke="blue" points="95.77,-261.88 99.86,-252.1 90.57,-257.2 95.77,-261.88"></polygon>
+</g>
+<!-- IMMIG&#45;&gt;HISEI -->
+<g id="edge4" class="edge">
+<title>IMMIG-&gt;HISEI</title>
+<path fill="none" stroke="blue" d="M52.25,-71.7C52.25,-63.98 52.25,-54.71 52.25,-46.11"></path>
+<polygon fill="blue" stroke="blue" points="55.75,-46.1 52.25,-36.1 48.75,-46.1 55.75,-46.1"></polygon>
+</g>
+<!-- GRADE -->
+<g id="node4" class="node">
+<title>GRADE</title>
+<text text-anchor="middle" x="177.25" y="-158.3" font-family="Times,serif" font-size="14.00">GRADE</text>
+</g>
+<!-- GRADE&#45;&gt;IMMIG -->
+<g id="edge5" class="edge">
+<title>GRADE-&gt;IMMIG</title>
+<path fill="none" stroke="blue" d="M146.68,-143.88C130.18,-134.64 109.63,-123.13 91.92,-113.21"></path>
+<polygon fill="blue" stroke="blue" points="93.38,-110.02 82.95,-108.19 89.96,-116.13 93.38,-110.02"></polygon>
+</g>
+<!-- GENDER -->
+<g id="node5" class="node">
+<title>GENDER</title>
+<text text-anchor="middle" x="168.25" y="-302.3" font-family="Times,serif" font-size="14.00">GENDER</text>
+</g>
+<!-- GENDER&#45;&gt;GRADE -->
+<g id="edge6" class="edge">
+<title>GENDER-&gt;GRADE</title>
+<path fill="none" stroke="blue" d="M169.34,-287.87C170.87,-263.67 173.69,-219.21 175.52,-190.39"></path>
+<polygon fill="blue" stroke="blue" points="179.02,-190.39 176.16,-180.19 172.04,-189.95 179.02,-190.39"></polygon>
+</g>
+<!-- GENDER&#45;&gt;MATH -->
+<g id="edge7" class="edge">
+<title>GENDER-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M155.15,-287.7C148.86,-279.39 141.21,-269.28 134.29,-260.14"></path>
+<polygon fill="blue" stroke="blue" points="137.03,-257.96 128.2,-252.1 131.45,-262.19 137.03,-257.96"></polygon>
+</g>
+<!-- MATH&#45;&gt;HISEI -->
+<g id="edge8" class="edge">
+<title>MATH-&gt;HISEI</title>
+<path fill="none" stroke="blue" d="M115.95,-215.77C116.56,-185.44 115,-121.07 94.25,-72 89.96,-61.84 83.16,-52 76.27,-43.61"></path>
+<polygon fill="blue" stroke="blue" points="78.91,-41.31 69.72,-36.05 73.62,-45.9 78.91,-41.31"></polygon>
+</g>
+<!-- MATH&#45;&gt;GRADE -->
+<g id="edge9" class="edge">
+<title>MATH-&gt;GRADE</title>
+<path fill="none" stroke="blue" d="M130.58,-215.7C138.01,-207.3 147.08,-197.07 155.23,-187.86"></path>
+<polygon fill="blue" stroke="blue" points="158.09,-189.91 162.1,-180.1 152.85,-185.27 158.09,-189.91"></polygon>
+</g>
+</g>
+</svg></div></div><p style="font-size:.85em;color:#666;margin-top:6px">Red ↔ edges are unoriented (not confounded) — both directions are statistically equivalent.</p>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pisa-cpdags-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;22.4: Estimated CPDAGs from PC and RSL-D on PISA 2022 (USA). Blue directed edges are oriented; red double-headed edges are unoriented (both directions CI-equivalent). No true-DAG panel — on real data we have no ground truth.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Read the disagreement, not just the agreement.</strong> A purely data-driven method may orient an edge as <code>MATH → HISEI</code> — a child’s test score causing their parent’s occupational status. That is causally backwards, and no CI test can rule it out, because <code>HISEI → MATH</code> and <code>MATH → HISEI</code> are Markov-equivalent. This is exactly why background knowledge is not optional.</p>
+</div>
+</div>
+</section>
+<section id="orienting-with-background-knowledge" class="level3" data-number="22.8.3">
+<h3 data-number="22.8.3" class="anchored" data-anchor-id="orienting-with-background-knowledge"><span class="header-section-number">22.8.3</span> Orienting with background knowledge</h3>
+<p>Sex and immigration background are fixed at birth; family socioeconomic status is established long before the test; grade precedes the assessment; the score is the outcome. That gives a <strong>tier ordering</strong></p>
+<p><span class="math display">\[
+\{\text{GENDER}, \text{IMMIG}\} \prec \{\text{HISEI}, \text{HOMEPOS}\}
+\prec \text{GRADE} \prec \text{MATH}.
+\]</span></p>
+<p>A cross-tier edge must point earlier→later; a within-tier edge the ordering cannot decide. We impose this on the discovered <strong>skeleton</strong>, because the ordering is knowledge we hold independently of how the data oriented things.</p>
+<div id="f38bf809" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>tier_p <span class="op">=</span> <span class="fu">Dict</span>(<span class="st">"GENDER"</span><span class="op">=&gt;</span><span class="fl">0</span>,<span class="st">"IMMIG"</span><span class="op">=&gt;</span><span class="fl">0</span>,<span class="st">"HISEI"</span><span class="op">=&gt;</span><span class="fl">1</span>,<span class="st">"HOMEPOS"</span><span class="op">=&gt;</span><span class="fl">1</span>,<span class="st">"GRADE"</span><span class="op">=&gt;</span><span class="fl">2</span>,<span class="st">"MATH"</span><span class="op">=&gt;</span><span class="fl">3</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>di_e <span class="op">=</span> <span class="dt">Tuple</span>{<span class="dt">Symbol</span>,<span class="dt">Symbol</span>}[]; bi_e <span class="op">=</span> <span class="dt">Tuple</span>{<span class="dt">Symbol</span>,<span class="dt">Symbol</span>}[]</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">edges</span>(skel_pcp)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> plabs[<span class="cn">e</span>.src], plabs[<span class="cn">e</span>.dst]</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> tier_p[a] <span class="op">==</span> tier_p[b]</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(bi_e, (<span class="fu">Symbol</span>(a), <span class="fu">Symbol</span>(b)))          <span class="co"># within-tier: undirected</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>        lo, hi <span class="op">=</span> tier_p[a] <span class="op">&lt;</span> tier_p[b] ? (a, b) <span class="op">:</span> (b, a)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(di_e, (<span class="fu">Symbol</span>(lo), <span class="fu">Symbol</span>(hi)))        <span class="co"># cross-tier: earlier → later</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>oriented_admg <span class="op">=</span> <span class="fu">make_graph</span>(vertices<span class="op">=</span><span class="fu">Symbol</span>.(plabs), di_edges<span class="op">=</span>di_e, bi_edges<span class="op">=</span>bi_e)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>ADMG([:HISEI, :HOMEPOS, :IMMIG, :GRADE, :GENDER, :MATH], [(:IMMIG, :HISEI), (:HISEI, :MATH), (:IMMIG, :HOMEPOS), (:HOMEPOS, :MATH), (:IMMIG, :GRADE), (:GENDER, :GRADE), (:GRADE, :MATH), (:GENDER, :MATH)], [(:HISEI, :HOMEPOS)], Dict{Symbol, Vector{Symbol}}(), Dict{Symbol, Bool}(:MATH =&gt; 0, :GRADE =&gt; 0, :HISEI =&gt; 0, :HOMEPOS =&gt; 0, :GENDER =&gt; 0, :IMMIG =&gt; 0))</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Where data-driven orientation disagreed with us.</strong> Left to itself, an algorithm may orient <code>IMMIG–GRADE</code> as <code>GRADE → IMMIG</code> — schooling causing immigration status, which is impossible. No CI test could have prevented it: the two orientations are Markov-equivalent. Imposing the tier order overrides it. The lesson: <strong>never ship a discovered orientation you have prior reason to disbelieve</strong>.</p>
+</div>
+</div>
+<div id="cell-fig-pisa-oriented" class="cell" data-execution_count="18">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_graph</span>(oriented_admg; direction<span class="op">=</span><span class="st">"LR"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-pisa-oriented" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pisa-oriented-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<svg width="423pt" height="182pt" viewbox="0.00 0.00 423.00 182.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 178)">
+<title>%3</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-178 419,-178 419,4 -4,4"></polygon>
+<!-- HISEI -->
+<g id="node1" class="node">
+<title>HISEI</title>
+<text text-anchor="middle" x="144.5" y="-106.3" font-family="Times,serif" font-size="14.00">HISEI</text>
+</g>
+<!-- HOMEPOS -->
+<g id="node2" class="node">
+<title>HOMEPOS</title>
+<text text-anchor="middle" x="269.5" y="-152.3" font-family="Times,serif" font-size="14.00">HOMEPOS</text>
+</g>
+<!-- HISEI&#45;&gt;HOMEPOS -->
+<g id="edge9" class="edge">
+<title>HISEI-&gt;HOMEPOS</title>
+<path fill="none" stroke="red" d="M183.41,-124.18C192.51,-127.58 202.43,-131.29 212.17,-134.94"></path>
+<polygon fill="red" stroke="red" points="184.62,-120.89 174.03,-120.67 182.17,-127.45 184.62,-120.89"></polygon>
+<polygon fill="red" stroke="red" points="211.23,-138.32 221.82,-138.54 213.68,-131.76 211.23,-138.32"></polygon>
+</g>
+<!-- MATH -->
+<g id="node6" class="node">
+<title>MATH</title>
+<text text-anchor="middle" x="384" y="-83.3" font-family="Times,serif" font-size="14.00">MATH</text>
+</g>
+<!-- HISEI&#45;&gt;MATH -->
+<g id="edge2" class="edge">
+<title>HISEI-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M174.15,-107.23C216.22,-103.15 294.88,-95.53 342.74,-90.9"></path>
+<polygon fill="blue" stroke="blue" points="343.14,-94.38 352.75,-89.93 342.46,-87.41 343.14,-94.38"></polygon>
+</g>
+<!-- HOMEPOS&#45;&gt;MATH -->
+<g id="edge4" class="edge">
+<title>HOMEPOS-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M300.06,-137.87C313.75,-129.47 330.19,-119.39 344.81,-110.42"></path>
+<polygon fill="blue" stroke="blue" points="346.94,-113.22 353.64,-105.01 343.29,-107.25 346.94,-113.22"></polygon>
+</g>
+<!-- IMMIG -->
+<g id="node3" class="node">
+<title>IMMIG</title>
+<text text-anchor="middle" x="33.5" y="-106.3" font-family="Times,serif" font-size="14.00">IMMIG</text>
+</g>
+<!-- IMMIG&#45;&gt;HISEI -->
+<g id="edge1" class="edge">
+<title>IMMIG-&gt;HISEI</title>
+<path fill="none" stroke="blue" d="M67.2,-110C79.06,-110 92.56,-110 104.88,-110"></path>
+<polygon fill="blue" stroke="blue" points="104.89,-113.5 114.89,-110 104.89,-106.5 104.89,-113.5"></polygon>
+</g>
+<!-- IMMIG&#45;&gt;HOMEPOS -->
+<g id="edge3" class="edge">
+<title>IMMIG-&gt;HOMEPOS</title>
+<path fill="none" stroke="blue" d="M67.03,-124.83C78.22,-129.39 90.97,-133.99 103,-137 138.57,-145.89 179.5,-150.63 211.76,-153.16"></path>
+<polygon fill="blue" stroke="blue" points="211.68,-156.66 221.91,-153.9 212.19,-149.68 211.68,-156.66"></polygon>
+</g>
+<!-- GRADE -->
+<g id="node4" class="node">
+<title>GRADE</title>
+<text text-anchor="middle" x="269.5" y="-60.3" font-family="Times,serif" font-size="14.00">GRADE</text>
+</g>
+<!-- IMMIG&#45;&gt;GRADE -->
+<g id="edge5" class="edge">
+<title>IMMIG-&gt;GRADE</title>
+<path fill="none" stroke="blue" d="M67.03,-95.17C78.22,-90.61 90.97,-86.01 103,-83 143.43,-72.9 190.78,-68.15 224.45,-65.93"></path>
+<polygon fill="blue" stroke="blue" points="224.67,-69.42 234.44,-65.31 224.24,-62.43 224.67,-69.42"></polygon>
+</g>
+<!-- GRADE&#45;&gt;MATH -->
+<g id="edge7" class="edge">
+<title>GRADE-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M304.56,-70.96C316.58,-73.42 330.22,-76.21 342.71,-78.76"></path>
+<polygon fill="blue" stroke="blue" points="342.38,-82.27 352.87,-80.84 343.78,-75.41 342.38,-82.27"></polygon>
+</g>
+<!-- GENDER -->
+<g id="node5" class="node">
+<title>GENDER</title>
+<text text-anchor="middle" x="144.5" y="-14.3" font-family="Times,serif" font-size="14.00">GENDER</text>
+</g>
+<!-- GENDER&#45;&gt;GRADE -->
+<g id="edge6" class="edge">
+<title>GENDER-&gt;GRADE</title>
+<path fill="none" stroke="blue" d="M186.12,-33.19C198.49,-37.82 212.15,-42.93 224.73,-47.63"></path>
+<polygon fill="blue" stroke="blue" points="223.51,-50.91 234.1,-51.14 225.96,-44.35 223.51,-50.91"></polygon>
+</g>
+<!-- GENDER&#45;&gt;MATH -->
+<g id="edge8" class="edge">
+<title>GENDER-&gt;MATH</title>
+<path fill="none" stroke="blue" d="M186.12,-16.51C221.83,-16.58 274.56,-20.08 317,-37 331.51,-42.78 345.59,-52.66 356.99,-62.12"></path>
+<polygon fill="blue" stroke="blue" points="354.93,-64.97 364.79,-68.87 359.51,-59.68 354.93,-64.97"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pisa-oriented-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;22.5: PC skeleton oriented by the temporal/logical tiers. Cross-tier edges point earlier-to-later; HISEI–HOMEPOS stays undirected (same tier, shown red).
+</figcaption>
+</figure>
+</div>
+</div>
+<p>Every edge into <code>MATH</code> is now a candidate causal parent of achievement — the bridge from discovery to estimation (back-door adjustment on the parents of the outcome). The only edge the ordering leaves undirected, <code>HISEI – HOMEPOS</code>, is two same-tier measures of family background that temporal logic cannot separate.</p>
+</section>
+<section id="stability-does-the-skeleton-survive-resampling" class="level3" data-number="22.8.4">
+<h3 data-number="22.8.4" class="anchored" data-anchor-id="stability-does-the-skeleton-survive-resampling"><span class="header-section-number">22.8.4</span> Stability: does the skeleton survive resampling?</h3>
+<p>A single fit can be lucky. We resample students with replacement, re-estimate the <strong>weighted</strong> PC skeleton, and record how often each edge appears.</p>
+<div id="5f3604c8" class="cell" data-cache="true" data-execution_count="19">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">weighted_skel</span>(Xb, wb, labs, sig)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    mu <span class="op">=</span> (Xb<span class="op">'</span> <span class="op">*</span> wb) <span class="op">./</span> <span class="fu">sum</span>(wb); Xc <span class="op">=</span> Xb <span class="op">.-</span> mu<span class="op">'</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    Σ  <span class="op">=</span> (Xc<span class="op">'</span> <span class="op">*</span> (wb <span class="op">.*</span> Xc)) <span class="op">./</span> <span class="fu">sum</span>(wb)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    m  <span class="op">=</span> <span class="fu">round</span>(<span class="dt">Int</span>, <span class="fu">sum</span>(wb)<span class="op">^</span><span class="fl">2</span> <span class="op">/</span> <span class="fu">sum</span>(wb <span class="op">.^</span> <span class="fl">2</span>))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    Z  <span class="op">=</span> <span class="fu">randn</span>(m, <span class="fu">length</span>(labs)); Z <span class="op">.-=</span> <span class="fu">mean</span>(Z, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    Z  <span class="op">=</span> Z <span class="op">*</span> <span class="fu">inv</span>(<span class="fu">cholesky</span>(<span class="fu">Symmetric</span>(<span class="fu">cov</span>(Z))).U)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    Xs <span class="op">=</span> Z <span class="op">*</span> <span class="fu">cholesky</span>(<span class="fu">Symmetric</span>(Σ)).U <span class="op">.+</span> mu<span class="op">'</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ci</span>(x, y, S, d) <span class="op">=</span> <span class="fu">fisher_z</span>(x, y, <span class="fu">collect</span>(<span class="dt">Int</span>, S), <span class="fu">Matrix</span><span class="dt">{Float64}</span>(d), sig)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SimpleGraph</span>(<span class="fu">pcalg</span>(<span class="fu">length</span>(labs), ci, Xs))</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>B_pisa <span class="op">=</span> <span class="fl">200</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>adj_b  <span class="op">=</span> <span class="fu">Vector</span><span class="dt">{Matrix{Float64}}</span>(<span class="cn">undef</span>, B_pisa)   <span class="co"># one slot per replicate (race-free)</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> b <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>B_pisa</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> <span class="fu">MersenneTwister</span>(<span class="fl">1000</span> <span class="op">+</span> b)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> <span class="fu">rand</span>(rng, <span class="fl">1</span><span class="op">:</span>np_, np_)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    g   <span class="op">=</span> <span class="fu">weighted_skel</span>(Xp[idx, <span class="op">:</span>], wp[idx], plabs, sig_p)</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    A   <span class="op">=</span> <span class="fu">zeros</span>(pp_, pp_)</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">edges</span>(g); A[<span class="cn">e</span>.src, <span class="cn">e</span>.dst] <span class="op">+=</span> <span class="fl">1</span>; A[<span class="cn">e</span>.dst, <span class="cn">e</span>.src] <span class="op">+=</span> <span class="fl">1</span>; <span class="cf">end</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    adj_b[b] <span class="op">=</span> A</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>edge_freq <span class="op">=</span> <span class="fu">sum</span>(adj_b) <span class="op">./</span> B_pisa</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>6×6 Matrix{Float64}:
+ 0.0    1.0   1.0    0.015  0.0   1.0
+ 1.0    0.0   1.0    0.0    0.17  1.0
+ 1.0    1.0   0.0    0.895  0.02  0.0
+ 0.015  0.0   0.895  0.0    0.97  1.0
+ 0.0    0.17  0.02   0.97   0.0   0.98
+ 1.0    1.0   0.0    1.0    0.98  0.0</code></pre>
+</div>
+</div>
+<div id="cell-fig-pisa-stability" class="cell" data-fig-height="4" data-fig-width="7" data-execution_count="20">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>edge_names <span class="op">=</span> <span class="dt">String</span>[]; edge_vals <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>pp_<span class="op">-</span><span class="fl">1</span>, j <span class="kw">in</span> i<span class="op">+</span><span class="fl">1</span><span class="op">:</span>pp_</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> edge_freq[i, j] <span class="op">&gt;</span> <span class="fl">0</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(edge_names, <span class="st">"</span><span class="sc">$</span>(plabs[i])<span class="st"> — </span><span class="sc">$</span>(plabs[j])<span class="st">"</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(edge_vals,  edge_freq[i, j])</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>ord <span class="op">=</span> <span class="fu">sortperm</span>(edge_vals)</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">680</span>, <span class="fl">380</span>))</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>,<span class="fl">1</span>]; xlabel<span class="op">=</span><span class="st">"Selection frequency across bootstrap resamples"</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>               yticks<span class="op">=</span>(<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(ord), edge_names[ord]), title<span class="op">=</span><span class="st">"Bootstrap edge stability (weighted PC)"</span>)</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">barplot!</span>(ax, <span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(ord), edge_vals[ord]; direction<span class="op">=:</span>x, color<span class="op">=</span>(<span class="op">:</span>steelblue, <span class="fl">0.8</span>))</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">vlines!</span>(ax, [<span class="fl">0.5</span>]; linestyle<span class="op">=:</span>dash, color<span class="op">=:</span>gray)</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlims!</span>(ax, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    fig</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
+<div id="fig-pisa-stability" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pisa-stability-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="causal-discovery_files/figure-html/fig-pisa-stability-output-1.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pisa-stability-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;22.6: Bootstrap edge-selection frequency (weighted PC, 200 resamples). Edges near 1.0 are robust; near 0.5 are sample-dependent.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The family-background→math edges (<code>HISEI</code>, <code>HOMEPOS</code>) are the most stable features: the SES gradient in achievement is not an artefact. On real data, causal discovery is best read as <strong>hypothesis generation</strong> — it proposes a skeleton and the orientations the data support, which you then reconcile with subject-matter knowledge before estimating effects.</p>
+</section>
+</section>
+<section id="summary" class="level2" data-number="22.9">
+<h2 data-number="22.9" class="anchored" data-anchor-id="summary"><span class="header-section-number">22.9</span> Summary</h2>
 <p>Both PC and RSL-D target the Markov equivalence class. The practical difference is computational: RSL-D usually uses fewer CI tests, especially as the graph gets denser.</p>
 <p><strong>From CPDAG to causal estimation:</strong> Once a CPDAG is in hand, the workflow continues as follows:</p>
 <ol type="1">
