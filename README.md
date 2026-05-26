@@ -31,7 +31,7 @@ Live site: **https://xiangao.github.io/causal_econometrics_julia/**
 13. **Causal Mediation** — CDE, NDE, NIE with `Crumble.jl`
 
 ### Causal Discovery
-14. **Discovery: Observed Variables** — PC, RSL-D algorithms via `CausalInference.jl`
+14. **Discovery: Observed Variables** — PC, RSL-D algorithms via `CausalInference.jl`; a survey-weighted real-data example on PISA 2022 (background-knowledge tier orientation, bootstrap edge stability)
 15. **Discovery: Latent Variables** — FCI, L-MARVEL, PAGs
 16. **From Graph to Estimate** — Identification routing (a-fix/p-fix/nested) and TMLE/AIPW estimation with `CausalGraphs.jl`
 
