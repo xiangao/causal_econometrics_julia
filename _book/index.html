@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xiang Ao">
+<meta name="dcterms.date" content="2026-05-27">
 
 <title>Causal Econometrics with Julia</title>
 <style>
@@ -20,6 +21,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -109,6 +145,7 @@ try {
       <a href="./">Causal Econometrics with Julia</a> 
         <div class="sidebar-tools-main tools-wide">
     <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://xiangao.github.io/books.html" title="Other books" class="quarto-navigation-tool px-1" aria-label="Other books"><i class="bi bi-book"></i></a>
     <a href="https://github.com/xiangao/causal_econometrics_julia/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
   <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
   <div class="quarto-reader-toggle-btn">
@@ -385,7 +422,10 @@ try {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface">Preface</a></li>
+  <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface">Preface</a>
+  <ul class="collapse">
+  <li><a href="#how-to-cite" id="toc-how-to-cite" class="nav-link" data-scroll-target="#how-to-cite">How to cite</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -408,6 +448,12 @@ try {
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 27, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -421,11 +467,20 @@ try {
 <h1 class="unnumbered">Preface</h1>
 <p>Most applied questions are causal. Did a program raise earnings? Did a drug reduce mortality? Did a policy change behavior? With experimental data, a difference in means can sometimes answer the question. With observational data, it almost never can. Causal econometrics is the business of saying what would have to be true for a number we can compute to mean the causal object we want.</p>
 <p>This book is a working guide in Julia. It is for applied researchers who already know regression and probability, and who want to see the methods carried out end to end. Each chapter gives the identifying assumptions and then runs code on a real or simulated data set. Where it matters, the influence functions, score equations, and weighting schemes are written out so the link between the formula and the Julia call is visible.</p>
-<p>Julia is not the usual choice for this material. R remains the default language of applied causal inference, and a companion R volume covers the same ground. The Julia version exists because some of the heavier estimators — TMLE on large samples, distributional difference-in-differences, fully Bayesian g-computation — are uncomfortably slow in R, and because Julia’s type system makes it possible to write small, focused estimation packages whose code is easy to read. Several such packages were written alongside this book and are used throughout: <code>CausalEstimate.jl</code> for unified TMLE and AIPW, <code>CausalGraphs.jl</code> for graph-based identification, <code>Lavaan.jl</code> for structural equation modeling, <code>Crumble.jl</code> for causal mediation, and a handful of smaller libraries for difference-in-differences, synthetic control, shift-share IV, and regression discontinuity. They are not requirements for following the text, but readers who want to see how an estimator is actually built will find the source short enough to read.</p>
+<p>Julia is not the usual choice for this material. R remains the default language of applied causal inference, and a companion R volume — <a href="https://xiangao.github.io/causal_econometrics_guide/">Introduction to Causal Econometrics with Observational Data</a> — covers the same ground. A messier working notebook, <a href="https://xiangao.github.io/blog_book/">Topics on Econometrics and Causal Inference</a>, holds the rougher posts that fed into both books. The Julia version exists because some of the heavier estimators — TMLE on large samples, distributional difference-in-differences, fully Bayesian g-computation — are uncomfortably slow in R, and because Julia’s type system makes it possible to write small, focused estimation packages whose code is easy to read. Several such packages were written alongside this book and are used throughout: <code>CausalEstimate.jl</code> for unified TMLE and AIPW, <code>CausalGraphs.jl</code> for graph-based identification, <code>Lavaan.jl</code> for structural equation modeling, <code>Crumble.jl</code> for causal mediation, and a handful of smaller libraries for difference-in-differences, synthetic control, shift-share IV, and regression discontinuity. They are not requirements for following the text, but readers who want to see how an estimator is actually built will find the source short enough to read.</p>
 <p>The book is organized in the order in which an applied project usually runs. Part I is identification. Part II is estimation. Part III is designs: difference-in-differences, synthetic control, instrumental variables, regression discontinuity, and shift-share IV. The remaining parts cover longitudinal settings, survival outcomes, mediation, and causal discovery. The appendix lists the Julia packages used in the examples.</p>
 <p>The book is meant to be read at a desk with Julia running. Source files, datasets, and a <code>Project.toml</code> that pins package versions are available in the repository linked above; the “Edit this page” link at the foot of each chapter goes directly to the corresponding <code>.qmd</code> file. Corrections and suggestions are welcome through the issues tracker.</p>
+<section id="how-to-cite" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="how-to-cite">How to cite</h2>
+<p>Ao, Xiang. <em>Causal Econometrics with Julia</em>. <a href="https://xiangao.github.io/causal_econometrics_julia/" class="uri">https://xiangao.github.io/causal_econometrics_julia/</a>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bibtex code-with-copy"><code class="sourceCode bibtex"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">@book</span>{<span class="ot">ao_causal_econometrics_julia</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span> = {Ao, Xiang},</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>  = {Causal Econometrics with Julia},</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">url</span>    = {https://xiangao.github.io/causal_econometrics_julia/}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

@@ -144,6 +144,7 @@ try {
       <a href="./">Causal Econometrics with Julia</a> 
         <div class="sidebar-tools-main tools-wide">
     <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://xiangao.github.io/books.html" title="Other books" class="quarto-navigation-tool px-1" aria-label="Other books"><i class="bi bi-book"></i></a>
     <a href="https://github.com/xiangao/causal_econometrics_julia/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
   <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
   <div class="quarto-reader-toggle-btn">
@@ -637,12 +638,11 @@ try {
 <section id="tasc.jl" class="level2" data-number="25.8">
 <h2 data-number="25.8" class="anchored" data-anchor-id="tasc.jl"><span class="header-section-number">25.8</span> TASC.jl</h2>
 <p><code>TASC.jl</code> implements Time-Aware Synthetic Control. It keeps the same panel-data spirit as synthetic control, but models the untreated outcome panel with a low-rank linear Gaussian state-space model:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/TASC.jl/src/TASC.jl"</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.TASC</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> <span class="fu">fit_tasc</span>(Y; d <span class="op">=</span> <span class="fl">2</span>, T0 <span class="op">=</span> <span class="fl">19</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> <span class="fu">predict_counterfactual</span>(model, Y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The package exports <code>fit_tasc</code>, <code>predict_counterfactual</code>, <code>predict_post_intervention</code>, <code>tasc_plot</code>, classical synthetic-control baselines, HSVT/RSC-style denoising helpers, and synthetic data generators. In the synthetic-control chapter, the package is included from source so that the new local package can be used without forcing a full resolver update of the book environment.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TASC</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> <span class="fu">fit_tasc</span>(Y; d <span class="op">=</span> <span class="fl">2</span>, T0 <span class="op">=</span> <span class="fl">19</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> <span class="fu">predict_counterfactual</span>(model, Y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The package exports <code>fit_tasc</code>, <code>predict_counterfactual</code>, <code>predict_post_intervention</code>, <code>tasc_plot</code>, classical synthetic-control baselines, HSVT/RSC-style denoising helpers, and synthetic data generators. It is registered in the environment’s <code>Project.toml</code> as a developed dependency.</p>
 </section>
 <section id="rdrobust.jl" class="level2" data-number="25.9">
 <h2 data-number="25.9" class="anchored" data-anchor-id="rdrobust.jl"><span class="header-section-number">25.9</span> RDRobust.jl</h2>

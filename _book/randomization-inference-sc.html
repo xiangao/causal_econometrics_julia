@@ -173,6 +173,7 @@ window.Quarto = {
       <a href="./">Causal Econometrics with Julia</a> 
         <div class="sidebar-tools-main tools-wide">
     <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://xiangao.github.io/books.html" title="Other books" class="quarto-navigation-tool px-1" aria-label="Other books"><i class="bi bi-book"></i></a>
     <a href="https://github.com/xiangao/causal_econometrics_julia/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
   <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
   <div class="quarto-reader-toggle-btn">
@@ -484,15 +485,14 @@ window.Quarto = {
 </header>
 
 
-<div id="efb8c306" class="cell" data-execution_count="2">
+<div id="8f34fda6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/TASC.jl/src/TASC.jl"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.TASC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TASC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Synthetic control is often used when there is one treated unit: California, West Germany, the Basque Country. Usual large-sample standard errors are not very helpful because there is no large sample of treated units. Two approaches are common:</p>
 <ul>

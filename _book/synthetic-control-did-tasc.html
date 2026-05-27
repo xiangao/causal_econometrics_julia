@@ -196,6 +196,7 @@ window.Quarto = {
       <a href="./">Causal Econometrics with Julia</a> 
         <div class="sidebar-tools-main tools-wide">
     <a href="https://xiangao.github.io/" title="Xiang Ao home" class="quarto-navigation-tool px-1" aria-label="Xiang Ao home"><i class="bi bi-house-door-fill"></i></a>
+    <a href="https://xiangao.github.io/books.html" title="Other books" class="quarto-navigation-tool px-1" aria-label="Other books"><i class="bi bi-book"></i></a>
     <a href="https://github.com/xiangao/causal_econometrics_julia/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
   <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
   <div class="quarto-reader-toggle-btn">
@@ -501,15 +502,14 @@ window.Quarto = {
 </header>
 
 
-<div id="80d7dca4" class="cell" data-execution_count="2">
+<div id="43ff8cc5" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../../software/TASC.jl/src/TASC.jl"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">.TASC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TASC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here I put three related panel-data designs together: classical synthetic control, synthetic DiD, and Time-Aware Synthetic Control (TASC). All compare a treated unit to a donor pool over time. They differ in what structure they put on the untreated counterfactual.</p>
 <section id="synthetic-control" class="level2" data-number="14.1">
@@ -575,7 +575,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <section id="example-california-proposition-99" class="level2" data-number="14.4">
 <h2 data-number="14.4" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">14.4</span> Example: California Proposition 99</h2>
 <p>California’s Proposition 99 raised cigarette taxes and funded anti-smoking programs. The usual synthetic-control exercise compares California’s cigarette sales after 1988 to a donor pool of other states. The outcome is per-capita cigarette sales in packs.</p>
-<div id="d74c5608" class="cell" data-cache="true" data-execution_count="3">
+<div id="de42ad7f" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -585,7 +585,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><code>SynthDiD.jl</code> orders the donor states first and treated states last. <code>TASC.jl</code> expects the treated unit to be first, so we explicitly reorder the matrix before fitting the state-space model. The paper’s Proposition 99 example uses a low latent dimension; here we set <code>d = 2</code>.</p>
-<div id="9f3e3891" class="cell" data-cache="true" data-execution_count="4">
+<div id="727d0ef3" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>tasc_model <span class="op">=</span> <span class="fu">fit_tasc</span>(</span>
@@ -600,7 +600,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>tasc_att <span class="op">=</span> <span class="fu">mean</span>(tasc_pred.effect[(setup.T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="5ff80154" class="cell" data-cache="true" data-execution_count="5">
+<div id="170c68ee" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>estimates <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    Method <span class="op">=</span> [<span class="st">"Diff-in-Diff"</span>, <span class="st">"Synthetic Control"</span>, <span class="st">"Synthetic Diff-in-Diff"</span>, <span class="st">"TASC"</span>],</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    Estimate <span class="op">=</span> [tau_did.estimate, tau_sc.estimate, tau_sdid.estimate, tasc_att],</span>
@@ -655,7 +655,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 </div>
 </div>
 <p>The estimates are all negative: California’s observed cigarette sales fell below the estimated no-Proposition-99 counterfactual. The methods differ because they impose different restrictions on the untreated path. DiD compares average changes. Synthetic control chooses donor weights. Synthetic DiD adds time weights. TASC uses a low-rank state-space model and updates the latent state with post-treatment donor observations.</p>
-<div id="83a882de" class="cell" data-cache="true" data-execution_count="6">
+<div id="045a1453" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>years <span class="op">=</span> <span class="fu">Int</span>.(setup.times)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>treated <span class="op">=</span> <span class="fu">vec</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>), <span class="op">:</span>])</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sc_counterfactual <span class="op">=</span> <span class="fu">vec</span>(tau_sc.weights.omega<span class="op">'</span> <span class="op">*</span> setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
