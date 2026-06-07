@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="d7a2f4d9" class="cell" data-execution_count="2">
+<div id="ad54bdaa" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -531,19 +531,22 @@ window.Quarto = {
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(L0 <span class="op">=</span> L0, A0 <span class="op">=</span> A0, L1 <span class="op">=</span> L1, A1 <span class="op">=</span> A1, Y <span class="op">=</span> Y)</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True total effect of always-treated vs never-treated: 1.000</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>naive_no_L1   <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1 <span class="op">+</span> L0),       df)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>naive_with_L1 <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1 <span class="op">+</span> L0 <span class="op">+</span> L1), df)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># A0 has a direct effect (0.5) AND an indirect effect through L1</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># (A0 -&gt; L1 -&gt; Y contributes 1.0 * 0.5 = 0.5), so A0's total effect is 1.0;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># A1's total effect is 0.5; always-vs-never total = 1.5.</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True total effect of always-treated vs never-treated: 1.500</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (no L1):   A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>],</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (with L1): A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>],</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>naive_no_L1   <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1 <span class="op">+</span> L0),       df)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>naive_with_L1 <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1 <span class="op">+</span> L0 <span class="op">+</span> L1), df)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (no L1):   A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>],</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (with L1): A0=%.3f, A1=%.3f, total=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>], <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>],</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>True total effect of always-treated vs never-treated: 1.000
+<pre><code>True total effect of always-treated vs never-treated: 1.500
 
 Naive (no L1):   A0=0.944, A1=0.850, total=1.794
 Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
@@ -589,10 +592,10 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>E_Y11 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">1.0</span>)</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>E_Y00 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"G-formula estimate (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"G-formula estimate (always vs never): %.3f  (true = 1.500)</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        E_Y11 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>G-formula estimate (always vs never): 1.483  (true = 1.000)</code></pre>
+<pre><code>G-formula estimate (always vs never): 1.483  (true = 1.500)</code></pre>
 </div>
 </div>
 <p>The important step is simulating <span class="math inline">\(L_1\)</span> under the counterfactual treatment. We do not condition on the observed <span class="math inline">\(L_1\)</span>, because observed <span class="math inline">\(L_1\)</span> is partly a consequence of observed treatment.</p>
@@ -600,10 +603,10 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 <div id="gformula-partial" class="cell" data-cache="true" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>E_Y10 <span class="op">=</span> <span class="fu">g_compute</span>(<span class="fl">1.0</span>, <span class="fl">0.0</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Effect of treating only at t=0: %.3f  (true = 0.5)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Effect of treating only at t=0: %.3f  (true = 1.0)</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        E_Y10 <span class="op">-</span> E_Y00)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Effect of treating only at t=0: 1.005  (true = 0.5)</code></pre>
+<pre><code>Effect of treating only at t=0: 1.005  (true = 1.0)</code></pre>
 </div>
 </div>
 </section>
@@ -680,12 +683,12 @@ SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, 
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>msm_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(msm_fit))</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.000)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.500)</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>StatsBase.CoefTable(Any[[-0.04989628698526234, 1.0455936766250338, 0.5477314823226674], [0.028823347044086425, 0.03993523083912306, 0.03916614787775476], [-1.7311066237014057, 26.18223695355993, 13.984818829573053], [0.0834956511758907, 1.5200922797061257e-141, 1.3152335380742825e-43], [-0.10640295676856143, 0.9673027377450147, 0.47094829050850884], [0.006610382798036753, 1.1238846155050528, 0.624514674136826]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "A0", "A1"], 4, 3)
 
-MSM total effect (always vs never): 1.593  (true = 1.000)</code></pre>
+MSM total effect (always vs never): 1.593  (true = 1.500)</code></pre>
 </div>
 </div>
 <p>The weighted population is constructed so treatment is no longer associated with past covariates. That is why the MSM targets the total effect.</p>
@@ -729,7 +732,7 @@ MSM total effect (always vs never): 1.593  (true = 1.000)</code></pre>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>g_total <span class="op">=</span> E_Y11 <span class="op">-</span> E_Y00</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>msm_total <span class="op">=</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>]</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.0</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.5</span>)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (no L1):"</span>,</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (with L1):"</span>,</span>
@@ -737,7 +740,7 @@ MSM total effect (always vs never): 1.593  (true = 1.000)</code></pre>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"G-formula:"</span>, g_total)</span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"MSM (IPTW):"</span>, msm_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>True total effect:             1.000
+<pre><code>True total effect:             1.500
 Standard regression (no L1):   1.794  (wrong)
 Standard regression (with L1): 0.951  (wrong)
 G-formula:                     1.483  (correct)

@@ -174,7 +174,7 @@ $$
 Therefore,
 
 $$ \small
-CDE_{ipw}(m) = E[{\frac{I(W=1,M=m)}{g_M(m|1,X)g_W(1,X)} Y - \frac{I(W=0,M=m)}{g_M(m|0,X)g_W(0,X)}} Y]
+CDE_{ipw}(m) = E[{\frac{I(W=1,M=m)}{g_M(m|1,X)g_W(1|X)} Y - \frac{I(W=0,M=m)}{g_M(m|0,X)g_W(0|X)}} Y]
 $$
 
 where $g_M$ is the probability of mediator, $g_W$ is the probability of treatment.
@@ -185,8 +185,8 @@ $$ CDE_{AIPW} = CDE_G(m) + B(\bar Q, g_M, g_W) $$ where $\bar Q$ is the mean out
 
 $$ \small
 \begin{eqnarray*}
-B(\bar Q, g_M, g_W) &=& \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, X) g_W(1|X)}[Y-\bar Q(m,1,X)]} \\
-&  &  - \frac{1}{n} \sum_n {\frac{I(M=m, W=0)}{g_m(m|0, X) g_W(0|X)}[Y-\bar Q(m,0,X)]}
+B(\bar Q, g_M, g_W) &=& \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_M(m|1, X) g_W(1|X)}[Y-\bar Q(m,1,X)]} \\
+&  &  - \frac{1}{n} \sum_n {\frac{I(M=m, W=0)}{g_M(m|0, X) g_W(0|X)}[Y-\bar Q(m,0,X)]}
 \end{eqnarray*}
 $$
 

@@ -489,7 +489,7 @@ window.Quarto = {
 </header>
 
 
-<div id="1bef7ac2" class="cell" data-execution_count="2">
+<div id="998649ae" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -517,25 +517,26 @@ window.Quarto = {
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">5</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X    <span class="op">=</span> <span class="fu">rand</span>(n, p)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>U    <span class="op">=</span> <span class="fu">randn</span>(n)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment depends on a noise covariate (X2) and U — backdoor confounding</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>ps   <span class="op">=</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.3</span> <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>] <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> U)))</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>D    <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> ps)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>tau  <span class="op">=</span> @. <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">1</span>]</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>Y0   <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>] <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> U <span class="op">+</span> <span class="fu">randn</span>()</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>Y1   <span class="op">=</span> Y0 <span class="op">.+</span> tau</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>Y    <span class="op">=</span> <span class="fu">ifelse</span>.(D <span class="op">.==</span> <span class="fl">1</span>, Y1, Y0)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, true ATE = %.3f</span><span class="sc">\n</span><span class="st">"</span>, n, <span class="fu">mean</span>(tau))</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.2: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.2</span>)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.8: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment depends on the OBSERVED covariate X2 (a backdoor confounder we</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># adjust for), so unconfoundedness given X holds and the estimators below are</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># consistent for the true CATE/ATE.</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>ps   <span class="op">=</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="op">-</span><span class="fl">0.3</span> <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>])))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>D    <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(n) <span class="op">.&lt;</span> ps)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>tau  <span class="op">=</span> @. <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">1</span>]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>Y0   <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">*</span> X[<span class="op">:</span>, <span class="fl">2</span>] <span class="op">+</span> <span class="fu">randn</span>()</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>Y1   <span class="op">=</span> Y0 <span class="op">.+</span> tau</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>Y    <span class="op">=</span> <span class="fu">ifelse</span>.(D <span class="op">.==</span> <span class="fl">1</span>, Y1, Y0)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, true ATE = %.3f</span><span class="sc">\n</span><span class="st">"</span>, n, <span class="fu">mean</span>(tau))</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.2: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.2</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True CATE at X1 = 0.8: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="fl">0.8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>n = 5000, true ATE = 2.009
 True CATE at X1 = 0.2: 1.40
 True CATE at X1 = 0.8: 2.60</code></pre>
 </div>
 </div>
-<p>Treatment is related to <span class="math inline">\(X_2\)</span> and the unobserved <span class="math inline">\(U\)</span>. We condition on <span class="math inline">\(X_2\)</span>, but not on <span class="math inline">\(U\)</span> because it is unobserved.</p>
+<p>Treatment is related to the observed covariate <span class="math inline">\(X_2\)</span>, which also affects the outcome — a backdoor confounder. Because <span class="math inline">\(X_2\)</span> is observed and in the conditioning set, unconfoundedness holds and the estimators below are consistent for the true CATE/ATE.</p>
 </section>
 <section id="a-wrapper-for-fitting-random-forests" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="a-wrapper-for-fitting-random-forests"><span class="header-section-number">9.2</span> A wrapper for fitting random forests</h2>
@@ -544,18 +545,30 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> RFR <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500, weights=nothing)</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">Fit a random forest on (Xtrain, ytrain) and return predictions at Xpredict.</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rf_fit_predict</span>(Xtrain, ytrain, Xpredict; n_trees<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    learner <span class="op">=</span> <span class="fu">RFR</span>(n_trees<span class="op">=</span>n_trees, max_depth<span class="op">=-</span><span class="fl">1</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    Xtrain_t <span class="op">=</span> MLJ.<span class="fu">table</span>(Xtrain)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    Xpred_t  <span class="op">=</span> MLJ.<span class="fu">table</span>(Xpredict)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    mach <span class="op">=</span> <span class="fu">machine</span>(learner, Xtrain_t, <span class="fu">Float64</span>.(ytrain))</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fit!</span>(mach, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> MLJ.<span class="fu">predict</span>(mach, Xpred_t)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">DecisionTree's `RandomForestRegressor` does not accept per-sample weights, so</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">when `weights` are supplied we approximate a weighted fit by resampling the</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">training rows with probability proportional to the weights (weighted bootstrap).</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rf_fit_predict</span>(Xtrain, ytrain, Xpredict; n_trees<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                        weights<span class="op">=</span><span class="cn">nothing</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> weights <span class="op">!==</span> <span class="cn">nothing</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> <span class="fu">Float64</span>.(weights)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="fu">size</span>(Xtrain, <span class="fl">1</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        cdf <span class="op">=</span> <span class="fu">cumsum</span>(w) <span class="op">./</span> <span class="fu">sum</span>(w)            <span class="co"># weighted-bootstrap CDF</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> [<span class="fu">searchsortedfirst</span>(cdf, <span class="fu">rand</span>()) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>m]</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        Xtrain <span class="op">=</span> Xtrain[idx, <span class="op">:</span>]</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        ytrain <span class="op">=</span> ytrain[idx]</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    learner <span class="op">=</span> <span class="fu">RFR</span>(n_trees<span class="op">=</span>n_trees, max_depth<span class="op">=-</span><span class="fl">1</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    Xtrain_t <span class="op">=</span> MLJ.<span class="fu">table</span>(Xtrain)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    Xpred_t  <span class="op">=</span> MLJ.<span class="fu">table</span>(Xpredict)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    mach <span class="op">=</span> <span class="fu">machine</span>(learner, Xtrain_t, <span class="fu">Float64</span>.(ytrain))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fit!</span>(mach, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> MLJ.<span class="fu">predict</span>(mach, Xpred_t)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="s-learner-single" class="level2" data-number="9.3">
@@ -572,7 +585,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"S-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_S, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>S-learner CATE correlation with truth: 0.711</code></pre>
+<pre><code>S-learner CATE correlation with truth: 0.723</code></pre>
 </div>
 </div>
 <p>The S-learner is simple. Its weakness is that the model may treat <span class="math inline">\(D\)</span> as a minor predictor and shrink treatment effects toward zero.</p>
@@ -590,7 +603,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"T-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_T, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>T-learner CATE correlation with truth: 0.707</code></pre>
+<pre><code>T-learner CATE correlation with truth: 0.727</code></pre>
 </div>
 </div>
 <p>The T-learner gives treatment and control separate outcome models. It can work well, but it can extrapolate badly when treated and control covariate distributions do not overlap.</p>
@@ -614,7 +627,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>tau_X <span class="op">=</span> e_hat <span class="op">.*</span> tau_X0 <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> e_hat) <span class="op">.*</span> tau_X1</span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"X-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_X, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>X-learner CATE correlation with truth: 0.906</code></pre>
+<pre><code>X-learner CATE correlation with truth: 0.901</code></pre>
 </div>
 </div>
 <p>The X-learner is useful when one treatment arm is much smaller than the other.</p>
@@ -645,15 +658,15 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>pseudo_R   <span class="op">=</span> (Y <span class="op">.-</span> m_hat) <span class="op">./</span> (D <span class="op">.-</span> e_hat_cv)</span>
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>weights_R  <span class="op">=</span> (D <span class="op">.-</span> e_hat_cv) <span class="op">.^</span> <span class="fl">2</span></span>
 <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted regression: use random forest with per-sample weights via</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted bootstrap (cheap approximation: oversample by sqrt(weight))</span></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># For exact weighted regression, MLJ regressors can take a weights argument.</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co"># We approximate here with unweighted RF on pseudo_R (the R-learner identity</span></span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co"># holds in expectation; the weighting reduces variance).</span></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>tau_R <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_R, X)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># The R-learner is a *weighted* regression of pseudo_R on X with weights</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co"># (D - e_hat)^2. DecisionTree's RF does not accept per-sample weights, so we</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># pass them through rf_fit_predict's weighted-bootstrap path. This downweights</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co"># observations with D close to e_hat, whose pseudo_R blows up (division by a</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co"># near-zero denominator) and would otherwise dominate the split criterion.</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>tau_R <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_R, X; weights <span class="op">=</span> weights_R)</span>
 <span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"R-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_R, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>R-learner CATE correlation with truth: 0.383</code></pre>
+<pre><code>R-learner CATE correlation with truth: 0.467</code></pre>
 </div>
 </div>
 <p>The R-learner is often stable when overlap is reasonable because nuisance model errors have only second-order effects on the target.</p>
@@ -689,7 +702,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>tau_DR <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X, pseudo_DR, X)</span>
 <span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"DR-learner CATE correlation with truth: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">cor</span>(tau_DR, tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>DR-learner CATE correlation with truth: 0.424</code></pre>
+<pre><code>DR-learner CATE correlation with truth: 0.433</code></pre>
 </div>
 </div>
 </section>
@@ -733,7 +746,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(blp_fit))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>StatsBase.CoefTable(Any[[1.0491980280052309, 2.06880499005843, 0.025224040596492147, 0.1168049914783185, -0.02064513179584383, -0.02313807841559642], [0.14016411913833968, 0.12069064903228814, 0.12127704834669321, 0.12248564191466972, 0.12274318018466555, 0.12274164025892546], [7.485496534028725, 17.141385903931685, 0.20798692696069326, 0.9536219074533758, -0.16819779123193232, -0.18851042210928803], [8.377346668013315e-14, 4.803247234253767e-64, 0.8352476560797701, 0.3403212164400472, 0.8664344895721525, 0.8504842058869386], [0.7744148053447648, 1.8321983200351033, -0.21253222958391252, -0.12332065281535344, -0.26127566418942966, -0.26376559187851634], [1.323981250665697, 2.3054116600817567, 0.2629803107768968, 0.35693063577199047, 0.219985400597742, 0.21748943504732351]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "X1", "X2", "X3", "X4", "X5"], 4, 3)</code></pre>
+<pre><code>StatsBase.CoefTable(Any[[0.9973611151354204, 2.110501538859011, -0.04832888316981774, 0.006995729388057639, -0.030093840456521418, -0.0002630372445912356], [0.14012726480327659, 0.12065891499332179, 0.12124516012164167, 0.12245343590563336, 0.1227109064592853, 0.12270936693844868], [7.117537879124428, 17.491467903352376, -0.39860463808477636, 0.05712971086780103, -0.2452417745484291, -0.002143579183512337], [1.2545284517643298e-12, 1.5476873630260935e-66, 0.6902015847825644, 0.9544441547575743, 0.8062793090862093, 0.9982897581916563], [0.7226501431552275, 1.873957081487173, -0.2860226384263, -0.2330667769855357, -0.2706611021762589, -0.24082728082745142], [1.2720720871156133, 2.347045996230849, 0.1893648720866645, 0.247058235761651, 0.21047342126321603, 0.24030120633826896]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "X1", "X2", "X3", "X4", "X5"], 4, 3)</code></pre>
 </div>
 </div>
 <p>Here the coefficient on <span class="math inline">\(X_1\)</span> should be close to 2, and the coefficients on the other variables should be close to 0.</p>
@@ -768,11 +781,11 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Quintile        ATE       SE   95% LB   95% UB
-1            -1.173    0.068   -1.307   -1.039
-2             1.122    0.023    1.076    1.168
-3             2.131    0.023    2.086    2.176
-4             3.265    0.024    3.218    3.312
-5             5.363    0.055    5.255    5.471</code></pre>
+1            -1.204    0.062   -1.326   -1.082
+2             1.008    0.024    0.962    1.054
+3             2.032    0.023    1.987    2.077
+4             3.025    0.023    2.979    3.071
+5             5.271    0.068    5.138    5.404</code></pre>
 </div>
 </div>
 <p>Quintile 5 should have a larger ATE than quintile 1 in this simulation.</p>
@@ -795,21 +808,21 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <div class="ansi-escaped-output">
 <pre><span class="ansi-bold">5×2 DataFrame</span>
 
-<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> variable </span><span class="ansi-bold"> R2          </span>
+<span class="ansi-bold"> Row </span>│<span class="ansi-bold"> variable </span><span class="ansi-bold"> R2         </span>
 
-<span class="ansi-bold">     </span>│<span class="ansi-bright-black-fg"> String   </span><span class="ansi-bright-black-fg"> Float64     </span>
+<span class="ansi-bold">     </span>│<span class="ansi-bright-black-fg"> String   </span><span class="ansi-bright-black-fg"> Float64    </span>
 
-─────┼───────────────────────
+─────┼──────────────────────
 
-   1 │ X1        0.0556742
+   1 │ X1        0.0577564
 
-   2 │ X3        0.000222108
+   2 │ X4        3.29404e-5
 
-   3 │ X5        5.35887e-5
+   3 │ X5        2.40635e-5
 
-   4 │ X2        2.49949e-5
+   4 │ X2        1.23678e-5
 
-   5 │ X4        2.04448e-5
+   5 │ X3        5.64835e-6
 </pre>
 </div>
 </div>
@@ -849,9 +862,9 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Welfare (treat everyone):                  1.642
-Welfare (treat if τ̂(x) &gt; 0.50):           1.921
-Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
+<pre><code>Welfare (treat everyone):                  1.526
+Welfare (treat if τ̂(x) &gt; 0.50):           1.820
+Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.526</code></pre>
 </div>
 </div>
 <p>The threshold rule gives up flexibility, but it is easy to explain.</p>
@@ -876,9 +889,12 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
 <span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           tau_panel <span class="op">.*</span> (W_panel <span class="op">.-</span> <span class="fu">mean</span>(W_panel)) <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
 <span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># The marginal effect of switching W 0-&gt;1 is 1 (additive +W_panel term) plus</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co"># tau_panel (the demeaned heterogeneous term), so the true ATE is 1 + mean(tau_panel).</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>true_panel_ate <span class="op">=</span> <span class="fu">mean</span>(<span class="fl">1</span> <span class="op">.+</span> tau_panel)</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>True panel ATE: 0.655</code></pre>
+<pre><code>True panel ATE: 1.655</code></pre>
 </div>
 </div>
 <p>A naive T-learner ignores the firm fixed effects:</p>
@@ -894,9 +910,9 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>tau_naive <span class="op">=</span> mu1_naive <span class="op">.-</span> mu0_naive</span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Naive panel T-learner ATE: 1.775  (true = 0.655)</code></pre>
+<pre><code>Naive panel T-learner ATE: 1.775  (true = 1.655)</code></pre>
 </div>
 </div>
 <p>The within transformation removes firm-level variation and leaves the within-firm variation:</p>
@@ -916,9 +932,9 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.642</code></pre>
 <span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
 <span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm), <span class="fu">mean</span>(tau_panel))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm), true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Within-transform T-learner ATE: 1.283  (true = 0.655)</code></pre>
+<pre><code>Within-transform T-learner ATE: 1.283  (true = 1.655)</code></pre>
 </div>
 </div>
 <p>The within transformation removes the fixed effects. The cost is variance, because identification now comes from within-firm variation.</p>

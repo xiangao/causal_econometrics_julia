@@ -511,7 +511,7 @@ window.Quarto = {
 </header>
 
 
-<div id="4bfe2e15" class="cell" data-execution_count="2">
+<div id="531fb12d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -661,7 +661,7 @@ Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</code></pre>
 <p><span class="math display">\[
 \text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid D(1) &gt; D(0)]
 \]</span></p>
-<p>LATE is the mean effect for compliers, the units whose treatment status is changed by the instrument. Under the usual IV assumptions, the Wald estimator identifies this effect, not the ATE.</p>
+<p>LATE is the mean effect for compliers, the units whose treatment status is changed by the instrument. Under the usual IV assumptions, the Wald estimator identifies this effect, not the ATE. Identifying LATE by the Wald ratio additionally requires monotonicity (no defiers): <span class="math inline">\(D(1) \ge D(0)\)</span> for all <span class="math inline">\(i\)</span>. This DGP imposes it by adding a positive constant to the treatment probability under the instrument (<code>pD1 = clamp(0.10 + 0.20*U + 0.50, 0, 1)</code>), so no unit is pushed out of treatment by the offer.</p>
 <div id="late" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>compliers <span class="op">=</span> (D1 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0 <span class="op">.==</span> <span class="fl">0</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>late_true <span class="op">=</span> <span class="fu">mean</span>(Y1[compliers] <span class="op">.-</span> Y0[compliers])</span>
@@ -695,11 +695,11 @@ Wald IV estimate (should match LATE): 1.974</code></pre>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>cate_est <span class="op">=</span> [<span class="fu">mean</span>((Y1 <span class="op">.-</span> Y0)[(X <span class="op">.&gt;=</span> edges[k]) <span class="op">.&amp;</span> (X <span class="op">.&lt;</span> edges[k<span class="op">+</span><span class="fl">1</span>])])</span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            for k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nbins]</span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.2: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">4</span>], <span class="fu">τ</span>(<span class="fl">0.2</span>))</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.8: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">16</span>], <span class="fu">τ</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.2: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">5</span>], <span class="fu">τ</span>(<span class="fl">0.2</span>))</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"CATE at x=0.8: estimated %.2f, true %.2f</span><span class="sc">\n</span><span class="st">"</span>, cate_est[<span class="fl">17</span>], <span class="fu">τ</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>CATE at x=0.2: estimated 1.35, true 1.40
-CATE at x=0.8: estimated 2.55, true 2.60</code></pre>
+<pre><code>CATE at x=0.2: estimated 1.45, true 1.40
+CATE at x=0.8: estimated 2.65, true 2.60</code></pre>
 </div>
 </div>
 </section>

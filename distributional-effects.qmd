@@ -116,10 +116,14 @@ $\hat\pi(x)$ and weight observations to construct counterfactual empirical
 CDFs:
 
 $$
-\hat F_{Y(d)}(y) = \frac{1}{n}\sum_{i=1}^n \frac{\mathbf{1}\{D_i = d\}\mathbf{1}\{Y_i \le y\}}{\hat\pi(x_i)^d (1-\hat\pi(x_i))^{1-d}}.
+\hat F_{Y(d)}(y) = \frac{\sum_{i=1}^n w_i^{(d)}\,\mathbf{1}\{D_i = d\}\mathbf{1}\{Y_i \le y\}}{\sum_{i=1}^n w_i^{(d)}\,\mathbf{1}\{D_i = d\}}, \qquad w_i^{(d)} = \frac{1}{\hat\pi(x_i)^d (1-\hat\pi(x_i))^{1-d}}.
 $$
 
-Then $\hat{\text{QTE}}(\tau) = \hat F^{-1}_{Y(1)}(\tau) - \hat F^{-1}_{Y(0)}(\tau)$.
+We self-normalize (divide by the sum of the weights rather than by $n$) so that
+$\hat F$ is a proper CDF that reaches 1; the unnormalized Horvitz–Thompson form
+tends to 1 only in expectation and need not reach 1 in any given sample, which
+destabilizes the upper quantiles. Then
+$\hat{\text{QTE}}(\tau) = \hat F^{-1}_{Y(1)}(\tau) - \hat F^{-1}_{Y(0)}(\tau)$.
 This is the Firpo (2007) estimator for QTE under unconfoundedness.
 
 **Distribution regression.** Model $P(Y \le y \mid X, D)$ as a flexible
@@ -241,22 +245,26 @@ result = DataFrame(quantile = collect(τ_grid),
 result
 ```
 
-The estimated QTE curve shows larger effects at the top of the outcome
-distribution.
+The curve below is a difference-in-quantiles: it subtracts quantile-by-quantile
+the treated change from the control change. This is a descriptive device, not an
+identified QTE. The difference of quantiles is not the quantile of the difference,
+so this equals the true QTE only under rank invariance, and its average is not the
+DiD ATT in general. It shows larger differences at the top of the outcome
+distribution here.
 
 ```{julia}
 #| label: qte-plot
 #| cache: true
-#| fig-cap: "Quantile treatment effects on the treated, estimated by DiD applied to each quantile. The treatment effect grows with the outcome, reflecting the underlying heterogeneity by unit type."
+#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: the difference of quantiles equals the quantile of the difference, and identifies the QTE, only under rank invariance. Its average is not the DiD ATT in general."
 
 fig = Figure(size = (640, 360), fontsize = 13)
-ax  = Axis(fig[1, 1], xlabel = "Quantile τ", ylabel = "QTE(τ)",
-           title = "Empirical quantile treatment effects on the treated")
+ax  = Axis(fig[1, 1], xlabel = "Quantile τ", ylabel = "Difference-in-quantiles",
+           title = "Difference-in-quantiles (descriptive quantile-DiD)")
 lines!(ax, result.quantile, result.QTE_DiD, color = :firebrick, linewidth = 2)
 scatter!(ax, result.quantile, result.QTE_DiD, color = :firebrick, markersize = 7)
 hlines!(ax, [mean(result.QTE_DiD)], color = :gray40, linestyle = :dash)
 text!(ax, 0.12, mean(result.QTE_DiD) + 0.02;
-      text = "Mean QTE ≈ ATT", color = :gray40, fontsize = 11)
+      text = "mean (≠ ATT in general)", color = :gray40, fontsize = 11)
 fig
 ```
 

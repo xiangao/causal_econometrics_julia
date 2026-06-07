@@ -85,12 +85,14 @@ fig2
 
 Intention to Treat (ITT) is the average treatment effect of the treatment assignment Z. It is the difference between the average potential outcome under treatment and the average potential outcome under control. It is the average treatment effect of the treatment assignment Z, regardless of whether the subject complies with the assignment.
 
-There are four possible groups of subjects in the case of binary treatment and binary instrument. For example treatment assignment Z and treated status W could be:
+There are four possible groups of subjects in the case of binary treatment and binary instrument. The compliance type is defined by the latent pair of potential treatments $(W(0), W(1))$, not by an observed $(Z, W)$ cell:
 
--   Z=0, W=0: never-taker
--   Z=0, W=1: complier
--   Z=1, W=0: defier
--   Z=1, W=1: always-taker
+-   complier: $W(0)=0, W(1)=1$
+-   always-taker: $W(0)=1, W(1)=1$
+-   never-taker: $W(0)=0, W(1)=0$
+-   defier: $W(0)=1, W(1)=0$
+
+A given observed $(Z, W)$ cell does not pin down the type (see the table below).
 
 |        | W(1)=0 | W(1)=1 |
 |:-------|:-------|:-------|
@@ -112,7 +114,7 @@ Unfortunately we cannot identify the compliance group by looking at the data.
 
 ### Assumptions
 
--   Exclusion restriction: $Y(w, 1) = Y(w,0)$
+-   Exclusion restriction: writing the potential outcome as a function of both treatment $w$ and instrument $z$, $Y(w,z)$, the instrument has no direct effect on the outcome: $Y(w, 1) = Y(w,0)$
 -   Exogeneity of instrument: $Z \perp [W(0),W(1), Y(0), Y(1)]$
 -   Monotonicity (no defiers): $W(0) \leq W(1)$
 
@@ -136,7 +138,7 @@ If we assume linearity, then this becomes the ratio of two OLS coefficients, som
 
 $$
 \begin{aligned}
-\tau_{ATE} &= \frac{E[Y|Z=1] - E[Y|Z=0]}{E[W|Z=1]-E[W|Z=0]} \\
+\tau_{LATE} &= \frac{E[Y|Z=1] - E[Y|Z=0]}{E[W|Z=1]-E[W|Z=0]} \\
 &= \frac{Cov(Y,Z)}{Cov(W,Z)}
 \end{aligned}
 $$
@@ -535,7 +537,7 @@ fig2
 #| echo: true
 # Estimate the sharp RDD model
 rdd_gpa = rdrobust(future_success, GPA, c=3.0)
-@printf "Tau (bias-corrected) = %.4g\n" rdd_gpa.Estimate.tau_us[1]
+@printf "Tau (conventional)   = %.4g\n" rdd_gpa.Estimate.tau_us[1]
 @printf "P-value (robust)     = %.4f\n" rdd_gpa.pv.PValue[3]
 ```
 
@@ -546,7 +548,7 @@ rdd_gpa = rdrobust(future_success, GPA, c=3.0)
 #| message: false
 #| echo: true
 rdd_house = rdrobust(senate.vote, senate.margin, c=0.0)
-@printf "Tau (bias-corrected) = %.4g\n" rdd_house.Estimate.tau_us[1]
+@printf "Tau (conventional)   = %.4g\n" rdd_house.Estimate.tau_us[1]
 @printf "P-value (robust)     = %.4f\n" rdd_house.pv.PValue[3]
 ```
 

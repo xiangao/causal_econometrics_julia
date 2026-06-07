@@ -172,10 +172,13 @@ The DR estimator is the continuous-treatment analogue of AIPW. It combines
 an outcome model $\hat\mu(d,x)$ with the GPS $\hat r(d \mid x)$:
 
 $$
-\hat\mu_{DR}(d) = \frac{1}{n} \sum_i \left[ \hat\mu(d, X_i) + K_h(D_i - d) \frac{Y_i - \hat\mu(D_i, X_i)}{\hat r(D_i \mid X_i)} \right]
+\hat\mu_{DR}(d) = \frac{1}{n} \sum_i \hat\mu(d, X_i) + \sum_i \tilde w_i(d)\,\bigl(Y_i - \hat\mu(D_i, X_i)\bigr), \qquad
+\tilde w_i(d) = \frac{w_i(d)}{\sum_j w_j(d)}, \quad w_i(d) = \frac{K_h(D_i - d)}{\hat r(D_i \mid X_i)}
 $$
 
-where $K_h$ is a kernel around dose $d$.
+where $K_h$ is a kernel around dose $d$. The code self-normalizes the kernel
+weights (a Hájek/stabilized form, $\sum_i \tilde w_i = 1$) rather than dividing
+by $n$, which stabilizes the correction term in finite samples.
 
 ```{julia}
 #| label: dr-cont
@@ -245,17 +248,22 @@ prob_mv  = exp_util ./ sum(exp_util, dims = 2)
 D_mv  = [rand(Distributions.Categorical(prob_mv[i, :])) - 1 for i in 1:n_mv]
 Y_mv  = @. 0.5 * D_mv + 0.3 * X_mv[:, 1] - 0.2 * X_mv[:, 2] + randn()
 
-# Group means by treatment level
+# Unadjusted group means by treatment level (NOT causal: treatment assignment
+# depends on X, and Y also depends on X, so these are confounded comparisons).
 mv_df = DataFrame(Y = Y_mv, D = D_mv, X1 = X_mv[:, 1], X2 = X_mv[:, 2])
 by_d = combine(groupby(mv_df, :D), :Y => mean => :y_mean, :Y => length => :n)
-@printf("%-6s %12s %12s\n", "D", "Mean(Y)", "N")
+@printf("%-6s %12s %12s\n", "D", "Unadj Mean(Y)", "N")
 for r in eachrow(by_d)
     @printf("%-6d %12.3f %12d\n", r.D, r.y_mean, r.n)
 end
 ```
 
-In practice, I would usually report adjusted contrasts between levels, such
-as $D=1$ versus $D=0$ or $D=2$ versus $D=1$.
+The table above shows **unadjusted** group means, not causal dose-response
+estimates: because treatment assignment depends on $X$ and $Y$ also depends on
+$X$, the level-to-level differences are confounded. To recover causal contrasts
+one would weight by the multinomial GPS (or model the outcome). In practice, I
+would report adjusted contrasts between levels, such as $D=1$ versus $D=0$ or
+$D=2$ versus $D=1$.
 
 ## When to reach for these methods
 

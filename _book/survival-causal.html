@@ -484,7 +484,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2ab8c6fc" class="cell" data-execution_count="2">
+<div id="5af8d69c" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -518,7 +518,7 @@ S(t) = P(T &gt; t)
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, events = %d (%.1f%%), censored = %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        n, <span class="fu">Int</span>(<span class="fu">sum</span>(df.event)), <span class="fl">100</span> <span class="op">*</span> <span class="fu">mean</span>(df.event), <span class="fu">Int</span>(<span class="fu">sum</span>(<span class="fl">1</span> <span class="op">.-</span> df.event)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>n = 1500, events = 1500 (100.0%), censored = 0</code></pre>
+<pre><code>n = 1500, events = 1010 (67.3%), censored = 490</code></pre>
 </div>
 </div>
 </section>
@@ -658,9 +658,9 @@ S(t) = P(T &gt; t)
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj <span class="op">-</span> rmst_ctl_adj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unadjusted RMST(τ=5):
-  Treatment: 0.289 years    Control: 0.260 years    Diff: 0.028
+  Treatment: 4.351 years    Control: 4.147 years    Diff: 0.203
 IPW-adjusted RMST(τ=5):
-  Treatment: 0.310 years    Control: 0.253 years    Diff: 0.057</code></pre>
+  Treatment: 4.397 years    Control: 4.122 years    Diff: 0.275</code></pre>
 </div>
 </div>
 <p>The IPW-adjusted RMST difference is the adjusted years-gained estimate up to 5 years.</p>

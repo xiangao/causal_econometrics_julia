@@ -165,7 +165,13 @@ The estimates are all negative: California's observed cigarette sales fell below
 years = Int.(setup.times)
 treated = vec(setup.Y[(setup.N0 + 1), :])
 sc_counterfactual = vec(tau_sc.weights.omega' * setup.Y[1:setup.N0, :])
-sdid_counterfactual = vec(tau_sdid.weights.omega' * setup.Y[1:setup.N0, :])
+# SynthDiD fits with omega_intercept=true, so its synthetic match is c + ω'Y_donors
+# for a fitted level shift c (the omega weights demean the donor columns). Add the
+# pre-period level shift back so the plotted line matches the path SynthDiD compares
+# the treated unit against; otherwise the line is vertically offset.
+sdid_raw = vec(tau_sdid.weights.omega' * setup.Y[1:setup.N0, :])
+sdid_intercept = mean(treated[1:setup.T0]) - mean(sdid_raw[1:setup.T0])
+sdid_counterfactual = sdid_raw .+ sdid_intercept
 tasc_counterfactual = tasc_pred.target
 tasc_se = sqrt.(max.(tasc_pred.variance, 0.0))
 tasc_lower = tasc_counterfactual .- 1.96 .* tasc_se

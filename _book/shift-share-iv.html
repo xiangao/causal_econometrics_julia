@@ -493,7 +493,7 @@ window.Quarto = {
 </header>
 
 
-<div id="29dbd706" class="cell" data-execution_count="2">
+<div id="49c09366" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -548,15 +548,14 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <h2 data-number="17.4" class="anchored" data-anchor-id="simulation-build-intuition"><span class="header-section-number">17.4</span> Simulation: build intuition</h2>
 <p>Use a small DGP with regions, industries, and a known causal effect.</p>
 <div id="cell-sim-data" class="cell" data-cache="true" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n_region   <span class="op">=</span> <span class="fl">500</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_industry <span class="op">=</span> <span class="fl">20</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>beta_true  <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>df     <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_sim.csv"</span>, DataFrame)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> <span class="fu">Matrix</span>(CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_shares.csv"</span>, DataFrame))</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_shocks.csv"</span>, DataFrame).shock</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df.X; Y <span class="op">=</span> df.Y; u <span class="op">=</span> df.u</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df[<span class="op">:</span>, [<span class="op">:</span>region, <span class="op">:</span>X, <span class="op">:</span>Y, <span class="op">:</span>u]], <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The CSVs below are 500 locations x 20 industries; beta_true is the DGP coefficient.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>beta_true  <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df     <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_sim.csv"</span>, DataFrame)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> <span class="fu">Matrix</span>(CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_shares.csv"</span>, DataFrame))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_shocks.csv"</span>, DataFrame).shock</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df.X; Y <span class="op">=</span> df.Y; u <span class="op">=</span> df.u</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(df[<span class="op">:</span>, [<span class="op">:</span>region, <span class="op">:</span>X, <span class="op">:</span>Y, <span class="op">:</span>u]], <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div id="sim-data" class="cell-output cell-output-display" data-execution_count="3">
 <div><div style="float: left;"><span>6×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -769,7 +768,7 @@ BHJ shock-level IV:             0.537
                    \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
 \]</span></p>
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into other high-income countries. This leave-one-out construction removes US-specific demand from the shock.</p>
-<div id="eeac6f3b" class="cell" data-execution_count="9">
+<div id="4b3c877a" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Files needed:</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   workfile_china.csv  (commuting zone data, 1990–2007)</span></span>
@@ -777,8 +776,8 @@ BHJ shock-level IV:             0.537
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>cz     <span class="op">=</span> <span class="fu">DataFrame</span>(CSV.<span class="fu">File</span>(<span class="st">"data/workfile_china.csv"</span>))</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> <span class="fu">Matrix</span>(<span class="fu">select</span>(cz_wide, <span class="st">r"share_"</span>))   <span class="co"># L × K share matrix</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> cz_wide.import_shock_other            <span class="co"># K-vector of "other-countries" shocks</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> <span class="fu">Matrix</span>(<span class="fu">select</span>(cz, <span class="st">r"share_"</span>))   <span class="co"># L × K share matrix</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> cz.import_shock_other            <span class="co"># K-vector of "other-countries" shocks</span></span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>B   <span class="op">=</span> <span class="fu">bartik_iv</span>(shares, shocks)               <span class="co"># Bartik instrument</span></span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>df_adh <span class="op">=</span> <span class="fu">hcat</span>(cz, <span class="fu">DataFrame</span>(B <span class="op">=</span> B))</span>

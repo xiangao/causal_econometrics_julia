@@ -187,7 +187,7 @@ ax  = Axis(fig[1, 1],
            xlabel = "Partial R² with treatment (R²_D ~ U)",
            ylabel = "Partial R² with outcome (R²_Y ~ U)",
            title  = "Sensitivity contour: adjusted estimate of τ\n" *
-                    "(red = estimate reduced to 0)")
+                    "(0 contour = estimate reduced to 0)")
 contour!(ax, grid, grid, adjusted, levels = [0.0, 0.25, 0.5, 0.75, 1.0],
          labels = true, color = :black)
 # Mark the X1 benchmark
@@ -277,6 +277,8 @@ n_pairs = 500
 true_effect = 0.5
 diffs = true_effect .+ 0.8 .* randn(n_pairs)
 
+using Distributions: Normal, cdf
+
 """
     rosenbaum_pvalue(diffs, gamma)
 Upper-bound one-sided p-value of the Wilcoxon signed-rank test on matched
@@ -295,8 +297,6 @@ function rosenbaum_pvalue(diffs, gamma)
     return 1 - cdf(Normal(), z)
 end
 
-using Distributions: Normal, cdf
-
 gammas = 1.0:0.25:5.0
 pvals  = [rosenbaum_pvalue(diffs, g) for g in gammas]
 result = DataFrame(Gamma = gammas, p_upper = pvals)
@@ -307,7 +307,7 @@ critical_gamma = critical_idx === nothing ? Inf : gammas[critical_idx]
 
 @printf("Critical Γ (p > 0.05): %.2f\n", critical_gamma)
 @printf("\n%-10s %s\n", "Γ", "p (upper bound)")
-for (g, p) in zip(gammas[1:end-1], pvals[1:end-1])
+for (g, p) in zip(gammas, pvals)
     @printf("%-10.2f %.4f\n", g, p)
 end
 ```

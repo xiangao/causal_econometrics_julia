@@ -17,8 +17,6 @@ using Printf
 using RegressionTables
 using Random
 using Distributions
-using Random
-using Distributions
 include("regtable_helpers.jl")
 
 ```
@@ -338,6 +336,8 @@ The correct Wooldridge ETWFE specification for a nonlinear model uses:
 - **Post-treatment cohort×year dummies** (one per treated cohort per post-treatment year): capture the ATTs on the log scale
 
 Critically, this is a **pooled model**, not a within-estimator. Using unit FE (`fe(id)`) instead of cohort FE creates contamination bias by mixing pre- and post-treatment variation in the within-unit demeaning.
+
+This is why the cohort-FE requirement matters only for nonlinear (Poisson/logit) ETWFE: in the *linear* Gaussian examples above, unit FE and cohort FE give identical ATTs because the cohort effects are collinear with unit FE and the cohort×year interactions still identify the ATTs within cohort. The within-unit transform does not pass through the nonlinear link, so for Poisson/logit it must be cohort FE.
 
 ### Simulated example: staggered count data
 

@@ -484,7 +484,7 @@ window.Quarto = {
 </header>
 
 
-<div id="eefa257c" class="cell" data-execution_count="2">
+<div id="7d6c4814" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -502,7 +502,7 @@ window.Quarto = {
 </ol>
 <p>Both have mature R packages (<code>BART</code>, <code>bcf</code>). Julia does not currently have a comparable BART/BCF workflow. So this chapter shows the basic Bayesian g-computation idea with a conjugate linear model, and points to R for the tree-based versions.</p>
 <blockquote class="blockquote">
-<p><strong>Related reading</strong>: For a hands-on Bayesian model with <code>Numpyro</code>, see the <a href="https://xiangao.github.io/blog_book/numpyro.html">Using Numpyro</a> chapter in <em>Topics on Econometrics and Causal Inference</em>. The R R companion gives the BART and BCF version.</p>
+<p><strong>Related reading</strong>: For a hands-on Bayesian model with <code>Numpyro</code>, see the <a href="https://xiangao.github.io/blog_book/numpyro.html">Using Numpyro</a> chapter in <em>Topics on Econometrics and Causal Inference</em>. The R companion gives the BART and BCF version.</p>
 </blockquote>
 <section id="setup" class="level2" data-number="11.1">
 <h2 data-number="11.1" class="anchored" data-anchor-id="setup"><span class="header-section-number">11.1</span> Setup</h2>
@@ -607,7 +607,7 @@ window.Quarto = {
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.2</span>), label <span class="op">=</span> <span class="st">"95% CrI"</span>)</span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, df.X1, ite_mean, color <span class="op">=</span> (<span class="op">:</span>steelblue, <span class="fl">0.4</span>), markersize <span class="op">=</span> <span class="fl">3</span>,</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>         label <span class="op">=</span> <span class="st">"Posterior mean ITE"</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>], [<span class="fl">1</span> <span class="op">-</span> <span class="fl">6</span>, <span class="fl">1</span> <span class="op">+</span> <span class="fl">6</span>], color <span class="op">=</span> <span class="op">:</span>firebrick,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>], <span class="fl">1</span> <span class="op">.+</span> <span class="fl">2</span> <span class="op">.*</span> [<span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>], color <span class="op">=</span> <span class="op">:</span>firebrick,</span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>       linestyle <span class="op">=</span> <span class="op">:</span>dash, linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"True τ(x)"</span>)</span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax, position <span class="op">=</span> <span class="op">:</span>rb, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>

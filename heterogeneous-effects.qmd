@@ -62,12 +62,13 @@ n = 5000
 p = 5
 
 X    = rand(n, p)
-U    = randn(n)
-# Treatment depends on a noise covariate (X2) and U — backdoor confounding
-ps   = @. 1 / (1 + exp(-(-0.3 + 1.5 * X[:, 2] + 0.5 * U)))
+# Treatment depends on the OBSERVED covariate X2 (a backdoor confounder we
+# adjust for), so unconfoundedness given X holds and the estimators below are
+# consistent for the true CATE/ATE.
+ps   = @. 1 / (1 + exp(-(-0.3 + 1.5 * X[:, 2])))
 D    = Float64.(rand(n) .< ps)
 tau  = @. 1 + 2 * X[:, 1]
-Y0   = @. 0.5 * X[:, 2] + 0.3 * U + randn()
+Y0   = @. 0.5 * X[:, 2] + randn()
 Y1   = Y0 .+ tau
 Y    = ifelse.(D .== 1, Y1, Y0)
 
@@ -76,8 +77,10 @@ Y    = ifelse.(D .== 1, Y1, Y0)
 @printf("True CATE at X1 = 0.8: %.2f\n", 1 + 2 * 0.8)
 ```
 
-Treatment is related to $X_2$ and the unobserved $U$. We condition on
-$X_2$, but not on $U$ because it is unobserved.
+Treatment is related to the observed covariate $X_2$, which also affects the
+outcome — a backdoor confounder. Because $X_2$ is observed and in the
+conditioning set, unconfoundedness holds and the estimators below are
+consistent for the true CATE/ATE.
 
 ## A wrapper for fitting random forests
 
@@ -91,10 +94,22 @@ returns predictions.
 const RFR = @load RandomForestRegressor pkg=DecisionTree verbosity=0
 
 """
-    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500)
+    rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees=500, weights=nothing)
 Fit a random forest on (Xtrain, ytrain) and return predictions at Xpredict.
+DecisionTree's `RandomForestRegressor` does not accept per-sample weights, so
+when `weights` are supplied we approximate a weighted fit by resampling the
+training rows with probability proportional to the weights (weighted bootstrap).
 """
-function rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees::Int=500)
+function rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees::Int=500,
+                        weights=nothing)
+    if weights !== nothing
+        w = Float64.(weights)
+        m = size(Xtrain, 1)
+        cdf = cumsum(w) ./ sum(w)            # weighted-bootstrap CDF
+        idx = [searchsortedfirst(cdf, rand()) for _ in 1:m]
+        Xtrain = Xtrain[idx, :]
+        ytrain = ytrain[idx]
+    end
     learner = RFR(n_trees=n_trees, max_depth=-1)
     Xtrain_t = MLJ.table(Xtrain)
     Xpred_t  = MLJ.table(Xpredict)
@@ -212,12 +227,12 @@ e_hat_cv = clamp.(e_hat_cv, 0.02, 0.98)
 pseudo_R   = (Y .- m_hat) ./ (D .- e_hat_cv)
 weights_R  = (D .- e_hat_cv) .^ 2
 
-# Weighted regression: use random forest with per-sample weights via
-# weighted bootstrap (cheap approximation: oversample by sqrt(weight))
-# For exact weighted regression, MLJ regressors can take a weights argument.
-# We approximate here with unweighted RF on pseudo_R (the R-learner identity
-# holds in expectation; the weighting reduces variance).
-tau_R = rf_fit_predict(X, pseudo_R, X)
+# The R-learner is a *weighted* regression of pseudo_R on X with weights
+# (D - e_hat)^2. DecisionTree's RF does not accept per-sample weights, so we
+# pass them through rf_fit_predict's weighted-bootstrap path. This downweights
+# observations with D close to e_hat, whose pseudo_R blows up (division by a
+# near-zero denominator) and would otherwise dominate the split criterion.
+tau_R = rf_fit_predict(X, pseudo_R, X; weights = weights_R)
 @printf("R-learner CATE correlation with truth: %.3f\n", cor(tau_R, tau))
 ```
 
@@ -446,7 +461,10 @@ Y_panel  = unit_fe[firm_id] .+ V1_panel .+ W_panel .+
            tau_panel .* (W_panel .- mean(W_panel)) .+ randn(N)
 
 df_panel = DataFrame(firm = firm_id, V1 = V1_panel, W = W_panel, Y = Y_panel)
-@printf("True panel ATE: %.3f\n", mean(tau_panel))
+# The marginal effect of switching W 0->1 is 1 (additive +W_panel term) plus
+# tau_panel (the demeaned heterogeneous term), so the true ATE is 1 + mean(tau_panel).
+true_panel_ate = mean(1 .+ tau_panel)
+@printf("True panel ATE: %.3f\n", true_panel_ate)
 ```
 
 A naive T-learner ignores the firm fixed effects:
@@ -466,7 +484,7 @@ mu0_naive = rf_fit_predict(X_panel_naive[idx_C_p, :], df_panel.Y[idx_C_p],
 tau_naive = mu1_naive .- mu0_naive
 
 @printf("Naive panel T-learner ATE: %.3f  (true = %.3f)\n",
-        mean(tau_naive), mean(tau_panel))
+        mean(tau_naive), true_panel_ate)
 ```
 
 The within transformation removes firm-level variation and leaves the
@@ -491,7 +509,7 @@ mu0_dm = rf_fit_predict(X_dm[idx_C_dm, :], df_dm.Y_dm[idx_C_dm], X_dm)
 tau_dm = mu1_dm .- mu0_dm
 
 @printf("Within-transform T-learner ATE: %.3f  (true = %.3f)\n",
-        mean(tau_dm), mean(tau_panel))
+        mean(tau_dm), true_panel_ate)
 ```
 
 The within transformation removes the fixed effects. The cost is variance,

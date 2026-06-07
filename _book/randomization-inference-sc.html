@@ -485,7 +485,7 @@ window.Quarto = {
 </header>
 
 
-<div id="8f34fda6" class="cell" data-execution_count="2">
+<div id="214d427d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -563,10 +563,12 @@ Placebo distribution sd:   10.76</code></pre>
 <h3 data-number="15.1.1" class="anchored" data-anchor-id="the-two-sided-p-value"><span class="header-section-number">15.1.1</span> The two-sided p-value</h3>
 <p>A Fisher-style exact <span class="math inline">\(p\)</span>-value is the fraction of placebo effects at least as extreme (in absolute value) as the observed effect:</p>
 <div id="pvalue" class="cell" data-cache="true" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>p_value <span class="op">=</span> <span class="fu">mean</span>(<span class="fu">abs</span>.(placebo_effects) <span class="op">.&gt;=</span> <span class="fu">abs</span>(ca_effect))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Two-sided p-value: %.3f</span><span class="sc">\n</span><span class="st">"</span>, p_value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fisher exact convention: count California itself in numerator and denominator,</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so the p-value floor is 1/(N0+1) = 1/39 rather than 0.</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>p_value <span class="op">=</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">sum</span>(<span class="fu">abs</span>.(placebo_effects) <span class="op">.&gt;=</span> <span class="fu">abs</span>(ca_effect))) <span class="op">/</span> (<span class="fu">length</span>(placebo_effects) <span class="op">+</span> <span class="fl">1</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Two-sided p-value: %.3f</span><span class="sc">\n</span><span class="st">"</span>, p_value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Two-sided p-value: 0.053</code></pre>
+<pre><code>Two-sided p-value: 0.077</code></pre>
 </div>
 </div>
 <p>With 38 donor states, the smallest possible <span class="math inline">\(p\)</span>-value is <span class="math inline">\(1/39 \approx 0.026\)</span> (California plus 38 placebos). A <span class="math inline">\(p\)</span>-value at this floor means the observed effect is more extreme than every placebo — strong evidence against the sharp null.</p>
@@ -621,7 +623,7 @@ Placebo distribution sd:   10.76</code></pre>
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(placebo_ratios, <span class="fu">mspe_ratio</span>(treated_i, cfact_i, T0))</span>
 <span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>p_ratio <span class="op">=</span> <span class="fu">mean</span>(placebo_ratios <span class="op">.&gt;=</span> ca_ratio)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>p_ratio <span class="op">=</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">sum</span>(placebo_ratios <span class="op">.&gt;=</span> ca_ratio)) <span class="op">/</span> (<span class="fu">length</span>(placebo_ratios) <span class="op">+</span> <span class="fl">1</span>)</span>
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"California MSPE ratio: %.2f</span><span class="sc">\n</span><span class="st">"</span>, ca_ratio)</span>
 <span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo ratio 75th pct: %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">quantile</span>(placebo_ratios, <span class="fl">0.75</span>))</span>
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Placebo ratio max:     %.2f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(placebo_ratios))</span>
@@ -630,7 +632,7 @@ Placebo distribution sd:   10.76</code></pre>
 <pre><code>California MSPE ratio: 154.94
 Placebo ratio 75th pct: 35.00
 Placebo ratio max:     536.00
-One-sided p-value (ratio): 0.053</code></pre>
+One-sided p-value (ratio): 0.077</code></pre>
 </div>
 </div>
 <p>The MSPE ratio discounts placebo states that were poorly fit before treatment.</p>

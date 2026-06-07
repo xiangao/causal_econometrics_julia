@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="ace22a1f" class="cell" data-execution_count="2">
+<div id="eeafbf1e" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
@@ -627,7 +627,7 @@ E[Y(w,m)] = E[{\frac{I(W=w, M=m)}{P(W=w, M=m | X)}} Y]
 \]</span></p>
 <p>Therefore,</p>
 <p><span class="math display">\[ \small
-CDE_{ipw}(m) = E[{\frac{I(W=1,M=m)}{g_M(m|1,X)g_W(1,X)} Y - \frac{I(W=0,M=m)}{g_M(m|0,X)g_W(0,X)}} Y]
+CDE_{ipw}(m) = E[{\frac{I(W=1,M=m)}{g_M(m|1,X)g_W(1|X)} Y - \frac{I(W=0,M=m)}{g_M(m|0,X)g_W(0|X)}} Y]
 \]</span></p>
 <p>where <span class="math inline">\(g_M\)</span> is the probability of mediator, <span class="math inline">\(g_W\)</span> is the probability of treatment.</p>
 </section>
@@ -636,8 +636,8 @@ CDE_{ipw}(m) = E[{\frac{I(W=1,M=m)}{g_M(m|1,X)g_W(1,X)} Y - \frac{I(W=0,M=m)}{g_
 <p><span class="math display">\[ CDE_{AIPW} = CDE_G(m) + B(\bar Q, g_M, g_W) \]</span> where <span class="math inline">\(\bar Q\)</span> is the mean outcome function.</p>
 <p><span class="math display">\[ \small
 \begin{eqnarray*}
-B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_m(m|1, X) g_W(1|X)}[Y-\bar Q(m,1,X)]} \\
-&amp;  &amp;  - \frac{1}{n} \sum_n {\frac{I(M=m, W=0)}{g_m(m|0, X) g_W(0|X)}[Y-\bar Q(m,0,X)]}
+B(\bar Q, g_M, g_W) &amp;=&amp; \frac{1}{n} \sum_n {\frac{I(M=m, W=1)}{g_M(m|1, X) g_W(1|X)}[Y-\bar Q(m,1,X)]} \\
+&amp;  &amp;  - \frac{1}{n} \sum_n {\frac{I(M=m, W=0)}{g_M(m|0, X) g_W(0|X)}[Y-\bar Q(m,0,X)]}
 \end{eqnarray*}
 \]</span></p>
 </section>

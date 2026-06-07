@@ -125,7 +125,11 @@ $$
 
 LATE is the mean effect for compliers, the units whose treatment status is
 changed by the instrument. Under the usual IV assumptions, the Wald estimator
-identifies this effect, not the ATE.
+identifies this effect, not the ATE. Identifying LATE by the Wald ratio
+additionally requires monotonicity (no defiers): $D(1) \ge D(0)$ for all $i$.
+This DGP imposes it by adding a positive constant to the treatment probability
+under the instrument (`pD1 = clamp(0.10 + 0.20*U + 0.50, 0, 1)`), so no unit is
+pushed out of treatment by the offer.
 
 ```{julia}
 #| label: late
@@ -167,8 +171,8 @@ centers = (edges[1:end-1] .+ edges[2:end]) ./ 2
 cate_est = [mean((Y1 .- Y0)[(X .>= edges[k]) .& (X .< edges[k+1])])
             for k in 1:nbins]
 
-@printf("CATE at x=0.2: estimated %.2f, true %.2f\n", cate_est[4], τ(0.2))
-@printf("CATE at x=0.8: estimated %.2f, true %.2f\n", cate_est[16], τ(0.8))
+@printf("CATE at x=0.2: estimated %.2f, true %.2f\n", cate_est[5], τ(0.2))
+@printf("CATE at x=0.8: estimated %.2f, true %.2f\n", cate_est[17], τ(0.8))
 ```
 
 ### QTE — quantile treatment effect

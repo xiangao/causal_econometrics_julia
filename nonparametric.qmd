@@ -61,7 +61,7 @@ Unfortunately there is no universal formula for efficient influence function for
 
 For the treated potential-outcome mean, $\psi_1 = E\{E(Y \mid X, A=1)\}$, the efficient influence function is $$\phi_1 (Z; P) = \frac{A}{\pi (X)} \{ Y - \mu_1 (X) \} + \mu_1(X) - \psi_1$$ where $\pi (X) = P(A=1 | X)$ is the propensity score model and $\mu_1 (X) = E(Y |X, A=1)$ is the treated outcome model. The ATE influence function is the difference between the treated and untreated components, $\phi_1-\phi_0$.
 
-For example, an IF-based bias-corrected estimator $$\hat \psi = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu (X) \} + \hat \mu(X) \right]$$ where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
+For example, an IF-based bias-corrected estimator for the treated-arm mean $$\hat \psi_1 = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu_1 (X) \} + \hat \mu_1(X) \right]$$ where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
 
 Since we know the influence function, we can calculate its variance. This variance is the same as variance of $\hat \psi$ since they differ by a constant $\psi$. We can use any estimators to estimate the nuisance parameters, then get $\hat \psi$. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.
 
@@ -81,13 +81,13 @@ w2 = rand(Binomial(1, 0.5), n)
 w3 = round.(rand(Uniform(0, 4), n), digits=3)
 w4 = round.(rand(Uniform(0, 5), n), digits=3)
 
-logit(x) = 1.0 ./ (1.0 .+ exp.(-x))
+logistic(x) = 1.0 ./ (1.0 .+ exp.(-x))   # inverse logit (sigmoid), not the logit
 
-prob_A = logit.(-0.4 .+ 0.2.*w2 .+ 0.15.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
+prob_A = logistic.(-0.4 .+ 0.2.*w2 .+ 0.15.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
 A = rand.(Binomial.(1, prob_A))
 
-prob_Y1 = logit.(-1.0 .+ 1.0 .- 0.1.*w1 .+ 0.3.*w2 .+ 0.25.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
-prob_Y0 = logit.(-1.0 .+ 0.0 .- 0.1.*w1 .+ 0.3.*w2 .+ 0.25.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
+prob_Y1 = logistic.(-1.0 .+ 1.0 .- 0.1.*w1 .+ 0.3.*w2 .+ 0.25.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
+prob_Y0 = logistic.(-1.0 .+ 0.0 .- 0.1.*w1 .+ 0.3.*w2 .+ 0.25.*w3 .+ 0.2.*w4 .+ 0.15.*w2.*w4)
 
 Y_1 = rand.(Binomial.(1, prob_Y1))
 Y_0 = rand.(Binomial.(1, prob_Y0))
@@ -201,7 +201,18 @@ aipw_result = estimate(psi_ate, AIPW(crossfit=5), df)
 )
 ```
 
-### AIPW ATT
+### Regression-imputation ATT (manual)
+
+Note that the manual estimator below is evaluated on the **treated subset** `df1`,
+where `(1 .- df1.A)` is identically zero. The augmentation term
+`((1-A)/π₀)(Y-μ₀)` therefore vanishes and the estimator collapses to the
+regression-imputation ATT, `mean(Y_treated − μ̂₀(X_treated))`. That is consistent
+if the control outcome model is correct, but it is **not** the doubly-robust /
+augmented ATT, and the influence-function SE understates uncertainty because it
+ignores estimation of `μ₀` and `π`. The proper ATT efficient influence function
+(Hahn 1998) is `(1/p)[A(Y−μ₀) − (1−A)·π/(1−π)·(Y−μ₀)]` evaluated over the **full**
+sample; the `CausalEstimate.jl` call in the next subsection computes the
+cross-fit, doubly-robust version.
 
 ```{julia}
 #| warning: false

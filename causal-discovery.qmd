@@ -148,10 +148,10 @@ $$T = \sqrt{n - |Z| - 3} \cdot \operatorname{atanh}(\hat\rho_{XY \mid Z}) \;\sim
 
 **Choosing the significance level** $\alpha$ involves a bias-variance tradeoff on the skeleton:
 
-- **Low $\alpha$ (e.g., 0.001)**: conservative, keeps more edges. Fewer false removals (false negatives) but may retain spurious edges (false positives). Produces a denser skeleton.
-- **High $\alpha$ (e.g., 0.05)**: liberal, removes more edges. Fewer spurious edges but may discard real ones. Produces a sparser skeleton.
+- **Low $\alpha$ (e.g., 0.001)**: conservative test — it fails to reject independence more easily, so it removes more edges. Fewer spurious edges (false positives) but may discard real ones (false negatives). Produces a sparser skeleton.
+- **High $\alpha$ (e.g., 0.05)**: liberal test — it rejects independence (declares dependence) more often, so it keeps more edges. Fewer false removals but may retain spurious edges. Produces a denser skeleton.
 
-With $n = 2000$ and $p = 8$ we use $\alpha = 0.01$, a common default. With smaller $n$ or larger $p$, consider lowering $\alpha$ to avoid over-pruning.
+With $n = 2000$ and $p = 8$ we use $\alpha = 0.01$, a common default. With smaller $n$ or larger $p$ the CI tests lose power and true edges get dropped, so consider raising $\alpha$ to avoid over-pruning.
 
 We wrap `fisher_z` in a counter to track exactly how many CI tests each algorithm calls:
 

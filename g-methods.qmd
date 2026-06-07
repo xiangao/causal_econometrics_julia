@@ -79,7 +79,10 @@ Y  = @. 0.5 * A0 + 0.5 * A1 + 0.5 * L1 + 0.5 * L0 + randn()
 
 df = DataFrame(L0 = L0, A0 = A0, L1 = L1, A1 = A1, Y = Y)
 
-@printf("True total effect of always-treated vs never-treated: 1.000\n\n")
+# A0 has a direct effect (0.5) AND an indirect effect through L1
+# (A0 -> L1 -> Y contributes 1.0 * 0.5 = 0.5), so A0's total effect is 1.0;
+# A1's total effect is 0.5; always-vs-never total = 1.5.
+@printf("True total effect of always-treated vs never-treated: 1.500\n\n")
 
 naive_no_L1   = lm(@formula(Y ~ A0 + A1 + L0),       df)
 naive_with_L1 = lm(@formula(Y ~ A0 + A1 + L0 + L1), df)
@@ -142,7 +145,7 @@ end
 Random.seed!(99)
 E_Y11 = g_compute(1.0, 1.0)
 E_Y00 = g_compute(0.0, 0.0)
-@printf("G-formula estimate (always vs never): %.3f  (true = 1.000)\n",
+@printf("G-formula estimate (always vs never): %.3f  (true = 1.500)\n",
         E_Y11 - E_Y00)
 ```
 
@@ -159,7 +162,7 @@ $t=0$:
 
 Random.seed!(99)
 E_Y10 = g_compute(1.0, 0.0)
-@printf("Effect of treating only at t=0: %.3f  (true = 0.5)\n",
+@printf("Effect of treating only at t=0: %.3f  (true = 1.0)\n",
         E_Y10 - E_Y00)
 ```
 
@@ -217,7 +220,7 @@ df.sw = sw_trim
 msm_fit = lm(@formula(Y ~ A0 + A1), df, wts = df.sw)
 
 println(coeftable(msm_fit))
-@printf("\nMSM total effect (always vs never): %.3f  (true = 1.000)\n",
+@printf("\nMSM total effect (always vs never): %.3f  (true = 1.500)\n",
         coef(msm_fit)[2] + coef(msm_fit)[3])
 ```
 
@@ -251,7 +254,7 @@ Random.seed!(123)
 g_total = E_Y11 - E_Y00
 msm_total = coef(msm_fit)[2] + coef(msm_fit)[3]
 
-@printf("%-30s %.3f\n", "True total effect:", 1.0)
+@printf("%-30s %.3f\n", "True total effect:", 1.5)
 @printf("%-30s %.3f  (wrong)\n", "Standard regression (no L1):",
         coef(naive_no_L1)[2] + coef(naive_no_L1)[3])
 @printf("%-30s %.3f  (wrong)\n", "Standard regression (with L1):",

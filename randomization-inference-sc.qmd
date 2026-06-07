@@ -109,7 +109,9 @@ as extreme (in absolute value) as the observed effect:
 #| label: pvalue
 #| cache: true
 
-p_value = mean(abs.(placebo_effects) .>= abs(ca_effect))
+# Fisher exact convention: count California itself in numerator and denominator,
+# so the p-value floor is 1/(N0+1) = 1/39 rather than 0.
+p_value = (1 + sum(abs.(placebo_effects) .>= abs(ca_effect))) / (length(placebo_effects) + 1)
 @printf("Two-sided p-value: %.3f\n", p_value)
 ```
 
@@ -177,7 +179,7 @@ for i in 1:N0
     push!(placebo_ratios, mspe_ratio(treated_i, cfact_i, T0))
 end
 
-p_ratio = mean(placebo_ratios .>= ca_ratio)
+p_ratio = (1 + sum(placebo_ratios .>= ca_ratio)) / (length(placebo_ratios) + 1)
 @printf("California MSPE ratio: %.2f\n", ca_ratio)
 @printf("Placebo ratio 75th pct: %.2f\n", quantile(placebo_ratios, 0.75))
 @printf("Placebo ratio max:     %.2f\n", maximum(placebo_ratios))

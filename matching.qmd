@@ -201,12 +201,15 @@ receiving their observed treatment.
 #| label: ipw
 #| cache: true
 
+# These are the ATE (Horvitz-Thompson/Hajek) weights: treated by 1/ps and
+# controls by 1/(1-ps). They target the ATE, not the ATT. With a homogeneous
+# +1 effect here, ATE = ATT numerically, but the estimand is the ATE.
 w = ifelse.(df.D .== 1, 1 ./ df.ps, 1 ./ (1 .- df.ps))
 w_trim = min.(w, quantile(w, 0.99))
 
-att_ipw = sum(df.Y[df.D .== 1] .* w_trim[df.D .== 1]) / sum(w_trim[df.D .== 1]) -
+ate_ipw = sum(df.Y[df.D .== 1] .* w_trim[df.D .== 1]) / sum(w_trim[df.D .== 1]) -
           sum(df.Y[df.D .== 0] .* w_trim[df.D .== 0]) / sum(w_trim[df.D .== 0])
-@printf("IPW ATT (≈ ATE):       %.3f\n", att_ipw)
+@printf("IPW ATE:               %.3f\n", ate_ipw)
 @printf("Matched ATT (NN):      %.3f\n", att)
 @printf("Matched ATT (replace): %.3f\n", att_repl)
 @printf("True ATE:              1.000\n")
@@ -272,9 +275,10 @@ function entropy_balance(X_control::AbstractMatrix, X_treated::AbstractMatrix;
         # Hessian: Σ w_i (x_i - mean_w)(x_i - mean_w)'  (with tiny ridge for stability)
         Xc_centered = Xc .- reshape(mean_w, 1, :)
         H = Matrix((Xc_centered .* w)' * Xc_centered) + 1e-6 .* Matrix{Float64}(I, p, p)
-        # Newton step: λ ← λ + H⁻¹ grad
+        # Newton step on the convex dual L(λ)=log Σexp(-xᵢλ)+λ·target,
+        # whose gradient is `grad`=target-mean_w and Hessian is H: λ ← λ - H⁻¹ grad
         step = H \ grad
-        λ .+= step
+        λ .-= step
     end
 
     z = -Xc * λ

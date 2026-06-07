@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="cb40e807" class="cell" data-execution_count="2">
+<div id="62c1e6dc" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -651,17 +651,20 @@ Matched-with-replacement ATT: 0.988</code></pre>
 <h2 data-number="7.8" class="anchored" data-anchor-id="matching-vs-weighting"><span class="header-section-number">7.8</span> Matching vs weighting</h2>
 <p>IPW is very close to matching in spirit. Instead of dropping or pairing observations, we reweight observations by the inverse probability of receiving their observed treatment.</p>
 <div id="ipw" class="cell" data-cache="true" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> <span class="fu">ifelse</span>.(df.D <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>w_trim <span class="op">=</span> <span class="fu">min</span>.(w, <span class="fu">quantile</span>(w, <span class="fl">0.99</span>))</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>att_ipw <span class="op">=</span> <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW ATT (≈ ATE):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_ipw)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (NN):      %.3f</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (replace): %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE:              1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># These are the ATE (Horvitz-Thompson/Hajek) weights: treated by 1/ps and</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># controls by 1/(1-ps). They target the ATE, not the ATT. With a homogeneous</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># +1 effect here, ATE = ATT numerically, but the estimand is the ATE.</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> <span class="fu">ifelse</span>.(df.D <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>w_trim <span class="op">=</span> <span class="fu">min</span>.(w, <span class="fu">quantile</span>(w, <span class="fl">0.99</span>))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>ate_ipw <span class="op">=</span> <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sum</span>(df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>] <span class="op">.*</span> w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>]) <span class="op">/</span> <span class="fu">sum</span>(w_trim[df.D <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW ATE:               %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate_ipw)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (NN):      %.3f</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (replace): %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE:              1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>IPW ATT (≈ ATE):       1.064
+<pre><code>IPW ATE:               1.064
 Matched ATT (NN):      1.287
 Matched ATT (replace): 0.988
 True ATE:              1.000</code></pre>
@@ -711,46 +714,47 @@ True ATE:              1.000</code></pre>
 <span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Hessian: Σ w_i (x_i - mean_w)(x_i - mean_w)'  (with tiny ridge for stability)</span></span>
 <span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        Xc_centered <span class="op">=</span> Xc <span class="op">.-</span> <span class="fu">reshape</span>(mean_w, <span class="fl">1</span>, <span class="op">:</span>)</span>
 <span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> <span class="fu">Matrix</span>((Xc_centered <span class="op">.*</span> w)<span class="ch">' * Xc_centered) + 1e-6 .* Matrix{Float64}(I, p, p)</span></span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Newton step: λ ← λ + H⁻¹ grad</span></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> H <span class="op">\</span> grad</span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        λ <span class="op">.+=</span> step</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>    w <span class="op">./</span> <span class="fu">sum</span>(w)</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply to the simulated example from earlier sections</span></span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>Xc_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>Xt_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">1</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>w_ebal <span class="op">=</span> <span class="fu">entropy_balance</span>(Xc_mat, Xt_mat)</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Sum of weights: %.6f  (should be 1.0)</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(w_ebal))</span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Max weight: %.4f, min weight: %.6f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(w_ebal), <span class="fu">minimum</span>(w_ebal))</span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify the mean-balance constraints</span></span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>control_means_unweighted <span class="op">=</span> <span class="fu">mean</span>(Xc_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>control_means_balanced   <span class="op">=</span> w_ebal<span class="op">'</span> <span class="op">*</span> Xc_mat</span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>treated_means            <span class="op">=</span> <span class="fu">mean</span>(Xt_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">%-15s %12s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Covariate"</span>, <span class="st">"Treated"</span>, <span class="st">"Control (raw)"</span>, <span class="st">"Control (ebal)"</span>)</span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j, name) <span class="kw">in</span> <span class="fu">enumerate</span>([<span class="op">:</span>X1, <span class="op">:</span>X2])</span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.4f %12.4f %12.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>            <span class="fu">String</span>(name),</span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>            treated_means[j], control_means_unweighted[j],</span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>            control_means_balanced[j])</span>
-<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Newton step on the convex dual L(λ)=log Σexp(-xᵢλ)+λ·target,</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># whose gradient is `grad`=target-mean_w and Hessian is H: λ ← λ - H⁻¹ grad</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        step <span class="op">=</span> H <span class="op">\</span> grad</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>        λ <span class="op">.-=</span> step</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="op">-</span>Xc <span class="op">*</span> λ</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> <span class="fu">maximum</span>(z)</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">exp</span>.(z <span class="op">.-</span> m)</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>    w <span class="op">./</span> <span class="fu">sum</span>(w)</span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply to the simulated example from earlier sections</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>Xc_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>Xt_mat <span class="op">=</span> <span class="fu">Matrix</span>(df[df.D <span class="op">.==</span> <span class="fl">1</span>, [<span class="op">:</span>X1, <span class="op">:</span>X2]])</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>w_ebal <span class="op">=</span> <span class="fu">entropy_balance</span>(Xc_mat, Xt_mat)</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Sum of weights: %.6f  (should be 1.0)</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(w_ebal))</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Max weight: %.4f, min weight: %.6f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(w_ebal), <span class="fu">minimum</span>(w_ebal))</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify the mean-balance constraints</span></span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>control_means_unweighted <span class="op">=</span> <span class="fu">mean</span>(Xc_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>control_means_balanced   <span class="op">=</span> w_ebal<span class="op">'</span> <span class="op">*</span> Xc_mat</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>treated_means            <span class="op">=</span> <span class="fu">mean</span>(Xt_mat, dims<span class="op">=</span><span class="fl">1</span>)</span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">%-15s %12s %12s %12s</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Covariate"</span>, <span class="st">"Treated"</span>, <span class="st">"Control (raw)"</span>, <span class="st">"Control (ebal)"</span>)</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j, name) <span class="kw">in</span> <span class="fu">enumerate</span>([<span class="op">:</span>X1, <span class="op">:</span>X2])</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.4f %12.4f %12.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>            <span class="fu">String</span>(name),</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>            treated_means[j], control_means_unweighted[j],</span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>            control_means_balanced[j])</span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Sum of weights: 1.000000  (should be 1.0)
-Max weight: 1.0000, min weight: 0.000000
+Max weight: 0.0095, min weight: 0.000079
 
 Covariate            Treated Control (raw) Control (ebal)
-X1                    0.3117      -0.2801      -1.7036
-X2                    0.2395      -0.1541      -3.0045</code></pre>
+X1                    0.3117      -0.2801       0.3117
+X2                    0.2395      -0.1541       0.2395</code></pre>
 </div>
 </div>
 <p>The weighted control means equal the treated means because the optimization imposes that constraint. If overlap is poor, the weights can become very uneven.</p>
@@ -763,7 +767,7 @@ X2                    0.2395      -0.1541      -3.0045</code></pre>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>att_ebal <span class="op">=</span> <span class="fu">mean</span>(Yt) <span class="op">-</span> <span class="fu">dot</span>(w_ebal, Yc)</span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Entropy-balanced ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att_ebal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Entropy-balanced ATT: 5.582  (true ATE = 1.000)</code></pre>
+<pre><code>Entropy-balanced ATT: 1.014  (true ATE = 1.000)</code></pre>
 </div>
 </div>
 <p>Entropy balancing is useful when mean balance is the main diagnostic. If we need balance over whole covariate distributions, energy balancing in R’s <code>WeightIt</code> is a better tool. There is no Julia equivalent yet.</p>

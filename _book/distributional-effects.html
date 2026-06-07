@@ -484,7 +484,7 @@ window.Quarto = {
 </header>
 
 
-<div id="13dec445" class="cell" data-execution_count="2">
+<div id="be6927a3" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -568,9 +568,9 @@ QTE(0.90)    = 0.535</code></pre>
 <p>Common approaches are:</p>
 <p><strong>Inverse propensity weighting on the CDF.</strong> Estimate the propensity score <span class="math inline">\(\hat\pi(x)\)</span> and weight observations to construct counterfactual empirical CDFs:</p>
 <p><span class="math display">\[
-\hat F_{Y(d)}(y) = \frac{1}{n}\sum_{i=1}^n \frac{\mathbf{1}\{D_i = d\}\mathbf{1}\{Y_i \le y\}}{\hat\pi(x_i)^d (1-\hat\pi(x_i))^{1-d}}.
+\hat F_{Y(d)}(y) = \frac{\sum_{i=1}^n w_i^{(d)}\,\mathbf{1}\{D_i = d\}\mathbf{1}\{Y_i \le y\}}{\sum_{i=1}^n w_i^{(d)}\,\mathbf{1}\{D_i = d\}}, \qquad w_i^{(d)} = \frac{1}{\hat\pi(x_i)^d (1-\hat\pi(x_i))^{1-d}}.
 \]</span></p>
-<p>Then <span class="math inline">\(\hat{\text{QTE}}(\tau) = \hat F^{-1}_{Y(1)}(\tau) - \hat F^{-1}_{Y(0)}(\tau)\)</span>. This is the Firpo (2007) estimator for QTE under unconfoundedness.</p>
+<p>We self-normalize (divide by the sum of the weights rather than by <span class="math inline">\(n\)</span>) so that <span class="math inline">\(\hat F\)</span> is a proper CDF that reaches 1; the unnormalized Horvitz–Thompson form tends to 1 only in expectation and need not reach 1 in any given sample, which destabilizes the upper quantiles. Then <span class="math inline">\(\hat{\text{QTE}}(\tau) = \hat F^{-1}_{Y(1)}(\tau) - \hat F^{-1}_{Y(0)}(\tau)\)</span>. This is the Firpo (2007) estimator for QTE under unconfoundedness.</p>
 <p><strong>Distribution regression.</strong> Model <span class="math inline">\(P(Y \le y \mid X, D)\)</span> as a flexible function of <span class="math inline">\(X\)</span> for each threshold <span class="math inline">\(y\)</span> (Chernozhukov, Fernández-Val, Melly 2013). Integrating out <span class="math inline">\(X\)</span> gives the counterfactual marginal. Distribution regression handles the entire distribution simultaneously rather than estimating each quantile separately.</p>
 <p><strong>Generative / engression approaches.</strong> Train a stochastic model that learns <span class="math inline">\(Y \mid X, D\)</span> as a distribution rather than a conditional mean. Sampling from the trained model gives counterfactual draws, from which any distributional summary follows. This is the route taken by <code>Engression.jl</code> and by <code>Endid.jl</code> for the DiD setting.</p>
 </section>
@@ -578,7 +578,7 @@ QTE(0.90)    = 0.535</code></pre>
 <h2 data-number="12.3" class="anchored" data-anchor-id="distributional-did-with-engression"><span class="header-section-number">12.3</span> Distributional DiD with Engression</h2>
 <p>For panel data, distributional DiD extends the DiD idea from means to distributions. Instead of estimating only the counterfactual mean outcome, it estimates a counterfactual outcome distribution.</p>
 <p><code>Endid.jl</code> uses Engression for this. It learns a stochastic model for <span class="math inline">\(Y \mid X\)</span> rather than only a conditional mean. Counterfactual draws from that model give QTEs.</p>
-<div id="de81b80f" class="cell" data-execution_count="5">
+<div id="d4941a23" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Endid</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel data: y outcome, id unit, time period, post 1 if post-treatment</span></span>
@@ -786,22 +786,22 @@ QTE(0.90)    = 0.535</code></pre>
 </div>
 </div>
 </div>
-<p>The estimated QTE curve shows larger effects at the top of the outcome distribution.</p>
+<p>The curve below is a difference-in-quantiles: it subtracts quantile-by-quantile the treated change from the control change. This is a descriptive device, not an identified QTE. The difference of quantiles is not the quantile of the difference, so this equals the true QTE only under rank invariance, and its average is not the DiD ATT in general. It shows larger differences at the top of the outcome distribution here.</p>
 <div id="cell-qte-plot" class="cell" data-cache="true" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">360</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Quantile τ"</span>, ylabel <span class="op">=</span> <span class="st">"QTE(τ)"</span>,</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Empirical quantile treatment effects on the treated"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Quantile τ"</span>, ylabel <span class="op">=</span> <span class="st">"Difference-in-quantiles"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Difference-in-quantiles (descriptive quantile-DiD)"</span>)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax, result.quantile, result.QTE_DiD, color <span class="op">=</span> <span class="op">:</span>firebrick, linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">scatter!</span>(ax, result.quantile, result.QTE_DiD, color <span class="op">=</span> <span class="op">:</span>firebrick, markersize <span class="op">=</span> <span class="fl">7</span>)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">hlines!</span>(ax, [<span class="fu">mean</span>(result.QTE_DiD)], color <span class="op">=</span> <span class="op">:</span>gray40, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">text!</span>(ax, <span class="fl">0.12</span>, <span class="fu">mean</span>(result.QTE_DiD) <span class="op">+</span> <span class="fl">0.02</span>;</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      text <span class="op">=</span> <span class="st">"Mean QTE ≈ ATT"</span>, color <span class="op">=</span> <span class="op">:</span>gray40, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      text <span class="op">=</span> <span class="st">"mean (≠ ATT in general)"</span>, color <span class="op">=</span> <span class="op">:</span>gray40, fontsize <span class="op">=</span> <span class="fl">11</span>)</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div id="qte-plot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="distributional-effects_files/figure-html/qte-plot-output-1.svg" class="img-fluid figure-img"></p>
-<figcaption>Quantile treatment effects on the treated, estimated by DiD applied to each quantile. The treatment effect grows with the outcome, reflecting the underlying heterogeneity by unit type.</figcaption>
+<figcaption>Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: the difference of quantiles equals the quantile of the difference, and identifies the QTE, only under rank invariance. Its average is not the DiD ATT in general.</figcaption>
 </figure>
 </div>
 </div>

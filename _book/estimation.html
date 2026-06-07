@@ -494,7 +494,7 @@ window.Quarto = {
 </header>
 
 
-<div id="772e5840" class="cell" data-execution_count="2">
+<div id="3e14c2e4" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
@@ -546,8 +546,8 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <p>where <span class="math inline">\(\hat \mu_0(X_i)\)</span> is the predicted value of <span class="math inline">\(Y_i\)</span> from a regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> for the control group.</p>
 <p>Target: <span class="math display">\[  \begin{align}
 \tau_{ATT} &amp;= E[Y|W=1] - E[Y(0)|W=1] \\
-&amp;= E[Y|W=1, X] - \mu_0(X)  \\
-&amp; = E[Y|W=1, X] - (\alpha_0 + E(X) \beta_0)
+&amp;= E_X\{E[Y|W=1, X] - \mu_0(X) \mid W=1\}  \\
+&amp; = E_X\{E[Y|W=1, X] \mid W=1\} - (\alpha_0 + E(X \mid W=1) \beta_0)
 \end{align}
 \]</span></p>
 <p>The last term is a linear form of <span class="math inline">\(\mu_0(X)\)</span>. We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.</p>
@@ -556,7 +556,7 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <h2 data-number="6.4" class="anchored" data-anchor-id="linear-ra"><span class="header-section-number">6.4</span> Linear RA</h2>
 <p>Regression Adjustment is basically an imputation estimator. While we observe <span class="math inline">\(E[Y|W=1,X]\)</span>, we model <span class="math inline">\(E[Y(0)|W=1]\)</span>, based on unconfoundedness and a functional form (say linear form). We estimate <span class="math inline">\(\beta_0\)</span> on the control sample, then get the expected values for the treated sample, for each value of <span class="math inline">\(X\)</span>.</p>
 <p>Implementation of linear RA is easy. We regress <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span> and their interaction. It’s shown that we need to de-mean <span class="math inline">\(X\)</span> to get the effect correct.</p>
-<div id="81cd5374" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="2c504a28" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">Statistics</span>, <span class="bu">GLM</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the pension dataset from the hdm R package (Chernozhukov et al.)</span></span>
@@ -664,8 +664,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p>Under unconfoundedness and overlap,</p>
 <p><span class="math display">\[ \small \begin{align}
 E[Y(w)] &amp;= E[E[y|W=w,X]] \\
-&amp;= \sum_x (\sum_y P(y|w,x)) P(x) \\
-&amp;= \sum_x \sum_y P(y|w,x)) P(x) {\frac{P(w|x)}{P(w|x)}} \\
+&amp;= \sum_x (\sum_y y P(y|w,x)) P(x) \\
+&amp;= \sum_x \sum_y y P(y|w,x) P(x) {\frac{P(w|x)}{P(w|x)}} \\
 &amp;= \sum_x \sum_y y P(y,w,x) {\frac{1}{P(w|x)}} \\
 &amp;= \sum_x E[\mathbb{1}(W=w,X=x)Y] {\frac{1}{P(w|x)}} \\
 &amp;= E[\frac{\mathbb{1}(W=w)Y} {P(w|X)}]
@@ -683,7 +683,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 \end{align}
 \]</span></p>
 <p><span class="math display">\[ \begin{align}
-\hat \tau_{ATT, IPW} &amp;= \bar Y_1 - \frac{1}{N_1} \sum_i \frac{(1-W_i) Y_i} {1-\hat \pi(X_i)}
+\hat \tau_{ATT, IPW} &amp;= \bar Y_1 - \frac{1}{N_1} \sum_i \frac{\hat \pi(X_i)(1-W_i) Y_i} {1-\hat \pi(X_i)}
 \end{align}
 \]</span></p>
 <section id="ipw-intuition" class="level3" data-number="6.5.1">
@@ -699,7 +699,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <h3 data-number="6.6.1" class="anchored" data-anchor-id="aipw"><span class="header-section-number">6.6.1</span> AIPW</h3>
 <p><span class="math display">\[ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] \]</span></p>
 <p><span class="math display">\[ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] \]</span></p>
-<div id="be34b8d1" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="ee5e318f" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
@@ -754,7 +754,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <li>Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.</li>
 <li>Take difference. The average is the ATE.</li>
 </ul>
-<div id="a9582f51" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<div id="9a1b526e" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>

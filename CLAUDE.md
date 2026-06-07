@@ -167,3 +167,14 @@ When adding pre-treatment dummies for the event study, drop `t = g-1` (the perio
 - `data/shift_share_*.csv` — Shared shift-share simulation (n=500 regions, 20 industries)
 - `data/pisa_usa2022.csv` — **real** PISA data (USA 2022, 3,890 students; nodes HISEI, HOMEPOS, IMMIG, GRADE, GENDER, MATH = mean of 10 PVs; survey weight `W`). Used by `causal-discovery.qmd`'s real-data section (weighted PC + RSL-D, tier orientation, bootstrap stability). Generated from `~/projects/pisa-covid-did`; **`PARED` is absent in PISA 2022 — do not add it.** Same file as the R book.
 - Other datasets loaded inside chapters from CSV or generated synthetically
+
+## Review pass (2026-06-07)
+Math/code audit + fixes across 16 chapters (audit trail: ../_review/). Key corrections:
+- matching: entropy-balancing Newton step had the WRONG SIGN (`λ .+= step` → `λ .-= step`); was giving ATT≈5.6, now 1.014 (true 1.0), control means now exactly match treated.
+- g-methods: stated true effects corrected to 1.5/1.0 (mirror of R guide).
+- heterogeneous-effects: dropped unobserved U from propensity (identified); R-learner now actually uses its weights (weighted bootstrap in rf_fit_predict); panel true-ATE corrected to mean(1 .+ tau_panel).
+- estimation: IPW-ATT now carries the π/(1-π) odds factor. iv-rdd: `tau_us` relabeled conventional (not bias-corrected). identification: 0<π(X)<1.
+- causal-discovery: α/significance bias-variance description was backwards. distributional-effects: IPW-CDF self-normalized; difference-of-quantiles relabeled (not a QTE).
+- sensitivity-analysis: `using Distributions` was sitting after a docstring → "cannot document" error; moved above it.
+- survival-causal: shares regenerated data/survival_sim.csv (generator: data/gen_survival.R).
+Re-rendered (JULIA_PROJECT=.) + outputs verified.

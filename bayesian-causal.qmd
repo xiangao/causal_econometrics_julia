@@ -44,7 +44,7 @@ tree-based versions.
 > **Related reading**: For a hands-on Bayesian model with `Numpyro`, see
 > the [Using Numpyro](https://xiangao.github.io/blog_book/numpyro.html)
 > chapter in *Topics on Econometrics and Causal Inference*. The R
-> R companion gives the BART and BCF version.
+> companion gives the BART and BCF version.
 
 ## Setup
 
@@ -156,7 +156,7 @@ band!(ax, df.X1[ord], ite_lo[ord], ite_hi[ord],
       color = (:steelblue, 0.2), label = "95% CrI")
 scatter!(ax, df.X1, ite_mean, color = (:steelblue, 0.4), markersize = 3,
          label = "Posterior mean ITE")
-lines!(ax, [-3, 3], [1 - 6, 1 + 6], color = :firebrick,
+lines!(ax, [-3, 3], 1 .+ 2 .* [-3, 3], color = :firebrick,
        linestyle = :dash, linewidth = 2, label = "True τ(x)")
 axislegend(ax, position = :rb, framevisible = false)
 fig

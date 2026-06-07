@@ -112,8 +112,7 @@ Use a small DGP with regions, industries, and a known causal effect.
 #| label: sim-data
 #| cache: true
 
-n_region   = 500
-n_industry = 20
+# The CSVs below are 500 locations x 20 industries; beta_true is the DGP coefficient.
 beta_true  = 0.5
 
 df     = CSV.read("data/shift_share_sim.csv", DataFrame)
@@ -279,8 +278,8 @@ US-specific demand from the shock.
 
 using CSV
 cz     = DataFrame(CSV.File("data/workfile_china.csv"))
-shares = Matrix(select(cz_wide, r"share_"))   # L × K share matrix
-shocks = cz_wide.import_shock_other            # K-vector of "other-countries" shocks
+shares = Matrix(select(cz, r"share_"))   # L × K share matrix
+shocks = cz.import_shock_other            # K-vector of "other-countries" shocks
 
 B   = bartik_iv(shares, shocks)               # Bartik instrument
 df_adh = hcat(cz, DataFrame(B = B))

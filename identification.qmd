@@ -161,7 +161,7 @@ We focus on $\tau_{ATT}$. To identify it, we need: $$ E[Y(1) | W=1)]$$ which is 
 
 And we need $$ E[Y(0) | W=1]$$
 
-To identify this, we'll need unconfoundedness: $$ E[Y(0) | W, X] = E[Y(0)| X] $$ and overlap: $$ \pi(X)= P(W=1 | X=x) < 1 $$
+To identify this, we'll need unconfoundedness: $$ E[Y(0) | W, X] = E[Y(0)| X] $$ and overlap: $$ 0 < \pi(X)= P(W=1 | X=x) < 1 $$
 
 Under unconfoundedness:
 
@@ -182,7 +182,7 @@ But in observational studies, most cases we cannot assume unconfoundedness. What
 
 ## Unconfoundedness and Overlap
 
-Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability): $$ E[Y(0) | W, X] = E[Y(0)| X] $$ Overlap: $$ \pi(X)= P(W=1 | X=x) < 1 $$ SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.
+Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability): $$ E[Y(0) | W, X] = E[Y(0)| X] $$ Overlap: $$ 0 < \pi(X)= P(W=1 | X=x) < 1 $$ SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.
 
 Within each subgroup of $X=x$, W is independent of $Y(0)$. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.
 

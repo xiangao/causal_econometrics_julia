@@ -278,7 +278,8 @@ show_regression_html(m_a; title="Approach A: OLS residual as control function")
 # Step 1: probit first stage
 fs_b = feprobit(df2, @formula(time_hi ~ phone + frfam + fe(ad) + fe(female)))
 
-# Generalized residual: r̂ = y*λ(η) - (1-y)*λ(-η),  λ = φ/Φ (inv. Mills ratio)
+# Generalized residual (Gourieroux et al.): φ(η)/Φ(η) if y=1 (inverse Mills ratio),
+# -φ(η)/(1-Φ(η)) if y=0 (the reverse Mills ratio).
 η  = fs_b.eta
 nd = Normal()
 df2.gr2 = @. ifelse(df2.time_hi == 1,
