@@ -481,7 +481,7 @@ window.Quarto = {
 </header>
 
 
-<div id="ea0fda53" class="cell" data-execution_count="2">
+<div id="dc92269d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -576,8 +576,8 @@ Backdoor estimation (true ACE = 2.0):
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># True ACE: effect of setting A=1 vs A=0</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># E[Y|do(A=1)] - E[Y|do(A=0)] = 1.5 * (E[M|A=1] - E[M|A=0])</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>true_M_a1 <span class="op">=</span> <span class="fu">mean</span>(<span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">2.0</span>))))</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>true_M_a0 <span class="op">=</span> <span class="fu">mean</span>(<span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.+</span> <span class="fu">exp</span>.(<span class="fu">-</span>(<span class="fl">0.5</span>))))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>true_M_a1 <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">2.0</span>)))   <span class="co"># scalar P(M=1 | A=1)</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>true_M_a0 <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="op">-</span><span class="fl">0.5</span>))           <span class="co"># scalar P(M=1 | A=0)</span></span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>true_ace_fd <span class="op">=</span> <span class="fl">1.5</span> <span class="op">*</span> (true_M_a1 <span class="op">-</span> true_M_a0)</span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True front-door ACE = %.3f</span><span class="sc">\n\n</span><span class="st">"</span>, true_ace_fd)</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
@@ -645,7 +645,7 @@ True ACE:                                 0.453</code></pre>
 <section id="end-to-end-discover-identify-estimate" class="level2" data-number="24.4">
 <h2 data-number="24.4" class="anchored" data-anchor-id="end-to-end-discover-identify-estimate"><span class="header-section-number">24.4</span> End-to-end: discover, identify, estimate</h2>
 <p>The previous chapters’ discovery algorithms (PC, FCI, RSL-D, L-MARVEL) return graphs that can be passed directly to <code>identify()</code> and <code>estimate_causal()</code>. The full pipeline is:</p>
-<div id="fd97f96c" class="cell" data-execution_count="9">
+<div id="1bccfa36" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span>   <span class="co"># for PC algorithm</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: discover the graph (chapter 11)</span></span>

@@ -218,8 +218,14 @@ axislegend(ax3, position = :rt, framevisible = false)
 fig3
 ```
 
-The DR estimator is consistent if either the outcome model or the GPS is
-correctly specified. The bandwidth $h$ trades bias against variance.
+Read this self-normalized kernel correction as an *illustrative*
+kernel-AIPW construction, not a turnkey doubly robust theorem. The
+informal "consistent if either the outcome model or the GPS is correct"
+statement is the discrete-treatment intuition; for continuous
+treatments a formal doubly robust dose-response result additionally
+needs bandwidth, nuisance-convergence-rate, smoothness, and
+orthogonalization conditions (see Kennedy et al. on continuous-treatment
+DR estimators). The bandwidth $h$ trades bias against variance.
 
 ## Multivalued treatments
 

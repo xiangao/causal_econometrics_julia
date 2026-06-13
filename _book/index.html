@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xiang Ao">
-<meta name="dcterms.date" content="2026-06-07">
+<meta name="dcterms.date" content="2026-06-13">
 
 <title>Causal Econometrics with Julia</title>
 <style>
@@ -451,7 +451,7 @@ try {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 7, 2026</p>
+      <p class="date">June 13, 2026</p>
     </div>
   </div>
   
@@ -470,6 +470,7 @@ try {
 <p>Julia is not the usual choice for this material. R remains the default language of applied causal inference, and a companion R volume — <a href="https://xiangao.github.io/causal_econometrics_guide/">Introduction to Causal Econometrics with Observational Data</a> — covers the same ground. A messier working notebook, <a href="https://xiangao.github.io/blog_book/">Topics on Econometrics and Causal Inference</a>, holds the rougher posts that fed into both books. The Julia version exists because some of the heavier estimators — TMLE on large samples, distributional difference-in-differences, fully Bayesian g-computation — are uncomfortably slow in R, and because Julia’s type system makes it possible to write small, focused estimation packages whose code is easy to read. Several such packages were written alongside this book and are used throughout: <code>CausalEstimate.jl</code> for unified TMLE and AIPW, <code>CausalGraphs.jl</code> for graph-based identification, <code>Lavaan.jl</code> for structural equation modeling, <code>Crumble.jl</code> for causal mediation, and a handful of smaller libraries for difference-in-differences, synthetic control, shift-share IV, and regression discontinuity. They are not requirements for following the text, but readers who want to see how an estimator is actually built will find the source short enough to read.</p>
 <p>The book is organized in the order in which an applied project usually runs. Part I is identification. Part II is estimation. Part III is designs: difference-in-differences, synthetic control, instrumental variables, regression discontinuity, and shift-share IV. The remaining parts cover longitudinal settings, survival outcomes, mediation, and causal discovery. The appendix lists the Julia packages used in the examples.</p>
 <p>The book is meant to be read at a desk with Julia running. Source files, datasets, and a <code>Project.toml</code> that pins package versions are available in the repository linked above; the “Edit this page” link at the foot of each chapter goes directly to the corresponding <code>.qmd</code> file. Corrections and suggestions are welcome through the issues tracker.</p>
+<p>A note on the code you see. Hidden setup chunks (package loading, helper definitions) execute when the book is rendered but are not shown. Some visible code blocks are marked <code>eval: false</code>: these are displayed for readability but not run, either because they only show which packages a chapter uses or because they require a tool or package outside the book’s default environment (these are flagged where they appear). A block marked <code>eval: false</code> therefore shows intended usage rather than executed output.</p>
 <section id="how-to-cite" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="how-to-cite">How to cite</h2>
 <p>Ao, Xiang. <em>Causal Econometrics with Julia</em>. <a href="https://xiangao.github.io/causal_econometrics_julia/" class="uri">https://xiangao.github.io/causal_econometrics_julia/</a>.</p>

@@ -163,10 +163,10 @@ $$
 
 ### IPW
 
-IPW is to model the treatment assignment equation and the mediator assignment equation:
+IPW is to model the treatment assignment equation and the mediator assignment equation. The joint denominator factorizes *sequentially* -- treatment given covariates, then mediator given treatment and covariates -- which is the structure the estimator below uses:
 
 $$ \small
-E[Y(w,m)] = E[{\frac{I(W=w, M=m)}{P(W=w, M=m | X)}} Y]
+E[Y(w,m)] = E\!\left[{\frac{I(W=w)\,I(M=m)}{g_W(w|X)\,g_M(m|w,X)}}\, Y\right]
 $$
 
 Therefore,
@@ -175,7 +175,7 @@ $$ \small
 CDE_{ipw}(m) = E\left[\frac{I(W=1,M=m)}{g_M(m|1,X)\,g_W(1|X)}\, Y - \frac{I(W=0,M=m)}{g_M(m|0,X)\,g_W(0|X)}\, Y\right]
 $$
 
-where $g_M$ is the probability of mediator, $g_W$ is the probability of treatment.
+where $g_M$ is the probability of the mediator and $g_W$ the probability of treatment. **This indicator-based form applies to a discrete (here binary) mediator.** For a continuous mediator the indicator $I(M=m)$ and probability $g_M$ must be replaced by a conditional density (or a kernel / stochastic-intervention formulation); the estimator does not apply as written.
 
 ### AIPW
 
@@ -298,13 +298,27 @@ $$
 
 The advantage of NDE and NIE comparing to CDE is that it's more "natural"; that is, you don't set the level of mediator deterministically. And it can decompose the ATE into direct and indirect effects.
 
-However, there is an additional assumption for NDE and NIE identified.
+However, there is an additional assumption needed to identify NDE and NIE.
 
 ### Additional Assumption
 
 $$ Y(w, m) \perp M(w^*) | X$$
 
-This is the "cross-world" condition: the outcome under $(w,m)$ is independent of $M$ under $w^*$. These two situations cannot happen in the same world; you cannot set $W$ to both $w$ and $w^*$. There is no experiment can implement it.
+This is the "cross-world" condition: the outcome under $(w,m)$ is independent of $M$ under $w^*$. These two situations cannot happen in the same world; you cannot set $W$ to both $w$ and $w^*$. No experiment can implement it.
+
+This cross-world independence is *additional to*, not a substitute for,
+the usual identifying assumptions. The standard mediation formula for
+natural effects also requires:
+
+- treatment ignorability (no unmeasured treatment-outcome confounding) given $X$;
+- mediator ignorability (no unmeasured mediator-outcome confounding) given $W$ and $X$;
+- positivity for both treatment and mediator; and
+- **no treatment-induced confounding** of the mediator-outcome
+  relationship -- no variable affected by $W$ may confound $M$ and $Y$.
+  (When such a confounder exists, natural effects are not identified by
+  this formula; interventional direct/indirect effects are used instead.)
+
+Cross-world independence alone is not sufficient.
 
 ### Estimation
 

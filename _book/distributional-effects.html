@@ -484,7 +484,7 @@ window.Quarto = {
 </header>
 
 
-<div id="be6927a3" class="cell" data-execution_count="2">
+<div id="27444f44" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -578,7 +578,20 @@ QTE(0.90)    = 0.535</code></pre>
 <h2 data-number="12.3" class="anchored" data-anchor-id="distributional-did-with-engression"><span class="header-section-number">12.3</span> Distributional DiD with Engression</h2>
 <p>For panel data, distributional DiD extends the DiD idea from means to distributions. Instead of estimating only the counterfactual mean outcome, it estimates a counterfactual outcome distribution.</p>
 <p><code>Endid.jl</code> uses Engression for this. It learns a stochastic model for <span class="math inline">\(Y \mid X\)</span> rather than only a conditional mean. Counterfactual draws from that model give QTEs.</p>
-<div id="d4941a23" class="cell" data-execution_count="5">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The block below is <strong>not executed</strong> (<code>eval: false</code>). <code>Endid.jl</code> and its Engression backend are not part of this book’s <code>Project.toml</code>, so the example will not run in the book’s default environment. To run it, add <code>Endid</code> (and its dependencies) to a separate project environment first; see the <a href="https://github.com/xiangao/Endid.jl"><code>Endid.jl</code></a> repository for installation instructions.</p>
+</div>
+</div>
+<div id="2202b0ad" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Endid</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel data: y outcome, id unit, time period, post 1 if post-treatment</span></span>

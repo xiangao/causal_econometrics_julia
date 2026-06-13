@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="ecd50cec" class="cell" data-execution_count="2">
+<div id="d0aee4b0" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
@@ -619,15 +619,15 @@ CDE_G(m) &amp;=&amp; \sum_x [ E[Y \mid W=1, M=m, X=x] - \\
 </section>
 <section id="ipw" class="level3" data-number="21.2.5">
 <h3 data-number="21.2.5" class="anchored" data-anchor-id="ipw"><span class="header-section-number">21.2.5</span> IPW</h3>
-<p>IPW is to model the treatment assignment equation and the mediator assignment equation:</p>
+<p>IPW is to model the treatment assignment equation and the mediator assignment equation. The joint denominator factorizes <em>sequentially</em> – treatment given covariates, then mediator given treatment and covariates – which is the structure the estimator below uses:</p>
 <p><span class="math display">\[ \small
-E[Y(w,m)] = E[{\frac{I(W=w, M=m)}{P(W=w, M=m | X)}} Y]
+E[Y(w,m)] = E\!\left[{\frac{I(W=w)\,I(M=m)}{g_W(w|X)\,g_M(m|w,X)}}\, Y\right]
 \]</span></p>
 <p>Therefore,</p>
 <p><span class="math display">\[ \small
 CDE_{ipw}(m) = E\left[\frac{I(W=1,M=m)}{g_M(m|1,X)\,g_W(1|X)}\, Y - \frac{I(W=0,M=m)}{g_M(m|0,X)\,g_W(0|X)}\, Y\right]
 \]</span></p>
-<p>where <span class="math inline">\(g_M\)</span> is the probability of mediator, <span class="math inline">\(g_W\)</span> is the probability of treatment.</p>
+<p>where <span class="math inline">\(g_M\)</span> is the probability of the mediator and <span class="math inline">\(g_W\)</span> the probability of treatment. <strong>This indicator-based form applies to a discrete (here binary) mediator.</strong> For a continuous mediator the indicator <span class="math inline">\(I(M=m)\)</span> and probability <span class="math inline">\(g_M\)</span> must be replaced by a conditional density (or a kernel / stochastic-intervention formulation); the estimator does not apply as written.</p>
 </section>
 <section id="aipw" class="level3" data-number="21.2.6">
 <h3 data-number="21.2.6" class="anchored" data-anchor-id="aipw"><span class="header-section-number">21.2.6</span> AIPW</h3>
@@ -741,11 +741,19 @@ ATE &amp;=&amp; NIE + NDE \\
 \end{eqnarray*}
 \]</span></p>
 <p>The advantage of NDE and NIE comparing to CDE is that it’s more “natural”; that is, you don’t set the level of mediator deterministically. And it can decompose the ATE into direct and indirect effects.</p>
-<p>However, there is an additional assumption for NDE and NIE identified.</p>
+<p>However, there is an additional assumption needed to identify NDE and NIE.</p>
 <section id="additional-assumption" class="level3" data-number="21.3.1">
 <h3 data-number="21.3.1" class="anchored" data-anchor-id="additional-assumption"><span class="header-section-number">21.3.1</span> Additional Assumption</h3>
 <p><span class="math display">\[ Y(w, m) \perp M(w^*) | X\]</span></p>
-<p>This is the “cross-world” condition: the outcome under <span class="math inline">\((w,m)\)</span> is independent of <span class="math inline">\(M\)</span> under <span class="math inline">\(w^*\)</span>. These two situations cannot happen in the same world; you cannot set <span class="math inline">\(W\)</span> to both <span class="math inline">\(w\)</span> and <span class="math inline">\(w^*\)</span>. There is no experiment can implement it.</p>
+<p>This is the “cross-world” condition: the outcome under <span class="math inline">\((w,m)\)</span> is independent of <span class="math inline">\(M\)</span> under <span class="math inline">\(w^*\)</span>. These two situations cannot happen in the same world; you cannot set <span class="math inline">\(W\)</span> to both <span class="math inline">\(w\)</span> and <span class="math inline">\(w^*\)</span>. No experiment can implement it.</p>
+<p>This cross-world independence is <em>additional to</em>, not a substitute for, the usual identifying assumptions. The standard mediation formula for natural effects also requires:</p>
+<ul>
+<li>treatment ignorability (no unmeasured treatment-outcome confounding) given <span class="math inline">\(X\)</span>;</li>
+<li>mediator ignorability (no unmeasured mediator-outcome confounding) given <span class="math inline">\(W\)</span> and <span class="math inline">\(X\)</span>;</li>
+<li>positivity for both treatment and mediator; and</li>
+<li><strong>no treatment-induced confounding</strong> of the mediator-outcome relationship – no variable affected by <span class="math inline">\(W\)</span> may confound <span class="math inline">\(M\)</span> and <span class="math inline">\(Y\)</span>. (When such a confounder exists, natural effects are not identified by this formula; interventional direct/indirect effects are used instead.)</li>
+</ul>
+<p>Cross-world independence alone is not sufficient.</p>
 </section>
 <section id="estimation-1" class="level3" data-number="21.3.2">
 <h3 data-number="21.3.2" class="anchored" data-anchor-id="estimation-1"><span class="header-section-number">21.3.2</span> Estimation</h3>

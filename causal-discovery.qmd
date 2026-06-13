@@ -28,6 +28,12 @@ end
 # SimpleDiGraph CPDAG → ADMG
 # Edges present both ways become bidirected (undirected in CPDAG),
 # edges present one way only become directed.
+#
+# CAUTION: this reuses the ADMG bidirected (↔) glyph to DRAW an
+# *unoriented* CPDAG edge — it does NOT mean hidden confounding here.
+# The latent-variable chapter uses ↔ for genuine hidden common causes,
+# so any figure built from this helper must repeat the "↔ = unoriented,
+# not confounded" warning in its caption.
 function cpdag_to_admg(g::SimpleDiGraph, labels::Vector{String})
     n = nv(g)
     vs = Symbol.(labels)

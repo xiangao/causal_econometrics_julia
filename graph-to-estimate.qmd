@@ -134,8 +134,8 @@ data_fd = DataFrame(A = A, M = M, Y = Y)
 
 # True ACE: effect of setting A=1 vs A=0
 # E[Y|do(A=1)] - E[Y|do(A=0)] = 1.5 * (E[M|A=1] - E[M|A=0])
-true_M_a1 = mean(1 ./ (1 .+ exp.(-(0.5 + 2.0))))
-true_M_a0 = mean(1 ./ (1 .+ exp.(-(0.5))))
+true_M_a1 = 1 / (1 + exp(-(0.5 + 2.0)))   # scalar P(M=1 | A=1)
+true_M_a0 = 1 / (1 + exp(-0.5))           # scalar P(M=1 | A=0)
 true_ace_fd = 1.5 * (true_M_a1 - true_M_a0)
 @printf("True front-door ACE = %.3f\n\n", true_ace_fd)
 

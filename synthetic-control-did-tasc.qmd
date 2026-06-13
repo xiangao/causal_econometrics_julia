@@ -45,6 +45,20 @@ Classical synthetic control is time-agnostic in an important sense: the pre-trea
 
 Arkhangelsky et al. (2021) combine the idea of DiD and synthetic control. Standard DiD assigns equal weight to all control units and all pre-treatment time periods. Synthetic control assigns data-driven weights to donor units. Synthetic DiD uses both unit weights and time weights.
 
+The three estimators below are written as a *unifying weighted-regression
+sketch*: the same two-way fixed-effect regression, with different
+weights switched on. This is a useful way to see how DiD, synthetic
+control, and synthetic DiD relate, but it is **not** the estimators'
+actual optimization problems. In particular, the synthetic-control
+weights $\hat\omega_i^{sc}$ are not free regression weights — in
+Abadie's formulation they are chosen by a separate optimization that
+matches pre-treatment outcomes (and predictors) of the treated unit,
+subject to $\omega_i \ge 0,\ \sum_i \omega_i = 1$. Likewise the SDID
+unit and time weights $\hat\omega_i^{sdid}, \hat\lambda_t^{sdid}$ come
+from their own penalized pre-period optimization problems. Treat the
+displays below as schematic; see the package documentation (or
+Arkhangelsky et al. 2021) for the exact weight-selection problems.
+
 The DiD objective can be written as
 
 $$

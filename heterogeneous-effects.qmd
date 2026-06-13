@@ -308,8 +308,13 @@ covariates are associated with larger effects? The best linear projection is
 the OLS regression of pseudo-outcomes on covariates:
 
 $$
-\text{BLP}(X) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right].
+(\beta_0^*, \beta^*) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right],
+\qquad \text{BLP}(X) = \beta_0^* + X'\beta^*.
 $$
+
+The $\arg\min$ returns the coefficient vector $(\beta_0^*, \beta^*)$;
+the best linear projection itself is the fitted function
+$\beta_0^* + X'\beta^*$.
 
 A doubly-robust BLP uses the DR-learner pseudo-outcomes:
 
@@ -548,8 +553,19 @@ w_gap = mean(df_dm.W_dm[idx_T_dm]) - mean(df_dm.W_dm[idx_C_dm])
 ```
 
 The within transformation removes the fixed effects, and the rescaled
-contrast lands near the truth. The cost is variance, because identification
-now comes from within-firm variation.
+contrast lands near the truth in this DGP. The cost is variance, because
+identification now comes from within-firm variation.
+
+A caveat on what this estimator targets. Splitting on $W_{dm} > 0$ vs
+$W_{dm} \le 0$ and dividing the T-learner contrast by the average
+$W_{dm}$ gap is *not* a general fixed-effect CATE estimator. It is a
+heuristic within-firm contrast whose target depends on the distribution
+of demeaned treatment values and on the grouping rule, and the rescaling
+is a Wald-style approximation rather than an identified within estimand.
+It works here because the treatment effect is linear in $V_1$ and the
+DGP is benign. Properly identified heterogeneous panel effects require a
+proper orthogonal score or a dedicated panel causal-forest / DML
+construction; treat this section as intuition, not a turnkey method.
 
 For R's `grf::causal_forest`, pass `clusters = firm_id` so the honest sample
 split keeps each firm's observations together. Julia does not currently have

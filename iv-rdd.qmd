@@ -143,7 +143,16 @@ $$
 \end{aligned}
 $$
 
-Why do covariates help? Because we hope even if we don't have exogeneity or exclusion assumption held, we would have those assumptions held within each level of $X$.
+Why do covariates help? It is worth separating two distinct
+assumptions. Conditioning on covariates $X$ can make the
+*as-if-random* (conditional independence) assumption more credible: the
+instrument may be unconfounded only within levels of $X$. The
+*exclusion restriction* -- no direct effect of the instrument on the
+outcome -- is a separate, substantive assumption that covariates do not
+generally repair. Adding $X$ removes a direct $Z \to Y$ path only if
+that path runs through $X$, or if exclusion is conditional by design.
+So covariates help with conditional instrument independence, not with
+exclusion itself.
 
 ### Example
 
@@ -512,7 +521,9 @@ In words, the treatment effect is the difference in the outcome from the right s
 #| message: false
 #| echo: true
 GPA = rand(Uniform(0, 4), 1000)
-future_success = 10 .+ 1.5 .* GPA .+ 2 .* (GPA .<= 3) .+ rand(Normal(0, 1), 1000)
+# Treatment is W = 1(GPA > 3), so the +2 jump must sit on the right
+# (above-cutoff) side to match the right-minus-left estimand above.
+future_success = 10 .+ 1.5 .* GPA .+ 2 .* (GPA .> 3) .+ rand(Normal(0, 1), 1000)
 
 plot_data_gpa = rdplot(future_success, GPA, c=3.0)
 

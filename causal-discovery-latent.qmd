@@ -244,7 +244,7 @@ $$\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\
 **Intuition for the two conditions:**
 
 - **Condition 1** is the same as the observed-variable (RSL-D) removability criterion: $Y$ and $Z$ can be separated by some subset of the Markov boundary.
-- **Condition 2** is new and handles latent variables: if $Y$ and $Z$ are connected through a hidden common cause, conditioning on *any* subset of Mb$(X)$ won't separate them — but conditioning on $X$ itself would (because $X$ may block the latent path). Condition 2 catches this case.
+- **Condition 2** is new and handles latent variables: it captures latent-induced dependencies through the theorem's removable-variable criterion. Loosely, when $Y$ and $Z$ are connected through a hidden common cause, no subset of Mb$(X)$ separates them, yet conditioning on $X$ changes the dependence. **This is not a generic d-separation rule** — it should not be read as "conditioning on $X$ blocks hidden confounding," which would be false in general MAG/PAG reasoning. It is a theorem-specific condition (Theorem 32) on when $X$ can be removed without losing latent-structure information; the formal statement above, not the intuition, is what the algorithm uses.
 
 Together, the two conditions ensure that removing $X$ does not destroy information about the latent structure connecting its neighbours.
 

@@ -502,7 +502,7 @@ window.Quarto = {
 </header>
 
 
-<div id="b6233da5" class="cell" data-execution_count="2">
+<div id="169e20b6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -681,7 +681,7 @@ r(d, x) = f_{D \mid X}(d \mid x).
 </div>
 </div>
 </div>
-<p>The DR estimator is consistent if either the outcome model or the GPS is correctly specified. The bandwidth <span class="math inline">\(h\)</span> trades bias against variance.</p>
+<p>Read this self-normalized kernel correction as an <em>illustrative</em> kernel-AIPW construction, not a turnkey doubly robust theorem. The informal “consistent if either the outcome model or the GPS is correct” statement is the discrete-treatment intuition; for continuous treatments a formal doubly robust dose-response result additionally needs bandwidth, nuisance-convergence-rate, smoothness, and orthogonalization conditions (see Kennedy et al.&nbsp;on continuous-treatment DR estimators). The bandwidth <span class="math inline">\(h\)</span> trades bias against variance.</p>
 </section>
 <section id="multivalued-treatments" class="level2" data-number="10.5">
 <h2 data-number="10.5" class="anchored" data-anchor-id="multivalued-treatments"><span class="header-section-number">10.5</span> Multivalued treatments</h2>

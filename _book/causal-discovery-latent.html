@@ -494,7 +494,7 @@ window.Quarto = {
 </header>
 
 
-<div id="5f7e89ef" class="cell" data-execution_count="2">
+<div id="9c8b6d2b" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -571,7 +571,7 @@ window.Quarto = {
 <section id="simulation-with-hidden-variables" class="level2" data-number="23.2">
 <h2 data-number="23.2" class="anchored" data-anchor-id="simulation-with-hidden-variables"><span class="header-section-number">23.2</span> Simulation with Hidden Variables</h2>
 <p>We reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.</p>
-<div id="1de67c0b" class="cell" data-execution_count="3">
+<div id="1f2956b7" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -595,7 +595,7 @@ window.Quarto = {
 <section id="true-structure-over-observed-variables" class="level3" data-number="23.2.1">
 <h3 data-number="23.2.1" class="anchored" data-anchor-id="true-structure-over-observed-variables"><span class="header-section-number">23.2.1</span> True structure over observed variables</h3>
 <p>Two observed variables are adjacent in the MAG iff no subset of the <em>observed</em> variables d-separates them in the full DAG.</p>
-<div id="26778784" class="cell" data-execution_count="4">
+<div id="5d362c03" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>true_dag <span class="op">=</span> <span class="fu">SimpleDiGraph</span>(adj_mat)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">true_mag_skeleton</span>(dag, observed)</span>
@@ -819,7 +819,7 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 <li><strong>Phase 4 (rule propagation):</strong> Apply the 10 orientation rules (Zhang 2008) that propagate known marks without creating contradictions, including rules that can produce definite <span class="math inline">\(\to\)</span> and <span class="math inline">\(\leftrightarrow\)</span> edges. These rules perform no CI tests and are cheap.</li>
 </ol>
 <p>The extra marks let FCI say what is known and what remains uncertain, but the output is harder to read than a DAG.</p>
-<div id="f20744de" class="cell" data-execution_count="6">
+<div id="77278d65" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>count_fci <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
@@ -884,10 +884,10 @@ Note
 <p><strong>Intuition for the two conditions:</strong></p>
 <ul>
 <li><strong>Condition 1</strong> is the same as the observed-variable (RSL-D) removability criterion: <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> can be separated by some subset of the Markov boundary.</li>
-<li><strong>Condition 2</strong> is new and handles latent variables: if <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> are connected through a hidden common cause, conditioning on <em>any</em> subset of Mb<span class="math inline">\((X)\)</span> won’t separate them — but conditioning on <span class="math inline">\(X\)</span> itself would (because <span class="math inline">\(X\)</span> may block the latent path). Condition 2 catches this case.</li>
+<li><strong>Condition 2</strong> is new and handles latent variables: it captures latent-induced dependencies through the theorem’s removable-variable criterion. Loosely, when <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> are connected through a hidden common cause, no subset of Mb<span class="math inline">\((X)\)</span> separates them, yet conditioning on <span class="math inline">\(X\)</span> changes the dependence. <strong>This is not a generic d-separation rule</strong> — it should not be read as “conditioning on <span class="math inline">\(X\)</span> blocks hidden confounding,” which would be false in general MAG/PAG reasoning. It is a theorem-specific condition (Theorem 32) on when <span class="math inline">\(X\)</span> can be removed without losing latent-structure information; the formal statement above, not the intuition, is what the algorithm uses.</li>
 </ul>
 <p>Together, the two conditions ensure that removing <span class="math inline">\(X\)</span> does not destroy information about the latent structure connecting its neighbours.</p>
-<div id="8ab5bbcf" class="cell" data-execution_count="8">
+<div id="185f750e" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>count_lm <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ci_lm <span class="op">=</span> (x, y, S, d) <span class="op">-&gt;</span> <span class="cf">begin</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    count_lm[] <span class="op">+=</span> <span class="fl">1</span></span>
@@ -1203,7 +1203,7 @@ Figure&nbsp;23.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 </section>
 <section id="monte-carlo-evaluation" class="level2" data-number="23.6">
 <h2 data-number="23.6" class="anchored" data-anchor-id="monte-carlo-evaluation"><span class="header-section-number">23.6</span> Monte Carlo Evaluation</h2>
-<div id="5496bde7" class="cell" data-cache="true" data-execution_count="11">
+<div id="fd79721a" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_latent</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, n_latent<span class="op">=</span><span class="fl">2</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    adj       <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>

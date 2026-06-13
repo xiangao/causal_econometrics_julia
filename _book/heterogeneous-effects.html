@@ -509,7 +509,7 @@ window.Quarto = {
 </header>
 
 
-<div id="99743bff" class="cell" data-execution_count="2">
+<div id="7c0389f1" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -757,8 +757,10 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.9" class="anchored" data-anchor-id="best-linear-projection-blp"><span class="header-section-number">9.9</span> Best Linear Projection (BLP)</h2>
 <p>Even if CATE is nonlinear, we often want a regression-style summary: which covariates are associated with larger effects? The best linear projection is the OLS regression of pseudo-outcomes on covariates:</p>
 <p><span class="math display">\[
-\text{BLP}(X) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right].
+(\beta_0^*, \beta^*) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right],
+\qquad \text{BLP}(X) = \beta_0^* + X'\beta^*.
 \]</span></p>
+<p>The <span class="math inline">\(\arg\min\)</span> returns the coefficient vector <span class="math inline">\((\beta_0^*, \beta^*)\)</span>; the best linear projection itself is the fitted function <span class="math inline">\(\beta_0^* + X'\beta^*\)</span>.</p>
 <p>A doubly-robust BLP uses the DR-learner pseudo-outcomes:</p>
 <div id="blp" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>blp_df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">hcat</span>(pseudo_DR, X), [<span class="op">:</span>tau_pseudo, <span class="op">:</span>X1, <span class="op">:</span>X2, <span class="op">:</span>X3, <span class="op">:</span>X4, <span class="op">:</span>X5])</span>
@@ -970,7 +972,8 @@ Welfare (τ̂-rule, evaluated on true τ):       0.133</code></pre>
 <pre><code>Within-transform T-learner ATE: 0.689  (true = 0.655)</code></pre>
 </div>
 </div>
-<p>The within transformation removes the fixed effects, and the rescaled contrast lands near the truth. The cost is variance, because identification now comes from within-firm variation.</p>
+<p>The within transformation removes the fixed effects, and the rescaled contrast lands near the truth in this DGP. The cost is variance, because identification now comes from within-firm variation.</p>
+<p>A caveat on what this estimator targets. Splitting on <span class="math inline">\(W_{dm} &gt; 0\)</span> vs <span class="math inline">\(W_{dm} \le 0\)</span> and dividing the T-learner contrast by the average <span class="math inline">\(W_{dm}\)</span> gap is <em>not</em> a general fixed-effect CATE estimator. It is a heuristic within-firm contrast whose target depends on the distribution of demeaned treatment values and on the grouping rule, and the rescaling is a Wald-style approximation rather than an identified within estimand. It works here because the treatment effect is linear in <span class="math inline">\(V_1\)</span> and the DGP is benign. Properly identified heterogeneous panel effects require a proper orthogonal score or a dedicated panel causal-forest / DML construction; treat this section as intuition, not a turnkey method.</p>
 <p>For R’s <code>grf::causal_forest</code>, pass <code>clusters = firm_id</code> so the honest sample split keeps each firm’s observations together. Julia does not currently have an equivalent; see the <a href="https://xiangao.github.io/blog_book/causal-forest-panel.html">companion blog chapter on causal forests in panel data</a> and the <a href="https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html">R companion to this chapter</a> for the GRF-based workflow.</p>
 </section>
 <section id="summary" class="level2" data-number="9.14">
