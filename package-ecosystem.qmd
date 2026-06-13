@@ -21,10 +21,11 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 
 | Package | Used For | Main Book Chapters |
 |---|---|---|
-| `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, and IV/2SLS support | Estimation, DiD, IV/RDD |
+| `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, IV/2SLS (`feiv`), and ETWFE post-processing (`emfx()`, `dataset()`) | Estimation, DiD, IV/RDD |
 | `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs, Smoking cessation |
 | `CausalEstimate.jl` | Unified TMLE and AIPW estimation: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` and graph-implied backdoor via `GraphID` | Estimation, Nonparametric, Smoking cessation |
-| `Panelest.jl` | Also exports `emfx()` and `dataset()` for ETWFE post-processing | DiD |
+| `CausalInference.jl` (registry) | PC and FCI algorithms, Fisher-Z CI tests | Causal Discovery (both chapters) |
+| `RecursiveCausalDiscovery.jl` (registry) | RSL-D and L-MARVEL recursive discovery, F1 scoring | Causal Discovery (both chapters) |
 | `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
 | `TASC.jl` | Time-Aware Synthetic Control with Kalman filtering, RTS smoothing, EM fitting, SC/RSC utilities, and TASC plot recipes | Synthetic control, DiD, and TASC |
 | `RDRobust.jl` | Local-polynomial RD estimation, bandwidth selection, RD plot data, and fuzzy RD | IV/RDD |

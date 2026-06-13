@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -494,7 +514,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3e14c2e4" class="cell" data-execution_count="2">
+<div id="9f010375" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
@@ -556,7 +576,7 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <h2 data-number="6.4" class="anchored" data-anchor-id="linear-ra"><span class="header-section-number">6.4</span> Linear RA</h2>
 <p>Regression Adjustment is basically an imputation estimator. While we observe <span class="math inline">\(E[Y|W=1,X]\)</span>, we model <span class="math inline">\(E[Y(0)|W=1]\)</span>, based on unconfoundedness and a functional form (say linear form). We estimate <span class="math inline">\(\beta_0\)</span> on the control sample, then get the expected values for the treated sample, for each value of <span class="math inline">\(X\)</span>.</p>
 <p>Implementation of linear RA is easy. We regress <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span> and their interaction. It’s shown that we need to de-mean <span class="math inline">\(X\)</span> to get the effect correct.</p>
-<div id="2c504a28" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="3d17f77e" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">Statistics</span>, <span class="bu">GLM</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the pension dataset from the hdm R package (Chernozhukov et al.)</span></span>
@@ -645,7 +665,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<p>After demeaning the covariates, we include all interactions of demeaned covariates with treatment. The coefficient on <span class="math inline">\(W\)</span> is the average treatment effect.</p>
+<p>After demeaning the covariates, we include all interactions of demeaned covariates with treatment. Because the covariates are demeaned at <em>treated-group</em> means, the coefficient on <span class="math inline">\(W\)</span> is the ATT (demeaning at whole-sample means would give the ATE instead).</p>
 <section id="questions-on-ra" class="level3" data-number="6.4.1">
 <h3 data-number="6.4.1" class="anchored" data-anchor-id="questions-on-ra"><span class="header-section-number">6.4.1</span> Questions on RA</h3>
 <ol type="1">
@@ -654,7 +674,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </ol>
 <p>Answers:</p>
 <ol type="1">
-<li>It has been shown (Słoczyński (2022, REStat)) that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we’ll get biased estimates, for <span class="math inline">\(\tau_{ATT}\)</span> or <span class="math inline">\(\tau_{ATE}\)</span>. The intuition is that we need to model the difference between treated and control, and the difference is not constant across <span class="math inline">\(X\)</span>.</li>
+<li>It has been shown <span class="citation" data-cites="sloczynski-2022">(<a href="references.html#ref-sloczynski-2022" role="doc-biblioref">Słoczyński 2022</a>)</span> that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we’ll get biased estimates, for <span class="math inline">\(\tau_{ATT}\)</span> or <span class="math inline">\(\tau_{ATE}\)</span>. The intuition is that we need to model the difference between treated and control, and the difference is not constant across <span class="math inline">\(X\)</span>.</li>
 <li>If we don’t de-mean <span class="math inline">\(X\)</span>, then the coefficient on <span class="math inline">\(W\)</span> is not the average treatment effect. We can still retrieve the ATT or ATE by calculating the marginal effect of <span class="math inline">\(W\)</span> though.</li>
 </ol>
 </section>
@@ -699,7 +719,7 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <h3 data-number="6.6.1" class="anchored" data-anchor-id="aipw"><span class="header-section-number">6.6.1</span> AIPW</h3>
 <p><span class="math display">\[ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] \]</span></p>
 <p><span class="math display">\[ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] \]</span></p>
-<div id="ee5e318f" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="9868c8c1" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
@@ -750,11 +770,11 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 <p>Implementation:</p>
 <ul>
 <li>Estimate propensity score. Get predicted probability of treated for each observation.</li>
-<li>Estimate outcome model. But cannot use fully interaction of treatment and covariates. Instead, estimate two equations, one for treated and one for control. Use <span class="math inline">\(1/\hat \pi(X)\)</span> as weights for treated group and <span class="math inline">\(1/(1-\hat \pi(X))\)</span> as weights for control group.</li>
+<li>Estimate outcome model: two separate weighted equations, one for treated and one for control, using <span class="math inline">\(1/\hat \pi(X)\)</span> as weights for the treated group and <span class="math inline">\(1/(1-\hat \pi(X))\)</span> for the control group. (A single weighted regression with full treatment-covariate interactions would give numerically identical fits — the normal equations are block-diagonal — so the two-equation form is a convenience, not a requirement.)</li>
 <li>Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.</li>
 <li>Take difference. The average is the ATE.</li>
 </ul>
-<div id="9a1b526e" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<div id="e2c7452c" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Cattaneo (2010) birthweight dataset</span></span>
@@ -800,6 +820,11 @@ E[Y(w)] &amp;= E[E[y|W=w,X]] \\
 </div>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-sloczynski-2022" class="csl-entry" role="listitem">
+Słoczyński, Tymon. 2022. <span>“Interpreting <span>OLS</span> Estimands When Treatment Effects Are Heterogeneous: Smaller Groups Get Larger Weights.”</span> <em>The Review of Economics and Statistics</em> 104 (3): 501–9.
+</div>
+</div>
 </section>
 </section>
 

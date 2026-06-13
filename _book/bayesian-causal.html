@@ -484,7 +484,7 @@ window.Quarto = {
 </header>
 
 
-<div id="7d6c4814" class="cell" data-execution_count="2">
+<div id="64f9dbbe" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -540,47 +540,48 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    bayes_linreg(X, y; n_samples=2000)</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">(flat → posterior matches frequentist OLS). Returns `n_samples` posterior</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">draws of (β, σ²).</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bayes_linreg</span>(X<span class="op">::</span><span class="dt">Matrix</span>, y<span class="op">::</span><span class="dt">Vector</span>; n_samples<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">2000</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    n, p <span class="op">=</span> <span class="fu">size</span>(X)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    XtX_inv <span class="op">=</span> <span class="fu">inv</span>(X<span class="op">'</span> <span class="op">*</span> X)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    beta_hat <span class="op">=</span> XtX_inv <span class="op">*</span> X<span class="op">'</span> <span class="op">*</span> y</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    sse <span class="op">=</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(y <span class="op">.-</span> X <span class="op">*</span> beta_hat))</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># σ² ~ InverseGamma((n-p)/2, sse/2)</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    σ²_post <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">InverseGamma</span>((n <span class="op">-</span> p) <span class="op">/</span> <span class="fl">2</span>, sse <span class="op">/</span> <span class="fl">2</span>)) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples]</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># β | σ² ~ MultivariateNormal(beta_hat, σ² * XtX_inv)</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    betas <span class="op">=</span> <span class="fu">zeros</span>(n_samples, p)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        cov_mat <span class="op">=</span> σ²_post[i] <span class="op">.*</span> XtX_inv</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        betas[i, <span class="op">:</span>] <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">MvNormal</span>(beta_hat, <span class="fu">Symmetric</span>(cov_mat)))</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> betas, σ²_post</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on (D, X1, X2, X3, D*X1, D*X2, D*X3) — allow treatment effect heterogeneity</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>DesignMat <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), df.D, df.X1, df.X2, df.X3,</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                 df.D <span class="op">.*</span> df.X1, df.D <span class="op">.*</span> df.X2, df.D <span class="op">.*</span> df.X3)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>betas, σ²_draws <span class="op">=</span> <span class="fu">bayes_linreg</span>(DesignMat, df.Y; n_samples <span class="op">=</span> <span class="fl">2000</span>)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Counterfactual prediction matrices</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>X_treat   <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">ones</span>(n),  df.X1, df.X2, df.X3,</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>                 df.X1, df.X2, df.X3)           <span class="co"># D = 1, so D*X = X</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>X_control <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">zeros</span>(n), df.X1, df.X2, df.X3,</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n))  <span class="co"># D = 0</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Posterior ITEs: n_samples x n</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>ite_post <span class="op">=</span> (X_treat <span class="op">*</span> betas<span class="op">'</span>)<span class="ch">' .- (X_control * betas'</span>)<span class="ch">'</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE posterior: average over n at each draw</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>ate_post <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">2</span>))</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bayesian g-computation:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior mean ATE:  %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(ate_post))</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior SD:        %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(ate_post))</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  95%% CrI:             [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(ate_post, <span class="fl">0.025</span>), <span class="fu">quantile</span>(ate_post, <span class="fl">0.975</span>))</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  True ATE:            %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">(flat prior → the posterior is centered at the OLS estimates, with spread</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">close to the OLS standard errors). Returns `n_samples` posterior</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">draws of (β, σ²).</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bayes_linreg</span>(X<span class="op">::</span><span class="dt">Matrix</span>, y<span class="op">::</span><span class="dt">Vector</span>; n_samples<span class="op">::</span><span class="dt">Int </span><span class="op">=</span> <span class="fl">2000</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    n, p <span class="op">=</span> <span class="fu">size</span>(X)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    XtX_inv <span class="op">=</span> <span class="fu">inv</span>(X<span class="op">'</span> <span class="op">*</span> X)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    beta_hat <span class="op">=</span> XtX_inv <span class="op">*</span> X<span class="op">'</span> <span class="op">*</span> y</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    sse <span class="op">=</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(y <span class="op">.-</span> X <span class="op">*</span> beta_hat))</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># σ² ~ InverseGamma((n-p)/2, sse/2)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    σ²_post <span class="op">=</span> [<span class="fu">rand</span>(<span class="fu">InverseGamma</span>((n <span class="op">-</span> p) <span class="op">/</span> <span class="fl">2</span>, sse <span class="op">/</span> <span class="fl">2</span>)) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples]</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># β | σ² ~ MultivariateNormal(beta_hat, σ² * XtX_inv)</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    betas <span class="op">=</span> <span class="fu">zeros</span>(n_samples, p)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_samples</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        cov_mat <span class="op">=</span> σ²_post[i] <span class="op">.*</span> XtX_inv</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        betas[i, <span class="op">:</span>] <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">MvNormal</span>(beta_hat, <span class="fu">Symmetric</span>(cov_mat)))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> betas, σ²_post</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on (D, X1, X2, X3, D*X1, D*X2, D*X3) — allow treatment effect heterogeneity</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>DesignMat <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), df.D, df.X1, df.X2, df.X3,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>                 df.D <span class="op">.*</span> df.X1, df.D <span class="op">.*</span> df.X2, df.D <span class="op">.*</span> df.X3)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>betas, σ²_draws <span class="op">=</span> <span class="fu">bayes_linreg</span>(DesignMat, df.Y; n_samples <span class="op">=</span> <span class="fl">2000</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Counterfactual prediction matrices</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>X_treat   <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">ones</span>(n),  df.X1, df.X2, df.X3,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>                 df.X1, df.X2, df.X3)           <span class="co"># D = 1, so D*X = X</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>X_control <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), <span class="fu">zeros</span>(n), df.X1, df.X2, df.X3,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n), <span class="fu">zeros</span>(n))  <span class="co"># D = 0</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Posterior ITEs: n_samples x n</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>ite_post <span class="op">=</span> (X_treat <span class="op">*</span> betas<span class="op">'</span>)<span class="ch">' .- (X_control * betas'</span>)<span class="ch">'</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE posterior: average over n at each draw</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>ate_post <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">2</span>))</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Bayesian g-computation:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior mean ATE:  %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(ate_post))</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Posterior SD:        %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(ate_post))</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  95%% CrI:             [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(ate_post, <span class="fl">0.025</span>), <span class="fu">quantile</span>(ate_post, <span class="fl">0.975</span>))</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  True ATE:            %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(tau))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Bayesian g-computation:
   Posterior mean ATE:  0.904

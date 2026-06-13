@@ -54,8 +54,13 @@ Z = rand(Bernoulli(0.5), n)        # random instrument
 pD0 = @. clamp(0.10 + 0.20 * U, 0, 1)      # P(D=1 | Z=0, U)
 pD1 = @. clamp(0.10 + 0.20 * U + 0.50, 0, 1)  # P(D=1 | Z=1, U) — adds 0.50
 
-D0 = @. rand() < pD0   # potential treatment if not offered slot
-D1 = @. rand() < pD1   # potential treatment if offered slot
+# ONE latent draw per unit, two thresholds: since pD1 >= pD0, this gives
+# D1 >= D0 for every unit — monotonicity (no defiers) holds EXACTLY.
+# (Drawing D0 and D1 with independent rand() calls would create defiers
+#  by construction, even though pD1 > pD0.)
+V  = rand(n)
+D0 = V .< pD0   # potential treatment if not offered slot
+D1 = V .< pD1   # potential treatment if offered slot
 D  = ifelse.(Z .== 1, D1, D0)
 
 # Heterogeneous treatment effect: depends on X
@@ -127,9 +132,12 @@ LATE is the mean effect for compliers, the units whose treatment status is
 changed by the instrument. Under the usual IV assumptions, the Wald estimator
 identifies this effect, not the ATE. Identifying LATE by the Wald ratio
 additionally requires monotonicity (no defiers): $D(1) \ge D(0)$ for all $i$.
-This DGP imposes it by adding a positive constant to the treatment probability
-under the instrument (`pD1 = clamp(0.10 + 0.20*U + 0.50, 0, 1)`), so no unit is
-pushed out of treatment by the offer.
+This DGP imposes it by generating both potential treatments from one shared
+latent draw $V_i$ with ordered thresholds ($D(z) = \mathbb{1}\{V_i < p_{Dz}\}$
+and $p_{D1} \ge p_{D0}$), so no unit is pushed out of treatment by the offer.
+Raising the *probability* alone would not be enough: with independent draws
+for $D(0)$ and $D(1)$, about 3% of units would be defiers and the Wald ratio
+would no longer equal the complier mean.
 
 ```{julia}
 #| label: late
@@ -171,15 +179,21 @@ centers = (edges[1:end-1] .+ edges[2:end]) ./ 2
 cate_est = [mean((Y1 .- Y0)[(X .>= edges[k]) .& (X .< edges[k+1])])
             for k in 1:nbins]
 
-@printf("CATE at x=0.2: estimated %.2f, true %.2f\n", cate_est[5], τ(0.2))
-@printf("CATE at x=0.8: estimated %.2f, true %.2f\n", cate_est[17], τ(0.8))
+# Label by the actual bin centers (bin 5 = [0.20,0.25) has center 0.225)
+@printf("CATE at x=%.3f: estimated %.2f, true %.2f\n",
+        centers[5],  cate_est[5],  τ(centers[5]))
+@printf("CATE at x=%.3f: estimated %.2f, true %.2f\n",
+        centers[17], cate_est[17], τ(centers[17]))
 ```
 
 ### QTE — quantile treatment effect
 
 $$
-\text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau)
+\text{QTE}(q) = F^{-1}_{Y(1)}(q) - F^{-1}_{Y(0)}(q)
 $$
+
+(We index quantiles by $q$ to avoid a clash with the treatment-effect
+function $\tau(x)$.)
 
 QTE compares the two marginal outcome distributions. It is the difference
 between a quantile under treatment and the same quantile under control. It
@@ -202,7 +216,7 @@ qte_est  = [quantile(Y1, q) - quantile(Y0, q) for q in qte_grid]
 ```{julia}
 #| label: estimand-plot
 #| cache: true
-#| fig-cap: "Five views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(τ) shows how the effect varies across the outcome distribution. Each curve answers a different question."
+#| fig-cap: "Five views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(q) shows how the effect varies across the outcome distribution. Each curve answers a different question."
 
 fig = Figure(size = (820, 380), fontsize = 13)
 
@@ -215,7 +229,7 @@ hlines!(ax1, [att_true], color = :steelblue, linewidth = 1.5, linestyle = :dash,
 hlines!(ax1, [late_true], color = :seagreen,  linewidth = 1.5, linestyle = :dash, label = "LATE")
 axislegend(ax1, position = :lt, framevisible = false)
 
-ax2 = Axis(fig[1, 2], xlabel = "Quantile τ", ylabel = "QTE(τ)",
+ax2 = Axis(fig[1, 2], xlabel = "Quantile q", ylabel = "QTE(q)",
            title = "QTE — distribution-level effect")
 lines!(ax2, collect(qte_grid), qte_est, color = :purple, linewidth = 2)
 hlines!(ax2, [ate_true], color = :black, linewidth = 1.5, linestyle = :dash)
@@ -255,8 +269,9 @@ Z2 = rand(Bernoulli(0.5), n)
 # High X → much more likely to take treatment (selection on X, the modifier)
 pD0_2 = @. clamp(0.10 + 0.20 * U2 + 0.6 * X2, 0, 1)
 pD1_2 = @. clamp(pD0_2 + 0.50, 0, 1)
-D0_2  = @. rand() < pD0_2
-D1_2  = @. rand() < pD1_2
+V2    = rand(n)            # shared draw: monotonicity exact, as above
+D0_2  = V2 .< pD0_2
+D1_2  = V2 .< pD1_2
 D2    = ifelse.(Z2 .== 1, D1_2, D0_2)
 Y0_2  = 0.5 .* X2 .+ 0.3 .* U2 .+ randn(n)
 Y1_2  = Y0_2 .+ τ.(X2)
@@ -269,7 +284,7 @@ late2 = mean((Y1_2 .- Y0_2)[(D1_2 .== 1) .& (D0_2 .== 0)])
 @printf("Selection-on-X DGP:\n")
 @printf("  ATE  = %.3f\n", ate2)
 @printf("  ATT  = %.3f (now higher because treated have higher X → larger τ)\n", att2)
-@printf("  LATE = %.3f (compliers' mean X)\n", late2)
+@printf("  LATE = %.3f (average τ(X) among compliers)\n", late2)
 ```
 
 Now ATT is larger than ATE. The treated group has higher $X$, and high $X$
@@ -286,7 +301,7 @@ The estimand should come from the research question:
 | "What did treating the currently-treated achieve?" | ATT |
 | "What can the instrument tell us?" (e.g. policy expansion that's already in place) | LATE |
 | "Who benefits most?" | CATE(x) |
-| "Does the effect vary across the outcome distribution?" | QTE(τ) |
+| "Does the effect vary across the outcome distribution?" | QTE(q) |
 | "What is the distribution of individual effects?" | Often unidentifiable; bounds required |
 
 It is fine for one paper to report more than one estimand, as long as each is
@@ -297,7 +312,7 @@ to estimate and call it "the causal effect."
 
 - ATE, ATT and LATE are different averages of the individual treatment
   effect.
-- CATE($x$) keeps heterogeneity by covariates. QTE($\tau$) describes changes
+- CATE($x$) keeps heterogeneity by covariates. QTE($q$) describes changes
   in the outcome distribution.
 - With heterogeneous effects, IV estimates LATE. It should not be described
   as ATE unless extra assumptions justify that interpretation. This is the

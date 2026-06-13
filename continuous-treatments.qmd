@@ -166,10 +166,13 @@ fig2
 In this example the GPS estimator tracks the nonlinear curve much better
 than the naive linear regression.
 
-## Doubly-robust dose-response (Kennedy 2017)
+## Doubly-robust dose-response estimation
 
-The DR estimator is the continuous-treatment analogue of AIPW. It combines
-an outcome model $\hat\mu(d,x)$ with the GPS $\hat r(d \mid x)$:
+A kernel-localized AIPW estimator — in the spirit of
+@kennedy-2017-continuous, who develop a more elaborate pseudo-outcome
+version with formal guarantees — is the continuous-treatment analogue of
+AIPW. It combines an outcome model $\hat\mu(d,x)$ with the GPS
+$\hat r(d \mid x)$:
 
 $$
 \hat\mu_{DR}(d) = \frac{1}{n} \sum_i \hat\mu(d, X_i) + \sum_i \tilde w_i(d)\,\bigl(Y_i - \hat\mu(D_i, X_i)\bigr), \qquad
@@ -210,7 +213,7 @@ ax3 = Axis(fig3[1, 1], xlabel = "Dose D", ylabel = "E[Y(d)]",
 lines!(ax3, ds, truth, color = :black, linestyle = :dash,
        linewidth = 2, label = "Truth")
 lines!(ax3, ds, hi_dose, label = "Hirano-Imbens GPS")
-lines!(ax3, ds, dr_dose, label = "DR (Kennedy 2017)")
+lines!(ax3, ds, dr_dose, label = "DR (kernel AIPW)")
 axislegend(ax3, position = :rt, framevisible = false)
 fig3
 ```
@@ -287,6 +290,6 @@ not need to reimplement it.
   curve, not a single coefficient.
 - GPS extends propensity-score logic to continuous treatments by modeling
   the density of treatment given covariates.
-- Kennedy's DR estimator adds an outcome model to the GPS.
+- The kernel-AIPW doubly-robust estimator adds an outcome model to the GPS.
 - For modified treatment policies and time-varying continuous treatments,
   use R's `lmtp` package.

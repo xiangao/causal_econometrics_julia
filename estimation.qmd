@@ -121,7 +121,7 @@ lm_ra = lm(@formula(net_tfa ~ p401 * (inc_dm + age_dm)), data)
 show_regression_html(lm_ra)
 ```
 
-After demeaning the covariates, we include all interactions of demeaned covariates with treatment. The coefficient on $W$ is the average treatment effect.
+After demeaning the covariates, we include all interactions of demeaned covariates with treatment. Because the covariates are demeaned at *treated-group* means, the coefficient on $W$ is the ATT (demeaning at whole-sample means would give the ATE instead).
 
 
 ### Questions on RA
@@ -131,7 +131,7 @@ After demeaning the covariates, we include all interactions of demeaned covariat
 
 Answers:
 
-1.  It has been shown (Słoczyński (2022, REStat)) that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we'll get biased estimates, for $\tau_{ATT}$ or $\tau_{ATE}$. The intuition is that we need to model the difference between treated and control, and the difference is not constant across $X$.
+1.  It has been shown [@sloczynski-2022] that with heterogeneous treatment effect, and unequal divide between treated and control, we need to do the interaction term. Otherwise, we'll get biased estimates, for $\tau_{ATT}$ or $\tau_{ATE}$. The intuition is that we need to model the difference between treated and control, and the difference is not constant across $X$.
 2.  If we don't de-mean $X$, then the coefficient on $W$ is not the average treatment effect. We can still retrieve the ATT or ATE by calculating the marginal effect of $W$ though.
 
 ## IPW
@@ -237,7 +237,7 @@ The idea of IPWRA is to combine RA and IPW. Basically RA with IPW weights.
 Implementation:
 
 -   Estimate propensity score. Get predicted probability of treated for each observation.
--   Estimate outcome model. But cannot use fully interaction of treatment and covariates. Instead, estimate two equations, one for treated and one for control. Use $1/\hat \pi(X)$ as weights for treated group and $1/(1-\hat \pi(X))$ as weights for control group.
+-   Estimate outcome model: two separate weighted equations, one for treated and one for control, using $1/\hat \pi(X)$ as weights for the treated group and $1/(1-\hat \pi(X))$ for the control group. (A single weighted regression with full treatment-covariate interactions would give numerically identical fits — the normal equations are block-diagonal — so the two-equation form is a convenience, not a requirement.)
 -   Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.
 -   Take difference. The average is the ATE.
 

@@ -124,7 +124,7 @@ However, what is $\beta$ here?
 
 ## Goodman-Bacon Decomposition
 
-Goodman-Bacon (2021) showed that $\beta$ in the TWFE is a weighted average of many different treatment effects, between treated cohorts, and control units, both can be different at different time points. The weights are a function of the size of the subsample, relative size of treatment and control units, and the timing of treatment in the sub sample. They can be negative. The units treated earlier can still be used as controls later. Therefore there is no meaningful interpretation of $\beta$. It does not need to be a convex combination of treatment effects.
+Goodman-Bacon (2021) showed that $\beta$ in the TWFE is a weighted average of many different treatment effects, between treated cohorts, and control units, both can be different at different time points. The weights are a function of the size of the subsample, relative size of treatment and control units, and the timing of treatment in the sub sample. The decomposition weights themselves are non-negative and sum to one; the problem is that the units treated earlier are used as controls later. When those "forbidden" 2x2 comparisons are expressed in terms of the underlying cohort-time ATTs, some ATTs receive negative weight (de Chaisemartin and D'Haultfœuille 2020). Therefore there is no meaningful interpretation of $\beta$: it does not need to be a convex combination of treatment effects.
 
 ![Bacon decomposition](images/bacon1.png)
 
@@ -335,9 +335,7 @@ The correct Wooldridge ETWFE specification for a nonlinear model uses:
 - **Year FE** (common time trend): identified from never-treated units
 - **Post-treatment cohort×year dummies** (one per treated cohort per post-treatment year): capture the ATTs on the log scale
 
-Critically, this is a **pooled model**, not a within-estimator. Using unit FE (`fe(id)`) instead of cohort FE creates contamination bias by mixing pre- and post-treatment variation in the within-unit demeaning.
-
-This is why the cohort-FE requirement matters only for nonlinear (Poisson/logit) ETWFE: in the *linear* Gaussian examples above, unit FE and cohort FE give identical ATTs because the cohort effects are collinear with unit FE and the cohort×year interactions still identify the ATTs within cohort. The within-unit transform does not pass through the nonlinear link, so for Poisson/logit it must be cohort FE.
+Critically, this is a **pooled model**, not a within-estimator. In the *linear* Gaussian examples above, unit FE and cohort FE give numerically identical ATTs (Wooldridge 2021). In nonlinear models, however, unit fixed effects raise the incidental-parameters problem and make average partial effects uncomputable — the unit intercepts cannot be averaged out of the nonlinear link. Wooldridge (2023) instead uses cohort intercepts (a Mundlak device), which is what `etwfe` implements; that is why the cohort-FE requirement matters only for Poisson/logit ETWFE.
 
 ### Simulated example: staggered count data
 

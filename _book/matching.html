@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="62c1e6dc" class="cell" data-execution_count="2">
+<div id="65a7a344" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -625,7 +625,7 @@ Paired-diff SE: 0.032
 95% CI: [1.225, 1.350]</code></pre>
 </div>
 </div>
-<p>The matched estimate is close to the truth in this simulation. For matched pairs, the paired-difference standard error is the natural first check.</p>
+<p>The matched estimate is still visibly biased (compare it to the truth of 1.0). The balance table above says why: with 818 treated units and only 1,182 controls, 1:1 matching without replacement exhausts the good controls, and the post-matching standardized mean differences (0.27 and 0.15) remain above the 0.1 threshold. Residual imbalance means residual confounding. The with-replacement, IPW, and entropy-balancing estimates below, which are not constrained to use each control at most once, all land much closer to the truth. For matched pairs, the paired-difference standard error is the natural first check.</p>
 </section>
 <section id="matching-with-replacement" class="level2" data-number="7.7">
 <h2 data-number="7.7" class="anchored" data-anchor-id="matching-with-replacement"><span class="header-section-number">7.7</span> Matching with replacement</h2>
@@ -679,7 +679,7 @@ True ATE:              1.000</code></pre>
 <p><span class="math display">\[
 \min_{w_i \geq 0} \sum_i w_i \log w_i \quad \text{subject to} \quad
 \sum_i w_i x_{ik} = \bar x_{k}^{\text{treated}} \;\; \forall k, \quad
-\sum_i w_i = N_{\text{treated}}.
+\sum_i w_i = 1.
 \]</span></p>
 <p>The dual problem has one parameter per balance constraint:</p>
 <p><span class="math display">\[

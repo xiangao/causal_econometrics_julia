@@ -50,8 +50,9 @@ intervals. For that workflow, use the R companion chapter.
 
 ## The data-generating process
 
-I reuse the DGP from the estimands chapter. The true CATE is
-$\tau(x)=1+2x_1$.
+I use the same CATE function as the estimands chapter,
+$\tau(x)=1+2x_1$ (the rest of the DGP differs: five covariates and
+confounding through the observed $X_2$).
 
 ```{julia}
 #| label: dgp
@@ -165,7 +166,7 @@ The T-learner gives treatment and control separate outcome models. It can
 work well, but it can extrapolate badly when treated and control covariate
 distributions do not overlap.
 
-## X-learner (Künzel et al. 2019)
+## X-learner [@kunzel-2019-metalearners]
 
 The X-learner starts from the T-learner. It imputes missing potential
 outcomes, creates pseudo-treatment effects, smooths them over $X$, and then
@@ -194,7 +195,7 @@ tau_X = e_hat .* tau_X0 .+ (1 .- e_hat) .* tau_X1
 The X-learner is useful when one treatment arm is much smaller than the
 other.
 
-## R-learner (Nie & Wager 2021)
+## R-learner [@nie-wager-2021]
 
 The R-learner partials out the main effects of $X$ from both $Y$ and $D$:
 
@@ -239,7 +240,7 @@ tau_R = rf_fit_predict(X, pseudo_R, X; weights = weights_R)
 The R-learner is often stable when overlap is reasonable because nuisance
 model errors have only second-order effects on the target.
 
-## DR-learner (Kennedy 2020)
+## DR-learner [@kennedy-2020-optimal-dr]
 
 The DR-learner uses an AIPW-style pseudo-outcome and then regresses it on
 $X$:
@@ -307,7 +308,7 @@ covariates are associated with larger effects? The best linear projection is
 the OLS regression of pseudo-outcomes on covariates:
 
 $$
-\text{BLP}(X) = \arg\min_{\beta} \mathbb{E}\left[(\tau(X) - X'\beta)^2\right].
+\text{BLP}(X) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right].
 $$
 
 A doubly-robust BLP uses the DR-learner pseudo-outcomes:
@@ -325,10 +326,14 @@ println(coeftable(blp_fit))
 Here the coefficient on $X_1$ should be close to 2, and the coefficients on
 the other variables should be close to 0.
 
-## CLAN: testing for heterogeneity
+## GATES: sorted group ATEs
 
-CLAN is a simple way to report heterogeneity. Sort observations by predicted
-CATE, split them into bins, and estimate the ATE in each bin.
+GATES (group average treatment effects) is a simple way to report
+heterogeneity [@chernozhukov-2018-generic-ml]. Sort observations by
+predicted CATE, split them into bins, and estimate the ATE in each bin.
+(The same paper's CLAN — classification analysis — is the natural
+companion: compare average *covariates* between the most- and
+least-affected bins; here that would show high $X_1$ in the top quintile.)
 
 ```{julia}
 #| label: clan
@@ -361,6 +366,10 @@ end
 ```
 
 Quintile 5 should have a larger ATE than quintile 1 in this simulation.
+One caveat: the quintiles are formed from the same pseudo-outcomes used to
+estimate the group ATEs, which biases the spread outward (the top bin
+collects positive noise, the bottom bin negative noise). For inference,
+form the groups and estimate the ATEs on separate folds.
 
 ## Variable importance — which covariate drives heterogeneity?
 
@@ -401,33 +410,52 @@ For interpretability, we can restrict the policy to a single threshold rule.
 #| label: policy
 #| cache: true
 
-cost = 0.5
+# cost = 2 makes the problem non-degenerate: tau(x) = 1 + 2 x1 is in [1, 3],
+# so the optimal rule is "treat iff x1 > 0.5" (about half the population).
+# A cost below 1 would make treat-everyone optimal and there would be
+# nothing for a policy to learn.
+cost = 2.0
 
-# Optimal individualised policy (using estimated CATE)
-treat_optimal = tau_DR .> cost
-welfare_opt   = mean((treat_optimal .== 1) .* (pseudo_DR .- cost) .+
-                     (treat_optimal .== 0) .* 0.0)
+# Welfare of a rule = average gain over treating nobody, evaluated with the
+# DR scores: mean over units of treat(x) * (pseudo_DR - cost)
+welfare(treat) = mean(treat .* (pseudo_DR .- cost))
 
-# Naive "treat everyone" policy
-welfare_all   = mean(pseudo_DR .- cost)
+welfare_all  = welfare(trues(n))            # treat everyone
+treat_est    = tau_DR .> cost               # rule from the ESTIMATED CATE
+treat_true   = tau .> cost                  # oracle rule (simulation only)
 
-# Simple threshold rule on X1
-function threshold_welfare(thresh)
-    treat = X[:, 1] .> thresh
-    mean(treat .* (pseudo_DR .- cost) .+ (1 .- treat) .* 0.0)
-end
-
+# Simple threshold-rule family on X1
 threshes = 0:0.05:1
-welfares = [threshold_welfare(t) for t in threshes]
+welfares = [welfare(X[:, 1] .> t) for t in threshes]
 best_t   = threshes[argmax(welfares)]
 
-@printf("Welfare (treat everyone):                  %.3f\n", welfare_all)
-@printf("Welfare (treat if τ̂(x) > %.2f):           %.3f\n", cost, welfare_opt)
+@printf("Treatment rates: estimated rule %.2f, oracle rule %.2f\n",
+        mean(treat_est), mean(treat_true))
+@printf("Welfare (treat everyone):                    %.3f\n", welfare_all)
+@printf("Welfare (oracle rule τ(x) > %.0f):            %.3f\n", cost, welfare(treat_true))
 @printf("Welfare (best X1-threshold rule, X1 > %.2f): %.3f\n",
         best_t, maximum(welfares))
+@printf("Welfare (τ̂-rule, SAME scores, biased):       %.3f\n", welfare(treat_est))
+@printf("Welfare (τ̂-rule, evaluated on true τ):       %.3f\n",
+        mean(treat_est .* (tau .- cost)))
 ```
 
-The threshold rule gives up flexibility, but it is easy to explain.
+The threshold rule gives up flexibility, but it is easy to explain — and it
+recovers the oracle threshold of $0.5$ almost exactly.
+
+One number above deserves a warning. The $\hat\tau$-rule "evaluated" with the
+same DR scores that selected it appears to beat even the oracle rule — which
+is impossible in expectation. Selecting units whose noisy score is high and
+then averaging those same scores is optimistic by construction. In a
+simulation we can evaluate the rule against the true $\tau(x)$ instead (the
+last line): the honest value is positive — better than treating everyone —
+but well below the oracle, because the noisy CATE estimates misclassify many
+units near the threshold. Both lessons matter: never evaluate a rule on the
+scores that chose it (in real data, estimate the rule and evaluate its
+welfare on separate folds), and do not expect an estimated rule to attain
+oracle welfare. Here the simple $X_1$-threshold rule, which searches a small
+one-dimensional family, gets essentially the oracle value — restricting the
+policy class is a form of regularisation.
 
 For more on policy trees with IPW and AIPW losses (using
 R's `policytree` package), see the
@@ -455,19 +483,22 @@ firm_id  = repeat(1:n_firms, inner = n_t)
 unit_fe  = randn(n_firms) .* 1.5
 V1_firm  = randn(n_firms) .* 1.0
 V1_panel = V1_firm[firm_id] .+ 0.3 .* randn(N)
-W_panel  = Float64.(rand(N) .< @. 1 / (1 + exp(-(0.5 + 0.3 * V1_firm[firm_id]))))
+# The unit effect drives BOTH treatment and the outcome (classic
+# fixed-effect confounding); unit_fe is unobserved to the learner.
+W_panel  = Float64.(rand(N) .<
+           @. 1 / (1 + exp(-(0.3 * V1_firm[firm_id] + 0.5 * unit_fe[firm_id]))))
 tau_panel = @. 0.5 + 1.0 * V1_panel
-Y_panel  = unit_fe[firm_id] .+ V1_panel .+ W_panel .+
-           tau_panel .* (W_panel .- mean(W_panel)) .+ randn(N)
+Y_panel  = unit_fe[firm_id] .+ V1_panel .+ tau_panel .* W_panel .+ randn(N)
 
 df_panel = DataFrame(firm = firm_id, V1 = V1_panel, W = W_panel, Y = Y_panel)
-# The marginal effect of switching W 0->1 is 1 (additive +W_panel term) plus
-# tau_panel (the demeaned heterogeneous term), so the true ATE is 1 + mean(tau_panel).
-true_panel_ate = mean(1 .+ tau_panel)
+# Y(1) - Y(0) = tau_panel exactly, so the true ATE is mean(tau_panel).
+true_panel_ate = mean(tau_panel)
 @printf("True panel ATE: %.3f\n", true_panel_ate)
 ```
 
-A naive T-learner ignores the firm fixed effects:
+A naive T-learner ignores the firm fixed effects. Because `unit_fe` raises
+both the treatment probability and the outcome, and is not in the learner's
+covariates, the naive estimate is badly biased upward:
 
 ```{julia}
 #| label: panel-naive
@@ -508,12 +539,17 @@ mu1_dm = rf_fit_predict(X_dm[idx_T_dm, :], df_dm.Y_dm[idx_T_dm], X_dm)
 mu0_dm = rf_fit_predict(X_dm[idx_C_dm, :], df_dm.Y_dm[idx_C_dm], X_dm)
 tau_dm = mu1_dm .- mu0_dm
 
+# The two demeaned groups differ in W_dm by less than a full 0 -> 1 switch
+# (treated-above-average vs below-average within firm), so the raw contrast
+# is attenuated; rescale by the W_dm gap, as in a Wald estimator.
+w_gap = mean(df_dm.W_dm[idx_T_dm]) - mean(df_dm.W_dm[idx_C_dm])
 @printf("Within-transform T-learner ATE: %.3f  (true = %.3f)\n",
-        mean(tau_dm), true_panel_ate)
+        mean(tau_dm) / w_gap, true_panel_ate)
 ```
 
-The within transformation removes the fixed effects. The cost is variance,
-because identification now comes from within-firm variation.
+The within transformation removes the fixed effects, and the rescaled
+contrast lands near the truth. The cost is variance, because identification
+now comes from within-firm variation.
 
 For R's `grf::causal_forest`, pass `clusters = firm_id` so the honest sample
 split keeps each firm's observations together. Julia does not currently have
@@ -527,7 +563,7 @@ for the GRF-based workflow.
 - Meta-learners turn regression tools into CATE estimators.
 - In Julia they can be built with `MLJ` random forests, but there is no full
   `grf` equivalent yet.
-- BLP and CLAN summarize heterogeneity in regression-style output.
+- BLP and GATES summarize heterogeneity in regression-style output.
 - Policy learning turns CATE estimates into treatment rules.
 - In applied work, compare at least two CATE estimators and report simple
   heterogeneity summaries, not only a CATE scatterplot.

@@ -197,7 +197,7 @@ f1_cpdag_pc = f1_score(true_dag,  cpdag_pc)
 The **F1 score** is the harmonic mean of precision and recall, ranging from 0 (worst) to 1 (perfect).
 
 - **Skeleton F1** measures whether the algorithm found the right edges regardless of direction. An edge is a true positive if it exists in both the estimated skeleton and the true one.
-- **CPDAG F1** is stricter: a directed edge $X \to Y$ is only a true positive if the true DAG also has $X \to Y$; an undirected edge $X - Y$ counts as correct if the true DAG has *either* direction.
+- **CPDAG F1** is stricter: it compares the two graphs' directed-edge sets, with an undirected CPDAG edge represented as *both* directions. A correctly-adjacent but unoriented edge therefore contributes one true positive (the direction matching the true DAG) and one false positive (the reverse) — a partial penalty — while a wrongly oriented edge contributes a false positive and a false negative.
 
 A high skeleton F1 with lower CPDAG F1 means the algorithm found the right adjacencies but left some edges unoriented — the typical case when the MEC contains many equivalent DAGs.
 :::
@@ -456,9 +456,12 @@ side_by_side([
 ::: {.callout-important}
 **Read the disagreement, not just the agreement.** A purely data-driven method
 may orient an edge as `MATH → HISEI` — a child's test score causing their
-parent's occupational status. That is causally backwards, and no CI test can
-rule it out, because `HISEI → MATH` and `MATH → HISEI` are Markov-equivalent.
-This is exactly why background knowledge is not optional.
+parent's occupational status. That is causally backwards, and the data cannot
+protect us: which direction this edge takes is not identifiable from
+observational data alone, so any orientation the algorithm prints reflects
+its (possibly mistaken) v-structure decisions under misspecification, not
+evidence about the true direction. This is exactly why background knowledge
+is not optional.
 :::
 
 ### Orienting with background knowledge
@@ -494,8 +497,9 @@ oriented_admg = make_graph(vertices=Symbol.(plabs), di_edges=di_e, bi_edges=bi_e
 ::: {.callout-warning}
 **Where data-driven orientation disagreed with us.** Left to itself, an
 algorithm may orient `IMMIG–GRADE` as `GRADE → IMMIG` — schooling causing
-immigration status, which is impossible. No CI test could have prevented it: the
-two orientations are Markov-equivalent. Imposing the tier order overrides it.
+immigration status, which is impossible. Such mistakes come from v-structure
+and propagation decisions made under misspecification; the data is not
+informative about these directions. Imposing the tier order overrides them.
 The lesson: **never ship a discovered orientation you have prior reason to
 disbelieve**.
 :::
@@ -507,8 +511,9 @@ draw_graph(oriented_admg; direction="LR")
 ```
 
 Every edge into `MATH` is now a candidate causal parent of achievement — the
-bridge from discovery to estimation (back-door adjustment on the parents of the
-outcome). The only edge the ordering leaves undirected, `HISEI – HOMEPOS`, is
+bridge from discovery to estimation (back-door adjustment, e.g. on the parents
+of the chosen treatment variable). The only edge the ordering leaves
+undirected, `HISEI – HOMEPOS`, is
 two same-tier measures of family background that temporal logic cannot separate.
 
 ### Stability: does the skeleton survive resampling?

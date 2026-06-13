@@ -65,7 +65,7 @@ For example, an IF-based bias-corrected estimator for the treated-arm mean $$\ha
 
 Since we know the influence function, we can calculate its variance. This variance is the same as variance of $\hat \psi$ since they differ by a constant $\psi$. We can use any estimators to estimate the nuisance parameters, then get $\hat \psi$. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.
 
-In this estimator, both $\hat \mu$ and $\hat \pi$ can be done using any estimator, such as machine learning.
+In this estimator, both $\hat \mu$ and $\hat \pi$ can be done using any estimator, such as machine learning. One caveat: with adaptive learners (random forests, boosting), the nuisance fits should be *cross-fit* — predicted for each observation from a model trained without it — otherwise own-observation overfitting can bias the estimate. The manual AIPW below reuses full-sample fits to keep the code short; the `CausalEstimate.jl` calls use `crossfit=5`.
 
 ### Simulation Setup
 
@@ -305,13 +305,13 @@ The basic idea of doubleML is to use any machine learning algorithm to estimate 
 
 Then regress $\hat W$ on $\hat V$. Based on FWL theorem, you get $\hat \theta$.
 
-An important component here is to specify a Neyman-orthogonal score function. In the case of PLR, it can be the product of the two residuals:
+An important component here is to specify a Neyman-orthogonal score function. The *partialling-out* form, which is what the residual-on-residual regression below implements, is
 
-$$\psi (W; \theta, \eta) = (Y-D\theta -g(X))(D-m(X)) $$
+$$\psi (W; \theta, \eta) = \big(Y - l(X) - \theta\,(D-m(X))\big)\,(D-m(X)),$$
 
-The estimator $\hat \theta$ is to solve the equation that the sample mean of this score function being 0.
+with $l(X)=E[Y\mid X]$ and $m(X)=E[D\mid X]$. The estimator $\hat \theta$ solves the equation that the sample mean of this score function is 0.
 
-And the variance of this score function is used as the variance of the doubleML estimator's variance.
+The estimator's variance is the sandwich $J^{-1}\,E[\psi^2]\,J^{-1}$ with Jacobian $J = E[\partial\psi/\partial\theta] = -E[(D-m(X))^2]$ — this is what the code computes by dividing the score variance by $\big(\tfrac1n\sum \hat V_i^2\big)^2$.
 
 ```{julia}
 #| warning: false

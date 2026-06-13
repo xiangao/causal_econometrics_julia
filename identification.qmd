@@ -157,26 +157,37 @@ where $\rho= P(W=1)$.
 
 ## Identification: From Potential Outcome to Observed
 
-We focus on $\tau_{ATT}$. To identify it, we need: $$ E[Y(1) | W=1)]$$ which is easy, because we observe it.
+We focus on $\tau_{ATT}$. To identify it, we need: $$ E[Y(1) | W=1]$$ which is easy, because we observe it.
 
 And we need $$ E[Y(0) | W=1]$$
 
-To identify this, we'll need unconfoundedness: $$ E[Y(0) | W, X] = E[Y(0)| X] $$ and overlap: $$ 0 < \pi(X)= P(W=1 | X=x) < 1 $$
+To identify this, we'll need unconfoundedness: $$ E[Y(0) | W, X] = E[Y(0)| X] $$ and overlap: $$ \pi(x)= P(W=1 | X=x) < 1$$ (for the ATT only $\pi(x)<1$ is needed; the ATE requires $0<\pi(x)<1$).
 
-Under unconfoundedness:
+Unconfoundedness says that within each subgroup $X=x$, treated and
+control units have the same mean of $Y(0)$:
+$E[Y(0)|W=1,X=x]=E[Y(0)|W=0,X=x]=E[Y|W=0,X=x]$. Averaging over the
+covariate distribution of the treated,
 
-$$ E[Y(0)| W=1] = E[Y(0) | W=0] $$
+$$ E[Y(0)| W=1] = E\big[ E[Y | W=0, X] \mid W=1 \big], $$
+
+which involves only observed data. Therefore ATT is identified:
 
 $$ \small \begin{align}
 \tau_{ATT} &=  E[Y(1) - Y(0) | W=1] \\
-&= E[Y(1)|W=1] - E[Y(0)|W=0] \\
-&= E[Y|W=1] - E[Y|W=0]
+&= E[Y|W=1] - E\big[ E[Y | W=0, X] \mid W=1 \big]
 \end{align}
 $$
 
-Therefore ATT is identified. In randomised experiments, we can assume unconfoundedness. A difference-in-means estimator is consistent.
+Note the conditional-on-$X$ assumption does NOT imply the marginal
+equality $E[Y(0)|W=1]=E[Y(0)|W=0]$: treated and control units have
+different covariate distributions, so the adjustment over $X$ is
+essential. In a randomised experiment, unconfoundedness holds without
+conditioning on $X$ (i.e. $E[Y(0)|W]=E[Y(0)]$); then
+$E[Y(0)|W=1]=E[Y(0)|W=0]=E[Y|W=0]$, the formula collapses to
+$E[Y|W=1]-E[Y|W=0]$, and a difference-in-means estimator is
+consistent.
 
-$$ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 $$
+$$ \hat{\tau}_{ATT} = \bar Y_1 - \bar Y_0 $$
 
 But in observational studies, most cases we cannot assume unconfoundedness. What can we do to justify unconfoundedness better?
 

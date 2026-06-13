@@ -218,12 +218,30 @@ iv_bad  = feiv(df_bad, @formula(Y ~ 1), endo = :X, inst = :B)
 
 @printf("True beta: %.3f\n", beta_true)
 @printf("Shift-share IV with bad share 1: %.3f\n", coef(iv_bad)[1])
+
+# Would the Rotemberg weights have flagged industry 1?
+rw_bad = rotemberg_weights(shares_bad, shocks, X_bad, Y_bad)
+ord    = sortperm(abs.(rw_bad.alpha), rev = true)
+rank1  = findfirst(==(1), rw_bad.industry[ord])
+@printf("Rotemberg weight of industry 1: %.3f (rank %d of %d by |α|)\n",
+        rw_bad.alpha[rw_bad.industry .== 1][1], rank1, nrow(rw_bad))
+
+# Leave-one-industry-out: rebuild the instrument without industry 1
+B_loo  = bartik_iv(shares_bad[:, 2:end], shocks[2:end])
+df_loo = DataFrame(X = X_bad, Y = Y_bad, B = B_loo)
+iv_loo = feiv(df_loo, @formula(Y ~ 1), endo = :X, inst = :B)
+@printf("Leave-industry-1-out IV: %.3f\n", coef(iv_loo)[1])
 ```
 
 The estimate is biased, and the bias comes from one industry's share being
-related to the error. Rotemberg weights would flag that industry as important.
-A leave-one-industry-out check would show how much the estimate depends on
-it.
+related to the error. Note what the diagnostics do and do not catch here.
+The endogenous industry's Rotemberg weight is unremarkable — it ranks third
+of twenty — because the weights measure *influence* (whose exogeneity the
+estimate leans on most), not *endogeneity*. An industry with a modest weight
+can still move the estimate substantially when its share is correlated with
+the error. What isolates the problem is the **leave-one-industry-out**
+check: dropping industry 1 from the instrument restores an estimate close
+to the truth.
 
 ## BHJ shock-level inference
 
@@ -244,11 +262,12 @@ iv_bhj = feiv(df_collapsed, @formula(Y_agg ~ 1),
 
 @printf("Location-level shift-share IV: %.3f\n", coef(ivss)[1])
 @printf("BHJ shock-level IV:             %.3f\n", coef(iv_bhj)[1])
-@printf("(Should be numerically equal under standard conditions)\n")
+@printf("(Should be close; equivalent in the no-controls case)\n")
 ```
 
-The BHJ shock-level regression is equivalent to the location-level IV when
-there are no controls. Its value is interpretive: validity is now a statement
+The BHJ shock-level regression coincides with the location-level IV when
+there are no controls — up to implementation details of the weighting, so
+expect close rather than identical values in practice. Its value is interpretive: validity is now a statement
 about shocks (20 observations, one per industry) rather than locations (500
 observations), and testing shock-level exogeneity is more transparent.
 
@@ -266,6 +285,11 @@ $$
 where the shocks $\Delta M^{\text{other}}_k$ are growth in Chinese imports
 into other high-income countries. This leave-one-out construction removes
 US-specific demand from the shock.
+
+The snippet below is schematic — the full ADH specification additionally
+needs period effects, the ADH control set, and population weights (a
+validated replication against the GPSS benchmark lives in the
+`ShiftShareIV.jl` repository).
 
 ```{julia}
 #| eval: false

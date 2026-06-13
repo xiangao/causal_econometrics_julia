@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -453,7 +473,7 @@ window.Quarto = {
   <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup"><span class="header-section-number">10.1</span> Setup</a></li>
   <li><a href="#naive-regression-vs-adjusted-regression" id="toc-naive-regression-vs-adjusted-regression" class="nav-link" data-scroll-target="#naive-regression-vs-adjusted-regression"><span class="header-section-number">10.2</span> Naive regression vs adjusted regression</a></li>
   <li><a href="#generalized-propensity-score-hirano-imbens-2004" id="toc-generalized-propensity-score-hirano-imbens-2004" class="nav-link" data-scroll-target="#generalized-propensity-score-hirano-imbens-2004"><span class="header-section-number">10.3</span> Generalized Propensity Score (Hirano-Imbens 2004)</a></li>
-  <li><a href="#doubly-robust-dose-response-kennedy-2017" id="toc-doubly-robust-dose-response-kennedy-2017" class="nav-link" data-scroll-target="#doubly-robust-dose-response-kennedy-2017"><span class="header-section-number">10.4</span> Doubly-robust dose-response (Kennedy 2017)</a></li>
+  <li><a href="#doubly-robust-dose-response-estimation" id="toc-doubly-robust-dose-response-estimation" class="nav-link" data-scroll-target="#doubly-robust-dose-response-estimation"><span class="header-section-number">10.4</span> Doubly-robust dose-response estimation</a></li>
   <li><a href="#multivalued-treatments" id="toc-multivalued-treatments" class="nav-link" data-scroll-target="#multivalued-treatments"><span class="header-section-number">10.5</span> Multivalued treatments</a></li>
   <li><a href="#when-to-reach-for-these-methods" id="toc-when-to-reach-for-these-methods" class="nav-link" data-scroll-target="#when-to-reach-for-these-methods"><span class="header-section-number">10.6</span> When to reach for these methods</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">10.7</span> Summary</a></li>
@@ -482,7 +502,7 @@ window.Quarto = {
 </header>
 
 
-<div id="299a232a" class="cell" data-execution_count="2">
+<div id="b6233da5" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -615,9 +635,9 @@ r(d, x) = f_{D \mid X}(d \mid x).
 </div>
 <p>In this example the GPS estimator tracks the nonlinear curve much better than the naive linear regression.</p>
 </section>
-<section id="doubly-robust-dose-response-kennedy-2017" class="level2" data-number="10.4">
-<h2 data-number="10.4" class="anchored" data-anchor-id="doubly-robust-dose-response-kennedy-2017"><span class="header-section-number">10.4</span> Doubly-robust dose-response (Kennedy 2017)</h2>
-<p>The DR estimator is the continuous-treatment analogue of AIPW. It combines an outcome model <span class="math inline">\(\hat\mu(d,x)\)</span> with the GPS <span class="math inline">\(\hat r(d \mid x)\)</span>:</p>
+<section id="doubly-robust-dose-response-estimation" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="doubly-robust-dose-response-estimation"><span class="header-section-number">10.4</span> Doubly-robust dose-response estimation</h2>
+<p>A kernel-localized AIPW estimator — in the spirit of <span class="citation" data-cites="kennedy-2017-continuous">Kennedy et al. (<a href="references.html#ref-kennedy-2017-continuous" role="doc-biblioref">2017</a>)</span>, who develop a more elaborate pseudo-outcome version with formal guarantees — is the continuous-treatment analogue of AIPW. It combines an outcome model <span class="math inline">\(\hat\mu(d,x)\)</span> with the GPS <span class="math inline">\(\hat r(d \mid x)\)</span>:</p>
 <p><span class="math display">\[
 \hat\mu_{DR}(d) = \frac{1}{n} \sum_i \hat\mu(d, X_i) + \sum_i \tilde w_i(d)\,\bigl(Y_i - \hat\mu(D_i, X_i)\bigr), \qquad
 \tilde w_i(d) = \frac{w_i(d)}{\sum_j w_j(d)}, \quad w_i(d) = \frac{K_h(D_i - d)}{\hat r(D_i \mid X_i)}
@@ -650,7 +670,7 @@ r(d, x) = f_{D \mid X}(d \mid x).
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax3, ds, truth, color <span class="op">=</span> <span class="op">:</span>black, linestyle <span class="op">=</span> <span class="op">:</span>dash,</span>
 <span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>       linewidth <span class="op">=</span> <span class="fl">2</span>, label <span class="op">=</span> <span class="st">"Truth"</span>)</span>
 <span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax3, ds, hi_dose, label <span class="op">=</span> <span class="st">"Hirano-Imbens GPS"</span>)</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax3, ds, dr_dose, label <span class="op">=</span> <span class="st">"DR (Kennedy 2017)"</span>)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">lines!</span>(ax3, ds, dr_dose, label <span class="op">=</span> <span class="st">"DR (kernel AIPW)"</span>)</span>
 <span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="fu">axislegend</span>(ax3, position <span class="op">=</span> <span class="op">:</span>rt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
 <span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>fig3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
@@ -718,11 +738,16 @@ r(d, x) = f_{D \mid X}(d \mid x).
 <ul>
 <li>Continuous and multivalued treatments usually require a dose-response curve, not a single coefficient.</li>
 <li>GPS extends propensity-score logic to continuous treatments by modeling the density of treatment given covariates.</li>
-<li>Kennedy’s DR estimator adds an outcome model to the GPS.</li>
+<li>The kernel-AIPW doubly-robust estimator adds an outcome model to the GPS.</li>
 <li>For modified treatment policies and time-varying continuous treatments, use R’s <code>lmtp</code> package.</li>
 </ul>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-kennedy-2017-continuous" class="csl-entry" role="listitem">
+Kennedy, Edward H., Zongming Ma, Matthew D. McHugh, and Dylan S. Small. 2017. <span>“Non-Parametric Methods for Doubly Robust Estimation of Continuous Treatment Effects.”</span> <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 79 (4): 1229–45.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

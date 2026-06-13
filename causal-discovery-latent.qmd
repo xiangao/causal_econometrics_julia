@@ -107,7 +107,7 @@ Just as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have eq
 | PAG mark | Meaning | Economic interpretation |
 |---|---|---|
 | $X \to Y$ | $X$ causes $Y$ in every equivalent MAG | Robust causal direction |
-| $X \leftarrow\!\!\!\!\circ\; Y$ | Some MAGs have $X \to Y$, others $X \leftarrow Y$ | Direction uncertain |
+| $X \;\circ\!\!\!\to Y$ | Some MAGs have $X \to Y$, others $X \leftrightarrow Y$ (the arrowhead at $Y$ is invariant) | Direction uncertain |
 | $X \leftrightarrow Y$ | Hidden common cause in every equivalent MAG | Definite unmeasured confounder |
 | $X \;\circ\!\!\!\!-\!\!\!\!\circ\; Y$ | Could be $\to$, $\leftarrow$, or $\leftrightarrow$ | Maximally uncertain |
 
@@ -181,9 +181,9 @@ produce bidirected edges for hidden common causes.
 **How FCI extends PC:**
 
 1. **Phase 1 (skeleton):** Same as PC — remove edges via CI tests with growing conditioning sets.
-2. **Phase 2 (initial orientation):** Mark all edge endpoints as $\circ$ (uncertain).
-3. **Phase 3 (collider detection):** For each unshielded triple $X \circ\!-\!\circ Z \circ\!-\!\circ Y$ where $X, Y$ non-adjacent: orient as $X \circ\!\to Z \leftarrow\!\circ Y$ if $Z$ is not in the separating set of $X$ and $Y$.
-4. **Phase 4 (rule propagation):** Apply 10 orientation rules that propagate known marks without creating contradictions, including rules that can produce definite $\to$ and $\leftrightarrow$ edges.
+2. **Phase 2 (initial orientation):** Mark all edge endpoints as $\circ$ (uncertain); orient unshielded colliders as in PC.
+3. **Phase 3 (Possible-D-SEP pruning):** For each remaining edge $X - Y$, compute the **Possible-D-SEP** sets and run *additional* CI tests conditioning on their subsets, removing further edges. With latent variables, two non-adjacent observed nodes need not be separable by a subset of their neighbors — this stage is what makes FCI's skeleton differ from PC's, and it is the computationally expensive part. Colliders are then re-oriented on the pruned skeleton.
+4. **Phase 4 (rule propagation):** Apply the 10 orientation rules (Zhang 2008) that propagate known marks without creating contradictions, including rules that can produce definite $\to$ and $\leftrightarrow$ edges. These rules perform no CI tests and are cheap.
 
 The extra marks let FCI say what is known and what remains uncertain, but the
 output is harder to read than a DAG.
@@ -215,7 +215,7 @@ println(plot_fci_graph_text(pag_fci, ["X$(obs_idx[i])" for i in 1:n_obs]))
 
 The text representation uses ASCII edge marks:
 
-- `X1 --> X2`: definite direct cause ($X_1 \to X_2$ in every equivalent MAG)
+- `X1 --> X2`: definite cause — $X_1$ is an ancestor of $X_2$ in every equivalent MAG (not necessarily a *direct* effect: the path may run through latent mediators)
 - `X1 <-> X2`: definite hidden common cause ($X_1 \leftrightarrow X_2$)
 - `X1 o-> X2`: the $X_1$ endpoint is uncertain; $X_2$ endpoint is definitely an arrowhead
 - `X1 o-o X2`: both endpoints uncertain; could be any of $\to$, $\leftarrow$, $\leftrightarrow$

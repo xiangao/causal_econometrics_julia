@@ -37,7 +37,7 @@ conclusion?
 Here I use three tools:
 
 1. **Cinelli-Hazlett (2020) omitted-variable bias bounds** — robustness
-   values and benchmark comparisons for regression-based estimators.
+   values and benchmark comparisons for OLS regression estimates.
 2. **E-values (VanderWeele-Ding 2017)** — for risk-ratio estimates, the
    minimum strength an unmeasured confounder would need.
 3. **Rosenbaum bounds** — the critical odds ratio of hidden bias that
@@ -259,10 +259,10 @@ away the result.
 
 For matched estimators (propensity score matching, full matching,
 optimal matching), **Rosenbaum bounds** (Rosenbaum 2002) parametrise
-hidden bias as $\Gamma$, the maximum odds ratio of treatment assignment
-within a matched pair due to unobservables. $\Gamma = 1$ corresponds to
-within-pair randomisation; $\Gamma = 2$ means one unit in a matched pair
-was twice as likely to receive treatment due to unobservables.
+hidden bias as $\Gamma$, the maximum ratio of treatment odds between the
+two units of a matched pair due to unobservables. $\Gamma = 1$ corresponds
+to within-pair randomisation; $\Gamma = 2$ means one unit's odds of
+receiving treatment can be up to twice the other's.
 
 For each value of $\Gamma$, the upper-bound $p$-value of the Wilcoxon
 signed-rank test on matched-pair outcome differences is:
@@ -313,7 +313,9 @@ end
 ```
 
 If the critical $\Gamma$ is close to 1, small hidden bias could overturn the
-matched-pair result.
+matched-pair result. (The reported value is the first point *on the 0.25
+grid* at which significance is lost; the actual crossing lies between it and
+the preceding grid point.)
 
 ## Reporting practice
 

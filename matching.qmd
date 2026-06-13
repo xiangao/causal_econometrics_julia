@@ -166,8 +166,15 @@ se    = std(diffs) / sqrt(length(diffs))
 @printf("95%% CI: [%.3f, %.3f]\n", att - 1.96 * se, att + 1.96 * se)
 ```
 
-The matched estimate is close to the truth in this simulation. For matched
-pairs, the paired-difference standard error is the natural first check.
+The matched estimate is still visibly biased (compare it to the truth of
+1.0). The balance table above says why: with 818 treated units and only
+1,182 controls, 1:1 matching without replacement exhausts the good controls,
+and the post-matching standardized mean differences (0.27 and 0.15) remain
+above the 0.1 threshold. Residual imbalance means residual confounding. The
+with-replacement, IPW, and entropy-balancing estimates below, which are not
+constrained to use each control at most once, all land much closer to the
+truth. For matched pairs, the paired-difference standard error is the
+natural first check.
 
 ## Matching with replacement
 
@@ -233,7 +240,7 @@ control units that solve
 $$
 \min_{w_i \geq 0} \sum_i w_i \log w_i \quad \text{subject to} \quad
 \sum_i w_i x_{ik} = \bar x_{k}^{\text{treated}} \;\; \forall k, \quad
-\sum_i w_i = N_{\text{treated}}.
+\sum_i w_i = 1.
 $$
 
 The dual problem has one parameter per balance constraint:

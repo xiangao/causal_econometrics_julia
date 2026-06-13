@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -502,7 +522,7 @@ window.Quarto = {
 </header>
 
 
-<div id="65fe2b0e" class="cell" data-execution_count="2">
+<div id="36a54cce" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span>, <span class="bu">DataFramesMeta</span></span>
@@ -526,7 +546,12 @@ window.Quarto = {
 </section>
 <section id="nonlinear-second-stage-cf-diverges-from-2sls" class="level3" data-number="18.1.2">
 <h3 data-number="18.1.2" class="anchored" data-anchor-id="nonlinear-second-stage-cf-diverges-from-2sls"><span class="header-section-number">18.1.2</span> Nonlinear second stage — CF diverges from 2SLS</h3>
-<p>When the conditional mean is <span class="math inline">\(\exp(\mathbf{x}\boldsymbol{\beta})\)</span> (Poisson), a direct IV/GMM approach solves the moment conditions <span class="math inline">\(E[\mathbf{z}'(y_1 - \exp(\mathbf{x}\boldsymbol{\beta}))] = 0\)</span> without modifying the exponential mean. The <strong>control function approach</strong> instead imposes the stronger <em>conditional mean assumption</em> (Wooldridge 2002, 2014):</p>
+<p>When the conditional mean is <span class="math inline">\(\exp(\mathbf{x}\boldsymbol{\beta})\)</span> (Poisson), a direct IV/GMM approach solves moment conditions in <span class="math inline">\(\mathbf{z}\)</span> without modifying the exponential mean. Two moment forms exist, and the choice matters:</p>
+<ul>
+<li><strong>Additive moments</strong> <span class="math inline">\(E[\mathbf{z}'(y_1 - \exp(\mathbf{x}\boldsymbol{\beta}))] = 0\)</span> assume an <em>additive</em> error orthogonal to <span class="math inline">\(\mathbf{z}\)</span>.</li>
+<li><strong>Multiplicative moments</strong> <span class="math inline">\(E[\mathbf{z}'(y_1 e^{-\mathbf{x}\boldsymbol{\beta}} - 1)] = 0\)</span> <span class="citation" data-cites="mullahy-1997">(<a href="references.html#ref-mullahy-1997" role="doc-biblioref">Mullahy 1997</a>)</span> assume a <em>multiplicative</em> error with mean independent of <span class="math inline">\(\mathbf{z}\)</span>.</li>
+</ul>
+<p>When the unobservable enters <strong>inside</strong> the exponential — <span class="math inline">\(y_1\)</span> has mean <span class="math inline">\(\exp(\mathbf{x}\boldsymbol{\beta} + \rho v)\)</span>, as in both DGPs of this chapter — the error is multiplicative, the additive moments are misspecified, and additive-moment IV is inconsistent. The multiplicative form is the robust default. The <strong>control function approach</strong> instead imposes the stronger <em>conditional mean assumption</em> (Wooldridge 2002, 2014):</p>
 <p><span class="math display">\[\boxed{E[y_1 \mid \mathbf{z}_1,\, y_2,\, v_2] = \exp\!\bigl(\mathbf{z}_1\boldsymbol{\delta}_1
 + \alpha_1 y_2 + \rho v_2\bigr).}\]</span></p>
 <p>This says the unobservable enters the conditional mean <strong>linearly inside</strong> <span class="math inline">\(\exp(\cdot)\)</span>. Under this assumption, substituting <span class="math inline">\(\hat{v}_2\)</span> for <span class="math inline">\(v_2\)</span> and running Poisson QMLE gives a consistent estimate of <span class="math inline">\(\alpha_1\)</span>.</p>
@@ -587,7 +612,7 @@ Note
 <section id="data-generating-process" class="level3" data-number="18.2.1">
 <h3 data-number="18.2.1" class="anchored" data-anchor-id="data-generating-process"><span class="header-section-number">18.2.1</span> Data generating process</h3>
 <p>We simulate a panel where <code>time</code> (continuous, e.g.&nbsp;minutes on site) is endogenous: it is correlated with an unobserved factor <code>e</code> that also affects <code>visits</code>. The excluded instrument is <code>phone</code> (binary, e.g.&nbsp;phone-access indicator). Fixed effects are <code>ad</code> (20 groups) and <code>female</code>.</p>
-<div id="4d02c520" class="cell" data-execution_count="3">
+<div id="39afe1dd" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_ad <span class="op">=</span> <span class="fl">20</span>; obs_per <span class="op">=</span> <span class="fl">250</span>; n <span class="op">=</span> n_ad <span class="op">*</span> obs_per</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -621,7 +646,7 @@ Note
 <section id="naive-poisson-endogeneity-bias" class="level3" data-number="18.2.2">
 <h3 data-number="18.2.2" class="anchored" data-anchor-id="naive-poisson-endogeneity-bias"><span class="header-section-number">18.2.2</span> Naive Poisson — endogeneity bias</h3>
 <p>Ignoring the endogeneity of <code>time</code> gives a biased estimate of <code>α₁</code>:</p>
-<div id="eb10e391" class="cell" data-execution_count="4">
+<div id="4a5b6994" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>naive1 <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Naive (biased):"</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(naive1; title<span class="op">=</span><span class="st">"Naive Poisson — time is endogenous"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -679,7 +704,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <li><p><strong>Second stage</strong> — Poisson QMLE with <span class="math inline">\(\hat{v}_2\)</span> added as a regressor inside the exponential mean. The CF assumption <span class="math inline">\(E[y_1 \mid \mathbf{z}_1, y_2, v_2] = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \rho v_2)\)</span> holds exactly here because the DGP specifies <span class="math inline">\(0.5\,e\)</span> (linear in the unobservable) inside <span class="math inline">\(\exp(\cdot)\)</span>.</p></li>
 </ol>
 <p>Note that unlike 2SLS in a linear model, <span class="math inline">\(\hat{v}_2\)</span> does <em>not</em> replace <span class="math inline">\(y_2\)</span> — both enter together. This is what makes the CF estimator different from IV/GMM Poisson (confirmed numerically in Part 2).</p>
-<div id="7cd2d52f" class="cell" data-execution_count="5">
+<div id="35fe14c4" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>fs1 <span class="op">=</span> <span class="fu">feols</span>(df1, <span class="pp">@formula</span>(time <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>df1.v2hat <span class="op">=</span> fs1.residuals</span>
@@ -745,7 +770,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="bootstrap-standard-errors" class="level3" data-number="18.2.4">
 <h3 data-number="18.2.4" class="anchored" data-anchor-id="bootstrap-standard-errors"><span class="header-section-number">18.2.4</span> Bootstrap standard errors</h3>
 <p>The second-stage standard errors are incorrect because the first-stage estimation error propagates. Julia’s <code>Threads.@threads</code> parallelises the cluster bootstrap across all CPU cores:</p>
-<div id="ce2757b0" class="cell" data-execution_count="6">
+<div id="72a768a2" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_resample</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    clusters <span class="op">=</span> <span class="fu">unique</span>(df.ad)</span>
@@ -805,7 +830,7 @@ Bootstrap 95% CI: [0.7868, 0.8312]</code></pre>
 <section id="data-generating-process-1" class="level3" data-number="18.3.1">
 <h3 data-number="18.3.1" class="anchored" data-anchor-id="data-generating-process-1"><span class="header-section-number">18.3.1</span> Data generating process</h3>
 <p>We use a clean probit DGP for the binary endogenous variable with a fresh structural error <code>e2</code> independent of Part 1. The endogeneity coefficient <code>ρ = 0.2</code> is kept small so the CF assumption holds approximately well and estimates are close to the true value.</p>
-<div id="e4e74e09" class="cell" data-execution_count="7">
+<div id="fe1e53d4" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fresh structural error for Part 2 (independent of Part 1's e)</span></span>
@@ -874,7 +899,7 @@ visits mean:       4.78</code></pre>
 <td>Any model</td>
 <td>Fitted values <span class="math inline">\(\hat{p}_2\)</span></td>
 <td>Exogeneity of <span class="math inline">\(\mathbf{z}\)</span> only</td>
-<td>Structural mean <span class="math inline">\(\exp(\cdots)\)</span> correct</td>
+<td>Moment form matches the error: additive moments need an additive error; multiplicative (Mullahy) moments handle inside-<span class="math inline">\(\exp\)</span> unobservables</td>
 </tr>
 </tbody>
 </table>
@@ -882,7 +907,7 @@ visits mean:       4.78</code></pre>
 </section>
 <section id="approach-a-linear-projection-cf" class="level3" data-number="18.3.3">
 <h3 data-number="18.3.3" class="anchored" data-anchor-id="approach-a-linear-projection-cf"><span class="header-section-number">18.3.3</span> Approach A — Linear projection CF</h3>
-<div id="7647b4b4" class="cell" data-execution_count="8">
+<div id="311a1c85" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection of binary time_hi</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fs_a <span class="op">=</span> <span class="fu">feols</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df2.v2hat <span class="op">=</span> fs_a.residuals</span>
@@ -946,7 +971,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="approach-b-probit-generalized-residuals" class="level3" data-number="18.3.4">
 <h3 data-number="18.3.4" class="anchored" data-anchor-id="approach-b-probit-generalized-residuals"><span class="header-section-number">18.3.4</span> Approach B — Probit generalized residuals</h3>
-<div id="1bfbda01" class="cell" data-execution_count="9">
+<div id="749220ee" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: probit first stage</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fs_b <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1017,8 +1042,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="approach-c-fitted-values-as-instrument-ivgmm-poisson" class="level3" data-number="18.3.5">
 <h3 data-number="18.3.5" class="anchored" data-anchor-id="approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.5</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</h3>
-<p>Any function of the exogenous <span class="math inline">\(\mathbf{z}\)</span> is a valid instrument. Probit, logit, and linear probability fitted values are all equally valid from a consistency standpoint — the choice affects efficiency (instrument strength). We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument:</p>
-<div id="ce2d9bda" class="cell" data-execution_count="10">
+<p>Any function of the exogenous <span class="math inline">\(\mathbf{z}\)</span> is a valid instrument. Probit, logit, and linear probability fitted values are all equally valid from a consistency standpoint — the choice affects efficiency (instrument strength). We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument. We code <strong>both moment forms</strong>: the additive moments are what “IV Poisson” often means in practice (e.g.&nbsp;Stata’s <code>ivpoisson gmm</code> default additive option), but because this chapter’s DGP puts the unobservable inside <span class="math inline">\(\exp(\cdot)\)</span>, only the multiplicative (Mullahy) moments are consistent here:</p>
+<div id="d9bf0a4d" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois(y, X, Z) -&gt; (β, se)</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1047,28 +1072,53 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β, <span class="fu">sqrt</span>.(<span class="fu">max</span>.(<span class="fl">0.0</span>, <span class="fu">diag</span>(V)))</span>
 <span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Probit (without FE, to avoid collinearity with instrument matrix)</span></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>fs_c  <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam))</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>phat  <span class="op">=</span> fs_c.mu</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Regressor matrix X: [time_hi, frfam, intercept]</span></span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Instrument matrix Z: [phat,    frfam, intercept]  ← phat replaces time_hi</span></span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>X_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>Z_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(phat),        <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>β_c, se_c <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Approach C — IV/GMM Poisson (no FE, for illustration)</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  time_hi:  coef = %7.4f   SE = %7.4f   z = %6.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">1</span>], se_c[<span class="fl">1</span>], β_c[<span class="fl">1</span>]<span class="op">/</span>se_c[<span class="fl">1</span>])</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  frfam:    coef = %7.4f   SE = %7.4f   z = %6.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">2</span>], se_c[<span class="fl">2</span>], β_c[<span class="fl">2</span>]<span class="op">/</span>se_c[<span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois_mult(y, X, Z) -&gt; β</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="st">IV/GMM Poisson with MULTIPLICATIVE (Mullahy 1997) moments</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="st">Z'(y .* exp(-Xβ) .- 1) = 0 — consistent when the unobservable enters</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="st">inside the exponential mean (multiplicative error).</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ivpois_mult</span>(y<span class="op">::</span><span class="dt">Vector{Float64}</span>, X<span class="op">::</span><span class="dt">Matrix{Float64}</span>, Z<span class="op">::</span><span class="dt">Matrix{Float64}</span>;</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>                     maxiter<span class="op">=</span><span class="fl">1000</span>, tol<span class="op">=</span><span class="fl">1e-10</span>, step<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(X, <span class="fl">2</span>)</span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>    β  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>    β[p] <span class="op">=</span> <span class="fu">log</span>(<span class="fu">mean</span>(y))</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> y <span class="op">.*</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(<span class="op">-</span>X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (w <span class="op">.-</span> <span class="fl">1</span>)</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (w <span class="op">.*</span> X)</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>        Δ <span class="op">=</span> <span class="cf">try</span> H <span class="op">\</span> g <span class="cf">catch</span>; <span class="fu">pinv</span>(H) <span class="op">*</span> g <span class="cf">end</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        β <span class="op">.+=</span> step <span class="op">.*</span> Δ</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(<span class="fu">abs</span>.(step <span class="op">.*</span> Δ)) <span class="op">&lt;</span> tol <span class="op">&amp;&amp;</span> <span class="cf">break</span></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Probit (without FE, to avoid collinearity with instrument matrix)</span></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>fs_c  <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam))</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>phat  <span class="op">=</span> fs_c.mu</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Regressor matrix X: [time_hi, frfam, intercept]</span></span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Instrument matrix Z: [phat,    frfam, intercept]  ← phat replaces time_hi</span></span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>X_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>Z_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(phat),        <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>β_c, se_c <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
+<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>β_cm      <span class="op">=</span> <span class="fu">ivpois_mult</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
+<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Approach C — IV/GMM Poisson (no FE, for illustration)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  additive moments:       time_hi = %7.4f   SE = %7.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">1</span>], se_c[<span class="fl">1</span>])</span>
+<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  multiplicative moments: time_hi = %7.4f   (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a>        β_cm[<span class="fl">1</span>], true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Approach C — IV/GMM Poisson (no FE, for illustration)
-  time_hi:  coef =  0.5273   SE =  0.0706   z =  7.466
-  frfam:    coef =  0.4001   SE =  0.0357   z = 11.222</code></pre>
+  additive moments:       time_hi =  0.5273   SE =  0.0706
+  multiplicative moments: time_hi =  0.7260   (true 0.8)</code></pre>
 </div>
 </div>
+<p>The additive-moment estimate is visibly biased — the DGP’s unobservable <span class="math inline">\(\rho\,e_2\)</span> sits inside <span class="math inline">\(\exp(\cdot)\)</span>, so the additive moments are misspecified (a 30-replication check gives an additive-moment mean of about <span class="math inline">\(0.61\)</span> against a multiplicative-moment mean of about <span class="math inline">\(0.79\)</span>, with true value <span class="math inline">\(0.8\)</span>). The multiplicative moments repair it.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1086,7 +1136,7 @@ Note
 <section id="a-vs-c-not-equivalent-in-poisson" class="level3" data-number="18.3.6">
 <h3 data-number="18.3.6" class="anchored" data-anchor-id="a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.6</span> A vs C — not equivalent in Poisson</h3>
 <p>In a linear model, using <span class="math inline">\(\hat{y}_2\)</span> as an instrument (2SLS) is numerically identical to adding <span class="math inline">\(\hat{v}_2 = y_2 - \hat{y}_2\)</span> as a regressor — the Frisch-Waugh-Lovell theorem. <strong>In Poisson this equivalence breaks</strong>, because Approach A puts <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> while Approach C uses <span class="math inline">\(\hat{y}_2\)</span> in the moment conditions without modifying the exponential mean.</p>
-<div id="21ef94e3" class="cell" data-execution_count="11">
+<div id="11409e00" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (Approach C with linear first stage)</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ŷ<span class="fl">2</span>  <span class="op">=</span> <span class="fu">Float64</span>.(df2.time_hi) <span class="op">.-</span> <span class="fu">Float64</span>.(fs_a.residuals)</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>X_l <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
@@ -1095,22 +1145,24 @@ Note
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>β_l, _ <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_l, Z_l)</span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>coef_a <span class="op">=</span> <span class="fu">coef</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A  (CF, residual as regressor, with FE): α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_a)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-linear    (IV, linear fitted values, no FE):    α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_l[<span class="fl">1</span>])</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-probit    (IV, probit fitted values, no FE):    α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_c[<span class="fl">1</span>])</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True α₁ = %.1f</span><span class="sc">\n</span><span class="st">"</span>, true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A  (CF, residual as regressor, with FE):     α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_a)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-additive  (IV, linear fitted values, no FE):        α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_l[<span class="fl">1</span>])</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-additive  (IV, probit fitted values, no FE):        α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_c[<span class="fl">1</span>])</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-Mullahy   (IV, multiplicative moments, no FE):      α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_cm[<span class="fl">1</span>])</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True α₁ = %.1f</span><span class="sc">\n</span><span class="st">"</span>, true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Approach A  (CF, residual as regressor, with FE): α̂₁ = 0.8128
-C-linear    (IV, linear fitted values, no FE):    α̂₁ = 0.6194
-C-probit    (IV, probit fitted values, no FE):    α̂₁ = 0.5273
+<pre><code>Approach A  (CF, residual as regressor, with FE):     α̂₁ = 0.8128
+C-additive  (IV, linear fitted values, no FE):        α̂₁ = 0.6194
+C-additive  (IV, probit fitted values, no FE):        α̂₁ = 0.5273
+C-Mullahy   (IV, multiplicative moments, no FE):      α̂₁ = 0.7260
 True α₁ = 0.8</code></pre>
 </div>
 </div>
-<p>The estimates differ despite using the same first-stage linear projection, confirming that 2SLS ≠ CF for Poisson.</p>
+<p>The estimates differ despite using the same first-stage linear projection, confirming that 2SLS ≠ CF for Poisson — and, within Approach C, that the moment form matters as much as the instrument.</p>
 </section>
 <section id="bootstrap-for-approach-a-binary-eev" class="level3" data-number="18.3.7">
 <h3 data-number="18.3.7" class="anchored" data-anchor-id="bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.7</span> Bootstrap for Approach A (binary EEV)</h3>
-<div id="08210fe0" class="cell" data-execution_count="12">
+<div id="6a35f701" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_cf_binary</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    draws   <span class="op">=</span> <span class="fu">bootstrap_resample</span>(df, B; seed<span class="op">=</span>seed)</span>
@@ -1146,7 +1198,7 @@ True α₁ = 0.8</code></pre>
 </section>
 <section id="comparison-across-all-methods" class="level3" data-number="18.3.8">
 <h3 data-number="18.3.8" class="anchored" data-anchor-id="comparison-across-all-methods"><span class="header-section-number">18.3.8</span> Comparison across all methods</h3>
-<div id="0e85bfcb" class="cell" data-execution_count="13">
+<div id="75b3ebaf" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>),</span>
@@ -1155,29 +1207,35 @@ True α₁ = 0.8</code></pre>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>methods <span class="op">=</span> [<span class="st">"True value"</span>, <span class="st">"Naive Poisson (binary y₂)"</span>,</span>
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">"A: Linear CF (with FE)"</span>, <span class="st">"B: Probit GR CF (with FE)"</span>,</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, probit inst. (no FE)"</span>]</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>ests    <span class="op">=</span> [true_α, coef_naive2, coef_a, coef_b, β_c[<span class="fl">1</span>]]</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">── Binary EEV: coefficient on time_hi ─────────────────────"</span>)</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (m, <span class="cn">e</span>) <span class="kw">in</span> <span class="fu">zip</span>(methods, ests)</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"  %-38s  α̂₁ = %6.4f</span><span class="sc">\n</span><span class="st">"</span>, m, <span class="cn">e</span>)</span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
-<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Note: with small endogeneity (ρ=0.2) the CF assumption holds"</span>)</span>
-<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"approximately well and all three CF/IV approaches recover the"</span>)</span>
-<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"true value closely. Larger ρ widens the gap from truth."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, additive moments (no FE)"</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, Mullahy moments (no FE)"</span>]</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>ests    <span class="op">=</span> [true_α, coef_naive2, coef_a, coef_b, β_c[<span class="fl">1</span>], β_cm[<span class="fl">1</span>]]</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">── Binary EEV: coefficient on time_hi ─────────────────────"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (m, <span class="cn">e</span>) <span class="kw">in</span> <span class="fu">zip</span>(methods, ests)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"  %-42s  α̂₁ = %6.4f</span><span class="sc">\n</span><span class="st">"</span>, m, <span class="cn">e</span>)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Note: the CF approaches (A, B) recover the truth closely —"</span>)</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"with small ρ=0.2 the approximate CF mean assumption is mild."</span>)</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Additive-moment IV Poisson does NOT: the unobservable enters"</span>)</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"inside exp(·), so its moments are misspecified (Mullahy 1997)."</span>)</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"The multiplicative-moment version repairs it."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 ── Binary EEV: coefficient on time_hi ─────────────────────
-  True value                              α̂₁ = 0.8000
-  Naive Poisson (binary y₂)               α̂₁ = 1.0852
-  A: Linear CF (with FE)                  α̂₁ = 0.8128
-  B: Probit GR CF (with FE)               α̂₁ = 0.7636
-  C: IV Poisson, probit inst. (no FE)     α̂₁ = 0.5273
+  True value                                  α̂₁ = 0.8000
+  Naive Poisson (binary y₂)                   α̂₁ = 1.0852
+  A: Linear CF (with FE)                      α̂₁ = 0.8128
+  B: Probit GR CF (with FE)                   α̂₁ = 0.7636
+  C: IV Poisson, additive moments (no FE)     α̂₁ = 0.5273
+  C: IV Poisson, Mullahy moments (no FE)      α̂₁ = 0.7260
 
-Note: with small endogeneity (ρ=0.2) the CF assumption holds
-approximately well and all three CF/IV approaches recover the
-true value closely. Larger ρ widens the gap from truth.</code></pre>
+Note: the CF approaches (A, B) recover the truth closely —
+with small ρ=0.2 the approximate CF mean assumption is mild.
+Additive-moment IV Poisson does NOT: the unobservable enters
+inside exp(·), so its moments are misspecified (Mullahy 1997).
+The multiplicative-moment version repairs it.</code></pre>
 </div>
 </div>
 </section>
@@ -1187,6 +1245,11 @@ true value closely. Larger ρ widens the gap from truth.</code></pre>
 <p>The parallel bootstrap above uses <code>Threads.@threads</code> which runs each of the 500 replications simultaneously across all CPU cores. A single replication calls <code>feols</code> + <code>fepois</code>, both implemented with the fast within-demeaning algorithm from <code>Panelest.jl</code>. On a machine with 8 cores this is roughly 6–8× faster than Stata’s serial <code>bootstrap</code> command, and the speed advantage grows with replication count and sample size.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-mullahy-1997" class="csl-entry" role="listitem">
+Mullahy, John. 1997. <span>“Instrumental-Variable Estimation of Count Data Models: Applications to Models of Cigarette Smoking Behavior.”</span> <em>Review of Economics and Statistics</em> 79 (4): 586–93.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

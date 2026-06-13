@@ -88,7 +88,8 @@ A Bayesian linear regression with a flat prior is enough to show the idea:
 """
     bayes_linreg(X, y; n_samples=2000)
 Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior
-(flat → posterior matches frequentist OLS). Returns `n_samples` posterior
+(flat prior → the posterior is centered at the OLS estimates, with spread
+close to the OLS standard errors). Returns `n_samples` posterior
 draws of (β, σ²).
 """
 function bayes_linreg(X::Matrix, y::Vector; n_samples::Int = 2000)

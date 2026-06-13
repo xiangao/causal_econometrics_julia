@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3b6e5839" class="cell" data-execution_count="2">
+<div id="f2612996" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
@@ -551,19 +551,19 @@ window.Quarto = {
 </section>
 <section id="identification-from-potential-outcome-to-observed" class="level2" data-number="1.6">
 <h2 data-number="1.6" class="anchored" data-anchor-id="identification-from-potential-outcome-to-observed"><span class="header-section-number">1.6</span> Identification: From Potential Outcome to Observed</h2>
-<p>We focus on <span class="math inline">\(\tau_{ATT}\)</span>. To identify it, we need: <span class="math display">\[ E[Y(1) | W=1)]\]</span> which is easy, because we observe it.</p>
+<p>We focus on <span class="math inline">\(\tau_{ATT}\)</span>. To identify it, we need: <span class="math display">\[ E[Y(1) | W=1]\]</span> which is easy, because we observe it.</p>
 <p>And we need <span class="math display">\[ E[Y(0) | W=1]\]</span></p>
-<p>To identify this, we’ll need unconfoundedness: <span class="math display">\[ E[Y(0) | W, X] = E[Y(0)| X] \]</span> and overlap: <span class="math display">\[ 0 &lt; \pi(X)= P(W=1 | X=x) &lt; 1 \]</span></p>
-<p>Under unconfoundedness:</p>
-<p><span class="math display">\[ E[Y(0)| W=1] = E[Y(0) | W=0] \]</span></p>
+<p>To identify this, we’ll need unconfoundedness: <span class="math display">\[ E[Y(0) | W, X] = E[Y(0)| X] \]</span> and overlap: <span class="math display">\[ \pi(x)= P(W=1 | X=x) &lt; 1\]</span> (for the ATT only <span class="math inline">\(\pi(x)&lt;1\)</span> is needed; the ATE requires <span class="math inline">\(0&lt;\pi(x)&lt;1\)</span>).</p>
+<p>Unconfoundedness says that within each subgroup <span class="math inline">\(X=x\)</span>, treated and control units have the same mean of <span class="math inline">\(Y(0)\)</span>: <span class="math inline">\(E[Y(0)|W=1,X=x]=E[Y(0)|W=0,X=x]=E[Y|W=0,X=x]\)</span>. Averaging over the covariate distribution of the treated,</p>
+<p><span class="math display">\[ E[Y(0)| W=1] = E\big[ E[Y | W=0, X] \mid W=1 \big], \]</span></p>
+<p>which involves only observed data. Therefore ATT is identified:</p>
 <p><span class="math display">\[ \small \begin{align}
 \tau_{ATT} &amp;=  E[Y(1) - Y(0) | W=1] \\
-&amp;= E[Y(1)|W=1] - E[Y(0)|W=0] \\
-&amp;= E[Y|W=1] - E[Y|W=0]
+&amp;= E[Y|W=1] - E\big[ E[Y | W=0, X] \mid W=1 \big]
 \end{align}
 \]</span></p>
-<p>Therefore ATT is identified. In randomised experiments, we can assume unconfoundedness. A difference-in-means estimator is consistent.</p>
-<p><span class="math display">\[ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 \]</span></p>
+<p>Note the conditional-on-<span class="math inline">\(X\)</span> assumption does NOT imply the marginal equality <span class="math inline">\(E[Y(0)|W=1]=E[Y(0)|W=0]\)</span>: treated and control units have different covariate distributions, so the adjustment over <span class="math inline">\(X\)</span> is essential. In a randomised experiment, unconfoundedness holds without conditioning on <span class="math inline">\(X\)</span> (i.e.&nbsp;<span class="math inline">\(E[Y(0)|W]=E[Y(0)]\)</span>); then <span class="math inline">\(E[Y(0)|W=1]=E[Y(0)|W=0]=E[Y|W=0]\)</span>, the formula collapses to <span class="math inline">\(E[Y|W=1]-E[Y|W=0]\)</span>, and a difference-in-means estimator is consistent.</p>
+<p><span class="math display">\[ \hat{\tau}_{ATT} = \bar Y_1 - \bar Y_0 \]</span></p>
 <p>But in observational studies, most cases we cannot assume unconfoundedness. What can we do to justify unconfoundedness better?</p>
 </section>
 <section id="unconfoundedness-and-overlap" class="level2" data-number="1.7">

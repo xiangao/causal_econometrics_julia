@@ -485,7 +485,7 @@ window.Quarto = {
 </header>
 
 
-<div id="38d55a3e" class="cell" data-execution_count="2">
+<div id="88a32b14" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -500,7 +500,7 @@ window.Quarto = {
 </blockquote>
 <p>Here I use three tools:</p>
 <ol type="1">
-<li><strong>Cinelli-Hazlett (2020) omitted-variable bias bounds</strong> — robustness values and benchmark comparisons for regression-based estimators.</li>
+<li><strong>Cinelli-Hazlett (2020) omitted-variable bias bounds</strong> — robustness values and benchmark comparisons for OLS regression estimates.</li>
 <li><strong>E-values (VanderWeele-Ding 2017)</strong> — for risk-ratio estimates, the minimum strength an unmeasured confounder would need.</li>
 <li><strong>Rosenbaum bounds</strong> — the critical odds ratio of hidden bias that would render a matched-sample test insignificant.</li>
 </ol>
@@ -704,7 +704,7 @@ E-value (CI):    1.69</code></pre>
 </section>
 <section id="rosenbaum-bounds-for-matched-studies" class="level2" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="rosenbaum-bounds-for-matched-studies"><span class="header-section-number">5.4</span> Rosenbaum bounds for matched studies</h2>
-<p>For matched estimators (propensity score matching, full matching, optimal matching), <strong>Rosenbaum bounds</strong> (Rosenbaum 2002) parametrise hidden bias as <span class="math inline">\(\Gamma\)</span>, the maximum odds ratio of treatment assignment within a matched pair due to unobservables. <span class="math inline">\(\Gamma = 1\)</span> corresponds to within-pair randomisation; <span class="math inline">\(\Gamma = 2\)</span> means one unit in a matched pair was twice as likely to receive treatment due to unobservables.</p>
+<p>For matched estimators (propensity score matching, full matching, optimal matching), <strong>Rosenbaum bounds</strong> (Rosenbaum 2002) parametrise hidden bias as <span class="math inline">\(\Gamma\)</span>, the maximum ratio of treatment odds between the two units of a matched pair due to unobservables. <span class="math inline">\(\Gamma = 1\)</span> corresponds to within-pair randomisation; <span class="math inline">\(\Gamma = 2\)</span> means one unit’s odds of receiving treatment can be up to twice the other’s.</p>
 <p>For each value of <span class="math inline">\(\Gamma\)</span>, the upper-bound <span class="math inline">\(p\)</span>-value of the Wilcoxon signed-rank test on matched-pair outcome differences is:</p>
 <div id="rosenbaum" class="cell" data-cache="true" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate matched-pair differences from a known DGP</span></span>
@@ -769,7 +769,7 @@ E-value (CI):    1.69</code></pre>
 5.00       0.9942</code></pre>
 </div>
 </div>
-<p>If the critical <span class="math inline">\(\Gamma\)</span> is close to 1, small hidden bias could overturn the matched-pair result.</p>
+<p>If the critical <span class="math inline">\(\Gamma\)</span> is close to 1, small hidden bias could overturn the matched-pair result. (The reported value is the first point <em>on the 0.25 grid</em> at which significance is lost; the actual crossing lies between it and the preceding grid point.)</p>
 </section>
 <section id="reporting-practice" class="level2" data-number="5.5">
 <h2 data-number="5.5" class="anchored" data-anchor-id="reporting-practice"><span class="header-section-number">5.5</span> Reporting practice</h2>

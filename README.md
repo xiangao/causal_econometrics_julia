@@ -84,3 +84,5 @@ Packages loaded via `include()` (not in `Project.toml`):
 Julia 1.12+ and Quarto. See `Project.toml` for the full package list.
 
 > **2026-06-07:** Math/code review pass — see `CLAUDE.md` (Review pass section) for the list of corrections. Audit trail in `../_review/`.
+>
+> **2026-06-12:** Second review pass (derivation-focused, all 27 chapters, inline; audit trail in `../_review2/cjulia_inline.md`, fixes in `../_review2/FIXLOG.md`). Highlights: LATE DGP monotonicity (shared-uniform draws), additive- vs multiplicative-moment IV Poisson (Mullahy), panel causal-learner DGP + within-contrast rescaling, in-sample policy-evaluation bias made explicit, recanting-twins mediation section, stabilized-weight display, Rotemberg-weight diagnostics.

@@ -493,7 +493,7 @@ window.Quarto = {
 </header>
 
 
-<div id="49c09366" class="cell" data-execution_count="2">
+<div id="88c0bb84" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -729,13 +729,28 @@ Shift-share IV estimate: 0.5309</code></pre>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>iv_bad  <span class="op">=</span> <span class="fu">feiv</span>(df_bad, <span class="pp">@formula</span>(Y <span class="op">~</span> <span class="fl">1</span>), endo <span class="op">=</span> <span class="op">:</span>X, inst <span class="op">=</span> <span class="op">:</span>B)</span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True beta: %.3f</span><span class="sc">\n</span><span class="st">"</span>, beta_true)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV with bad share 1: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bad)[<span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Shift-share IV with bad share 1: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bad)[<span class="fl">1</span>])</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Would the Rotemberg weights have flagged industry 1?</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>rw_bad <span class="op">=</span> <span class="fu">rotemberg_weights</span>(shares_bad, shocks, X_bad, Y_bad)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>ord    <span class="op">=</span> <span class="fu">sortperm</span>(<span class="fu">abs</span>.(rw_bad.alpha), rev <span class="op">=</span> <span class="cn">true</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>rank1  <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="fl">1</span>), rw_bad.industry[ord])</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Rotemberg weight of industry 1: %.3f (rank %d of %d by |α|)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        rw_bad.alpha[rw_bad.industry <span class="op">.==</span> <span class="fl">1</span>][<span class="fl">1</span>], rank1, <span class="fu">nrow</span>(rw_bad))</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave-one-industry-out: rebuild the instrument without industry 1</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>B_loo  <span class="op">=</span> <span class="fu">bartik_iv</span>(shares_bad[<span class="op">:</span>, <span class="fl">2</span><span class="op">:</span><span class="kw">end</span>], shocks[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>])</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>df_loo <span class="op">=</span> <span class="fu">DataFrame</span>(X <span class="op">=</span> X_bad, Y <span class="op">=</span> Y_bad, B <span class="op">=</span> B_loo)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>iv_loo <span class="op">=</span> <span class="fu">feiv</span>(df_loo, <span class="pp">@formula</span>(Y <span class="op">~</span> <span class="fl">1</span>), endo <span class="op">=</span> <span class="op">:</span>X, inst <span class="op">=</span> <span class="op">:</span>B)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Leave-industry-1-out IV: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_loo)[<span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True beta: 0.500
-Shift-share IV with bad share 1: 0.798</code></pre>
+Shift-share IV with bad share 1: 0.798
+Rotemberg weight of industry 1: 0.110 (rank 3 of 20 by |α|)
+Leave-industry-1-out IV: 0.480</code></pre>
 </div>
 </div>
-<p>The estimate is biased, and the bias comes from one industry’s share being related to the error. Rotemberg weights would flag that industry as important. A leave-one-industry-out check would show how much the estimate depends on it.</p>
+<p>The estimate is biased, and the bias comes from one industry’s share being related to the error. Note what the diagnostics do and do not catch here. The endogenous industry’s Rotemberg weight is unremarkable — it ranks third of twenty — because the weights measure <em>influence</em> (whose exogeneity the estimate leans on most), not <em>endogeneity</em>. An industry with a modest weight can still move the estimate substantially when its share is correlated with the error. What isolates the problem is the <strong>leave-one-industry-out</strong> check: dropping industry 1 from the instrument restores an estimate close to the truth.</p>
 </section>
 </section>
 <section id="bhj-shock-level-inference" class="level2" data-number="17.5">
@@ -751,14 +766,14 @@ Shift-share IV with bad share 1: 0.798</code></pre>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Location-level shift-share IV: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(ivss)[<span class="fl">1</span>])</span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"BHJ shock-level IV:             %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">coef</span>(iv_bhj)[<span class="fl">1</span>])</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"(Should be numerically equal under standard conditions)</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"(Should be close; equivalent in the no-controls case)</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Location-level shift-share IV: 0.531
 BHJ shock-level IV:             0.537
-(Should be numerically equal under standard conditions)</code></pre>
+(Should be close; equivalent in the no-controls case)</code></pre>
 </div>
 </div>
-<p>The BHJ shock-level regression is equivalent to the location-level IV when there are no controls. Its value is interpretive: validity is now a statement about shocks (20 observations, one per industry) rather than locations (500 observations), and testing shock-level exogeneity is more transparent.</p>
+<p>The BHJ shock-level regression coincides with the location-level IV when there are no controls — up to implementation details of the weighting, so expect close rather than identical values in practice. Its value is interpretive: validity is now a statement about shocks (20 observations, one per industry) rather than locations (500 observations), and testing shock-level exogeneity is more transparent.</p>
 </section>
 <section id="empirical-the-china-shock-autor-dorn-hanson-2013" class="level2" data-number="17.6">
 <h2 data-number="17.6" class="anchored" data-anchor-id="empirical-the-china-shock-autor-dorn-hanson-2013"><span class="header-section-number">17.6</span> Empirical: the China shock (Autor, Dorn, Hanson 2013)</h2>
@@ -768,7 +783,8 @@ BHJ shock-level IV:             0.537
                    \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
 \]</span></p>
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into other high-income countries. This leave-one-out construction removes US-specific demand from the shock.</p>
-<div id="4b3c877a" class="cell" data-execution_count="9">
+<p>The snippet below is schematic — the full ADH specification additionally needs period effects, the ADH control set, and population weights (a validated replication against the GPSS benchmark lives in the <code>ShiftShareIV.jl</code> repository).</p>
+<div id="e327538e" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Files needed:</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   workfile_china.csv  (commuting zone data, 1990–2007)</span></span>

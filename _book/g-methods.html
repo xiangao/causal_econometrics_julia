@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="ad54bdaa" class="cell" data-execution_count="2">
+<div id="a84cca9c" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -614,9 +614,9 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 <h2 data-number="19.3" class="anchored" data-anchor-id="iptw-for-time-varying-treatments"><span class="header-section-number">19.3</span> IPTW for time-varying treatments</h2>
 <p>IPTW reweights observations by the inverse probability of their observed treatment history. The stabilized weight is:</p>
 <p><span class="math display">\[
-SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t-1})}.
+SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t})}.
 \]</span></p>
-<p>The numerator uses treatment history only. The denominator also conditions on covariate history.</p>
+<p>The numerator uses treatment history only. The denominator also conditions on the covariate history up to and including <span class="math inline">\(L_t\)</span> — the covariates measured just before <span class="math inline">\(A_t\)</span>. (Skipping <span class="math inline">\(L_t\)</span> would leave the <span class="math inline">\(L_t \to A_t\)</span> confounding intact in the pseudo-population.)</p>
 <div id="cell-iptw" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Numerator: P(A0) and P(A1 | A0)</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> <span class="fl">1</span>),  df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
@@ -684,14 +684,21 @@ SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, 
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(msm_fit))</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.500)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># For comparison: the untrimmed weights</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>df.sw_u <span class="op">=</span> sw</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>msm_untrimmed <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw_u)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Untrimmed MSM total effect:         %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_untrimmed)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_untrimmed)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>StatsBase.CoefTable(Any[[-0.04989628698526234, 1.0455936766250338, 0.5477314823226674], [0.028823347044086425, 0.03993523083912306, 0.03916614787775476], [-1.7311066237014057, 26.18223695355993, 13.984818829573053], [0.0834956511758907, 1.5200922797061257e-141, 1.3152335380742825e-43], [-0.10640295676856143, 0.9673027377450147, 0.47094829050850884], [0.006610382798036753, 1.1238846155050528, 0.624514674136826]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "A0", "A1"], 4, 3)
 
-MSM total effect (always vs never): 1.593  (true = 1.500)</code></pre>
+MSM total effect (always vs never): 1.593  (true = 1.500)
+Untrimmed MSM total effect:         1.486</code></pre>
 </div>
 </div>
-<p>The weighted population is constructed so treatment is no longer associated with past covariates. That is why the MSM targets the total effect.</p>
+<p>The weighted population is constructed so treatment is no longer associated with past covariates. That is why the MSM targets the total effect. Note the trimmed estimate sits a little above the truth while the untrimmed one is closer: the weight models here are correctly specified, so the untrimmed weights are consistent, and capping the top 1% of weights reintroduces a bit of confounding bias in exchange for lower variance. Trimming is a bias-variance trade, not a free lunch.</p>
 </section>
 <section id="hernán-style-g-estimation-when-to-use-which" class="level2" data-number="19.5">
 <h2 data-number="19.5" class="anchored" data-anchor-id="hernán-style-g-estimation-when-to-use-which"><span class="header-section-number">19.5</span> Hernán-style g-estimation: when to use which</h2>

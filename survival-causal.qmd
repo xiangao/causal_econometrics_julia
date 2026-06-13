@@ -51,7 +51,7 @@ the probability of surviving past time $t$. Causal contrasts are usually
 reported as:
 
 - **Hazard ratio (HR)** — easy to estimate but hard to interpret
-  causally (Hernán 2010).
+  causally [@hernan-2010-hazards].
 - **Restricted mean survival difference (RMST)** —
   $\int_0^\tau [S_1(t) - S_0(t)] dt$ — interpretable as "years gained"
   up to time $\tau$.
@@ -180,7 +180,9 @@ The contrast $\Delta_{\text{RMST}}(\tau)=\text{RMST}_1(\tau)-\text{RMST}_0(\tau)
 is interpretable as years gained up to $\tau$. It does not require
 proportional hazards.
 
-Compute it by trapezoidal integration of the KM curve:
+Because the KM curve is a step function, its integral is computed exactly
+by a left rectangle sum (width times the survival value at the left
+endpoint of each segment):
 
 ```{julia}
 #| label: rmst
@@ -197,7 +199,7 @@ function rmst(times, survival, tau)
     # Add the tau endpoint
     push!(t_use, tau)
     push!(s_use, s_use[end])
-    # Trapezoidal area: width × left-height (since KM is step function)
+    # Exact integral of the KM step function: width × left-height
     sum(diff(t_use) .* s_use[1:end-1])
 end
 

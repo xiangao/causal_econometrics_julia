@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -454,12 +474,12 @@ window.Quarto = {
   <li><a href="#a-wrapper-for-fitting-random-forests" id="toc-a-wrapper-for-fitting-random-forests" class="nav-link" data-scroll-target="#a-wrapper-for-fitting-random-forests"><span class="header-section-number">9.2</span> A wrapper for fitting random forests</a></li>
   <li><a href="#s-learner-single" id="toc-s-learner-single" class="nav-link" data-scroll-target="#s-learner-single"><span class="header-section-number">9.3</span> S-learner (“single”)</a></li>
   <li><a href="#t-learner-two" id="toc-t-learner-two" class="nav-link" data-scroll-target="#t-learner-two"><span class="header-section-number">9.4</span> T-learner (“two”)</a></li>
-  <li><a href="#x-learner-künzel-et-al.-2019" id="toc-x-learner-künzel-et-al.-2019" class="nav-link" data-scroll-target="#x-learner-künzel-et-al.-2019"><span class="header-section-number">9.5</span> X-learner (Künzel et al.&nbsp;2019)</a></li>
-  <li><a href="#r-learner-nie-wager-2021" id="toc-r-learner-nie-wager-2021" class="nav-link" data-scroll-target="#r-learner-nie-wager-2021"><span class="header-section-number">9.6</span> R-learner (Nie &amp; Wager 2021)</a></li>
-  <li><a href="#dr-learner-kennedy-2020" id="toc-dr-learner-kennedy-2020" class="nav-link" data-scroll-target="#dr-learner-kennedy-2020"><span class="header-section-number">9.7</span> DR-learner (Kennedy 2020)</a></li>
+  <li><a href="#x-learner-kunzel-2019-metalearners" id="toc-x-learner-kunzel-2019-metalearners" class="nav-link" data-scroll-target="#x-learner-kunzel-2019-metalearners"><span class="header-section-number">9.5</span> X-learner <span class="citation" data-cites="kunzel-2019-metalearners">(Künzel et al. 2019)</span></a></li>
+  <li><a href="#r-learner-nie-wager-2021" id="toc-r-learner-nie-wager-2021" class="nav-link" data-scroll-target="#r-learner-nie-wager-2021"><span class="header-section-number">9.6</span> R-learner <span class="citation" data-cites="nie-wager-2021">(Nie and Wager 2021)</span></a></li>
+  <li><a href="#dr-learner-kennedy-2020-optimal-dr" id="toc-dr-learner-kennedy-2020-optimal-dr" class="nav-link" data-scroll-target="#dr-learner-kennedy-2020-optimal-dr"><span class="header-section-number">9.7</span> DR-learner <span class="citation" data-cites="kennedy-2020-optimal-dr">(Kennedy 2020)</span></a></li>
   <li><a href="#comparing-all-five-estimators" id="toc-comparing-all-five-estimators" class="nav-link" data-scroll-target="#comparing-all-five-estimators"><span class="header-section-number">9.8</span> Comparing all five estimators</a></li>
   <li><a href="#best-linear-projection-blp" id="toc-best-linear-projection-blp" class="nav-link" data-scroll-target="#best-linear-projection-blp"><span class="header-section-number">9.9</span> Best Linear Projection (BLP)</a></li>
-  <li><a href="#clan-testing-for-heterogeneity" id="toc-clan-testing-for-heterogeneity" class="nav-link" data-scroll-target="#clan-testing-for-heterogeneity"><span class="header-section-number">9.10</span> CLAN: testing for heterogeneity</a></li>
+  <li><a href="#gates-sorted-group-ates" id="toc-gates-sorted-group-ates" class="nav-link" data-scroll-target="#gates-sorted-group-ates"><span class="header-section-number">9.10</span> GATES: sorted group ATEs</a></li>
   <li><a href="#variable-importance-which-covariate-drives-heterogeneity" id="toc-variable-importance-which-covariate-drives-heterogeneity" class="nav-link" data-scroll-target="#variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</a></li>
   <li><a href="#policy-learning-who-should-we-treat" id="toc-policy-learning-who-should-we-treat" class="nav-link" data-scroll-target="#policy-learning-who-should-we-treat"><span class="header-section-number">9.12</span> Policy learning: who should we treat?</a></li>
   <li><a href="#causal-forests-with-panel-data" id="toc-causal-forests-with-panel-data" class="nav-link" data-scroll-target="#causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</a></li>
@@ -489,7 +509,7 @@ window.Quarto = {
 </header>
 
 
-<div id="998649ae" class="cell" data-execution_count="2">
+<div id="99743bff" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -510,7 +530,7 @@ window.Quarto = {
 <p>Julia does not currently have an equivalent of R’s <code>grf::causal_forest</code> with honest sample splitting and CATE confidence intervals. For that workflow, use the R companion chapter.</p>
 <section id="the-data-generating-process" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">9.1</span> The data-generating process</h2>
-<p>I reuse the DGP from the estimands chapter. The true CATE is <span class="math inline">\(\tau(x)=1+2x_1\)</span>.</p>
+<p>I use the same CATE function as the estimands chapter, <span class="math inline">\(\tau(x)=1+2x_1\)</span> (the rest of the DGP differs: five covariates and confounding through the observed <span class="math inline">\(X_2\)</span>).</p>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
@@ -608,8 +628,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 </div>
 <p>The T-learner gives treatment and control separate outcome models. It can work well, but it can extrapolate badly when treated and control covariate distributions do not overlap.</p>
 </section>
-<section id="x-learner-künzel-et-al.-2019" class="level2" data-number="9.5">
-<h2 data-number="9.5" class="anchored" data-anchor-id="x-learner-künzel-et-al.-2019"><span class="header-section-number">9.5</span> X-learner (Künzel et al.&nbsp;2019)</h2>
+<section id="x-learner-kunzel-2019-metalearners" class="level2" data-number="9.5">
+<h2 data-number="9.5" class="anchored" data-anchor-id="x-learner-kunzel-2019-metalearners"><span class="header-section-number">9.5</span> X-learner <span class="citation" data-cites="kunzel-2019-metalearners">(<a href="references.html#ref-kunzel-2019-metalearners" role="doc-biblioref">Künzel et al. 2019</a>)</span></h2>
 <p>The X-learner starts from the T-learner. It imputes missing potential outcomes, creates pseudo-treatment effects, smooths them over <span class="math inline">\(X\)</span>, and then combines the two arms with propensity-score weights.</p>
 <div id="x-learner" class="cell" data-cache="true" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: pseudo-outcomes</span></span>
@@ -633,7 +653,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <p>The X-learner is useful when one treatment arm is much smaller than the other.</p>
 </section>
 <section id="r-learner-nie-wager-2021" class="level2" data-number="9.6">
-<h2 data-number="9.6" class="anchored" data-anchor-id="r-learner-nie-wager-2021"><span class="header-section-number">9.6</span> R-learner (Nie &amp; Wager 2021)</h2>
+<h2 data-number="9.6" class="anchored" data-anchor-id="r-learner-nie-wager-2021"><span class="header-section-number">9.6</span> R-learner <span class="citation" data-cites="nie-wager-2021">(<a href="references.html#ref-nie-wager-2021" role="doc-biblioref">Nie and Wager 2021</a>)</span></h2>
 <p>The R-learner partials out the main effects of <span class="math inline">\(X\)</span> from both <span class="math inline">\(Y\)</span> and <span class="math inline">\(D\)</span>:</p>
 <p><span class="math display">\[
 \tilde Y_i = \frac{Y_i - \hat m(X_i)}{D_i - \hat e(X_i)}, \qquad
@@ -671,8 +691,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 </div>
 <p>The R-learner is often stable when overlap is reasonable because nuisance model errors have only second-order effects on the target.</p>
 </section>
-<section id="dr-learner-kennedy-2020" class="level2" data-number="9.7">
-<h2 data-number="9.7" class="anchored" data-anchor-id="dr-learner-kennedy-2020"><span class="header-section-number">9.7</span> DR-learner (Kennedy 2020)</h2>
+<section id="dr-learner-kennedy-2020-optimal-dr" class="level2" data-number="9.7">
+<h2 data-number="9.7" class="anchored" data-anchor-id="dr-learner-kennedy-2020-optimal-dr"><span class="header-section-number">9.7</span> DR-learner <span class="citation" data-cites="kennedy-2020-optimal-dr">(<a href="references.html#ref-kennedy-2020-optimal-dr" role="doc-biblioref">Kennedy 2020</a>)</span></h2>
 <p>The DR-learner uses an AIPW-style pseudo-outcome and then regresses it on <span class="math inline">\(X\)</span>:</p>
 <p><span class="math display">\[
 \tilde Y_i^{DR} = \hat\mu_1(X_i) - \hat\mu_0(X_i) +
@@ -737,7 +757,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.9" class="anchored" data-anchor-id="best-linear-projection-blp"><span class="header-section-number">9.9</span> Best Linear Projection (BLP)</h2>
 <p>Even if CATE is nonlinear, we often want a regression-style summary: which covariates are associated with larger effects? The best linear projection is the OLS regression of pseudo-outcomes on covariates:</p>
 <p><span class="math display">\[
-\text{BLP}(X) = \arg\min_{\beta} \mathbb{E}\left[(\tau(X) - X'\beta)^2\right].
+\text{BLP}(X) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right].
 \]</span></p>
 <p>A doubly-robust BLP uses the DR-learner pseudo-outcomes:</p>
 <div id="blp" class="cell" data-cache="true" data-execution_count="11">
@@ -751,9 +771,9 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 </div>
 <p>Here the coefficient on <span class="math inline">\(X_1\)</span> should be close to 2, and the coefficients on the other variables should be close to 0.</p>
 </section>
-<section id="clan-testing-for-heterogeneity" class="level2" data-number="9.10">
-<h2 data-number="9.10" class="anchored" data-anchor-id="clan-testing-for-heterogeneity"><span class="header-section-number">9.10</span> CLAN: testing for heterogeneity</h2>
-<p>CLAN is a simple way to report heterogeneity. Sort observations by predicted CATE, split them into bins, and estimate the ATE in each bin.</p>
+<section id="gates-sorted-group-ates" class="level2" data-number="9.10">
+<h2 data-number="9.10" class="anchored" data-anchor-id="gates-sorted-group-ates"><span class="header-section-number">9.10</span> GATES: sorted group ATEs</h2>
+<p>GATES (group average treatment effects) is a simple way to report heterogeneity <span class="citation" data-cites="chernozhukov-2018-generic-ml">(<a href="references.html#ref-chernozhukov-2018-generic-ml" role="doc-biblioref">Chernozhukov et al. 2018</a>)</span>. Sort observations by predicted CATE, split them into bins, and estimate the ATE in each bin. (The same paper’s CLAN — classification analysis — is the natural companion: compare average <em>covariates</em> between the most- and least-affected bins; here that would show high <span class="math inline">\(X_1\)</span> in the top quintile.)</p>
 <div id="clan" class="cell" data-cache="true" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>quintile_edges <span class="op">=</span> <span class="fu">quantile</span>(tau_DR, <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length <span class="op">=</span> nq <span class="op">+</span> <span class="fl">1</span>))</span>
@@ -788,7 +808,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 5             5.271    0.068    5.138    5.404</code></pre>
 </div>
 </div>
-<p>Quintile 5 should have a larger ATE than quintile 1 in this simulation.</p>
+<p>Quintile 5 should have a larger ATE than quintile 1 in this simulation. One caveat: the quintiles are formed from the same pseudo-outcomes used to estimate the group ATEs, which biases the spread outward (the top bin collects positive noise, the bottom bin negative noise). For inference, form the groups and estimate the ATEs on separate folds.</p>
 </section>
 <section id="variable-importance-which-covariate-drives-heterogeneity" class="level2" data-number="9.11">
 <h2 data-number="9.11" class="anchored" data-anchor-id="variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</h2>
@@ -837,37 +857,45 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \]</span></p>
 <p>For interpretability, we can restrict the policy to a single threshold rule.</p>
 <div id="policy" class="cell" data-cache="true" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimal individualised policy (using estimated CATE)</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>treat_optimal <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>welfare_opt   <span class="op">=</span> <span class="fu">mean</span>((treat_optimal <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                     (treat_optimal <span class="op">.==</span> <span class="fl">0</span>) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive "treat everyone" policy</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>welfare_all   <span class="op">=</span> <span class="fu">mean</span>(pseudo_DR <span class="op">.-</span> cost)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cost = 2 makes the problem non-degenerate: tau(x) = 1 + 2 x1 is in [1, 3],</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so the optimal rule is "treat iff x1 &gt; 0.5" (about half the population).</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># A cost below 1 would make treat-everyone optimal and there would be</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># nothing for a policy to learn.</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Welfare of a rule = average gain over treating nobody, evaluated with the</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># DR scores: mean over units of treat(x) * (pseudo_DR - cost)</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="fu">welfare</span>(treat) <span class="op">=</span> <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost))</span>
 <span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold rule on X1</span></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">threshold_welfare</span>(thresh)</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    treat <span class="op">=</span> X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> thresh</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost) <span class="op">.+</span> (<span class="fl">1</span> <span class="op">.-</span> treat) <span class="op">.*</span> <span class="fl">0.0</span>)</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">threshold_welfare</span>(t) for t <span class="kw">in</span> threshes]</span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                  %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat if τ̂(x) &gt; %.2f):           %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, welfare_opt)</span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>welfare_all  <span class="op">=</span> <span class="fu">welfare</span>(<span class="fu">trues</span>(n))            <span class="co"># treat everyone</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>treat_est    <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost               <span class="co"># rule from the ESTIMATED CATE</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>treat_true   <span class="op">=</span> tau <span class="op">.&gt;</span> cost                  <span class="co"># oracle rule (simulation only)</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold-rule family on X1</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">welfare</span>(X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> t) for t <span class="kw">in</span> threshes]</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Treatment rates: estimated rule %.2f, oracle rule %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(treat_est), <span class="fu">mean</span>(treat_true))</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                    %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (oracle rule τ(x) &gt; %.0f):            %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, <span class="fu">welfare</span>(treat_true))</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (τ̂-rule, SAME scores, biased):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">welfare</span>(treat_est))</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (τ̂-rule, evaluated on true τ):       %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(treat_est <span class="op">.*</span> (tau <span class="op">.-</span> cost)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Welfare (treat everyone):                  1.526
-Welfare (treat if τ̂(x) &gt; 0.50):           1.820
-Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.526</code></pre>
+<pre><code>Treatment rates: estimated rule 0.51, oracle rule 0.51
+Welfare (treat everyone):                    0.026
+Welfare (oracle rule τ(x) &gt; 2):            0.302
+Welfare (best X1-threshold rule, X1 &gt; 0.45): 0.303
+Welfare (τ̂-rule, SAME scores, biased):       0.887
+Welfare (τ̂-rule, evaluated on true τ):       0.133</code></pre>
 </div>
 </div>
-<p>The threshold rule gives up flexibility, but it is easy to explain.</p>
+<p>The threshold rule gives up flexibility, but it is easy to explain — and it recovers the oracle threshold of <span class="math inline">\(0.5\)</span> almost exactly.</p>
+<p>One number above deserves a warning. The <span class="math inline">\(\hat\tau\)</span>-rule “evaluated” with the same DR scores that selected it appears to beat even the oracle rule — which is impossible in expectation. Selecting units whose noisy score is high and then averaging those same scores is optimistic by construction. In a simulation we can evaluate the rule against the true <span class="math inline">\(\tau(x)\)</span> instead (the last line): the honest value is positive — better than treating everyone — but well below the oracle, because the noisy CATE estimates misclassify many units near the threshold. Both lessons matter: never evaluate a rule on the scores that chose it (in real data, estimate the rule and evaluate its welfare on separate folds), and do not expect an estimated rule to attain oracle welfare. Here the simple <span class="math inline">\(X_1\)</span>-threshold rule, which searches a small one-dimensional family, gets essentially the oracle value — restricting the policy class is a form of regularisation.</p>
 <p>For more on policy trees with IPW and AIPW losses (using R’s <code>policytree</code> package), see the <a href="https://xiangao.github.io/blog_book/policytree.html">companion blog chapter on <code>policytree</code></a>. For a cross-software comparison of CATE estimators (including Stata 19’s new <code>cate</code> command), see the <a href="https://xiangao.github.io/blog_book/stata-cate.html">Stata CATE blog chapter</a>.</p>
 </section>
 <section id="causal-forests-with-panel-data" class="level2" data-number="9.13">
@@ -883,21 +911,22 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.526</code></pre>
 <span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>unit_fe  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.5</span></span>
 <span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>V1_firm  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.0</span></span>
 <span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>V1_panel <span class="op">=</span> V1_firm[firm_id] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(N)</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span> @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id]))))</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> W_panel <span class="op">.+</span></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           tau_panel <span class="op">.*</span> (W_panel <span class="op">.-</span> <span class="fu">mean</span>(W_panel)) <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># The marginal effect of switching W 0-&gt;1 is 1 (additive +W_panel term) plus</span></span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co"># tau_panel (the demeaned heterogeneous term), so the true ATE is 1 + mean(tau_panel).</span></span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>true_panel_ate <span class="op">=</span> <span class="fu">mean</span>(<span class="fl">1</span> <span class="op">.+</span> tau_panel)</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The unit effect drives BOTH treatment and the outcome (classic</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co"># fixed-effect confounding); unit_fe is unobserved to the learner.</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id] <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> unit_fe[firm_id]))))</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> tau_panel <span class="op">.*</span> W_panel <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Y(1) - Y(0) = tau_panel exactly, so the true ATE is mean(tau_panel).</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>true_panel_ate <span class="op">=</span> <span class="fu">mean</span>(tau_panel)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>True panel ATE: 1.655</code></pre>
+<pre><code>True panel ATE: 0.655</code></pre>
 </div>
 </div>
-<p>A naive T-learner ignores the firm fixed effects:</p>
+<p>A naive T-learner ignores the firm fixed effects. Because <code>unit_fe</code> raises both the treatment probability and the outcome, and is not in the learner’s covariates, the naive estimate is badly biased upward:</p>
 <div id="panel-naive" class="cell" data-cache="true" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
@@ -912,7 +941,7 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.526</code></pre>
 <span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Naive panel T-learner ATE: 1.775  (true = 1.655)</code></pre>
+<pre><code>Naive panel T-learner ATE: 2.014  (true = 0.655)</code></pre>
 </div>
 </div>
 <p>The within transformation removes firm-level variation and leaves the within-firm variation:</p>
@@ -931,13 +960,17 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.526</code></pre>
 <span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>mu0_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_C_dm, <span class="op">:</span>], df_dm.Y_dm[idx_C_dm], X_dm)</span>
 <span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
 <span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm), true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co"># The two demeaned groups differ in W_dm by less than a full 0 -&gt; 1 switch</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co"># (treated-above-average vs below-average within firm), so the raw contrast</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co"># is attenuated; rescale by the W_dm gap, as in a Wald estimator.</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>w_gap <span class="op">=</span> <span class="fu">mean</span>(df_dm.W_dm[idx_T_dm]) <span class="op">-</span> <span class="fu">mean</span>(df_dm.W_dm[idx_C_dm])</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm) <span class="op">/</span> w_gap, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Within-transform T-learner ATE: 1.283  (true = 1.655)</code></pre>
+<pre><code>Within-transform T-learner ATE: 0.689  (true = 0.655)</code></pre>
 </div>
 </div>
-<p>The within transformation removes the fixed effects. The cost is variance, because identification now comes from within-firm variation.</p>
+<p>The within transformation removes the fixed effects, and the rescaled contrast lands near the truth. The cost is variance, because identification now comes from within-firm variation.</p>
 <p>For R’s <code>grf::causal_forest</code>, pass <code>clusters = firm_id</code> so the honest sample split keeps each firm’s observations together. Julia does not currently have an equivalent; see the <a href="https://xiangao.github.io/blog_book/causal-forest-panel.html">companion blog chapter on causal forests in panel data</a> and the <a href="https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html">R companion to this chapter</a> for the GRF-based workflow.</p>
 </section>
 <section id="summary" class="level2" data-number="9.14">
@@ -945,12 +978,26 @@ Welfare (best X1-threshold rule, X1 &gt; 0.00): 1.526</code></pre>
 <ul>
 <li>Meta-learners turn regression tools into CATE estimators.</li>
 <li>In Julia they can be built with <code>MLJ</code> random forests, but there is no full <code>grf</code> equivalent yet.</li>
-<li>BLP and CLAN summarize heterogeneity in regression-style output.</li>
+<li>BLP and GATES summarize heterogeneity in regression-style output.</li>
 <li>Policy learning turns CATE estimates into treatment rules.</li>
 <li>In applied work, compare at least two CATE estimators and report simple heterogeneity summaries, not only a CATE scatterplot.</li>
 </ul>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-chernozhukov-2018-generic-ml" class="csl-entry" role="listitem">
+Chernozhukov, Victor, Mert Demirer, Esther Duflo, and Iván Fernández-Val. 2018. <span>“Generic Machine Learning Inference on Heterogeneous Treatment Effects in Randomized Experiments.”</span> <em>NBER Working Paper 24678</em>.
+</div>
+<div id="ref-kennedy-2020-optimal-dr" class="csl-entry" role="listitem">
+Kennedy, Edward H. 2020. <span>“Towards Optimal Doubly Robust Estimation of Heterogeneous Causal Effects.”</span> <em>arXiv Preprint arXiv:2004.14497</em>.
+</div>
+<div id="ref-kunzel-2019-metalearners" class="csl-entry" role="listitem">
+Künzel, Sören R., Jasjeet S. Sekhon, Peter J. Bickel, and Bin Yu. 2019. <span>“Metalearners for Estimating Heterogeneous Treatment Effects Using Machine Learning.”</span> <em>Proceedings of the National Academy of Sciences</em> 116 (10): 4156–65.
+</div>
+<div id="ref-nie-wager-2021" class="csl-entry" role="listitem">
+Nie, Xinkun, and Stefan Wager. 2021. <span>“Quasi-Oracle Estimation of Heterogeneous Treatment Effects.”</span> <em>Biometrika</em> 108 (2): 299–319.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

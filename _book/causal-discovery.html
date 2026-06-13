@@ -497,7 +497,7 @@ window.Quarto = {
 </header>
 
 
-<div id="78037479" class="cell" data-execution_count="2">
+<div id="be0b35f2" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -535,7 +535,7 @@ window.Quarto = {
 <p>We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge <span class="math inline">\(j \to i\)</span> generates a structural equation</p>
 <p><span class="math display">\[X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)\]</span></p>
 <p>where coefficients <span class="math inline">\(\beta_{ji}\)</span> are drawn uniformly from <span class="math inline">\([-1, -0.25] \cup [0.25, 1]\)</span>.</p>
-<div id="4f13744f" class="cell" data-execution_count="3">
+<div id="21fb24e3" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -678,7 +678,7 @@ Figure&nbsp;22.1: True DAG used for simulation.
 </ul>
 <p>With <span class="math inline">\(n = 2000\)</span> and <span class="math inline">\(p = 8\)</span> we use <span class="math inline">\(\alpha = 0.01\)</span>, a common default. With smaller <span class="math inline">\(n\)</span> or larger <span class="math inline">\(p\)</span> the CI tests lose power and true edges get dropped, so consider raising <span class="math inline">\(\alpha\)</span> to avoid over-pruning.</p>
 <p>We wrap <code>fisher_z</code> in a counter to track exactly how many CI tests each algorithm calls:</p>
-<div id="d30aeda8" class="cell" data-execution_count="5">
+<div id="e8aeb499" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">make_counted_ci</span>(data, sig)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">ci</span>(x, y, S, d)</span>
@@ -703,7 +703,7 @@ Figure&nbsp;22.1: True DAG used for simulation.
 <li>Identify colliders: if <span class="math inline">\(X - Z - Y\)</span> and <span class="math inline">\(X, Y\)</span> non-adjacent, orient as <span class="math inline">\(X \to Z \leftarrow Y\)</span> only if <span class="math inline">\(Z\)</span> was not in the separating set of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
 <li>Apply Meek’s orientation rules to propagate orientations without creating new colliders or cycles.</li>
 </ol>
-<div id="a3b304ea" class="cell" data-execution_count="6">
+<div id="9d868dec" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ci_pc, ctr_pc <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
@@ -732,7 +732,7 @@ Note
 <p>The <strong>F1 score</strong> is the harmonic mean of precision and recall, ranging from 0 (worst) to 1 (perfect).</p>
 <ul>
 <li><strong>Skeleton F1</strong> measures whether the algorithm found the right edges regardless of direction. An edge is a true positive if it exists in both the estimated skeleton and the true one.</li>
-<li><strong>CPDAG F1</strong> is stricter: a directed edge <span class="math inline">\(X \to Y\)</span> is only a true positive if the true DAG also has <span class="math inline">\(X \to Y\)</span>; an undirected edge <span class="math inline">\(X - Y\)</span> counts as correct if the true DAG has <em>either</em> direction.</li>
+<li><strong>CPDAG F1</strong> is stricter: it compares the two graphs’ directed-edge sets, with an undirected CPDAG edge represented as <em>both</em> directions. A correctly-adjacent but unoriented edge therefore contributes one true positive (the direction matching the true DAG) and one false positive (the reverse) — a partial penalty — while a wrongly oriented edge contributes a false positive and a false negative.</li>
 </ul>
 <p>A high skeleton F1 with lower CPDAG F1 means the algorithm found the right adjacencies but left some edges unoriented — the typical case when the MEC contains many equivalent DAGs.</p>
 </div>
@@ -761,7 +761,7 @@ Note
 <li>Reconstruct the full CPDAG from the recorded local structures.</li>
 </ol>
 <p>The key efficiency advantage: RSL-D uses at most <span class="math inline">\(O(p \cdot d \cdot |\text{MB}|^2)\)</span> CI tests (where <span class="math inline">\(d\)</span> is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.</p>
-<div id="0e7489a6" class="cell" data-execution_count="7">
+<div id="5f382faa" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ci_rsl, ctr_rsl <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cpdag_rsl <span class="op">=</span> <span class="fu">rsld</span>(data_mat, ci_rsl)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>skel_rsl  <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_rsl)</span>
@@ -1192,7 +1192,7 @@ Note
 <li>The <strong>distribution of CI test counts</strong> (shown in <a href="#fig-mc-ci" class="quarto-xref">Figure&nbsp;<span>22.3</span></a>) shows whether the efficiency advantage is consistent or only appears on average.</li>
 <li>High variance in F1 across replications suggests the algorithms are sensitive to the particular random graph — denser or sparser graphs drawn from the same Erdős–Rényi model can be very different problems.</li>
 </ul>
-<div id="5369cca9" class="cell" data-cache="true" data-execution_count="10">
+<div id="781774d0" class="cell" data-cache="true" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_once</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    adj  <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1303,7 +1303,7 @@ Figure&nbsp;22.3: Distribution of CI test counts over 100 replications. RSL-D co
 </tr>
 </tbody>
 </table>
-<div id="b85494eb" class="cell" data-execution_count="12">
+<div id="53d00b36" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>pisa   <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/pisa_usa2022.csv"</span>, DataFrame)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>plabs  <span class="op">=</span> [<span class="st">"HISEI"</span>,<span class="st">"HOMEPOS"</span>,<span class="st">"IMMIG"</span>,<span class="st">"GRADE"</span>,<span class="st">"GENDER"</span>,<span class="st">"MATH"</span>]</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>Xp     <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(pisa[<span class="op">:</span>, plabs])</span>
@@ -1335,7 +1335,7 @@ Note
 <section id="respecting-the-survey-design" class="level3" data-number="22.8.1">
 <h3 data-number="22.8.1" class="anchored" data-anchor-id="respecting-the-survey-design"><span class="header-section-number">22.8.1</span> Respecting the survey design</h3>
 <p>PISA is not a simple random sample — students carry final weights <code>W_FSTUWT</code>. The CI tests are functions of the <strong>covariance matrix</strong> and a <strong>sample size</strong>, so we supply design-consistent inputs: a <strong>weighted covariance/correlation</strong> matrix, and <strong>Kish’s effective sample size</strong> <span class="math inline">\(n_{\text{eff}} = (\sum_i w_i)^2 / \sum_i w_i^2\)</span>.</p>
-<div id="d5d947ec" class="cell" data-execution_count="13">
+<div id="b3ecee2b" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mu_p  <span class="op">=</span> (Xp<span class="op">'</span> <span class="op">*</span> wp) <span class="op">./</span> <span class="fu">sum</span>(wp)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Xc_p  <span class="op">=</span> Xp <span class="op">.-</span> mu_p<span class="op">'</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>Sig_p <span class="op">=</span> (Xc_p<span class="op">'</span> <span class="op">*</span> (wp <span class="op">.*</span> Xc_p)) <span class="op">./</span> <span class="fu">sum</span>(wp)      <span class="co"># design-weighted covariance</span></span>
@@ -1455,7 +1455,7 @@ Table&nbsp;22.2: Design-weighted correlation matrix (PISA 2022, USA).
 <section id="two-algorithms-on-the-weighted-data" class="level3" data-number="22.8.2">
 <h3 data-number="22.8.2" class="anchored" data-anchor-id="two-algorithms-on-the-weighted-data"><span class="header-section-number">22.8.2</span> Two algorithms on the weighted data</h3>
 <p>The CI test recomputes correlations from a data matrix, so to honour the design we build a synthetic sample of <span class="math inline">\(n_{\text{eff}}\)</span> rows whose empirical covariance equals the design-weighted <span class="math inline">\(\Sigma_w\)</span> exactly (a Cholesky recolour). Both PC and RSL-D then run on these design-consistent inputs unchanged.</p>
-<div id="65884fab" class="cell" data-execution_count="15">
+<div id="f909639d" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>m_eff <span class="op">=</span> <span class="fu">round</span>(<span class="dt">Int</span>, neff)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Z  <span class="op">=</span> <span class="fu">randn</span>(m_eff, pp_); Z <span class="op">.-=</span> <span class="fu">mean</span>(Z, dims<span class="op">=</span><span class="fl">1</span>)</span>
@@ -1686,7 +1686,7 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Read the disagreement, not just the agreement.</strong> A purely data-driven method may orient an edge as <code>MATH → HISEI</code> — a child’s test score causing their parent’s occupational status. That is causally backwards, and no CI test can rule it out, because <code>HISEI → MATH</code> and <code>MATH → HISEI</code> are Markov-equivalent. This is exactly why background knowledge is not optional.</p>
+<p><strong>Read the disagreement, not just the agreement.</strong> A purely data-driven method may orient an edge as <code>MATH → HISEI</code> — a child’s test score causing their parent’s occupational status. That is causally backwards, and the data cannot protect us: which direction this edge takes is not identifiable from observational data alone, so any orientation the algorithm prints reflects its (possibly mistaken) v-structure decisions under misspecification, not evidence about the true direction. This is exactly why background knowledge is not optional.</p>
 </div>
 </div>
 </section>
@@ -1698,7 +1698,7 @@ Important
 \prec \text{GRADE} \prec \text{MATH}.
 \]</span></p>
 <p>A cross-tier edge must point earlier→later; a within-tier edge the ordering cannot decide. We impose this on the discovered <strong>skeleton</strong>, because the ordering is knowledge we hold independently of how the data oriented things.</p>
-<div id="22280c47" class="cell" data-execution_count="17">
+<div id="95108155" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>tier_p <span class="op">=</span> <span class="fu">Dict</span>(<span class="st">"GENDER"</span><span class="op">=&gt;</span><span class="fl">0</span>,<span class="st">"IMMIG"</span><span class="op">=&gt;</span><span class="fl">0</span>,<span class="st">"HISEI"</span><span class="op">=&gt;</span><span class="fl">1</span>,<span class="st">"HOMEPOS"</span><span class="op">=&gt;</span><span class="fl">1</span>,<span class="st">"GRADE"</span><span class="op">=&gt;</span><span class="fl">2</span>,<span class="st">"MATH"</span><span class="op">=&gt;</span><span class="fl">3</span>)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>di_e <span class="op">=</span> <span class="dt">Tuple</span>{<span class="dt">Symbol</span>,<span class="dt">Symbol</span>}[]; bi_e <span class="op">=</span> <span class="dt">Tuple</span>{<span class="dt">Symbol</span>,<span class="dt">Symbol</span>}[]</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">edges</span>(skel_pcp)</span>
@@ -1725,7 +1725,7 @@ Warning
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Where data-driven orientation disagreed with us.</strong> Left to itself, an algorithm may orient <code>IMMIG–GRADE</code> as <code>GRADE → IMMIG</code> — schooling causing immigration status, which is impossible. No CI test could have prevented it: the two orientations are Markov-equivalent. Imposing the tier order overrides it. The lesson: <strong>never ship a discovered orientation you have prior reason to disbelieve</strong>.</p>
+<p><strong>Where data-driven orientation disagreed with us.</strong> Left to itself, an algorithm may orient <code>IMMIG–GRADE</code> as <code>GRADE → IMMIG</code> — schooling causing immigration status, which is impossible. Such mistakes come from v-structure and propagation decisions made under misspecification; the data is not informative about these directions. Imposing the tier order overrides them. The lesson: <strong>never ship a discovered orientation you have prior reason to disbelieve</strong>.</p>
 </div>
 </div>
 <div id="cell-fig-pisa-oriented" class="cell" data-execution_count="18">
@@ -1831,12 +1831,12 @@ Figure&nbsp;22.5: PC skeleton oriented by the temporal/logical tiers. Cross-tier
 </figure>
 </div>
 </div>
-<p>Every edge into <code>MATH</code> is now a candidate causal parent of achievement — the bridge from discovery to estimation (back-door adjustment on the parents of the outcome). The only edge the ordering leaves undirected, <code>HISEI – HOMEPOS</code>, is two same-tier measures of family background that temporal logic cannot separate.</p>
+<p>Every edge into <code>MATH</code> is now a candidate causal parent of achievement — the bridge from discovery to estimation (back-door adjustment, e.g.&nbsp;on the parents of the chosen treatment variable). The only edge the ordering leaves undirected, <code>HISEI – HOMEPOS</code>, is two same-tier measures of family background that temporal logic cannot separate.</p>
 </section>
 <section id="stability-does-the-skeleton-survive-resampling" class="level3" data-number="22.8.4">
 <h3 data-number="22.8.4" class="anchored" data-anchor-id="stability-does-the-skeleton-survive-resampling"><span class="header-section-number">22.8.4</span> Stability: does the skeleton survive resampling?</h3>
 <p>A single fit can be lucky. We resample students with replacement, re-estimate the <strong>weighted</strong> PC skeleton, and record how often each edge appears.</p>
-<div id="085d6315" class="cell" data-cache="true" data-execution_count="19">
+<div id="e0432638" class="cell" data-cache="true" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">weighted_skel</span>(Xb, wb, labs, sig)</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    mu <span class="op">=</span> (Xb<span class="op">'</span> <span class="op">*</span> wb) <span class="op">./</span> <span class="fu">sum</span>(wb); Xc <span class="op">=</span> Xb <span class="op">.-</span> mu<span class="op">'</span></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    Σ  <span class="op">=</span> (Xc<span class="op">'</span> <span class="op">*</span> (wb <span class="op">.*</span> Xc)) <span class="op">./</span> <span class="fu">sum</span>(wb)</span>

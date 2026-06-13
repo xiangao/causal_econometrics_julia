@@ -172,11 +172,13 @@ IPTW reweights observations by the inverse probability of their observed
 treatment history. The stabilized weight is:
 
 $$
-SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t-1})}.
+SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t})}.
 $$
 
 The numerator uses treatment history only. The denominator also conditions
-on covariate history.
+on the covariate history up to and including $L_t$ — the covariates measured
+just before $A_t$. (Skipping $L_t$ would leave the $L_t \to A_t$ confounding
+intact in the pseudo-population.)
 
 ```{julia}
 #| label: iptw
@@ -222,10 +224,21 @@ msm_fit = lm(@formula(Y ~ A0 + A1), df, wts = df.sw)
 println(coeftable(msm_fit))
 @printf("\nMSM total effect (always vs never): %.3f  (true = 1.500)\n",
         coef(msm_fit)[2] + coef(msm_fit)[3])
+
+# For comparison: the untrimmed weights
+df.sw_u = sw
+msm_untrimmed = lm(@formula(Y ~ A0 + A1), df, wts = df.sw_u)
+@printf("Untrimmed MSM total effect:         %.3f\n",
+        coef(msm_untrimmed)[2] + coef(msm_untrimmed)[3])
 ```
 
 The weighted population is constructed so treatment is no longer associated
-with past covariates. That is why the MSM targets the total effect.
+with past covariates. That is why the MSM targets the total effect. Note the
+trimmed estimate sits a little above the truth while the untrimmed one is
+closer: the weight models here are correctly specified, so the untrimmed
+weights are consistent, and capping the top 1% of weights reintroduces a
+bit of confounding bias in exchange for lower variance. Trimming is a
+bias-variance trade, not a free lunch.
 
 ## Hernán-style g-estimation: when to use which
 

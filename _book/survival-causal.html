@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -484,7 +504,7 @@ window.Quarto = {
 </header>
 
 
-<div id="5af8d69c" class="cell" data-execution_count="2">
+<div id="8152d9f4" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -505,7 +525,7 @@ S(t) = P(T &gt; t)
 \]</span></p>
 <p>the probability of surviving past time <span class="math inline">\(t\)</span>. Causal contrasts are usually reported as:</p>
 <ul>
-<li><strong>Hazard ratio (HR)</strong> — easy to estimate but hard to interpret causally (Hernán 2010).</li>
+<li><strong>Hazard ratio (HR)</strong> — easy to estimate but hard to interpret causally <span class="citation" data-cites="hernan-2010-hazards">(<a href="references.html#ref-hernan-2010-hazards" role="doc-biblioref">Hernán 2010</a>)</span>.</li>
 <li><strong>Restricted mean survival difference (RMST)</strong> — <span class="math inline">\(\int_0^\tau [S_1(t) - S_0(t)] dt\)</span> — interpretable as “years gained” up to time <span class="math inline">\(\tau\)</span>.</li>
 <li><strong>Survival probability difference at t</strong> — direct probability statement, requires picking a follow-up time.</li>
 </ul>
@@ -627,7 +647,7 @@ S(t) = P(T &gt; t)
 \text{RMST}(\tau) = E[\min(T, \tau)] = \int_0^\tau S(t) \, dt.
 \]</span></p>
 <p>The contrast <span class="math inline">\(\Delta_{\text{RMST}}(\tau)=\text{RMST}_1(\tau)-\text{RMST}_0(\tau)\)</span> is interpretable as years gained up to <span class="math inline">\(\tau\)</span>. It does not require proportional hazards.</p>
-<p>Compute it by trapezoidal integration of the KM curve:</p>
+<p>Because the KM curve is a step function, its integral is computed exactly by a left rectangle sum (width times the survival value at the left endpoint of each segment):</p>
 <div id="rmst" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rmst</span>(times, survival, tau)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add time 0 and the truncation point, with appropriate S values</span></span>
@@ -640,7 +660,7 @@ S(t) = P(T &gt; t)
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the tau endpoint</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(t_use, tau)</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(s_use, s_use[<span class="kw">end</span>])</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Trapezoidal area: width × left-height (since KM is step function)</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Exact integral of the KM step function: width × left-height</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">diff</span>(t_use) <span class="op">.*</span> s_use[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>])</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
@@ -706,6 +726,11 @@ IPW-adjusted RMST(τ=5):
 </ul>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-hernan-2010-hazards" class="csl-entry" role="listitem">
+Hernán, Miguel A. 2010. <span>“The Hazards of Hazard Ratios.”</span> <em>Epidemiology</em> 21 (1): 13–15.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->
