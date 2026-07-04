@@ -504,7 +504,7 @@ window.Quarto = {
 </header>
 
 
-<div id="8152d9f4" class="cell" data-execution_count="2">
+<div id="8f0ba386" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -657,25 +657,29 @@ S(t) = P(T &gt; t)
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> t_vec <span class="op">.&lt;=</span> tau</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    t_use <span class="op">=</span> t_vec[keep]</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    s_use <span class="op">=</span> s_vec[keep]</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the tau endpoint</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(t_use, tau)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(s_use, s_use[<span class="kw">end</span>])</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Exact integral of the KM step function: width × left-height</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">diff</span>(t_use) <span class="op">.*</span> s_use[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>])</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>τ <span class="op">=</span> <span class="fl">5.0</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>rmst_trt_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_trt, s_trt, τ)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>rmst_ctl_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_ctl, s_ctl, τ)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>rmst_trt_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_trt_w, s_trt_w, τ)</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>rmst_ctl_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_ctl_w, s_ctl_w, τ)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Unadjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        rmst_trt_unadj, rmst_ctl_unadj, rmst_trt_unadj <span class="op">-</span> rmst_ctl_unadj)</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW-adjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj <span class="op">-</span> rmst_ctl_adj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the tau endpoint, unless it's already the last element (t_vec was</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># constructed with tau appended, so `keep` already retains it -- pushing</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># again would duplicate it and create a zero-width trailing interval).</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> t_use[<span class="kw">end</span>] <span class="op">!=</span> tau</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(t_use, tau)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">push!</span>(s_use, s_use[<span class="kw">end</span>])</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Exact integral of the KM step function: width × left-height</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(<span class="fu">diff</span>(t_use) <span class="op">.*</span> s_use[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>])</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>τ <span class="op">=</span> <span class="fl">5.0</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>rmst_trt_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_trt, s_trt, τ)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>rmst_ctl_unadj <span class="op">=</span> <span class="fu">rmst</span>(t_ctl, s_ctl, τ)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>rmst_trt_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_trt_w, s_trt_w, τ)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>rmst_ctl_adj   <span class="op">=</span> <span class="fu">rmst</span>(t_ctl_w, s_ctl_w, τ)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Unadjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        rmst_trt_unadj, rmst_ctl_unadj, rmst_trt_unadj <span class="op">-</span> rmst_ctl_unadj)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"IPW-adjusted RMST(τ=5):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Treatment: %.3f years    Control: %.3f years    Diff: %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        rmst_trt_adj, rmst_ctl_adj, rmst_trt_adj <span class="op">-</span> rmst_ctl_adj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unadjusted RMST(τ=5):
   Treatment: 4.351 years    Control: 4.147 years    Diff: 0.203

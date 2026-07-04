@@ -196,9 +196,13 @@ function rmst(times, survival, tau)
     keep = t_vec .<= tau
     t_use = t_vec[keep]
     s_use = s_vec[keep]
-    # Add the tau endpoint
-    push!(t_use, tau)
-    push!(s_use, s_use[end])
+    # Add the tau endpoint, unless it's already the last element (t_vec was
+    # constructed with tau appended, so `keep` already retains it -- pushing
+    # again would duplicate it and create a zero-width trailing interval).
+    if t_use[end] != tau
+        push!(t_use, tau)
+        push!(s_use, s_use[end])
+    end
     # Exact integral of the KM step function: width × left-height
     sum(diff(t_use) .* s_use[1:end-1])
 end
