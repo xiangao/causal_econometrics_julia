@@ -66,7 +66,7 @@ $\exp(\mathbf{x}\boldsymbol{\beta} + \rho v)$, as in both DGPs of this chapter �
 multiplicative, the additive moments are misspecified, and additive-moment IV is
 inconsistent.  The multiplicative form is the robust default.
 The **control function approach** instead imposes the
-stronger *conditional mean assumption* (Wooldridge 2002, 2014):
+stronger *conditional mean assumption* [@wooldridge-2010-crosssection, sec. 18.5; @wooldridge-2014-qmle]:
 
 $$\boxed{E[y_1 \mid \mathbf{z}_1,\, y_2,\, v_2] = \exp\!\bigl(\mathbf{z}_1\boldsymbol{\delta}_1
 + \alpha_1 y_2 + \rho v_2\bigr).}$$
@@ -146,7 +146,10 @@ Applying the framework above, the two-step CF procedure is:
 
 1. **First stage** — linear projection of `time` on `phone`, `frfam`, and fixed effects via `feols`.
    The residual $\hat{v}_2 = \text{time} - \hat{\text{time}}$ satisfies $E(\mathbf{z}'\hat{v}_2)=0$ by construction.
-   A linear first stage is valid even when $y_2$ is continuous *or* binary (Part 2 shows both).
+   A linear first stage is appropriate here because `time` is continuous. **This does not carry
+   over when $y_2$ is binary** — see the derivation in Part 2, where Wooldridge is explicit that
+   the linear reduced-form/independent-error setup cannot be assumed once $y_2$ is discrete
+   [@wooldridge-2010-crosssection, sec. 18.5; @imbens-wooldridge-2009-jel].
 
 2. **Second stage** — Poisson QMLE with $\hat{v}_2$ added as a regressor inside the exponential mean.
    The CF assumption $E[y_1 \mid \mathbf{z}_1, y_2, v_2] = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \rho v_2)$
@@ -226,7 +229,9 @@ The bootstrapped SE is larger than the naive second-stage SE, confirming that ig
 
 ## Part 2 — Binary endogenous variable
 
-When $y_2 \in \{0,1\}$, the same linear projection first stage is still valid, but two additional approaches exploiting the binary structure become available.
+When $y_2 \in \{0,1\}$, the linear-projection first stage from Part 1 loses its
+justification, and two probit-based alternatives become the theoretically
+grounded routes instead.
 
 ### Data generating process
 
@@ -258,15 +263,94 @@ println("Cor(time_hi, e2):  $(round(cor(time_hi, e2), digits=3))  (endogeneity)"
 println("visits mean:       $(round(mean(visits2), digits=2))")
 ```
 
-### Three approaches: theory recap
+### Why Approach A's assumption breaks down for binary $y_2$
 
-| | First stage | What enters 2nd stage | 1st-stage assumption | 2nd-stage assumption |
-|---|---|---|---|---|
-| **A** | `feols` (OLS) | Residuals $\hat{v}_2$ | Exogeneity of $\mathbf{z}$ only | CF mean $\exp(\cdots + \rho v_2)$ correct |
-| **B** | `feprobit` | Gen. residuals $\hat{r}_2$ | Probit correctly specified | CF mean $\exp(\cdots + \rho r_2)$ correct |
-| **C** | Any model | Fitted values $\hat{p}_2$ | Exogeneity of $\mathbf{z}$ only | Moment form matches the error: additive moments need an additive error; multiplicative (Mullahy) moments handle inside-$\exp$ unobservables |
+Part 1's control function rests on writing $y_2 = \mathbf{z}\boldsymbol{\pi} + v_2$
+with $v_2$ independent of $\mathbf{z}$ (Assumption (3.25) in
+@imbens-wooldridge-2009-jel; eq. 18.39 in @wooldridge-2010-crosssection, sec. 18.5).
+That is a genuine assumption about the *reduced form*, not an automatic
+consequence of OLS: the population linear projection $\mathbf{z}\boldsymbol{\pi}$
+always exists and its residual is always uncorrelated with $\mathbf{z}$
+($E(\mathbf{z}'v_2)=0$), but *independence* of $v_2$ from $\mathbf{z}$ is much
+stronger, and it is what the Poisson control-function argument actually needs.
 
-All three require the second-stage Poisson conditional mean to be correctly specified.  A and C share the same (weaker) first-stage assumption; B additionally requires correct probit specification.
+For a binary $y_2$, $v_2 = y_2 - \mathbf{z}\boldsymbol{\pi}$ is degenerate given
+$\mathbf{z}$: conditional on $\mathbf{z}$, $v_2$ takes only the two values
+$1-\mathbf{z}\boldsymbol{\pi}$ (when $y_2=1$) and $-\mathbf{z}\boldsymbol{\pi}$
+(when $y_2=0$), with $\mathrm{Var}(v_2\mid\mathbf{z}) = p(\mathbf{z})[1-p(\mathbf{z})]$
+a function of $\mathbf{z}$ itself. Independence from $\mathbf{z}$ is not just
+approximately violated — it fails by construction. Wooldridge makes this
+explicit in the *exact* setting of this chapter (Poisson/exponential mean,
+binary EEV): starting from the same equations (3.23)–(3.25) used for the
+continuous case, he writes
+
+> "If $y_2$ is a binary model following a probit, then a CF approach due to
+> [Terza (1998)] can be used... **We can no longer assume (3.24) and (3.25).**
+> Instead, replace (3.24) [with the probit threshold model] $y_2 = 1[\mathbf{z}\boldsymbol{\pi}_2 + v_2 \geq 0]$."
+> [@imbens-wooldridge-2009-jel, sec. 3.3; nearly identical language in @wooldridge-2010-crosssection, sec. 18.5: "it would be very unusual for a discrete variable to be expressible as a linear equation with additive error independent of $\mathbf{z}$"]
+
+So Approach A is not a weaker-but-valid alternative to Approach B for binary
+$y_2$ — its own first-stage assumption cannot hold. What survives is a
+**local approximation** argument, derived below, plus its unconditional
+validity as a Hausman-type exogeneity test (the $t$-statistic on $\hat v_2$
+stays valid under $H_0:\rho=0$ regardless of how $v_2$ was constructed,
+because under the null there is no endogeneity left to approximate).
+
+### The exact correction (Terza 1998) and Approach B as its local approximation
+
+@terza-1998, exposited in @wooldridge-2010-crosssection (sec. 18.5) and
+@imbens-wooldridge-2009-jel (sec. 3.3, eqs. 3.32–3.36), derives the *exact*
+control function when $y_2$ follows a probit, $y_2 = 1[\mathbf{z}\boldsymbol{\pi}_2 + v_2 \geq 0]$,
+and $(c_1, v_2)$ — the Poisson heterogeneity and the probit error — are
+jointly normal with $\mathrm{Corr}(c_1,v_2) = \rho$. It is **not** "add the
+generalized residual linearly inside $\exp(\cdot)$" (that is Approach B as
+coded below). The exact result is multiplicative:
+
+$$E(y_1 \mid \mathbf{z}, y_2) = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2)\cdot h(y_2, \mathbf{z}\boldsymbol{\pi}_2, \rho)$$
+$$h(y_2, \mathbf{z}\boldsymbol{\pi}_2, \rho) = \exp(\rho^2/2)\left\{y_2\,\frac{\Phi(\rho + \mathbf{z}\boldsymbol{\pi}_2)}{\Phi(\mathbf{z}\boldsymbol{\pi}_2)} + (1-y_2)\,\frac{1-\Phi(\rho + \mathbf{z}\boldsymbol{\pi}_2)}{1-\Phi(\mathbf{z}\boldsymbol{\pi}_2)}\right\}$$
+
+estimated by plugging in the first-stage probit's $\hat{\boldsymbol{\pi}}_2$
+and then jointly QMLE-fitting $(\boldsymbol\delta_1,\alpha_1,\rho)$ against this
+mean function — a genuinely nonlinear second stage, not a linear regressor
+addition.
+
+**Why Approach B (linear addition of the generalized residual) is a good
+approximation, and exactly how good.** Taylor-expand $h$ in $\rho$ around
+$\rho=0$. Since $\tfrac{d}{d\rho}\exp(\rho^2/2)\big|_{\rho=0}=0$, only the
+$\Phi$-ratio terms contribute to first order:
+$$\left.\frac{\partial}{\partial\rho}\frac{\Phi(\rho+\mathbf{z}\boldsymbol\pi_2)}{\Phi(\mathbf{z}\boldsymbol\pi_2)}\right|_{\rho=0} = \frac{\phi(\mathbf{z}\boldsymbol\pi_2)}{\Phi(\mathbf{z}\boldsymbol\pi_2)} = \lambda(\mathbf{z}\boldsymbol\pi_2), \qquad
+\left.\frac{\partial}{\partial\rho}\frac{1-\Phi(\rho+\mathbf{z}\boldsymbol\pi_2)}{1-\Phi(\mathbf{z}\boldsymbol\pi_2)}\right|_{\rho=0} = -\lambda(-\mathbf{z}\boldsymbol\pi_2)$$
+where $\lambda(\cdot)=\phi(\cdot)/\Phi(\cdot)$ is the inverse Mills ratio (this
+is exactly the `gr2` computed via `pdf(nd, η) / cdf(nd, η)` below). Since
+$h(y_2,\mathbf{z}\boldsymbol\pi_2,0)=1$,
+$$h(y_2,\mathbf{z}\boldsymbol\pi_2,\rho) \approx 1 + \rho\cdot\underbrace{\bigl[y_2\lambda(\mathbf{z}\boldsymbol\pi_2) - (1-y_2)\lambda(-\mathbf{z}\boldsymbol\pi_2)\bigr]}_{=\ \hat r_2,\ \text{the generalized residual}}$$
+and $\exp(x_1\beta_1)\cdot h(\cdot) \approx \exp(x_1\beta_1)\cdot(1+\rho\, \hat r_2) \approx \exp(x_1\beta_1 + \rho\,\hat r_2)$
+for small $\rho\,\hat r_2$ — recovering exactly Approach B's construction
+(adding $\hat r_2$ linearly inside $\exp(\cdot)$). So **Approach B is the
+first-order-in-$\rho$ local approximation to Terza's exact correction**, not
+the exact correction itself; the approximation error is $O(\rho^2)$. This is
+consistent with the DGP above (small $\rho=0.2$, kept deliberately small so
+this approximation stays tight) and with a direct large-$n$ check of both A
+and B run against the R companion chapter's version of this DGP: the
+probability limits are $\hat\alpha_1^A \to 0.839$ and $\hat\alpha_1^B \to
+0.822$ against the true $0.8$ — both biased, B roughly half of A's bias,
+matching the theoretical ranking (B is a valid local approximation to the
+exact correction; A has no such derivation behind it at all for binary
+$y_2$) but neither exact.
+
+### Three approaches: practical recap
+
+| | First stage | What enters 2nd stage | Status for binary $y_2$ |
+|---|---|---|---|
+| **A** | `feols` (OLS) | Residuals $\hat{v}_2$ | **No valid first-stage assumption** — $v_2$ independent of $\mathbf{z}$ fails by construction; usable only as an approximation, and as a Hausman-type exogeneity test |
+| **B** | `feprobit` | Gen. residuals $\hat{r}_2$ | First-order-in-$\rho$ local approximation to Terza's exact correction; requires probit correctly specified |
+| **C** | Any model | Fitted values $\hat{p}_2$ | Distribution-free (@mullahy-1997) with the multiplicative moments — robust to misspecification of the model for $\Pr(y_2=1\mid\mathbf{z})$ |
+
+None of the three recovers the *exact* Terza (1998) correction as coded — that
+requires fitting the nonlinear $h(\cdot)$ mean function jointly (previous
+subsection). A and B additionally require the second-stage Poisson conditional
+mean to be correctly specified; C's validity does not depend on how well the
+first-stage model for $y_2$ fits.
 
 ### Approach A — Linear projection CF
 
@@ -463,11 +547,28 @@ for (m, e) in zip(methods, ests)
 end
 println()
 println("Note: the CF approaches (A, B) recover the truth closely —")
-println("with small ρ=0.2 the approximate CF mean assumption is mild.")
+println("with small ρ=0.2 the approximate CF mean assumption is mild")
+println("(A: no valid first-stage assumption for binary y2; B: correct")
+println("only to first order in ρ — see the derivation above).")
 println("Additive-moment IV Poisson does NOT: the unobservable enters")
 println("inside exp(·), so its moments are misspecified (Mullahy 1997).")
 println("The multiplicative-moment version repairs it.")
 ```
+
+::: {.callout-important}
+**This "small bias" finding does not extrapolate to large $\rho$.** A direct
+large-$n$ check of this exact DGP (holding $\rho=0.2$ fixed, $n\to\infty$)
+gives probability limits $\hat\alpha_1^A\to0.839$ and $\hat\alpha_1^B\to0.822$
+against the true $0.8$ — genuine asymptotic bias, not finite-sample noise,
+for *both* approaches, with B's roughly half of A's as the first-order
+approximation theory above predicts. Since the size of that bias scales with
+$\rho$ (Approach B's approximation error is $O(\rho^2)$; Approach A has no
+comparable bound at all), applications with substantially larger implied
+$\rho$ — e.g., a fitted $\hat\rho$ several times this DGP's $0.2$ — should
+not assume either approach's bias stays this small. Neither approach recovers
+Terza's exact correction; see the two subsections above for the citations
+and the derivation.
+:::
 
 
 ## Why Julia is faster
