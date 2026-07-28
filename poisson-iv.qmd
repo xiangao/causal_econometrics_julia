@@ -360,6 +360,54 @@ matching the theoretical ranking (B is a valid local approximation to the
 exact correction; A has no such derivation behind it at all for binary
 $y_2$) but neither exact.
 
+### Why use Approach B instead of the exact correction?
+
+If Terza's $h(\cdot)$ is exact and Approach B is only its local
+approximation, why does anyone use the approximation? Four reasons, not just
+convenience:
+
+1. **The exact correction still needs a nonlinear second stage — it does not
+   drop into standard FE-Poisson software.** Even in Terza's own procedure,
+   stage 2 fits $\exp(\mathbf x_1\boldsymbol\beta_1)\cdot h(y_2,\mathbf
+   z\hat{\boldsymbol\pi}_2,\rho)$, and $h(\cdot)$ is not reducible to
+   $\exp(\text{linear index})$ — the $\Phi$-ratios and the $\exp(\rho^2/2)$
+   term make it genuinely nonlinear in $\rho$. Approach B's second stage, by
+   contrast, has *exactly* the same functional form as ordinary Poisson —
+   $\exp(\text{linear index})$ — with one extra regressor ($\hat r_2$) added
+   to the index. It runs in `fepois` unmodified; the exact correction needs
+   custom nonlinear-optimization code, and — per the callout on Approach C
+   above — combining a genuinely nonlinear correction with the within-group
+   demeaning that makes FE-Poisson tractable with many fixed effects is not
+   straightforward. That cost scales badly exactly where FE-Poisson is most
+   needed: many high-dimensional fixed effects.
+
+2. **Joint nonlinear estimation is more efficient but harder to converge.**
+   Wooldridge says this explicitly for the closely analogous binary-$y_1$,
+   binary-$y_2$ case [@wooldridge-2010-crosssection, sec. 15.7.3]: *"Maximum
+   likelihood estimation has some decided advantages over two-step
+   procedures. First, MLE is more efficient than any two-step procedure...
+   The drawback with the MLE is computational. Sometimes it can be difficult
+   to get the iterations to converge, as $\hat\rho_1$ sometimes tends toward
+   $-1$ or $1$."* The same tension — efficiency versus numerical
+   fragility — applies to fitting Terza's $h(\cdot)$.
+
+3. **The efficiency gain often is not worth it when $\rho$ is modest.** The
+   verified check above already showed A and B within a few percent of the
+   truth at $\rho=0.2$ (0.839 / 0.822 vs. 0.8). When the approximation error
+   is that small next to ordinary sampling noise, the extra machinery buys
+   little against real implementation risk.
+
+4. **Approach B is more diagnostically transparent.** The coefficient on
+   $\hat r_2$ is a plain Hausman-type $t$-test for exogeneity, sitting next
+   to the coefficient of interest in a regression table that looks like any
+   other. A rewritten joint likelihood with a different functional form does
+   not give the same "how much did this correction move my estimate" legibility.
+
+This is the standard control-function tradeoff (2SRI generally, not just
+this Poisson case): give up some efficiency for a second stage that is
+numerically simple, compatible with existing FE software, and easy to
+diagnose.
+
 ### Three approaches: practical recap
 
 | | First stage | What enters 2nd stage | Status for binary $y_2$ |
