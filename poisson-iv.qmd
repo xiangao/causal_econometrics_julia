@@ -680,20 +680,46 @@ enters inside $\exp(\cdot)$, so its moments are misspecified (Mullahy 1997).
 The multiplicative-moment version repairs it.
 
 ::: {.callout-important}
-**This "small bias" finding does not extrapolate to large $\rho$.** A direct
-large-$n$ check of this exact DGP (holding $\rho=0.2$ fixed, $n\to\infty$)
-gives probability limits $\hat\alpha_1^A\to0.839$ and $\hat\alpha_1^B\to0.822$
-against the true $0.8$ — genuine asymptotic bias, not finite-sample noise,
-for *both* approaches, with B's roughly half of A's as the first-order
-approximation theory above predicts. Since the size of that bias scales with
-$\rho$ (Approach B's approximation error is $O(\rho^2)$; Approach A has no
-comparable bound at all), applications with substantially larger implied
-$\rho$ — e.g., a fitted $\hat\rho$ several times this DGP's $0.2$ — should
-not assume either approach's bias stays this small. Neither approach recovers
-Terza's exact correction; see the two subsections above for the citations
-and the derivation.
+**What "small bias" means here, precisely.** The comparison above lands
+close to the truth in *one* simulated sample ($n=5{,}000$) — which could
+mean the bias is genuinely small, or could mean this particular random draw
+happened to land close to the truth by luck (finite-sample noise). To tell
+these apart, re-run both estimators at $n=1{,}000{,}000$ with $\rho=0.2$
+held fixed: at that size, sampling noise is negligible, so whatever value
+each estimator settles on is its true asymptotic limit (its probability
+limit, or *plim*) rather than a lucky draw. That check gives
+$\hat\alpha_1^A\to0.839$ and $\hat\alpha_1^B\to0.822$ against the true
+$0.8$ — so both estimators *are* still biased even with essentially
+infinite data; the closeness seen above is real, not luck, but it is not
+zero either. It is exactly the $O(\rho^2)$ approximation error derived
+above (B's bias is roughly half of A's, matching that theory), and it
+**scales up with $\rho$.** So the "small bias" here is a feature of this
+chapter's deliberately mild $\rho=0.2$, not a general property of either
+estimator — an application with stronger endogeneity than this chapter's
+DGP should expect correspondingly larger bias from both A and B, and larger
+still from A, which (unlike B) has no derived bound on how large that bias
+can get.
 :::
 
+### Takeaway for the binary case
+
+- **Use Approach B.** It is the theoretically motivated choice — the
+  first-order-in-$\rho$ local approximation to Terza's (1998) exact
+  correction — and its error is *derived*, not assumed: $O(\rho^2)$,
+  shrinking as the endogeneity shrinks.
+- **Approach A can still be a reasonable numerical approximation** — this
+  chapter's own simulation lands it close to the truth at $\rho=0.2$ — but
+  it has no theoretical justification for binary $y_2$ at all: its
+  first-stage independence assumption fails by construction (see above).
+  Treat it as a fallback, not a first choice, and do not lean on it when
+  $\rho$ is not known to be small.
+- **Approach B works equally well with a probit or a logit first stage.**
+  Both are valid instances of the same generalized-residual construction.
+  Terza's *exact* correction happens to be worked out only for probit
+  (it relies on bivariate normality), but the local-approximation argument
+  that justifies Approach B does not require normality specifically — only
+  a correctly-specified single-index binary model, which probit and logit
+  both are.
 
 ## Why Julia is faster
 
