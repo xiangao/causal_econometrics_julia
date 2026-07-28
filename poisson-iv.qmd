@@ -296,6 +296,28 @@ validity as a Hausman-type exogeneity test (the $t$-statistic on $\hat v_2$
 stays valid under $H_0:\rho=0$ regardless of how $v_2$ was constructed,
 because under the null there is no endogeneity left to approximate).
 
+**Does Approach B avoid this by not being two-valued given $\mathbf z$?
+No — it is two-valued too, and that is not the distinction.** Approach B's
+generalized residual $\hat r_2 = y_2\lambda(\mathbf z\hat{\boldsymbol\pi}_2) -
+(1-y_2)\lambda(-\mathbf z\hat{\boldsymbol\pi}_2)$ is, for fixed $\mathbf z$, a
+function of $y_2\in\{0,1\}$ alone — exactly as degenerate given $\mathbf z$
+as Approach A's $v_2$. What differs is *which* object the independence
+assumption is asserted about. Approach A asserts it directly of the observed,
+two-valued $v_2 = y_2 - \mathbf z\boldsymbol\pi_2$, and that fails because
+both the two values themselves and the probabilities of landing on them move
+with $\mathbf z$ — nothing about $v_2$ is $\mathbf z$-invariant. Terza's setup
+instead asserts independence of the **continuous latent probit error** $v_2$
+in $y_2=1[\mathbf z\boldsymbol\pi_2+v_2\geq0]$, where $v_2\mid\mathbf z\sim
+N(0,1)$ — the same assumption every probit MLE already makes, and one that is
+genuinely $\mathbf z$-invariant. The generalized residual is then the
+*correct conditional expectation* of a transform of that continuous error
+given the observed binary $y_2$ (worked out explicitly below); it comes out
+two-valued given $\mathbf z$ because it is a statistic derived from something
+continuous and conditioned on a coarse observation of it, not because
+independence of $\mathbf z$ failed anywhere in its derivation. Discreteness
+of the *derived* residual and independence-of-$\mathbf z$ of the *underlying*
+error are separate properties — Approach A conflates them, Approach B does not.
+
 ### The exact correction (Terza 1998) and Approach B as its local approximation
 
 @terza-1998, exposited in @wooldridge-2010-crosssection (sec. 18.5) and
