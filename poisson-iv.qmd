@@ -545,15 +545,14 @@ println("\n── Binary EEV: coefficient on time_hi ─────────
 for (m, e) in zip(methods, ests)
     @printf("  %-42s  α̂₁ = %6.4f\n", m, e)
 end
-println()
-println("Note: the CF approaches (A, B) recover the truth closely —")
-println("with small ρ=0.2 the approximate CF mean assumption is mild")
-println("(A: no valid first-stage assumption for binary y2; B: correct")
-println("only to first order in ρ — see the derivation above).")
-println("Additive-moment IV Poisson does NOT: the unobservable enters")
-println("inside exp(·), so its moments are misspecified (Mullahy 1997).")
-println("The multiplicative-moment version repairs it.")
 ```
+
+The CF approaches (A, B) recover the truth closely — with small $\rho=0.2$
+the approximate CF mean assumption is mild (A has no valid first-stage
+assumption for binary $y_2$; B is correct only to first order in $\rho$, per
+the derivation above). Additive-moment IV Poisson does not: the unobservable
+enters inside $\exp(\cdot)$, so its moments are misspecified (Mullahy 1997).
+The multiplicative-moment version repairs it.
 
 ::: {.callout-important}
 **This "small bias" finding does not extrapolate to large $\rho$.** A direct
