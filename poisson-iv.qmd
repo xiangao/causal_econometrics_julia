@@ -400,10 +400,8 @@ $$\hat r_2 = y_2\cdot\frac{\lambda(\hat\eta)}{\Lambda(\hat\eta)} - (1-y_2)\cdot\
 = y_2\bigl[1-\Lambda(\hat\eta)\bigr] - (1-y_2)\Lambda(\hat\eta) = y_2 - \Lambda(\hat\eta) = y_2 - \hat p_2,$$
 
 i.e. **the logit generalized residual is just the plain response residual**
-$y_2-\hat p_2$ — no Mills-ratio machinery needed. This is exactly what a
-practitioner reaches for by instinct (`logit` first stage, then
-`y2 .- predict(fit)`), and the algebra above confirms it *is* the right
-generalized residual, not a shortcut.
+$y_2-\hat p_2$ — no Mills-ratio machinery needed: `logit` first stage, then
+`y2 .- predict(fit)`, is the right generalized residual, not a shortcut.
 
 ```{julia}
 #| echo: true
