@@ -493,10 +493,11 @@ window.Quarto = {
   <li><a href="#three-approaches-practical-recap" id="toc-three-approaches-practical-recap" class="nav-link" data-scroll-target="#three-approaches-practical-recap"><span class="header-section-number">18.3.4</span> Three approaches: practical recap</a></li>
   <li><a href="#approach-a-linear-projection-cf" id="toc-approach-a-linear-projection-cf" class="nav-link" data-scroll-target="#approach-a-linear-projection-cf"><span class="header-section-number">18.3.5</span> Approach A — Linear projection CF</a></li>
   <li><a href="#approach-b-probit-generalized-residuals" id="toc-approach-b-probit-generalized-residuals" class="nav-link" data-scroll-target="#approach-b-probit-generalized-residuals"><span class="header-section-number">18.3.6</span> Approach B — Probit generalized residuals</a></li>
-  <li><a href="#approach-c-fitted-values-as-instrument-ivgmm-poisson" id="toc-approach-c-fitted-values-as-instrument-ivgmm-poisson" class="nav-link" data-scroll-target="#approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.7</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</a></li>
-  <li><a href="#a-vs-c-not-equivalent-in-poisson" id="toc-a-vs-c-not-equivalent-in-poisson" class="nav-link" data-scroll-target="#a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.8</span> A vs C — not equivalent in Poisson</a></li>
-  <li><a href="#bootstrap-for-approach-a-binary-eev" id="toc-bootstrap-for-approach-a-binary-eev" class="nav-link" data-scroll-target="#bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.9</span> Bootstrap for Approach A (binary EEV)</a></li>
-  <li><a href="#comparison-across-all-methods" id="toc-comparison-across-all-methods" class="nav-link" data-scroll-target="#comparison-across-all-methods"><span class="header-section-number">18.3.10</span> Comparison across all methods</a></li>
+  <li><a href="#does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat" id="toc-does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat" class="nav-link" data-scroll-target="#does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat"><span class="header-section-number">18.3.7</span> Does the first stage have to be probit? Logit works too — with a caveat</a></li>
+  <li><a href="#approach-c-fitted-values-as-instrument-ivgmm-poisson" id="toc-approach-c-fitted-values-as-instrument-ivgmm-poisson" class="nav-link" data-scroll-target="#approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.8</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</a></li>
+  <li><a href="#a-vs-c-not-equivalent-in-poisson" id="toc-a-vs-c-not-equivalent-in-poisson" class="nav-link" data-scroll-target="#a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.9</span> A vs C — not equivalent in Poisson</a></li>
+  <li><a href="#bootstrap-for-approach-a-binary-eev" id="toc-bootstrap-for-approach-a-binary-eev" class="nav-link" data-scroll-target="#bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.10</span> Bootstrap for Approach A (binary EEV)</a></li>
+  <li><a href="#comparison-across-all-methods" id="toc-comparison-across-all-methods" class="nav-link" data-scroll-target="#comparison-across-all-methods"><span class="header-section-number">18.3.11</span> Comparison across all methods</a></li>
   </ul></li>
   <li><a href="#why-julia-is-faster" id="toc-why-julia-is-faster" class="nav-link" data-scroll-target="#why-julia-is-faster"><span class="header-section-number">18.4</span> Why Julia is faster</a></li>
   </ul>
@@ -524,7 +525,7 @@ window.Quarto = {
 </header>
 
 
-<div id="6a5581be" class="cell" data-execution_count="2">
+<div id="33da612f" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span>, <span class="bu">DataFramesMeta</span></span>
@@ -614,7 +615,7 @@ Note
 <section id="data-generating-process" class="level3" data-number="18.2.1">
 <h3 data-number="18.2.1" class="anchored" data-anchor-id="data-generating-process"><span class="header-section-number">18.2.1</span> Data generating process</h3>
 <p>We simulate a panel where <code>time</code> (continuous, e.g.&nbsp;minutes on site) is endogenous: it is correlated with an unobserved factor <code>e</code> that also affects <code>visits</code>. The excluded instrument is <code>phone</code> (binary, e.g.&nbsp;phone-access indicator). Fixed effects are <code>ad</code> (20 groups) and <code>female</code>.</p>
-<div id="468646c9" class="cell" data-execution_count="3">
+<div id="301e6f1d" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_ad <span class="op">=</span> <span class="fl">20</span>; obs_per <span class="op">=</span> <span class="fl">250</span>; n <span class="op">=</span> n_ad <span class="op">*</span> obs_per</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -648,7 +649,7 @@ Note
 <section id="naive-poisson-endogeneity-bias" class="level3" data-number="18.2.2">
 <h3 data-number="18.2.2" class="anchored" data-anchor-id="naive-poisson-endogeneity-bias"><span class="header-section-number">18.2.2</span> Naive Poisson — endogeneity bias</h3>
 <p>Ignoring the endogeneity of <code>time</code> gives a biased estimate of <code>α₁</code>:</p>
-<div id="fa825b89" class="cell" data-execution_count="4">
+<div id="ab1e2384" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>naive1 <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Naive (biased):"</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(naive1; title<span class="op">=</span><span class="st">"Naive Poisson — time is endogenous"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -706,7 +707,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <li><p><strong>Second stage</strong> — Poisson QMLE with <span class="math inline">\(\hat{v}_2\)</span> added as a regressor inside the exponential mean. The CF assumption <span class="math inline">\(E[y_1 \mid \mathbf{z}_1, y_2, v_2] = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \rho v_2)\)</span> holds exactly here because the DGP specifies <span class="math inline">\(0.5\,e\)</span> (linear in the unobservable) inside <span class="math inline">\(\exp(\cdot)\)</span>.</p></li>
 </ol>
 <p>Note that unlike 2SLS in a linear model, <span class="math inline">\(\hat{v}_2\)</span> does <em>not</em> replace <span class="math inline">\(y_2\)</span> — both enter together. This is what makes the CF estimator different from IV/GMM Poisson (confirmed numerically in Part 2).</p>
-<div id="bb81f447" class="cell" data-execution_count="5">
+<div id="aa213a95" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>fs1 <span class="op">=</span> <span class="fu">feols</span>(df1, <span class="pp">@formula</span>(time <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>df1.v2hat <span class="op">=</span> fs1.residuals</span>
@@ -772,7 +773,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="bootstrap-standard-errors" class="level3" data-number="18.2.4">
 <h3 data-number="18.2.4" class="anchored" data-anchor-id="bootstrap-standard-errors"><span class="header-section-number">18.2.4</span> Bootstrap standard errors</h3>
 <p>The second-stage standard errors are incorrect because the first-stage estimation error propagates. Julia’s <code>Threads.@threads</code> parallelises the cluster bootstrap across all CPU cores:</p>
-<div id="ebdaae3a" class="cell" data-execution_count="6">
+<div id="13903dda" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_resample</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    clusters <span class="op">=</span> <span class="fu">unique</span>(df.ad)</span>
@@ -832,7 +833,7 @@ Bootstrap 95% CI: [0.7868, 0.8312]</code></pre>
 <section id="data-generating-process-1" class="level3" data-number="18.3.1">
 <h3 data-number="18.3.1" class="anchored" data-anchor-id="data-generating-process-1"><span class="header-section-number">18.3.1</span> Data generating process</h3>
 <p>We use a clean probit DGP for the binary endogenous variable with a fresh structural error <code>e2</code> independent of Part 1. The endogeneity coefficient <code>ρ = 0.2</code> is kept small so the CF assumption holds approximately well and estimates are close to the true value.</p>
-<div id="3b91f1a5" class="cell" data-execution_count="7">
+<div id="2d0670ec" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fresh structural error for Part 2 (independent of Part 1's e)</span></span>
@@ -922,7 +923,7 @@ visits mean:       4.78</code></pre>
 </section>
 <section id="approach-a-linear-projection-cf" class="level3" data-number="18.3.5">
 <h3 data-number="18.3.5" class="anchored" data-anchor-id="approach-a-linear-projection-cf"><span class="header-section-number">18.3.5</span> Approach A — Linear projection CF</h3>
-<div id="49568085" class="cell" data-execution_count="8">
+<div id="d8cb49bb" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection of binary time_hi</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fs_a <span class="op">=</span> <span class="fu">feols</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df2.v2hat <span class="op">=</span> fs_a.residuals</span>
@@ -986,7 +987,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="approach-b-probit-generalized-residuals" class="level3" data-number="18.3.6">
 <h3 data-number="18.3.6" class="anchored" data-anchor-id="approach-b-probit-generalized-residuals"><span class="header-section-number">18.3.6</span> Approach B — Probit generalized residuals</h3>
-<div id="79867d88" class="cell" data-execution_count="9">
+<div id="b9ec4486" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: probit first stage</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fs_b <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1055,77 +1056,158 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </section>
-<section id="approach-c-fitted-values-as-instrument-ivgmm-poisson" class="level3" data-number="18.3.7">
-<h3 data-number="18.3.7" class="anchored" data-anchor-id="approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.7</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</h3>
+<section id="does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat" class="level3" data-number="18.3.7">
+<h3 data-number="18.3.7" class="anchored" data-anchor-id="does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat"><span class="header-section-number">18.3.7</span> Does the first stage have to be probit? Logit works too — with a caveat</h3>
+<p>Nothing about the local-approximation argument above is specific to the normal distribution. The generalized residual is defined for <em>any</em> correctly-specified binary-response GLM <span class="citation" data-cites="gourieroux-monfort-renault-trognon-1987">(<a href="references.html#ref-gourieroux-monfort-renault-trognon-1987" role="doc-biblioref">Gourieroux et al. 1987</a>)</span>, and for a <strong>logit</strong> first stage it collapses to something particularly simple. With <span class="math inline">\(\Lambda(\cdot)\)</span> the logistic CDF and <span class="math inline">\(\lambda(\eta)=\Lambda(\eta)[1-\Lambda(\eta)]\)</span> its density,</p>
+<p><span class="math display">\[\hat r_2 = y_2\cdot\frac{\lambda(\hat\eta)}{\Lambda(\hat\eta)} - (1-y_2)\cdot\frac{\lambda(\hat\eta)}{1-\Lambda(\hat\eta)}
+= y_2\bigl[1-\Lambda(\hat\eta)\bigr] - (1-y_2)\Lambda(\hat\eta) = y_2 - \Lambda(\hat\eta) = y_2 - \hat p_2,\]</span></p>
+<p>i.e.&nbsp;<strong>the logit generalized residual is just the plain response residual</strong> <span class="math inline">\(y_2-\hat p_2\)</span> — no Mills-ratio machinery needed. This is exactly what a practitioner reaches for by instinct (<code>logit</code> first stage, then <code>y2 .- predict(fit)</code>), and the algebra above confirms it <em>is</em> the right generalized residual, not a shortcut.</p>
+<div id="68a0f322" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fs_b_logit <span class="op">=</span> <span class="fu">felogit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>phat_logit <span class="op">=</span> fs_b_logit.mu</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>df2.gr2_logit <span class="op">=</span> df2.time_hi <span class="op">.-</span> phat_logit    <span class="co"># algebraically = generalized residual</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>m_b_logit <span class="op">=</span> <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> gr2_logit <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Approach B with a logit first stage:"</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(m_b_logit; title<span class="op">=</span><span class="st">"Approach B: logit generalized residual"</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>coef_b_probit <span class="op">=</span> <span class="fu">coef</span>(m_b)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_b))]</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>coef_b_logit  <span class="op">=</span> <span class="fu">coef</span>(m_b_logit)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_b_logit))]</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Probit-based Approach B: alpha1 = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_b_probit)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Logit-based  Approach B: alpha1 = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_b_logit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Approach B with a logit first stage:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><strong>Approach B: logit generalized residual</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid black;"></th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Estimate</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Std. Error</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">t value</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; padding: 4px 8px; border-bottom: 1px solid black;">Pr(&gt;|t|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">time_hi</td>
+<td style="text-align: right; padding: 3px 8px;">0.800</td>
+<td style="text-align: right; padding: 3px 8px;">0.036</td>
+<td style="text-align: right; padding: 3px 8px;">22.145</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; padding: 3px 10px 3px 0;">gr2_logit</td>
+<td style="text-align: right; padding: 3px 8px;">0.346</td>
+<td style="text-align: right; padding: 3px 8px;">0.036</td>
+<td style="text-align: right; padding: 3px 8px;">9.698</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; padding: 3px 10px 3px 0;">frfam</td>
+<td style="text-align: right; padding: 3px 8px;">0.413</td>
+<td style="text-align: right; padding: 3px 8px;">0.023</td>
+<td style="text-align: right; padding: 3px 8px;">17.878</td>
+<td style="text-align: right; padding: 3px 8px; white-space: nowrap;">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td colspan="5" style="text-align: left; padding: 6px 0 0 0; border-top: 1px solid black;">---<br>
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Probit-based Approach B: alpha1 = 0.7636
+Logit-based  Approach B: alpha1 = 0.8000</code></pre>
+</div>
+</div>
+<p>Two important limits, though:</p>
+<ol type="1">
+<li><strong>The <em>exact</em> Terza (1998) correction is probit-specific, not logit.</strong> The closed form <span class="math inline">\(h(\cdot)\)</span> derived above comes from the truncated-moment properties of the <em>bivariate normal</em> — <span class="math inline">\(E[\exp(\rho v_2)\mid v_2 &gt; \mathbf z\boldsymbol\pi_2]\)</span> has that clean <span class="math inline">\(\Phi\)</span>-ratio form only because <span class="math inline">\(v_2\)</span> is normal. A logistic <span class="math inline">\(v_2\)</span> has no analogous tractable joint distribution with the Poisson heterogeneity, and no such exact result appears anywhere in <span class="citation" data-cites="wooldridge-2010-crosssection">Wooldridge (<a href="references.html#ref-wooldridge-2010-crosssection" role="doc-biblioref">2010</a>)</span>, <span class="citation" data-cites="imbens-wooldridge-2009-jel">Imbens and Wooldridge (<a href="references.html#ref-imbens-wooldridge-2009-jel" role="doc-biblioref">2009</a>)</span>, or <span class="citation" data-cites="terza-1998">Terza (<a href="references.html#ref-terza-1998" role="doc-biblioref">1998</a>)</span> for a logit reduced form. So logit gives you Approach B (the local, <span class="math inline">\(O(\rho^2)\)</span>-error approximation) exactly as validly as probit — but it does not give you a logit analog of the exact correction, because none has been worked out in this literature.</li>
+<li><strong>As a fitted-probability <em>instrument</em> (Approach C), probit and logit are both fine, and Wooldridge treats them as interchangeable.</strong> From <span class="citation" data-cites="imbens-wooldridge-2009-jel">Imbens and Wooldridge (<a href="references.html#ref-imbens-wooldridge-2009-jel" role="doc-biblioref">2009</a>)</span>: <em>“Estimate P(W=1|x,z) by probit (or logit) and obtain the first-stage fitted probabilities… This method… is fully robust to misspecification of the [first-stage] model.”</em> That robustness (correct even if the link is wrong) is specific to using the fitted value as an <em>instrument</em>, not as a <em>residual</em> — it does not carry over to Approaches A or B, where the second-stage conditional mean still has to be exactly right.</li>
+</ol>
+</section>
+<section id="approach-c-fitted-values-as-instrument-ivgmm-poisson" class="level3" data-number="18.3.8">
+<h3 data-number="18.3.8" class="anchored" data-anchor-id="approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.8</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</h3>
 <p>Any function of the exogenous <span class="math inline">\(\mathbf{z}\)</span> is a valid instrument. Probit, logit, and linear probability fitted values are all equally valid from a consistency standpoint — the choice affects efficiency (instrument strength). We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument. We code <strong>both moment forms</strong>: the additive moments are what “IV Poisson” often means in practice (e.g.&nbsp;Stata’s <code>ivpoisson gmm</code> default additive option), but because this chapter’s DGP puts the unobservable inside <span class="math inline">\(\exp(\cdot)\)</span>, only the multiplicative (Mullahy) moments are consistent here:</p>
-<div id="75377e0d" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois(y, X, Z) -&gt; (β, se)</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">IV/GMM Poisson (just-identified). X = [endog, exog], Z = [instrument, exog].</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="st">Damped IRLS: intercept initialised from log(mean(y)), half-steps for stability.</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ivpois</span>(y<span class="op">::</span><span class="dt">Vector{Float64}</span>, X<span class="op">::</span><span class="dt">Matrix{Float64}</span>, Z<span class="op">::</span><span class="dt">Matrix{Float64}</span>;</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                maxiter<span class="op">=</span><span class="fl">500</span>, tol<span class="op">=</span><span class="fl">1e-8</span>, step<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(X, <span class="fl">2</span>)</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    β  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    β[p] <span class="op">=</span> <span class="fu">log</span>(<span class="fu">mean</span>(y))    <span class="co"># intercept from marginal mean — prevents divergence</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        μ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (μ <span class="op">.*</span> X)</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (y <span class="op">.-</span> μ)</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        Δ <span class="op">=</span> <span class="cf">try</span> H <span class="op">\</span> g <span class="cf">catch</span>; <span class="fu">pinv</span>(H) <span class="op">*</span> g <span class="cf">end</span></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        β <span class="op">.+=</span> step <span class="op">.*</span> Δ</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(<span class="fu">abs</span>.(step <span class="op">.*</span> Δ)) <span class="op">&lt;</span> tol <span class="op">&amp;&amp;</span> <span class="cf">break</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    μ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (μ <span class="op">.*</span> X)</span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    B <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> ((y <span class="op">.-</span> μ)<span class="op">.^</span><span class="fl">2</span> <span class="op">.*</span> Z)       <span class="co"># robust sandwich meat</span></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> <span class="cf">try</span> <span class="fu">inv</span>(H) <span class="op">*</span> B <span class="op">*</span> <span class="fu">inv</span>(H)<span class="ch">' catch; pinv(H) * B * pinv(H)'</span> <span class="cf">end</span></span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β, <span class="fu">sqrt</span>.(<span class="fu">max</span>.(<span class="fl">0.0</span>, <span class="fu">diag</span>(V)))</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois_mult(y, X, Z) -&gt; β</span></span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="st">IV/GMM Poisson with MULTIPLICATIVE (Mullahy 1997) moments</span></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="st">Z'(y .* exp(-Xβ) .- 1) = 0 — consistent when the unobservable enters</span></span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="st">inside the exponential mean (multiplicative error).</span></span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ivpois_mult</span>(y<span class="op">::</span><span class="dt">Vector{Float64}</span>, X<span class="op">::</span><span class="dt">Matrix{Float64}</span>, Z<span class="op">::</span><span class="dt">Matrix{Float64}</span>;</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>                     maxiter<span class="op">=</span><span class="fl">1000</span>, tol<span class="op">=</span><span class="fl">1e-10</span>, step<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(X, <span class="fl">2</span>)</span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>    β  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>    β[p] <span class="op">=</span> <span class="fu">log</span>(<span class="fu">mean</span>(y))</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> y <span class="op">.*</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(<span class="op">-</span>X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (w <span class="op">.-</span> <span class="fl">1</span>)</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (w <span class="op">.*</span> X)</span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>        Δ <span class="op">=</span> <span class="cf">try</span> H <span class="op">\</span> g <span class="cf">catch</span>; <span class="fu">pinv</span>(H) <span class="op">*</span> g <span class="cf">end</span></span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        β <span class="op">.+=</span> step <span class="op">.*</span> Δ</span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(<span class="fu">abs</span>.(step <span class="op">.*</span> Δ)) <span class="op">&lt;</span> tol <span class="op">&amp;&amp;</span> <span class="cf">break</span></span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β</span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Probit (without FE, to avoid collinearity with instrument matrix)</span></span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>fs_c  <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam))</span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>phat  <span class="op">=</span> fs_c.mu</span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Regressor matrix X: [time_hi, frfam, intercept]</span></span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Instrument matrix Z: [phat,    frfam, intercept]  ← phat replaces time_hi</span></span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>X_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>Z_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(phat),        <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
-<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>β_c, se_c <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
-<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>β_cm      <span class="op">=</span> <span class="fu">ivpois_mult</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
-<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Approach C — IV/GMM Poisson (no FE, for illustration)</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  additive moments:       time_hi = %7.4f   SE = %7.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">1</span>], se_c[<span class="fl">1</span>])</span>
-<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  multiplicative moments: time_hi = %7.4f   (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a>        β_cm[<span class="fl">1</span>], true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="eb024ab2" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois(y, X, Z) -&gt; (β, se)</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="st">IV/GMM Poisson (just-identified). X = [endog, exog], Z = [instrument, exog].</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="st">Damped IRLS: intercept initialised from log(mean(y)), half-steps for stability.</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ivpois</span>(y<span class="op">::</span><span class="dt">Vector{Float64}</span>, X<span class="op">::</span><span class="dt">Matrix{Float64}</span>, Z<span class="op">::</span><span class="dt">Matrix{Float64}</span>;</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                maxiter<span class="op">=</span><span class="fl">500</span>, tol<span class="op">=</span><span class="fl">1e-8</span>, step<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(X, <span class="fl">2</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    β  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    β[p] <span class="op">=</span> <span class="fu">log</span>(<span class="fu">mean</span>(y))    <span class="co"># intercept from marginal mean — prevents divergence</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>        μ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (μ <span class="op">.*</span> X)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (y <span class="op">.-</span> μ)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        Δ <span class="op">=</span> <span class="cf">try</span> H <span class="op">\</span> g <span class="cf">catch</span>; <span class="fu">pinv</span>(H) <span class="op">*</span> g <span class="cf">end</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>        β <span class="op">.+=</span> step <span class="op">.*</span> Δ</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(<span class="fu">abs</span>.(step <span class="op">.*</span> Δ)) <span class="op">&lt;</span> tol <span class="op">&amp;&amp;</span> <span class="cf">break</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    μ <span class="op">=</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (μ <span class="op">.*</span> X)</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>    B <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> ((y <span class="op">.-</span> μ)<span class="op">.^</span><span class="fl">2</span> <span class="op">.*</span> Z)       <span class="co"># robust sandwich meat</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> <span class="cf">try</span> <span class="fu">inv</span>(H) <span class="op">*</span> B <span class="op">*</span> <span class="fu">inv</span>(H)<span class="ch">' catch; pinv(H) * B * pinv(H)'</span> <span class="cf">end</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β, <span class="fu">sqrt</span>.(<span class="fu">max</span>.(<span class="fl">0.0</span>, <span class="fu">diag</span>(V)))</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois_mult(y, X, Z) -&gt; β</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a><span class="st">IV/GMM Poisson with MULTIPLICATIVE (Mullahy 1997) moments</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a><span class="st">Z'(y .* exp(-Xβ) .- 1) = 0 — consistent when the unobservable enters</span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a><span class="st">inside the exponential mean (multiplicative error).</span></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ivpois_mult</span>(y<span class="op">::</span><span class="dt">Vector{Float64}</span>, X<span class="op">::</span><span class="dt">Matrix{Float64}</span>, Z<span class="op">::</span><span class="dt">Matrix{Float64}</span>;</span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>                     maxiter<span class="op">=</span><span class="fl">1000</span>, tol<span class="op">=</span><span class="fl">1e-10</span>, step<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a>    p  <span class="op">=</span> <span class="fu">size</span>(X, <span class="fl">2</span>)</span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a>    β  <span class="op">=</span> <span class="fu">zeros</span>(p)</span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a>    β[p] <span class="op">=</span> <span class="fu">log</span>(<span class="fu">mean</span>(y))</span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>maxiter</span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> y <span class="op">.*</span> <span class="fu">exp</span>.(<span class="fu">clamp</span>.(<span class="op">-</span>X <span class="op">*</span> β, <span class="op">-</span><span class="fl">30.0</span>, <span class="fl">30.0</span>))</span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (w <span class="op">.-</span> <span class="fl">1</span>)</span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> Z<span class="op">'</span> <span class="op">*</span> (w <span class="op">.*</span> X)</span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>        Δ <span class="op">=</span> <span class="cf">try</span> H <span class="op">\</span> g <span class="cf">catch</span>; <span class="fu">pinv</span>(H) <span class="op">*</span> g <span class="cf">end</span></span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a>        β <span class="op">.+=</span> step <span class="op">.*</span> Δ</span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a>        <span class="fu">maximum</span>(<span class="fu">abs</span>.(step <span class="op">.*</span> Δ)) <span class="op">&lt;</span> tol <span class="op">&amp;&amp;</span> <span class="cf">break</span></span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> β</span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Probit (without FE, to avoid collinearity with instrument matrix)</span></span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a>fs_c  <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam))</span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a>phat  <span class="op">=</span> fs_c.mu</span>
+<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Regressor matrix X: [time_hi, frfam, intercept]</span></span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Instrument matrix Z: [phat,    frfam, intercept]  ← phat replaces time_hi</span></span>
+<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a>X_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a>Z_c <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(phat),        <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a>β_c, se_c <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
+<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a>β_cm      <span class="op">=</span> <span class="fu">ivpois_mult</span>(<span class="fu">Float64</span>.(df2.visits), X_c, Z_c)</span>
+<span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Approach C — IV/GMM Poisson (no FE, for illustration)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb19-64"><a href="#cb19-64" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  additive moments:       time_hi = %7.4f   SE = %7.4f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a>        β_c[<span class="fl">1</span>], se_c[<span class="fl">1</span>])</span>
+<span id="cb19-66"><a href="#cb19-66" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  multiplicative moments: time_hi = %7.4f   (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb19-67"><a href="#cb19-67" aria-hidden="true" tabindex="-1"></a>        β_cm[<span class="fl">1</span>], true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Approach C — IV/GMM Poisson (no FE, for illustration)
@@ -1148,23 +1230,23 @@ Note
 </div>
 </div>
 </section>
-<section id="a-vs-c-not-equivalent-in-poisson" class="level3" data-number="18.3.8">
-<h3 data-number="18.3.8" class="anchored" data-anchor-id="a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.8</span> A vs C — not equivalent in Poisson</h3>
+<section id="a-vs-c-not-equivalent-in-poisson" class="level3" data-number="18.3.9">
+<h3 data-number="18.3.9" class="anchored" data-anchor-id="a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.9</span> A vs C — not equivalent in Poisson</h3>
 <p>In a linear model, using <span class="math inline">\(\hat{y}_2\)</span> as an instrument (2SLS) is numerically identical to adding <span class="math inline">\(\hat{v}_2 = y_2 - \hat{y}_2\)</span> as a regressor — the Frisch-Waugh-Lovell theorem. <strong>In Poisson this equivalence breaks</strong>, because Approach A puts <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> while Approach C uses <span class="math inline">\(\hat{y}_2\)</span> in the moment conditions without modifying the exponential mean.</p>
-<div id="236edfb2" class="cell" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (Approach C with linear first stage)</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ŷ<span class="fl">2</span>  <span class="op">=</span> <span class="fu">Float64</span>.(df2.time_hi) <span class="op">.-</span> <span class="fu">Float64</span>.(fs_a.residuals)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>X_l <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>Z_l <span class="op">=</span> <span class="fu">hcat</span>(ŷ<span class="fl">2</span>,                    <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>β_l, _ <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_l, Z_l)</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>coef_a <span class="op">=</span> <span class="fu">coef</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A  (CF, residual as regressor, with FE):     α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_a)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-additive  (IV, linear fitted values, no FE):        α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_l[<span class="fl">1</span>])</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-additive  (IV, probit fitted values, no FE):        α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_c[<span class="fl">1</span>])</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-Mullahy   (IV, multiplicative moments, no FE):      α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_cm[<span class="fl">1</span>])</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True α₁ = %.1f</span><span class="sc">\n</span><span class="st">"</span>, true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="14131b46" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (Approach C with linear first stage)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>ŷ<span class="fl">2</span>  <span class="op">=</span> <span class="fu">Float64</span>.(df2.time_hi) <span class="op">.-</span> <span class="fu">Float64</span>.(fs_a.residuals)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>X_l <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>Z_l <span class="op">=</span> <span class="fu">hcat</span>(ŷ<span class="fl">2</span>,                    <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>β_l, _ <span class="op">=</span> <span class="fu">ivpois</span>(<span class="fu">Float64</span>.(df2.visits), X_l, Z_l)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>coef_a <span class="op">=</span> <span class="fu">coef</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A  (CF, residual as regressor, with FE):     α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, coef_a)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-additive  (IV, linear fitted values, no FE):        α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_l[<span class="fl">1</span>])</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-additive  (IV, probit fitted values, no FE):        α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_c[<span class="fl">1</span>])</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"C-Mullahy   (IV, multiplicative moments, no FE):      α̂₁ = %.4f</span><span class="sc">\n</span><span class="st">"</span>, β_cm[<span class="fl">1</span>])</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True α₁ = %.1f</span><span class="sc">\n</span><span class="st">"</span>, true_α)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Approach A  (CF, residual as regressor, with FE):     α̂₁ = 0.8128
 C-additive  (IV, linear fitted values, no FE):        α̂₁ = 0.6194
@@ -1175,33 +1257,33 @@ True α₁ = 0.8</code></pre>
 </div>
 <p>The estimates differ despite using the same first-stage linear projection, confirming that 2SLS ≠ CF for Poisson — and, within Approach C, that the moment form matters as much as the instrument.</p>
 </section>
-<section id="bootstrap-for-approach-a-binary-eev" class="level3" data-number="18.3.9">
-<h3 data-number="18.3.9" class="anchored" data-anchor-id="bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.9</span> Bootstrap for Approach A (binary EEV)</h3>
-<div id="6ad66a8d" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_cf_binary</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    draws   <span class="op">=</span> <span class="fu">bootstrap_resample</span>(df, B; seed<span class="op">=</span>seed)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> <span class="fu">zeros</span>(B)</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> b <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>B</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        df_b <span class="op">=</span> <span class="fu">build_boot_df</span>(df, draws[b])</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        fs   <span class="op">=</span> <span class="fu">feols</span>(df_b,  <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        df_b.v2hat <span class="op">=</span> fs.residuals</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        ss   <span class="op">=</span> <span class="fu">fepois</span>(df_b, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> v2hat <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        idx  <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(ss))</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        results[b] <span class="op">=</span> <span class="fu">coef</span>(ss)[idx]</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>boot2 <span class="op">=</span> <span class="fu">bootstrap_cf_binary</span>(df2, <span class="fl">500</span>)</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>naive_se2 <span class="op">=</span> <span class="fu">stderror</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A bootstrap (binary EEV, 500 reps, cluster by ad)</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Point estimate:     %.4f  (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>, coef_a, true_α)</span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Naive 2nd-stage SE: %.4f</span><span class="sc">\n</span><span class="st">"</span>, naive_se2)</span>
-<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Bootstrap SE:       %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(boot2))</span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Bootstrap 95%% CI:  [%.4f, %.4f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(boot2, <span class="fl">0.025</span>), <span class="fu">quantile</span>(boot2, <span class="fl">0.975</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="bootstrap-for-approach-a-binary-eev" class="level3" data-number="18.3.10">
+<h3 data-number="18.3.10" class="anchored" data-anchor-id="bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.10</span> Bootstrap for Approach A (binary EEV)</h3>
+<div id="c716c21b" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_cf_binary</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    draws   <span class="op">=</span> <span class="fu">bootstrap_resample</span>(df, B; seed<span class="op">=</span>seed)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> <span class="fu">zeros</span>(B)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> b <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>B</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>        df_b <span class="op">=</span> <span class="fu">build_boot_df</span>(df, draws[b])</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>        fs   <span class="op">=</span> <span class="fu">feols</span>(df_b,  <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        df_b.v2hat <span class="op">=</span> fs.residuals</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        ss   <span class="op">=</span> <span class="fu">fepois</span>(df_b, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> v2hat <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad_boot) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>        idx  <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(ss))</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>        results[b] <span class="op">=</span> <span class="fu">coef</span>(ss)[idx]</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>boot2 <span class="op">=</span> <span class="fu">bootstrap_cf_binary</span>(df2, <span class="fl">500</span>)</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>naive_se2 <span class="op">=</span> <span class="fu">stderror</span>(m_a)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_a))]</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Approach A bootstrap (binary EEV, 500 reps, cluster by ad)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Point estimate:     %.4f  (true %.1f)</span><span class="sc">\n</span><span class="st">"</span>, coef_a, true_α)</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Naive 2nd-stage SE: %.4f</span><span class="sc">\n</span><span class="st">"</span>, naive_se2)</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Bootstrap SE:       %.4f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">std</span>(boot2))</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"  Bootstrap 95%% CI:  [%.4f, %.4f]</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">quantile</span>(boot2, <span class="fl">0.025</span>), <span class="fu">quantile</span>(boot2, <span class="fl">0.975</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Approach A bootstrap (binary EEV, 500 reps, cluster by ad)
   Point estimate:     0.8128  (true 0.8)
@@ -1211,25 +1293,25 @@ True α₁ = 0.8</code></pre>
 </div>
 </div>
 </section>
-<section id="comparison-across-all-methods" class="level3" data-number="18.3.10">
-<h3 data-number="18.3.10" class="anchored" data-anchor-id="comparison-across-all-methods"><span class="header-section-number">18.3.10</span> Comparison across all methods</h3>
-<div id="8833439e" class="cell" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>),</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coefnames</span>(<span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))))]</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>coef_b <span class="op">=</span> <span class="fu">coef</span>(m_b)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_b))]</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>methods <span class="op">=</span> [<span class="st">"True value"</span>, <span class="st">"Naive Poisson (binary y₂)"</span>,</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">"A: Linear CF (with FE)"</span>, <span class="st">"B: Probit GR CF (with FE)"</span>,</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, additive moments (no FE)"</span>,</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, Mullahy moments (no FE)"</span>]</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>ests    <span class="op">=</span> [true_α, coef_naive2, coef_a, coef_b, β_c[<span class="fl">1</span>], β_cm[<span class="fl">1</span>]]</span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">── Binary EEV: coefficient on time_hi ─────────────────────"</span>)</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (m, <span class="cn">e</span>) <span class="kw">in</span> <span class="fu">zip</span>(methods, ests)</span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"  %-42s  α̂₁ = %6.4f</span><span class="sc">\n</span><span class="st">"</span>, m, <span class="cn">e</span>)</span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="comparison-across-all-methods" class="level3" data-number="18.3.11">
+<h3 data-number="18.3.11" class="anchored" data-anchor-id="comparison-across-all-methods"><span class="header-section-number">18.3.11</span> Comparison across all methods</h3>
+<div id="653e382a" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coefnames</span>(<span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))))]</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>coef_b <span class="op">=</span> <span class="fu">coef</span>(m_b)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>), <span class="fu">coefnames</span>(m_b))]</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>methods <span class="op">=</span> [<span class="st">"True value"</span>, <span class="st">"Naive Poisson (binary y₂)"</span>,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">"A: Linear CF (with FE)"</span>, <span class="st">"B: Probit GR CF (with FE)"</span>,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, additive moments (no FE)"</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>           <span class="st">"C: IV Poisson, Mullahy moments (no FE)"</span>]</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>ests    <span class="op">=</span> [true_α, coef_naive2, coef_a, coef_b, β_c[<span class="fl">1</span>], β_cm[<span class="fl">1</span>]]</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">── Binary EEV: coefficient on time_hi ─────────────────────"</span>)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (m, <span class="cn">e</span>) <span class="kw">in</span> <span class="fu">zip</span>(methods, ests)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"  %-42s  α̂₁ = %6.4f</span><span class="sc">\n</span><span class="st">"</span>, m, <span class="cn">e</span>)</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 ── Binary EEV: coefficient on time_hi ─────────────────────
@@ -1263,6 +1345,9 @@ Important
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-gourieroux-monfort-renault-trognon-1987" class="csl-entry" role="listitem">
+Gourieroux, Christian, Alain Monfort, Eric Renault, and Alain Trognon. 1987. <span>“Generalized Residuals.”</span> <em>Journal of Econometrics</em> 34 (1–2): 5–32.
+</div>
 <div id="ref-imbens-wooldridge-2009-jel" class="csl-entry" role="listitem">
 Imbens, Guido W., and Jeffrey M. Wooldridge. 2009. <span>“Recent Developments in the Econometrics of Program Evaluation.”</span> <em>Journal of Economic Literature</em> 47 (1): 5–86.
 </div>

@@ -387,6 +387,63 @@ println("Approach B — Probit generalized residual CF:")
 show_regression_html(m_b; title="Approach B: probit generalized residual")
 ```
 
+### Does the first stage have to be probit? Logit works too — with a caveat
+
+Nothing about the local-approximation argument above is specific to the
+normal distribution. The generalized residual is defined for *any*
+correctly-specified binary-response GLM
+[@gourieroux-monfort-renault-trognon-1987], and for a **logit** first stage
+it collapses to something particularly simple. With $\Lambda(\cdot)$ the
+logistic CDF and $\lambda(\eta)=\Lambda(\eta)[1-\Lambda(\eta)]$ its density,
+
+$$\hat r_2 = y_2\cdot\frac{\lambda(\hat\eta)}{\Lambda(\hat\eta)} - (1-y_2)\cdot\frac{\lambda(\hat\eta)}{1-\Lambda(\hat\eta)}
+= y_2\bigl[1-\Lambda(\hat\eta)\bigr] - (1-y_2)\Lambda(\hat\eta) = y_2 - \Lambda(\hat\eta) = y_2 - \hat p_2,$$
+
+i.e. **the logit generalized residual is just the plain response residual**
+$y_2-\hat p_2$ — no Mills-ratio machinery needed. This is exactly what a
+practitioner reaches for by instinct (`logit` first stage, then
+`y2 .- predict(fit)`), and the algebra above confirms it *is* the right
+generalized residual, not a shortcut.
+
+```{julia}
+#| echo: true
+fs_b_logit = felogit(df2, @formula(time_hi ~ phone + frfam + fe(ad) + fe(female)))
+phat_logit = fs_b_logit.mu
+df2.gr2_logit = df2.time_hi .- phat_logit    # algebraically = generalized residual
+
+m_b_logit = fepois(df2, @formula(visits ~ time_hi + gr2_logit + frfam + fe(ad) + fe(female)))
+println("Approach B with a logit first stage:")
+show_regression_html(m_b_logit; title="Approach B: logit generalized residual")
+
+coef_b_probit = coef(m_b)[findfirst(==("time_hi"), coefnames(m_b))]
+coef_b_logit  = coef(m_b_logit)[findfirst(==("time_hi"), coefnames(m_b_logit))]
+@printf("Probit-based Approach B: alpha1 = %.4f\n", coef_b_probit)
+@printf("Logit-based  Approach B: alpha1 = %.4f\n", coef_b_logit)
+```
+
+Two important limits, though:
+
+1. **The *exact* Terza (1998) correction is probit-specific, not logit.**
+   The closed form $h(\cdot)$ derived above comes from the truncated-moment
+   properties of the *bivariate normal* — $E[\exp(\rho v_2)\mid v_2 > \mathbf z\boldsymbol\pi_2]$
+   has that clean $\Phi$-ratio form only because $v_2$ is normal. A logistic
+   $v_2$ has no analogous tractable joint distribution with the Poisson
+   heterogeneity, and no such exact result appears anywhere in
+   @wooldridge-2010-crosssection, @imbens-wooldridge-2009-jel, or
+   @terza-1998 for a logit reduced form. So logit gives you Approach B (the
+   local, $O(\rho^2)$-error approximation) exactly as validly as probit —
+   but it does not give you a logit analog of the exact correction, because
+   none has been worked out in this literature.
+2. **As a fitted-probability *instrument* (Approach C), probit and logit are
+   both fine, and Wooldridge treats them as interchangeable.** From
+   @imbens-wooldridge-2009-jel: *"Estimate P(W=1|x,z) by probit (or logit)
+   and obtain the first-stage fitted probabilities... This method... is
+   fully robust to misspecification of the [first-stage] model."* That
+   robustness (correct even if the link is wrong) is specific to using the
+   fitted value as an *instrument*, not as a *residual* — it does not carry
+   over to Approaches A or B, where the second-stage conditional mean still
+   has to be exactly right.
+
 ### Approach C — Fitted values as instrument (IV/GMM Poisson)
 
 Any function of the exogenous $\mathbf{z}$ is a valid instrument.  Probit, logit, and linear probability fitted values are all equally valid from a consistency standpoint — the choice affects efficiency (instrument strength).  We implement IV/GMM Poisson directly, keeping `time_hi` as the regressor and using probit fitted probabilities as the instrument.  We code **both moment forms**: the additive moments are what "IV Poisson" often means in practice (e.g. Stata's `ivpoisson gmm` default additive option), but because this chapter's DGP puts the unobservable inside $\exp(\cdot)$, only the multiplicative (Mullahy) moments are consistent here:
