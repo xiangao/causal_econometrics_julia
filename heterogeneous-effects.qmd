@@ -118,6 +118,41 @@ function rf_fit_predict(Xtrain, ytrain, Xpredict; n_trees::Int=500,
     fit!(mach, verbosity=0)
     return MLJ.predict(mach, Xpred_t)
 end
+
+"""
+    rf_oof(Xtrain, ytrain, Xpredict, folds; n_trees=500, weights=nothing, rows=...)
+
+Out-of-fold version of `rf_fit_predict`. For each fold `k`, fit on the rows *not*
+in `k` and predict only the fold-`k` rows of `Xpredict`. Restrict the training
+rows further with `rows` (used below to fit an arm-specific model while still
+predicting for everybody).
+
+Every CATE estimate in the meta-learner comparison below goes through this
+function rather than `rf_fit_predict`, and the reason matters. A random forest asked to predict at the
+same rows it was trained on partly reproduces its own training targets, so an
+in-sample CATE is contaminated by the noise in whatever pseudo-outcome it was fit
+to. That inflates apparent accuracy for learners whose target is close to `Y`
+and destroys it for learners whose target is a high-variance pseudo-outcome --
+which is exactly the DR- and R-learners. It also makes any downstream *ranking*
+on the estimate invalid; see the GATES section for what that does.
+"""
+function rf_oof(Xtrain, ytrain, Xpredict, folds; n_trees::Int=500,
+                weights=nothing, rows=trues(length(folds)))
+    out = zeros(size(Xpredict, 1))
+    for k in unique(folds)
+        train = (folds .!= k) .& rows
+        test  = folds .== k
+        w = weights === nothing ? nothing : Float64.(weights)[train]
+        out[test] = rf_fit_predict(Xtrain[train, :], ytrain[train],
+                                   Xpredict[test, :]; n_trees=n_trees, weights=w)
+    end
+    return out
+end
+
+# One fold assignment, shared by every learner below so that the comparison
+# across learners is like-for-like.
+Random.seed!(7)
+folds = rand(1:5, n)
 nothing
 ```
 
@@ -134,8 +169,8 @@ X_with_D = hcat(D, X)
 X1_test  = hcat(ones(n), X)
 X0_test  = hcat(zeros(n), X)
 
-mu1_S = rf_fit_predict(X_with_D, Y, X1_test)
-mu0_S = rf_fit_predict(X_with_D, Y, X0_test)
+mu1_S = rf_oof(X_with_D, Y, X1_test, folds)
+mu0_S = rf_oof(X_with_D, Y, X0_test, folds)
 tau_S = mu1_S .- mu0_S
 
 @printf("S-learner CATE correlation with truth: %.3f\n", cor(tau_S, tau))
@@ -155,8 +190,8 @@ Fit two separate regressions, one on treated units and one on controls:
 idx_T = D .== 1
 idx_C = D .== 0
 
-mu1_T = rf_fit_predict(X[idx_T, :], Y[idx_T], X)
-mu0_T = rf_fit_predict(X[idx_C, :], Y[idx_C], X)
+mu1_T = rf_oof(X, Y, X, folds; rows = idx_T)   # treated-arm model, predicted for all
+mu0_T = rf_oof(X, Y, X, folds; rows = idx_C)   # control-arm model, predicted for all
 tau_T = mu1_T .- mu0_T
 
 @printf("T-learner CATE correlation with truth: %.3f\n", cor(tau_T, tau))
@@ -176,17 +211,17 @@ combines the two arms with propensity-score weights.
 #| label: x-learner
 #| cache: true
 
-# Step 1: pseudo-outcomes
-D1_pseudo = Y[idx_T] .- mu0_T[idx_T]      # observed - imputed Y(0)
-D0_pseudo = mu1_T[idx_C] .- Y[idx_C]      # imputed Y(1) - observed
+# Step 1: pseudo-outcomes, stored full-length so the arm models can be fit
+# out-of-fold with `rows` (entries outside each arm are never used for training)
+D1_pseudo = zeros(n); D1_pseudo[idx_T] = Y[idx_T] .- mu0_T[idx_T]   # observed - imputed Y(0)
+D0_pseudo = zeros(n); D0_pseudo[idx_C] = mu1_T[idx_C] .- Y[idx_C]   # imputed Y(1) - observed
 
 # Step 2: regress pseudo-outcomes on X in each arm
-tau_X1 = rf_fit_predict(X[idx_T, :], D1_pseudo, X)
-tau_X0 = rf_fit_predict(X[idx_C, :], D0_pseudo, X)
+tau_X1 = rf_oof(X, D1_pseudo, X, folds; rows = idx_T)
+tau_X0 = rf_oof(X, D0_pseudo, X, folds; rows = idx_C)
 
 # Step 3: weight by propensity score
-e_hat = rf_fit_predict(X, D, X)
-e_hat = clamp.(e_hat, 0.02, 0.98)
+e_hat = clamp.(rf_oof(X, D, X, folds), 0.02, 0.98)
 
 tau_X = e_hat .* tau_X0 .+ (1 .- e_hat) .* tau_X1
 @printf("X-learner CATE correlation with truth: %.3f\n", cor(tau_X, tau))
@@ -211,29 +246,20 @@ are cross-fitted nuisance estimates.
 #| label: r-learner
 #| cache: true
 
-# Cross-fitting: 2 folds
-Random.seed!(7)
-folds  = rand(1:2, n)
-m_hat  = zeros(n)
-e_hat_cv = zeros(n)
-
-for k in 1:2
-    train = folds .!= k
-    test  = folds .== k
-    m_hat[test]    = rf_fit_predict(X[train, :], Y[train], X[test, :])
-    e_hat_cv[test] = rf_fit_predict(X[train, :], D[train], X[test, :])
-end
-e_hat_cv = clamp.(e_hat_cv, 0.02, 0.98)
+# Nuisances cross-fitted on the shared folds defined in the helper chunk
+m_hat    = rf_oof(X, Y, X, folds)
+e_hat_cv = clamp.(rf_oof(X, D, X, folds), 0.02, 0.98)
 
 pseudo_R   = (Y .- m_hat) ./ (D .- e_hat_cv)
 weights_R  = (D .- e_hat_cv) .^ 2
 
 # The R-learner is a *weighted* regression of pseudo_R on X with weights
 # (D - e_hat)^2. DecisionTree's RF does not accept per-sample weights, so we
-# pass them through rf_fit_predict's weighted-bootstrap path. This downweights
+# pass them through the weighted-bootstrap path of `rf_fit_predict` (reached here
+# via `rf_oof`, which forwards `weights`). This downweights
 # observations with D close to e_hat, whose pseudo_R blows up (division by a
 # near-zero denominator) and would otherwise dominate the split criterion.
-tau_R = rf_fit_predict(X, pseudo_R, X; weights = weights_R)
+tau_R = rf_oof(X, pseudo_R, X, folds; weights = weights_R)
 @printf("R-learner CATE correlation with truth: %.3f\n", cor(tau_R, tau))
 ```
 
@@ -255,26 +281,15 @@ $$
 #| label: dr-learner
 #| cache: true
 
-mu1_cf = zeros(n)
-mu0_cf = zeros(n)
-e_cf   = zeros(n)
-
-for k in 1:2
-    train = folds .!= k
-    test  = folds .== k
-    mu1_cf[test] = rf_fit_predict(X[train .& (D .== 1), :], Y[train .& (D .== 1)],
-                                  X[test, :])
-    mu0_cf[test] = rf_fit_predict(X[train .& (D .== 0), :], Y[train .& (D .== 0)],
-                                  X[test, :])
-    e_cf[test]   = rf_fit_predict(X[train, :], D[train], X[test, :])
-end
-e_cf = clamp.(e_cf, 0.02, 0.98)
+mu1_cf = rf_oof(X, Y, X, folds; rows = D .== 1)
+mu0_cf = rf_oof(X, Y, X, folds; rows = D .== 0)
+e_cf   = clamp.(rf_oof(X, D, X, folds), 0.02, 0.98)
 
 pseudo_DR = @. (mu1_cf - mu0_cf) +
                D * (Y - mu1_cf) / e_cf -
                (1 - D) * (Y - mu0_cf) / (1 - e_cf)
 
-tau_DR = rf_fit_predict(X, pseudo_DR, X)
+tau_DR = rf_oof(X, pseudo_DR, X, folds)
 @printf("DR-learner CATE correlation with truth: %.3f\n", cor(tau_DR, tau))
 ```
 
@@ -350,21 +365,14 @@ least-affected bins; here that would show high $X_1$ in the top quintile.)
 
 nq = 5
 
-# The ranking score MUST be out-of-fold. `tau_DR` above is an in-sample random
-# forest prediction: it was fit on (X, pseudo_DR) and then predicted back at the
-# same X, so it tracks pseudo_DR's own noise. Binning on it and then averaging
-# pseudo_DR inside the bins puts each bin's noise in its own numerator -- the top
-# bin collects positive noise, the bottom bin negative noise -- and the reported
-# spread explodes. With the in-sample score this table ran from -1.22 to 5.28,
-# outside the true CATE range of [1, 3] entirely, with tight confidence
-# intervals around impossible values. Predicting the score from a model trained
-# without the observation costs six lines and fixes it.
-tau_rank = zeros(n)
-for k in 1:2
-    train = folds .!= k
-    test  = folds .== k
-    tau_rank[test] = rf_fit_predict(X[train, :], pseudo_DR[train], X[test, :])
-end
+# The ranking score MUST be out-of-fold, which `tau_DR` now is (it comes from
+# `rf_oof`). This is not a technicality. When this chapter ranked on an in-sample
+# forest prediction -- fit on (X, pseudo_DR) and predicted back at the same X --
+# the bins sorted on pseudo_DR's own noise and then averaged that same noise, so
+# the top bin collected positive noise and the bottom bin negative noise. The
+# table ran from -1.22 to 5.28, entirely outside the true CATE range of [1, 3],
+# with tight confidence intervals around impossible values.
+tau_rank = tau_DR   # already out-of-fold, from rf_oof above
 
 quintile_edges = quantile(tau_rank, range(0, 1, length = nq + 1))
 quintiles      = searchsortedfirst.(Ref(quintile_edges), tau_rank) .- 1
@@ -380,24 +388,37 @@ end
 
 clan_df = DataFrame(quintile = 1:nq,
                     ATE = [quintile_ate(pseudo_DR, quintiles .== q).est for q in 1:nq],
-                    SE  = [quintile_ate(pseudo_DR, quintiles .== q).se  for q in 1:nq])
+                    SE  = [quintile_ate(pseudo_DR, quintiles .== q).se  for q in 1:nq],
+                    # This is a simulation, so report the true within-bin average of
+                    # tau alongside the estimate. It makes the table self-checking:
+                    # every entry must lie in [1, 3] here, and Truth is the column to
+                    # compare ATE against.
+                    Truth = [mean(tau[quintiles .== q]) for q in 1:nq])
 clan_df.lo = clan_df.ATE .- 1.96 .* clan_df.SE
 clan_df.hi = clan_df.ATE .+ 1.96 .* clan_df.SE
 
-@printf("%-10s %8s %8s %8s %8s\n", "Quintile", "ATE", "SE", "95% LB", "95% UB")
+@printf("%-9s %8s %7s %8s %8s %8s\n", "Quintile", "ATE", "SE", "95% LB", "95% UB", "Truth")
 for row in eachrow(clan_df)
-    @printf("%-10d %8.3f %8.3f %8.3f %8.3f\n",
-            row.quintile, row.ATE, row.SE, row.lo, row.hi)
+    @printf("%-9d %8.3f %7.3f %8.3f %8.3f %8.3f\n",
+            row.quintile, row.ATE, row.SE, row.lo, row.hi, row.Truth)
 end
 ```
 
 Quintile 5 has a larger ATE than quintile 1, and because the ranking score is
-out-of-fold the magnitudes are trustworthy: the five estimates above are each
-within about 0.06 of the true within-bin average of $\tau(x) = 1 + 2X_1$
-(1.40, 1.62, 2.03, 2.40, 2.60 for these bins). The nuisance functions behind
-`pseudo_DR` are already cross-fitted, so both halves of the procedure --- forming
-the groups and estimating the group means --- now use predictions from models that
-did not see the observation being scored.
+out-of-fold the magnitudes are trustworthy too: compare the `ATE` column against
+`Truth`, the actual within-bin average of $\tau(x) = 1 + 2X_1$. Both halves of the
+procedure --- forming the groups and estimating the group means --- now use
+predictions from models that did not see the observation being scored, since
+`pseudo_DR` is built from cross-fitted nuisances and `tau_DR` comes from `rf_oof`.
+
+Do not expect the intervals to have exact nominal coverage even so, and the table
+shows why it is useful to print `Truth`: the reported standard errors treat the bin
+membership as fixed, when in fact the *boundaries* were estimated from the same data,
+and they take no account of the uncertainty in `tau_DR` itself. One quintile here has
+a truth just outside its interval, which is about what that omission would predict.
+The estimates are close enough to be read as a heterogeneity profile; the intervals
+are indicative rather than exact. For inference you would want the groups formed on a
+genuinely held-out split, or `grf`'s `rank_average_treatment_effect`.
 
 This is worth insisting on because the failure is silent. Ranking on an
 in-sample score leaves the group means unbiased *on average* --- they still
@@ -544,6 +565,12 @@ X_panel_naive = reshape(df_panel.V1, N, 1)
 idx_T_p = df_panel.W .== 1
 idx_C_p = df_panel.W .== 0
 
+# Note these panel fits are in-sample, unlike the meta-learners above. Splitting
+# out-of-fold here would have to split by *firm* rather than by row, since two
+# observations of the same firm are not independent. The comparison this section
+# makes -- naive against within-transformed -- is driven by fixed-effect
+# confounding, which is far larger than any in-sample optimism, so the point
+# survives; do not read these two numbers as clean CATE accuracy figures.
 mu1_naive = rf_fit_predict(X_panel_naive[idx_T_p, :], df_panel.Y[idx_T_p],
                             X_panel_naive)
 mu0_naive = rf_fit_predict(X_panel_naive[idx_C_p, :], df_panel.Y[idx_C_p],
