@@ -155,3 +155,13 @@ Julia 1.12+ and Quarto. See `Project.toml` for the full package list.
 > reported the influence curve's standard *deviation* as its standard error,
 > inflating every SE by sqrt(n) (about 31.6 at n = 1000). Both were invisible to the
 > existing tests because they moved only the variance, not the point estimate.
+>
+> **Follow-up the same day:** all five meta-learners in `heterogeneous-effects` were
+> converted from in-sample to out-of-fold evaluation via a new `rf_oof` helper on one
+> shared 5-fold split. Every learner improved and the ranking now agrees with the R
+> companion (S .723→.884, T .727→.882, X .901→.928, R .467→.714, DR .433→.769);
+> in-sample evaluation had punished precisely the learners whose target is a
+> high-variance pseudo-outcome. The panel section is deliberately left in-sample —
+> out-of-fold there must split by firm, not by row — and the GATES table now prints a
+> `Truth` column, which makes both the estimates' accuracy and the intervals' imperfect
+> coverage visible in the output.

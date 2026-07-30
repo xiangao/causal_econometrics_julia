@@ -241,13 +241,25 @@ uses `crossfit=5`, so 2 also contradicts the book's own stated convention.
 `rf_fit_predict(X, y, X)` trains and predicts on the same rows. Ranking on such a
 score and then averaging the same pseudo-outcome inside the resulting bins made the
 GATES table report quintile ATTs of -1.204 and 5.271 for a DGP where
-`tau(x) = 1 + 2X1` is confined to `[1, 3]`. Out-of-fold ranking puts every bin
-within 0.06 of its true bin mean.
+`tau(x) = 1 + 2X1` is confined to `[1, 3]`.
 
-**Still open:** all five meta-learners in `heterogeneous-effects.qmd` are *evaluated*
-with in-sample predictions (`rf_fit_predict(X, ..., X)`). That is why this book
-reports the DR-learner at 0.433 where the R companion reports 0.931. Converting them
-to out-of-fold changes every number in that section.
+**Resolved (2026-07-30).** `heterogeneous-effects.qmd` now has
+`rf_oof(Xtrain, ytrain, Xpredict, folds; weights, rows)`, which fits on the
+complement of each fold and predicts only that fold; `rows` lets an arm-specific
+model be fit on one arm while predicting for everybody. One shared 5-fold split
+serves all five meta-learners. **Use `rf_oof`, not `rf_fit_predict`, for anything
+whose value is later compared to truth or used to rank observations.** Correlations
+went S .723→.884, T .727→.882, X .901→.928, R .467→.714, DR .433→.769, and the
+ranking now matches the R companion. Note which learners in-sample evaluation hurt
+most: those whose target is a high-variance pseudo-outcome (R and DR), because the
+forest reproduces that noise.
+
+Two deliberate exceptions, both commented in the chapter: the **panel** section still
+fits in-sample, because out-of-fold there would have to split by *firm* rather than by
+row; and the GATES intervals do not have exact nominal coverage, since their SEs treat
+bin membership as fixed when the boundaries were estimated from the same data. The
+GATES table prints a `Truth` column so both facts are visible in the output rather
+than asserted in prose.
 
 ### Pull coefficients by name, not by position
 
@@ -276,3 +288,12 @@ Two `Crumble.jl` issues remain open and are flagged in a `callout-warning` in
 covariance between estimators on the same sample), and `calc_estimates_rt` accepts
 the randomized influence curves then never uses them, so `effect="RT"` does not
 return a recanting-twins decomposition.
+
+### Don't quote a number the document could regenerate
+
+Twice in the 2026-07-30 pass I wrote prose quoting figures that a later change
+invalidated: a fold-by-fold comparison placed in a chapter that does not re-seed
+before estimating, and GATES true bin means computed under a 2-fold split that moving
+to 5 folds changed. Both times the chapter's own rendered output then contradicted the
+prose. If a claim is checkable from the data, make the chunk compute and print it (as
+the GATES `Truth` column now does) instead of hardcoding it into the text.
