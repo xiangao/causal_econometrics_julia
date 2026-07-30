@@ -149,7 +149,7 @@ Applying the framework above, the two-step CF procedure is:
    A linear first stage is appropriate here because `time` is continuous. **This does not carry
    over when $y_2$ is binary** — see the derivation in Part 2, where Wooldridge is explicit that
    the linear reduced-form/independent-error setup cannot be assumed once $y_2$ is discrete
-   [@wooldridge-2010-crosssection, sec. 18.5; @imbens-wooldridge-2009-jel].
+   [@wooldridge-2010-crosssection, sec. 18.5; @imbens-wooldridge-2007-cf].
 
 2. **Second stage** — Poisson QMLE with $\hat{v}_2$ added as a regressor inside the exponential mean.
    The CF assumption $E[y_1 \mid \mathbf{z}_1, y_2, v_2] = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \rho v_2)$
@@ -267,7 +267,7 @@ println("visits mean:       $(round(mean(visits2), digits=2))")
 
 Part 1's control function rests on writing $y_2 = \mathbf{z}\boldsymbol{\pi} + v_2$
 with $v_2$ independent of $\mathbf{z}$ (Assumption (3.25) in
-@imbens-wooldridge-2009-jel; eq. 18.39 in @wooldridge-2010-crosssection, sec. 18.5).
+@imbens-wooldridge-2007-cf; eq. 18.39 in @wooldridge-2010-crosssection, sec. 18.5).
 That is a genuine assumption about the *reduced form*, not an automatic
 consequence of OLS: the population linear projection $\mathbf{z}\boldsymbol{\pi}$
 always exists and its residual is always uncorrelated with $\mathbf{z}$
@@ -285,9 +285,17 @@ binary EEV — **e**ndogenous **e**xplanatory **v**ariable): starting from the
 same equations (3.23)–(3.25) used for the continuous case, he writes
 
 > "If $y_2$ is a binary model following a probit, then a CF approach due to
-> [Terza (1998)] can be used... **We can no longer assume (3.24) and (3.25).**
-> Instead, replace (3.24) [with the probit threshold model] $y_2 = 1[\mathbf{z}\boldsymbol{\pi}_2 + v_2 \geq 0]$."
-> [@imbens-wooldridge-2009-jel, sec. 3.3; nearly identical language in @wooldridge-2010-crosssection, sec. 18.5: "it would be very unusual for a discrete variable to be expressible as a linear equation with additive error independent of $\mathbf{z}$"]
+> Terza (1998) can be used... **We can no longer assume (3.24) and (3.25).**
+> Instead, replace (3.24) $y_2 = 1[\mathbf{z}\boldsymbol{\pi}_2 + v_2 \geq 0]$
+> **and still adopt (3.25).** In fact, we assume $(r_1, v_2)$ is jointly normal."
+> [@imbens-wooldridge-2007-cf, sec. 3.3; nearly identical language in @wooldridge-2010-crosssection, sec. 18.5: "it would be very unusual for a discrete variable to be expressible as a linear equation with additive error independent of $\mathbf{z}$"]
+
+The closing clause is the one to read twice. (3.25) — independence of the
+unobservables from $\mathbf{z}$ — is not discarded; it is *re-asserted*, now about
+the latent $v_2$ of the threshold model. Only (3.24), the linear reduced form, is
+replaced. So the move is not "drop the independence assumption" but "assert it
+about a different object," which is exactly the distinction the next paragraph
+turns on.
 
 So Approach A is not a weaker-but-valid alternative to Approach B for binary
 $y_2$ — its own first-stage assumption cannot hold. What survives is a
@@ -321,10 +329,19 @@ error are separate properties — Approach A conflates them, Approach B does not
 ### The exact correction (Terza 1998) and Approach B as its local approximation
 
 @terza-1998, exposited in @wooldridge-2010-crosssection (sec. 18.5) and
-@imbens-wooldridge-2009-jel (sec. 3.3, eqs. 3.32–3.36), derives the *exact*
+@imbens-wooldridge-2007-cf (sec. 3.3, eqs. 3.32–3.36), derives the *exact*
 control function when $y_2$ follows a probit, $y_2 = 1[\mathbf{z}\boldsymbol{\pi}_2 + v_2 \geq 0]$,
 and $(c_1, v_2)$ — the Poisson heterogeneity and the probit error — are
-jointly normal with $\mathrm{Corr}(c_1,v_2) = \rho$. It is **not** "add the
+jointly normal. Here $\rho$ is the *coefficient* in the linear projection of
+$c_1$ on $v_2$, i.e. $E(\exp(c_1) \mid v_2) = \exp(\rho v_2)$ — **not** the
+correlation between them. With $v_2$ standard normal the two differ by a factor
+of $\sigma_{c_1}$, since $\rho = \mathrm{Corr}(c_1,v_2)\,\sigma_{c_1}$, and the
+distinction is not cosmetic: this chapter's DGP sets $c_1 = 0.2\,e_2$ with
+$v_2 = e_2$, so the *correlation* is exactly $1$ while the $\rho$ that governs
+the approximation below is $0.2$. Reading $\rho$ as a correlation is also what
+$h(\cdot)$ forbids — it is $\rho$ in the coefficient sense that makes
+$\exp(\rho^2/2)$ the lognormal correction and puts $\rho$ on the same scale as
+the probit index. It is **not** "add the
 generalized residual linearly inside $\exp(\cdot)$" (that is Approach B as
 coded below). The exact result is multiplicative:
 
@@ -497,16 +514,20 @@ Two important limits, though:
    has that clean $\Phi$-ratio form only because $v_2$ is normal. A logistic
    $v_2$ has no analogous tractable joint distribution with the Poisson
    heterogeneity, and no such exact result appears anywhere in
-   @wooldridge-2010-crosssection, @imbens-wooldridge-2009-jel, or
+   @wooldridge-2010-crosssection, @imbens-wooldridge-2007-cf, or
    @terza-1998 for a logit reduced form. So logit gives you Approach B (the
    local, $O(\rho^2)$-error approximation) exactly as validly as probit —
    but it does not give you a logit analog of the exact correction, because
    none has been worked out in this literature.
 2. **As a fitted-probability *instrument* (Approach C), probit and logit are
-   both fine, and Wooldridge treats them as interchangeable.** From
-   @imbens-wooldridge-2009-jel: *"Estimate P(W=1|x,z) by probit (or logit)
-   and obtain the first-stage fitted probabilities... This method... is
-   fully robust to misspecification of the [first-stage] model."* That
+   both fine.** From @imbens-wooldridge-2007-cf: *"Obtain the fitted
+   probabilities, $\Phi(\mathbf z_i\hat{\boldsymbol\pi}_2)$, from the first
+   stage probit, and then use these as IVs for $y_{i2}$. This method is fully
+   robust to misspecification of the probit model; the standard errors need not
+   be adjusted for the first-stage probit (asymptotically)."* Nothing in that
+   argument privileges the normal link: a logit fitted probability is simply
+   another function of $\mathbf z$, and any function of $\mathbf z$ is a valid
+   instrument. That
    robustness (correct even if the link is wrong) is specific to using the
    fitted value as an *instrument*, not as a *residual* — it does not carry
    over to Approaches A or B, where the second-stage conditional mean still
@@ -594,7 +615,7 @@ about $0.61$ against a multiplicative-moment mean of about $0.79$, with
 true value $0.8$). The multiplicative moments repair it.
 
 ::: {.callout-note}
-**Approach C with FE** requires demeaning the regressor and instrument matrices via within-group centering before solving the IV Poisson moment conditions.  Because Poisson is nonlinear this is not straightforward, and `ivpoisson` in Stata similarly drops `absorb()`.  Approach A via `feols` + `fepois` is the practical choice when many fixed effects are present.
+**Approach C with FE** requires demeaning the regressor and instrument matrices via within-group centering before solving the IV Poisson moment conditions.  Because Poisson is nonlinear this is not straightforward, and `ivpoisson` in Stata similarly drops `absorb()`.  Approaches A and B both run unmodified in `feols`/`feglm` + `fepois`, so either is practical when many fixed effects are present; of the two, prefer B (see the takeaway below).
 :::
 
 ### A vs C — not equivalent in Poisson
@@ -677,14 +698,41 @@ the approximate CF mean assumption is mild (A has no valid first-stage
 assumption for binary $y_2$; B is correct only to first order in $\rho$, per
 the derivation above). Additive-moment IV Poisson does not: the unobservable
 enters inside $\exp(\cdot)$, so its moments are misspecified (Mullahy 1997).
-The multiplicative-moment version repairs it.
+The multiplicative-moment version repairs it, and in one specific sense does more
+than repair it: the `ad` and `female` effects it omits are independent
+multiplicative heterogeneity, absorbed by the intercept under the multiplicative
+moments ($\beta_0 \to \beta_0 + \log E[e^{c}]$), so dropping the fixed effects
+costs no slope *bias* at all. Mullahy's moments are *consistent* for this DGP,
+where A and B are only approximately unbiased — $0.8015$ at $n=10^6$ (sd
+$0.0013$), against plims of $0.839$ and $0.822$.
+
+What consistency does not buy is precision, and that is why the table above can
+look as though it says the opposite. Without the fixed effects the
+multiplicative-moment estimator is roughly three times as noisy as A or B (sd
+$0.068$ against $0.024$ and $0.026$, over 10 seeds at this chapter's $n=5000$),
+so a single draw can leave the only consistent estimator of the three further
+from $0.8$ than either CF estimator. At this sample size its RMSE is in fact the
+worst of the three ($0.065$, against A's $0.039$ and B's $0.031$); the ranking
+reverses as $n$ grows. Read the comparison as one draw from that tradeoff, not
+as a verdict.
 
 ### Takeaway for the binary case
 
-- **Use Approach B.** It is the theoretically motivated choice — the
-  first-order-in-$\rho$ local approximation to Terza's (1998) exact
+- **Use Approach B when you need fixed effects.** Among the estimators that
+  drop into FE-Poisson unmodified it is the theoretically motivated choice —
+  the first-order-in-$\rho$ local approximation to Terza's (1998) exact
   correction — and its error is *derived*, not assumed: $O(\rho^2)$,
   shrinking as the endogeneity shrinks.
+- **Approach C trades bias for variance — decide which one binds.** Mullahy's
+  multiplicative moments are *consistent* here, not merely accurate to first
+  order, whenever the multiplicative heterogeneity is independent of
+  $\mathbf z$. But consistency is not accuracy at a given sample size. Over 10
+  seeds at this chapter's $n=5000$, C is nearly unbiased (mean $0.7985$) and yet
+  almost three times as noisy as B (sd $0.068$ against $0.026$), so its RMSE is
+  the *worst* of the three: $0.065$, against A's $0.039$ and B's $0.031$. B's
+  small derived bias buys a great deal of precision. Prefer C once $n$ is large
+  enough that its variance is not the binding constraint — and note that it does
+  not accommodate high-dimensional fixed effects either way.
 - **Approach A can still be a reasonable numerical approximation** — this
   chapter's own simulation lands it close to the truth at $\rho=0.2$ — but
   it has no theoretical justification for binary $y_2$ at all: its
