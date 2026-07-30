@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="d0aee4b0" class="cell" data-execution_count="2">
+<div id="db676264" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
@@ -834,6 +834,20 @@ ATE = 0.1966</code></pre>
 ATE \;=\; E[Y(1, Z(1), M(1))] - E[Y(0, Z(0), M(0))] \;=\; IIE + IDE,
 \]</span></p>
 <p>into direct and indirect components by walking a path of intermediate “twin” regimes for <span class="math inline">\(Z\)</span> and <span class="math inline">\(M\)</span>, each identified without cross-world independence. With <code>effect = "RT"</code>, the printed <span class="math inline">\(IDE + IIE\)</span> adds up to the ATE by construction.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Two caveats on the numbers below, both about <code>Crumble.jl</code> rather than about the estimand.</strong> First, the direct and indirect standard errors are combined as <span class="math inline">\(\sqrt{se_a^2 + se_b^2}\)</span>. That treats two estimators computed on the <em>same</em> sample as independent, so it ignores their covariance; the correct standard error comes from the variance of the difference of the influence curves, not from adding their variances. Second, the <code>"RT"</code> path currently computes both the natural and the randomized influence curves and then combines only the natural ones, so what is reported is not yet the recanting-twins decomposition described above — the identity <span class="math inline">\(IDE + IIE = ATE\)</span> holds arithmetically, because all three are built from the same three regime means, but it holds for the natural decomposition.</p>
+<p>Read the point estimates as an illustration of the workflow. For interventional effects to lean on, the <code>medoutcon</code> output in the <a href="https://xiangao.github.io/causal_econometrics_guide/mediation.html">R companion chapter</a> is the better reference.</p>
+</div>
+</div>
 <section id="example" class="level3" data-number="21.4.1">
 <h3 data-number="21.4.1" class="anchored" data-anchor-id="example"><span class="header-section-number">21.4.1</span> Example</h3>
 <div id="cell-med7" class="cell" data-cache="true" data-message="false" data-execution_count="10">
@@ -994,9 +1008,9 @@ ATE \;=\; E[Y(1, Z(1), M(1))] - E[Y(0, Z(0), M(0))] \;=\; IIE + IDE,
   Effect type: RT
 
 Estimates:
-  Direct Effect                             -0.0005 (SE:   0.7612) [95% CI:  -1.4925,   1.4915]
-  Average Treatment Effect                  -0.0005 (SE:   0.7611) [95% CI:  -1.4924,   1.4913]
-  Indirect Effect                           -0.0000 (SE:   0.7617) [95% CI:  -1.4930,   1.4929]</code></pre>
+  Direct Effect                             -0.0005 (SE:   0.0241) [95% CI:  -0.0477,   0.0467]
+  Average Treatment Effect                  -0.0005 (SE:   0.0241) [95% CI:  -0.0477,   0.0467]
+  Indirect Effect                           -0.0000 (SE:   0.0241) [95% CI:  -0.0473,   0.0472]</code></pre>
 </div>
 </div>
 <div id="med10" class="cell" data-cache="true" data-message="false" data-execution_count="13">
@@ -1007,8 +1021,8 @@ Estimates:
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IIE (Indirect) = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> iie[<span class="st">"estimate"</span>] iie[<span class="st">"std.error"</span>]</span>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE            = %.4g</span><span class="sc">\n</span><span class="st">"</span> result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>IDE (Direct)   = -0.0005093 (SE = 0.7612)
-IIE (Indirect) = -2.789e-05 (SE = 0.7617)
+<pre><code>IDE (Direct)   = -0.0005093 (SE = 0.02408)
+IIE (Indirect) = -2.789e-05 (SE = 0.0241)
 ATE            = -0.0005372</code></pre>
 </div>
 </div>

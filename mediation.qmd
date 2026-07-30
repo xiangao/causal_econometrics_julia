@@ -417,6 +417,24 @@ into direct and indirect components by walking a path of intermediate
 independence. With `effect = "RT"`, the printed $IDE + IIE$ adds up to the
 ATE by construction.
 
+::: {.callout-warning}
+**Two caveats on the numbers below, both about `Crumble.jl` rather than about the
+estimand.** First, the direct and indirect standard errors are combined as
+$\sqrt{se_a^2 + se_b^2}$. That treats two estimators computed on the *same* sample
+as independent, so it ignores their covariance; the correct standard error comes
+from the variance of the difference of the influence curves, not from adding their
+variances. Second, the `"RT"` path currently computes both the natural and the
+randomized influence curves and then combines only the natural ones, so what is
+reported is not yet the recanting-twins decomposition described above --- the
+identity $IDE + IIE = ATE$ holds arithmetically, because all three are built from
+the same three regime means, but it holds for the natural decomposition.
+
+Read the point estimates as an illustration of the workflow. For interventional
+effects to lean on, the `medoutcon` output in the
+[R companion chapter](https://xiangao.github.io/causal_econometrics_guide/mediation.html)
+is the better reference.
+:::
+
 ### Example
 
 ```{julia}

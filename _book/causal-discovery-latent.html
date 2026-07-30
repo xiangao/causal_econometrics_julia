@@ -494,7 +494,7 @@ window.Quarto = {
 </header>
 
 
-<div id="9c8b6d2b" class="cell" data-execution_count="2">
+<div id="ee325e62" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -571,7 +571,7 @@ window.Quarto = {
 <section id="simulation-with-hidden-variables" class="level2" data-number="23.2">
 <h2 data-number="23.2" class="anchored" data-anchor-id="simulation-with-hidden-variables"><span class="header-section-number">23.2</span> Simulation with Hidden Variables</h2>
 <p>We reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.</p>
-<div id="1f2956b7" class="cell" data-execution_count="3">
+<div id="9e390e88" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -595,7 +595,7 @@ window.Quarto = {
 <section id="true-structure-over-observed-variables" class="level3" data-number="23.2.1">
 <h3 data-number="23.2.1" class="anchored" data-anchor-id="true-structure-over-observed-variables"><span class="header-section-number">23.2.1</span> True structure over observed variables</h3>
 <p>Two observed variables are adjacent in the MAG iff no subset of the <em>observed</em> variables d-separates them in the full DAG.</p>
-<div id="5d362c03" class="cell" data-execution_count="4">
+<div id="95525849" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>true_dag <span class="op">=</span> <span class="fu">SimpleDiGraph</span>(adj_mat)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">true_mag_skeleton</span>(dag, observed)</span>
@@ -819,7 +819,7 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 <li><strong>Phase 4 (rule propagation):</strong> Apply the 10 orientation rules (Zhang 2008) that propagate known marks without creating contradictions, including rules that can produce definite <span class="math inline">\(\to\)</span> and <span class="math inline">\(\leftrightarrow\)</span> edges. These rules perform no CI tests and are cheap.</li>
 </ol>
 <p>The extra marks let FCI say what is known and what remains uncertain, but the output is harder to read than a DAG.</p>
-<div id="77278d65" class="cell" data-execution_count="6">
+<div id="ad77b448" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>count_fci <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
@@ -834,15 +834,18 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>f1_fci <span class="op">=</span> <span class="fu">f1_score</span>(true_obs_skel, skel_fci)</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"FCI:     skeleton F1 = %.3f   CI tests = %d</span><span class="sc">\n</span><span class="st">"</span> f1_fci count_fci[]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>FCI:     skeleton F1 = 0.889   CI tests = 82</code></pre>
+<pre><code>FCI:     skeleton F1 = 0.889   CI tests = 74</code></pre>
 </div>
 </div>
 <div id="fig-fci-pag" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-fci-pag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">plot_fci_graph_text</span>(pag_fci, [<span class="st">"X</span><span class="sc">$</span>(obs_idx[i])<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_obs]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># No `println` here: plot_fci_graph_text prints the edge list as a side effect and</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># returns nothing, so wrapping it in println() appends a literal "nothing" to the</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># output -- which is what the rendered page used to show.</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_fci_graph_text</span>(pag_fci, [<span class="st">"X</span><span class="sc">$</span>(obs_idx[i])<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_obs])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>X1&lt;-X2   X1&lt;-X7   X2o-oX5  X5o-oX7                                      nothing</code></pre>
+<pre><code>X1&lt;-X2   X1&lt;-X7   X2o-oX5  X5o-oX7                                      </code></pre>
 </div>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-fci-pag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -887,7 +890,7 @@ Note
 <li><strong>Condition 2</strong> is new and handles latent variables: it captures latent-induced dependencies through the theorem’s removable-variable criterion. Loosely, when <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> are connected through a hidden common cause, no subset of Mb<span class="math inline">\((X)\)</span> separates them, yet conditioning on <span class="math inline">\(X\)</span> changes the dependence. <strong>This is not a generic d-separation rule</strong> — it should not be read as “conditioning on <span class="math inline">\(X\)</span> blocks hidden confounding,” which would be false in general MAG/PAG reasoning. It is a theorem-specific condition (Theorem 32) on when <span class="math inline">\(X\)</span> can be removed without losing latent-structure information; the formal statement above, not the intuition, is what the algorithm uses.</li>
 </ul>
 <p>Together, the two conditions ensure that removing <span class="math inline">\(X\)</span> does not destroy information about the latent structure connecting its neighbours.</p>
-<div id="185f750e" class="cell" data-execution_count="8">
+<div id="b281656a" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>count_lm <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ci_lm <span class="op">=</span> (x, y, S, d) <span class="op">-&gt;</span> <span class="cf">begin</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    count_lm[] <span class="op">+=</span> <span class="fl">1</span></span>
@@ -959,7 +962,7 @@ Table&nbsp;23.1: Algorithm comparison on the latent-variable scenario (2 hidden 
 <td style="text-align: left;">FCI</td>
 <td style="text-align: left;">PAG (orientations + skeleton)</td>
 <td style="text-align: right;">0.889</td>
-<td style="text-align: right;">82</td>
+<td style="text-align: right;">74</td>
 </tr>
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
@@ -1203,7 +1206,7 @@ Figure&nbsp;23.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 </section>
 <section id="monte-carlo-evaluation" class="level2" data-number="23.6">
 <h2 data-number="23.6" class="anchored" data-anchor-id="monte-carlo-evaluation"><span class="header-section-number">23.6</span> Monte Carlo Evaluation</h2>
-<div id="fd79721a" class="cell" data-cache="true" data-execution_count="11">
+<div id="ff5cbaa3" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_latent</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, n_latent<span class="op">=</span><span class="fl">2</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    adj       <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1240,7 +1243,7 @@ Figure&nbsp;23.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 <pre><code>
 Monte Carlo averages (100 replications, n=2000, p=8, 2 latent)
 Method      Skeleton F1  CI tests
-FCI              0.912     171.8
+FCI              0.912     169.8
 L-MARVEL         0.934      80.9</code></pre>
 </div>
 </div>

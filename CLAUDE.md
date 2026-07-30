@@ -202,3 +202,77 @@ Review of the 2026-07-28 rewrite of `poisson-iv.qmd` (10 commits), the only chap
 **A-vs-B contradiction.** The Approach-C callout said "Approach A … is the practical choice when many fixed effects are present" while the rewritten takeaway said to use B and treat A as a fallback. Both A and B run unmodified in FE-Poisson (only the first stage differs), so the callout now says so and prefers B.
 
 **Approach C: state it as a bias-variance tradeoff, not a ranking.** Mullahy's multiplicative moments are genuinely *consistent* for this DGP — the omitted `ad`/`female` effects are independent multiplicative heterogeneity, absorbed by the intercept ($\beta_0 \to \beta_0 + \log E[e^c]$) — verified at $n=10^6$: 0.8015, sd 0.0013. **But consistency is not accuracy at a given $n$.** At the chapter's own $n=5000$ over 10 seeds: A mean 0.8323 / sd 0.0236 / RMSE 0.0393; B 0.8185 / 0.0262 / 0.0310; C 0.7985 / 0.0679 / 0.0645. C is nearly unbiased and yet has the **worst RMSE**, being ~3× noisier without the fixed effects. My first draft of this fix said "prefer Approach C" and had to be corrected — the rendered output refuted it. Its own comparison table shows the Mullahy version at 0.7260 — *worse* than A (0.8128) and B (0.7636) — so the paragraph now explains explicitly why the table can look like it contradicts the consistency claim.
+
+## Deep read (2026-07-30) — reusable gotchas
+
+Full-depth pass over all 25 topics, paired against the R companion. Log:
+`~/projects/books/_review3/deepread_causal_books.md`.
+
+### Displaying results: never `println` a `CoefTable`
+
+StatsBase defines **only** `show(io, ::MIME"text/plain", ::CoefTable)`. So
+`println(coeftable(fit))` falls through to the generic struct show and prints
+`CoefTable(Any[[0.997, 2.110, ...], ...])` into the page. Use `display(coeftable(fit))`,
+or let the table be the cell's last expression.
+
+The same applies to any wrapper holding a `CoefTable`. A bare
+`mod = etwfe(...)` or `mod = feols(...)` as a cell's last expression renders
+`ETWFEResult(Panelest Model: ... CoefTable(Any[[...]]))`. End such lines with `;`
+and show the table explicitly (`show_regression_html(mod.model)`).
+
+And end any line producing a long vector with `;` — `sw_trim = min.(sw, q)` once
+dumped all 5000 weights into `g-methods.html`.
+
+Sweep before committing:
+```bash
+grep -l 'CoefTable(Any\[' _book/*.html ; grep -l 'element Vector{' _book/*.html
+```
+
+### `crossfit`: use the package default of 5, never 2
+
+`AIPW(crossfit = 2)` fits each nuisance on half the sample and inflates the point
+estimate *and* the influence-function SE together. On NHEFS: 3.866 (SE 1.331) at
+2 folds, 3.452 (0.748) at 5, 3.312 (0.737) at 10, against the R companion's
+full-sample parametric 3.293 (0.498). `nonparametric.qmd` tells the reader the book
+uses `crossfit=5`, so 2 also contradicts the book's own stated convention.
+
+### Any score used to rank observations must be out of fold
+
+`rf_fit_predict(X, y, X)` trains and predicts on the same rows. Ranking on such a
+score and then averaging the same pseudo-outcome inside the resulting bins made the
+GATES table report quintile ATTs of -1.204 and 5.271 for a DGP where
+`tau(x) = 1 + 2X1` is confined to `[1, 3]`. Out-of-fold ranking puts every bin
+within 0.06 of its true bin mean.
+
+**Still open:** all five meta-learners in `heterogeneous-effects.qmd` are *evaluated*
+with in-sample predictions (`rf_fit_predict(X, ..., X)`). That is why this book
+reports the DR-learner at 0.433 where the R companion reports 0.931. Converting them
+to out-of-fold changes every number in that section.
+
+### Pull coefficients by name, not by position
+
+`coef(lm(@formula(Y ~ D + X1 + X2), df))[end]` is **X2's** coefficient. That line
+was reporting X2 as the adjusted treatment effect in `sensitivity-analysis.qmd`, and
+went unnoticed for four review passes because the DGP's coefficients put the wrong
+number in a plausible range. Use
+`coef(m)[findfirst(==(name), coefnames(m))]`.
+
+### Sanity-check against the estimand's possible range
+
+Two of the largest errors this pass were caught by asking "can the estimand even
+take this value?" — a negative GATES bin for a `tau` confined to `[1,3]`, and a
+mediation SE of 0.76 for a contrast of probabilities. Do this before reading
+standard errors.
+
+### Package bugs found via this book (both fixed upstream)
+
+- `CausalEstimate.jl` AIPW ATT normalised the augmentation term by `P(A=0)` instead
+  of `P(A=1)`, inflating the SE by `P(A=1)/P(A=0)`.
+- `Crumble.jl` reported the influence curve's standard *deviation* as the standard
+  error (missing `/sqrt(n)`, ~31.6x at n=1000).
+
+Two `Crumble.jl` issues remain open and are flagged in a `callout-warning` in
+`mediation.qmd`: contrast SEs combine as `sqrt(se_a^2 + se_b^2)` (ignoring
+covariance between estimators on the same sample), and `calc_estimates_rt` accepts
+the randomized influence curves then never uses them, so `effect="RT"` does not
+return a recanting-twins decomposition.

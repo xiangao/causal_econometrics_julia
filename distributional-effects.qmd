@@ -257,14 +257,22 @@ result
 The curve below is a difference-in-quantiles: it subtracts quantile-by-quantile
 the treated change from the control change. This is a descriptive device, not an
 identified QTE. The difference of quantiles is not the quantile of the difference,
-so this equals the true QTE only under rank invariance, and its average is not the
-DiD ATT in general. It shows larger differences at the top of the outcome
-distribution here.
+so it equals the true QTE only under rank invariance.
+
+Its *average*, though, is not a separate quantity: because
+$\int_0^1 F^{-1}(\tau)\,d\tau = E[Y]$, averaging this curve over the whole unit
+interval returns exactly the ordinary difference-in-means DiD. On the nine-point
+grid used here the average is 0.531 against a difference-in-means DiD of 0.538, and
+the gap closes as the grid is refined (0.534 on a 199-point grid, 0.536 on a
+999-point grid) --- it is discretization, not a difference in estimand. So the
+honest summary is that the quantile-DiD curve tells you nothing new about the
+*level* of the effect and everything about its *shape*: here, larger differences at
+the top of the outcome distribution.
 
 ```{julia}
 #| label: qte-plot
 #| cache: true
-#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: the difference of quantiles equals the quantile of the difference, and identifies the QTE, only under rank invariance. Its average is not the DiD ATT in general."
+#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: the difference of quantiles equals the quantile of the difference, and so identifies the QTE, only under rank invariance. Its average, by contrast, *is* the ordinary difference-in-means DiD -- averaging a quantile function returns a mean -- so the information the curve adds is its shape, not its level."
 
 fig = Figure(size = (640, 360), fontsize = 13)
 ax  = Axis(fig[1, 1], xlabel = "Quantile τ", ylabel = "Difference-in-quantiles",
@@ -273,7 +281,7 @@ lines!(ax, result.quantile, result.QTE_DiD, color = :firebrick, linewidth = 2)
 scatter!(ax, result.quantile, result.QTE_DiD, color = :firebrick, markersize = 7)
 hlines!(ax, [mean(result.QTE_DiD)], color = :gray40, linestyle = :dash)
 text!(ax, 0.12, mean(result.QTE_DiD) + 0.02;
-      text = "mean (≠ ATT in general)", color = :gray40, fontsize = 11)
+      text = "mean = difference-in-means DiD", color = :gray40, fontsize = 11)
 fig
 ```
 

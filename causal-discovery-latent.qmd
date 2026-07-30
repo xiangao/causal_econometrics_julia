@@ -207,7 +207,10 @@ f1_fci = f1_score(true_obs_skel, skel_fci)
 ```{julia}
 #| label: fig-fci-pag
 #| fig-cap: "PAG estimated by FCI. The `o` marks indicate uncertainty about orientation. A bidirected `↔` edge identifies a definite hidden common cause."
-println(plot_fci_graph_text(pag_fci, ["X$(obs_idx[i])" for i in 1:n_obs]))
+# No `println` here: plot_fci_graph_text prints the edge list as a side effect and
+# returns nothing, so wrapping it in println() appends a literal "nothing" to the
+# output -- which is what the rendered page used to show.
+plot_fci_graph_text(pag_fci, ["X$(obs_idx[i])" for i in 1:n_obs])
 ```
 
 ::: {.callout-note}
