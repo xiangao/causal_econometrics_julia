@@ -511,7 +511,7 @@ window.Quarto = {
 </header>
 
 
-<div id="1188293d" class="cell" data-execution_count="2">
+<div id="8e1e3dd4" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -659,7 +659,7 @@ Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</code></pre>
 <pre><code>ATT (mean of Y1-Y0 conditional on D=1) = 2.006</code></pre>
 </div>
 </div>
-<p>Here ATT is close to ATE. The reason is mechanical: treatment effects depend on <span class="math inline">\(X\)</span>, while selection into treatment depends on <span class="math inline">\(U\)</span>, and <span class="math inline">\(X\)</span> is independent of <span class="math inline">\(U\)</span>. If selection also depended on <span class="math inline">\(X\)</span>, ATT would move away from ATE.</p>
+<p>Here ATT is close to ATE – and in fact the two are analytically identical in this DGP, exactly <span class="math inline">\(2.0\)</span> in the population; the estimates above differ only by finite-sample simulation noise, not by any true gap between the estimands. The reason is mechanical: the individual treatment effect <span class="math inline">\(\tau_i = 1+2X_i\)</span> depends only on <span class="math inline">\(X_i\)</span>, while selection into treatment depends on <span class="math inline">\(U_i\)</span> (and the instrument <span class="math inline">\(Z_i\)</span> below), and <span class="math inline">\(X_i\)</span> is generated independently of <span class="math inline">\(U_i\)</span> and <span class="math inline">\(Z_i\)</span>. Since treatment-effect heterogeneity is unrelated to who selects into treatment or who complies with the instrument, averaging <span class="math inline">\(\tau_i\)</span> over the treated subpopulation or over compliers gives the same population average as over everyone – hence ATE = ATT = LATE = <span class="math inline">\(2.0\)</span> exactly here. If selection (or compliance) also depended on <span class="math inline">\(X\)</span>, these estimands would diverge, since ATE, ATT, and LATE are different averages of <span class="math inline">\(\tau_i\)</span> across different, non-identical subpopulations.</p>
 </section>
 <section id="late-local-average-treatment-effect-imbens-angrist" class="level3" data-number="2.2.3">
 <h3 data-number="2.2.3" class="anchored" data-anchor-id="late-local-average-treatment-effect-imbens-angrist"><span class="header-section-number">2.2.3</span> LATE — local average treatment effect (Imbens-Angrist)</h3>

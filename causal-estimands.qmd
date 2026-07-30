@@ -118,9 +118,19 @@ att_true = mean(Y1[D] .- Y0[D])
 @printf("ATT (mean of Y1-Y0 conditional on D=1) = %.3f\n", att_true)
 ```
 
-Here ATT is close to ATE. The reason is mechanical: treatment effects depend
-on $X$, while selection into treatment depends on $U$, and $X$ is independent
-of $U$. If selection also depended on $X$, ATT would move away from ATE.
+Here ATT is close to ATE -- and in fact the two are analytically identical
+in this DGP, exactly $2.0$ in the population; the estimates above differ only
+by finite-sample simulation noise, not by any true gap between the estimands.
+The reason is mechanical: the individual treatment effect $\tau_i = 1+2X_i$
+depends only on $X_i$, while selection into treatment depends on $U_i$ (and
+the instrument $Z_i$ below), and $X_i$ is generated independently of $U_i$
+and $Z_i$. Since treatment-effect heterogeneity is unrelated to who selects
+into treatment or who complies with the instrument, averaging $\tau_i$ over
+the treated subpopulation or over compliers gives the same population
+average as over everyone -- hence ATE = ATT = LATE = $2.0$ exactly here.
+If selection (or compliance) also depended on $X$, these estimands would
+diverge, since ATE, ATT, and LATE are different averages of $\tau_i$
+across different, non-identical subpopulations.
 
 ### LATE — local average treatment effect (Imbens-Angrist)
 

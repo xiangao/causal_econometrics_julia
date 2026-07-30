@@ -485,7 +485,7 @@ window.Quarto = {
 </header>
 
 
-<div id="88a32b14" class="cell" data-execution_count="2">
+<div id="aefb595a" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -518,18 +518,26 @@ window.Quarto = {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>Y   <span class="op">=</span> @. <span class="fl">1.0</span> <span class="op">*</span> D <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> X1 <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> X2 <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> U <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">randn</span>()</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>df  <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X1, X2 <span class="op">=</span> X2, U <span class="op">=</span> U)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True treatment effect: 1.000</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (D only):        %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(<span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D), df))[<span class="kw">end</span>])</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Adjusted (D, X1, X2):  %.3f  (biased because U is unobserved)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(<span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> X1 <span class="op">+</span> X2), df))[<span class="kw">end</span>])</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Oracle (D, X1, X2, U): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(<span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> X1 <span class="op">+</span> X2 <span class="op">+</span> U), df))[<span class="kw">end</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Pull the coefficient out BY NAME. Indexing positionally (`[end]`, `[2]`) is a</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># standing invitation to report the wrong number: `[end]` on `Y ~ D + X1 + X2`</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># is the coefficient on X2, not on D, and in this DGP X2's true coefficient</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># (1.5) is close enough to the confounded D estimate that the mistake does not</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># look like one.</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">coef_of</span>(m, name) <span class="op">=</span> <span class="fu">coef</span>(m)[<span class="fu">findfirst</span>(<span class="op">==</span>(name), <span class="fu">coefnames</span>(m))]</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True treatment effect: 1.000</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive (D only):        %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef_of</span>(<span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D), df), <span class="st">"D"</span>))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Adjusted (D, X1, X2):  %.3f  (biased because U is unobserved)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef_of</span>(<span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> X1 <span class="op">+</span> X2), df), <span class="st">"D"</span>))</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Oracle (D, X1, X2, U): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef_of</span>(<span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> X1 <span class="op">+</span> X2 <span class="op">+</span> U), df), <span class="st">"D"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True treatment effect: 1.000
 Naive (D only):        2.787
-Adjusted (D, X1, X2):  1.448  (biased because U is unobserved)
-Oracle (D, X1, X2, U): 1.003</code></pre>
+Adjusted (D, X1, X2):  1.497  (biased because U is unobserved)
+Oracle (D, X1, X2, U): 0.966</code></pre>
 </div>
 </div>
 <p>The adjusted regression is still biased because <span class="math inline">\(U\)</span> is unobserved.</p>
@@ -616,6 +624,8 @@ would it explain the estimate? NO — robust to this benchmark</code></pre>
 </div>
 </div>
 <p>The benchmark comparison turns the RV into a sentence: an unmeasured confounder as strong as <span class="math inline">\(X_1\)</span> would or would not overturn the result.</p>
+<p>Because this is a simulation we can check the machinery against the confounder that actually exists. <span class="math inline">\(U\)</span>’s partial <span class="math inline">\(R^2\)</span> is 0.787 with the outcome and 0.064 with the treatment. The second number is far below the robustness value, so the verdict “not explained away” is correct — and it is correct even though the adjusted estimate is badly biased. Those are different questions, and the distinction is the main thing to take from this section: a robustness value asks whether a confounder could drive the estimate to <em>zero</em>, not whether the estimate is <em>right</em>. Here it cannot, and the estimate is still 50% too large.</p>
+<p>Feeding <span class="math inline">\(U\)</span>’s true strengths into the Cinelli-Hazlett bias formula gives a bound of 0.531, so the bias-corrected estimate is <span class="math inline">\(1.497 - 0.531 = 0.966\)</span> against a true effect of 1.000. The bound is doing its job: it is not a point correction one would apply in practice, since in real data the confounder’s strengths are exactly what we do not know, but it confirms that the formula is calibrated rather than merely suggestive.</p>
 </section>
 <section id="a-sensitivity-contour-plot" class="level3" data-number="5.2.2">
 <h3 data-number="5.2.2" class="anchored" data-anchor-id="a-sensitivity-contour-plot"><span class="header-section-number">5.2.2</span> A sensitivity contour plot</h3>

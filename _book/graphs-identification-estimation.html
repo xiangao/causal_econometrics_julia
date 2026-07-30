@@ -489,7 +489,7 @@ window.Quarto = {
 </header>
 
 
-<div id="eb3c4bc7" class="cell" data-execution_count="2">
+<div id="5dcb31b6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">CausalGraphs</span>: identify, make_graph, to_mermaid, markov_pillow, is_fix, is_p_fix, ID_algorithm, estimate_causal, estimate_id</span>
@@ -515,7 +515,7 @@ window.Quarto = {
 <section id="a-dag-backdoor-adjustment" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="a-dag-backdoor-adjustment"><span class="header-section-number">3.2</span> A DAG: Backdoor Adjustment</h2>
 <p>Start with a simple observational study. <code>A</code> is treatment, <code>Y</code> is the outcome, and <code>X</code> is an observed confounder:</p>
-<div id="6f2cba25" class="cell" data-execution_count="4">
+<div id="4e4ba212" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>g_dag <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>X, <span class="op">:</span>A), (<span class="op">:</span>X, <span class="op">:</span>Y), (<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
@@ -550,7 +550,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The graph says <code>X</code> affects both treatment and outcome. It also says there is no unobserved common cause between <code>A</code> and <code>Y</code> after we condition on <code>X</code>. In this case the treatment is a-fixable, which corresponds to backdoor-style identification.</p>
-<div id="11491fd5" class="cell" data-execution_count="6">
+<div id="e4066efc" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>id_dag <span class="op">=</span> <span class="fu">identify</span>(g_dag, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>(strategy <span class="op">=</span> id_dag.strategy,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a> markov_pillow <span class="op">=</span> <span class="fu">markov_pillow</span>(g_dag, <span class="op">:</span>A; treatment <span class="op">=</span> <span class="op">:</span>A))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -567,7 +567,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="estimating-the-dag-effect-with-causalestimate" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">3.3</span> Estimating the DAG Effect with CausalEstimate</h2>
 <p>Here is a small simulated data set where <code>X</code> confounds the treatment-outcome association.</p>
-<div id="ed937574" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<div id="a9d7308a" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">400</span></span>
@@ -632,11 +632,11 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>Because the graph is a-fixable, <code>GraphID</code> routes to AIPW backdoor adjustment. The call below estimates the average contrast <span class="math inline">\(E[Y(1)-Y(0)]\)</span>.</p>
-<div id="ea14f0e4" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<div id="8e2d2fdd" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dag_res <span class="op">=</span> <span class="fu">estimate</span>(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ATE</span>(outcome <span class="op">=</span> <span class="op">:</span>Y, treatment <span class="op">=</span> <span class="op">:</span>A),</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">GraphID</span>(graph <span class="op">=</span> g_dag),</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AIPW</span>(crossfit <span class="op">=</span> <span class="fl">2</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AIPW</span>(crossfit <span class="op">=</span> <span class="fl">5</span>),</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    df_dag,</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
@@ -666,22 +666,23 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
 <td style="text-align: left;">Backdoor ACE</td>
-<td style="text-align: right;">1.443</td>
-<td style="text-align: right;">1.221</td>
-<td style="text-align: right;">1.665</td>
-<td style="text-align: right;">0.1134</td>
+<td style="text-align: right;">1.465</td>
+<td style="text-align: right;">1.265</td>
+<td style="text-align: right;">1.666</td>
+<td style="text-align: right;">0.1023</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<p>The graph chose the adjustment set (Markov pillow of <code>A</code>) and the estimator used that set. Access it via <code>dag_res.components[:adjustment_set]</code>.</p>
+<p>The graph chose the adjustment set (Markov pillow of <code>A</code>) and the estimator used that set. Access it via <code>dag_res.components[:adjustment_set]</code>. The DGP sets the coefficient on <code>A</code> to 1.5, so the point estimate recovers the true ACE within sampling noise.</p>
+<p><code>crossfit = 5</code> is the package default, and the number of folds matters more than it looks. With <code>crossfit = 2</code> each nuisance is fit on only half the sample, and the extra noise in the out-of-fold predictions propagates into <em>both</em> the point estimate and the influence-function variance — fewer folds means a noisier estimate reported with a wider interval, not a cheap approximation to the same answer. Two folds is the smallest value the package allows; it is not a sensible default. The <a href="./smoking-cessation-graphs.html">next chapter</a> measures the size of this effect on real data.</p>
 </section>
 <section id="an-admg-front-door-identification" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="an-admg-front-door-identification"><span class="header-section-number">3.4</span> An ADMG: Front-Door Identification</h2>
 <p>Now suppose treatment and outcome share an unobserved common cause. A simple adjustment argument no longer works. The front-door ADMG has a mediator <code>M</code> that transmits the effect of <code>A</code> to <code>Y</code>, while <code>A</code> and <code>Y</code> are hidden-confounded:</p>
-<div id="8b24e1ce" class="cell" data-execution_count="9">
+<div id="2de7d36c" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>g_fd <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>M, <span class="op">:</span>Y],</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>M), (<span class="op">:</span>M, <span class="op">:</span>Y)],</span>
@@ -717,7 +718,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>The bidirected edge <code>A &lt;-&gt; Y</code> means that ordinary backdoor adjustment is not available. But the graph is p-fixable, the ADMG generalization that includes front-door identification.</p>
-<div id="9e0e3992" class="cell" data-execution_count="11">
+<div id="131c71ae" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>id_fd <span class="op">=</span> <span class="fu">identify</span>(g_fd, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>(strategy <span class="op">=</span> id_fd.strategy,</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a> a_fixable <span class="op">=</span> <span class="fu">is_fix</span>(g_fd, <span class="op">:</span>A),</span>
@@ -731,7 +732,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="estimating-the-admg-effect-with-causalgraphs" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">3.5</span> Estimating the ADMG Effect with CausalGraphs</h2>
 <p>Simulate a front-door setting. The latent <code>U</code> is not included in the observed data; it is represented in the graph by <code>A &lt;-&gt; Y</code>.</p>
-<div id="91240006" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<div id="1ba58e9b" class="cell" data-cache="true" data-message="false" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2027</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>U <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -794,8 +795,15 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 </div>
+<p>The DGP has a known truth. Under <span class="math inline">\(do(A=a)\)</span> the mediator is <span class="math inline">\(M \sim \text{Bern}(\Lambda(-0.4 + 1.2a))\)</span> while <span class="math inline">\(U\)</span> keeps its marginal <span class="math inline">\(N(0,1)\)</span> distribution, so</p>
+<p><span class="math display">\[
+\tau = \big[\Lambda(0.8) - \Lambda(-0.4)\big]\;
+       \big[g(-0.1) - g(-1.0)\big], \qquad
+g(c) = E_U\big[\Lambda(c + 0.7U)\big],
+\]</span></p>
+<p>which evaluates to <span class="math inline">\(0.2887 \times 0.1894 = 0.0547\)</span>. The naive contrast <span class="math inline">\(E[Y\mid A=1]-E[Y\mid A=0]\)</span> equals <span class="math inline">\(0.158\)</span> in the population this DGP defines — almost three times the causal effect, because <span class="math inline">\(U\)</span> raises both the chance of treatment and the outcome. That gap is what the front-door step removes. The table below reports the sample version of the naive contrast alongside the front-door estimate.</p>
 <p>Since <code>identify()</code> returns <code>:p_fixable</code>, this is a front-door effect. <code>CausalEstimate.jl</code> currently handles backdoor (a-fixable) graphs; for p-fixable effects we call <code>CausalGraphs.estimate_causal</code> directly, which routes to NPS TMLE.</p>
-<div id="6baecc84" class="cell" data-cache="true" data-message="false" data-execution_count="13">
+<div id="9605951e" class="cell" data-cache="true" data-message="false" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fd_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    CausalGraphs.<span class="fu">estimate_causal</span>(</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
@@ -810,9 +818,18 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">effect_table</span>(<span class="st">"Front-door ACE"</span>, fd_res[<span class="op">:</span>TMLE])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>naive_fd <span class="op">=</span> <span class="fu">mean</span>(df_fd.Y[df_fd.A <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(df_fd.Y[df_fd.A <span class="op">.==</span> <span class="fl">0</span>])</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="fu">vcat</span>(</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">DataFrame</span>(estimand <span class="op">=</span> [<span class="st">"Naive E[Y|A=1] - E[Y|A=0]"</span>], estimate <span class="op">=</span> [<span class="fu">r4</span>(naive_fd)],</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>              lower_95 <span class="op">=</span> [<span class="cn">missing</span>], upper_95 <span class="op">=</span> [<span class="cn">missing</span>], se <span class="op">=</span> [<span class="cn">missing</span>]),</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">effect_table</span>(<span class="st">"Front-door ACE"</span>, fd_res[<span class="op">:</span>TMLE]),</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">DataFrame</span>(estimand <span class="op">=</span> [<span class="st">"Truth"</span>], estimate <span class="op">=</span> [<span class="fl">0.0547</span>],</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>              lower_95 <span class="op">=</span> [<span class="cn">missing</span>], upper_95 <span class="op">=</span> [<span class="cn">missing</span>], se <span class="op">=</span> [<span class="cn">missing</span>]);</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    cols <span class="op">=</span> <span class="op">:</span>union,</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
-<div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<div><div style="float: left;"><span>3×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
 <thead>
 <tr class="columnLabelRow header">
@@ -827,18 +844,34 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Union{Missing, Float64}">Float64?</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Union{Missing, Float64}">Float64?</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="Missing">Missing</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">Naive E[Y|A=1] - E[Y|A=0]</td>
+<td style="text-align: right;">0.1014</td>
+<td style="text-align: right; font-style: italic;">missing</td>
+<td style="text-align: right; font-style: italic;">missing</td>
+<td style="text-align: right; font-style: italic;">missing</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
 <td style="text-align: left;">Front-door ACE</td>
 <td style="text-align: right;">0.05239</td>
 <td style="text-align: right;">0.02208</td>
 <td style="text-align: right;">0.0827</td>
+<td style="text-align: right; font-style: italic;">missing</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: left;">Truth</td>
+<td style="text-align: right;">0.0547</td>
+<td style="text-align: right; font-style: italic;">missing</td>
+<td style="text-align: right; font-style: italic;">missing</td>
 <td style="text-align: right; font-style: italic;">missing</td>
 </tr>
 </tbody>
@@ -846,7 +879,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 </div>
-<p>This is the practical advantage of separating identification from estimation. State the graph first. Then use the estimator that matches the identified functional.</p>
+<p>The naive contrast is far above the truth; the front-door estimate brackets it. This is the practical advantage of separating identification from estimation. State the graph first. Then use the estimator that matches the identified functional.</p>
 </section>
 <section id="general-id-algorithm" class="level2" data-number="3.6">
 <h2 data-number="3.6" class="anchored" data-anchor-id="general-id-algorithm"><span class="header-section-number">3.6</span> General ID Algorithm</h2>
@@ -861,7 +894,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <li>return a hedge witness when no such reduction is possible.</li>
 </ol>
 <p>For the front-door graph, the general ID algorithm also succeeds:</p>
-<div id="084a186d" class="cell" data-execution_count="14">
+<div id="24856711" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>id_alg_fd <span class="op">=</span> <span class="fu">ID_algorithm</span>(g_fd, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>(identified <span class="op">=</span> id_alg_fd.identified,</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a> expression <span class="op">=</span> <span class="fu">string</span>(id_alg_fd.expression))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -869,8 +902,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <pre><code>(identified = true, expression = "sum_{M} P(M | A) * sum_{A} P(A) * P(Y | A, M)")</code></pre>
 </div>
 </div>
-<p>The expression is symbolic. It is not yet an estimate. For finite-support variables, <code>CausalGraphs.estimate_causal</code> evaluates the symbolic functional by empirical probabilities and attaches a finite-support EIF standard error via the <code>:IDPlugin</code> key.</p>
-<div id="e7acabc5" class="cell" data-cache="true" data-message="false" data-execution_count="15">
+<p>The printed expression reuses <code>A</code> as the inner summation index; read it as <span class="math inline">\(\sum_M P(M\mid A)\sum_{A'} P(Y\mid A', M)P(A')\)</span>, where the inner <span class="math inline">\(A'\)</span> ranges over the marginal distribution of treatment and is distinct from the <span class="math inline">\(A\)</span> being intervened on. The expression is symbolic. It is not yet an estimate. For finite-support variables, <code>CausalGraphs.estimate_causal</code> evaluates the symbolic functional by empirical probabilities and attaches a finite-support EIF standard error via the <code>:IDPlugin</code> key.</p>
+<div id="0962c69f" class="cell" data-cache="true" data-message="false" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>id_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">estimate_id</span>(</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.0</span>],</span>
@@ -923,7 +956,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="when-the-graph-says-no" class="level2" data-number="3.7">
 <h2 data-number="3.7" class="anchored" data-anchor-id="when-the-graph-says-no"><span class="header-section-number">3.7</span> When the Graph Says No</h2>
 <p>The bow graph has both a direct causal edge and unobserved confounding between the same two variables:</p>
-<div id="1cb5e698" class="cell" data-execution_count="16">
+<div id="4c3d59b5" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>g_bow <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>Y],</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
@@ -956,7 +989,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>The effect of <code>A</code> on <code>Y</code> is not identified in this ADMG. The observed association mixes the direct causal effect with the latent common cause.</p>
-<div id="bb5e2699" class="cell" data-execution_count="18">
+<div id="f78a6d14" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>id_bow <span class="op">=</span> <span class="fu">identify</span>(g_bow, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>id_alg_bow <span class="op">=</span> <span class="fu">ID_algorithm</span>(g_bow, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>

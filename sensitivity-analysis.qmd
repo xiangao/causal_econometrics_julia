@@ -62,13 +62,21 @@ D   = @. Float64(rand() < 1 / (1 + exp(-(0.5 * X1 + 0.5 * X2 + 0.6 * U))))
 Y   = @. 1.0 * D + 1.5 * X1 + 1.5 * X2 + 1.0 * U + 0.5 * randn()
 
 df  = DataFrame(Y = Y, D = D, X1 = X1, X2 = X2, U = U)
+
+# Pull the coefficient out BY NAME. Indexing positionally (`[end]`, `[2]`) is a
+# standing invitation to report the wrong number: `[end]` on `Y ~ D + X1 + X2`
+# is the coefficient on X2, not on D, and in this DGP X2's true coefficient
+# (1.5) is close enough to the confounded D estimate that the mistake does not
+# look like one.
+coef_of(m, name) = coef(m)[findfirst(==(name), coefnames(m))]
+
 @printf("True treatment effect: 1.000\n")
 @printf("Naive (D only):        %.3f\n",
-        coef(lm(@formula(Y ~ D), df))[end])
+        coef_of(lm(@formula(Y ~ D), df), "D"))
 @printf("Adjusted (D, X1, X2):  %.3f  (biased because U is unobserved)\n",
-        coef(lm(@formula(Y ~ D + X1 + X2), df))[end])
+        coef_of(lm(@formula(Y ~ D + X1 + X2), df), "D"))
 @printf("Oracle (D, X1, X2, U): %.3f\n",
-        coef(lm(@formula(Y ~ D + X1 + X2 + U), df))[end])
+        coef_of(lm(@formula(Y ~ D + X1 + X2 + U), df), "D"))
 ```
 
 The adjusted regression is still biased because $U$ is unobserved.
@@ -160,6 +168,22 @@ pR2_X1_D   = partial_r2(fit_D_full, fit_D_noX1)
 
 The benchmark comparison turns the RV into a sentence: an unmeasured
 confounder as strong as $X_1$ would or would not overturn the result.
+
+Because this is a simulation we can check the machinery against the confounder
+that actually exists. $U$'s partial $R^2$ is 0.787 with the outcome and 0.064
+with the treatment. The second number is far below the robustness value, so the
+verdict "not explained away" is correct --- and it is correct even though the
+adjusted estimate is badly biased. Those are different questions, and the
+distinction is the main thing to take from this section: a robustness value asks
+whether a confounder could drive the estimate to *zero*, not whether the estimate
+is *right*. Here it cannot, and the estimate is still 50% too large.
+
+Feeding $U$'s true strengths into the Cinelli-Hazlett bias formula gives a bound
+of 0.531, so the bias-corrected estimate is $1.497 - 0.531 = 0.966$ against a
+true effect of 1.000. The bound is doing its job: it is not a point correction
+one would apply in practice, since in real data the confounder's strengths are
+exactly what we do not know, but it confirms that the formula is calibrated
+rather than merely suggestive.
 
 ### A sensitivity contour plot
 

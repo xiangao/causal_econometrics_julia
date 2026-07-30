@@ -41,7 +41,7 @@ Once we have identification, which means we can identify the causal effect from 
 
 ## Experimental Data
 
-If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator. $$ \hat{\tau_{ATT}} = \bar Y_1 - \bar Y_0 $$
+If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator (under randomisation ATE = ATT = ATU, so no subscript is needed): $$ \hat{\tau} = \bar Y_1 - \bar Y_0 $$
 
 In experimental setting, we can do a t test for the difference in means. We can also do a regression of $Y$ on $W$ and $X$.
 
@@ -139,7 +139,7 @@ Answers:
 Under unconfoundedness and overlap,
 
 $$ \small \begin{align}
-E[Y(w)] &= E[E[y|W=w,X]] \\
+E[Y(w)] &= E[E[Y|W=w,X]] \\
 &= \sum_x (\sum_y y P(y|w,x)) P(x) \\
 &= \sum_x \sum_y y P(y|w,x) P(x) {\frac{P(w|x)}{P(w|x)}} \\
 &= \sum_x \sum_y y P(y,w,x) {\frac{1}{P(w|x)}} \\
@@ -152,7 +152,7 @@ The IPW equation means that the expected value of the potential outcome is the w
 
 $$ \begin{align}
 \tau_{ATE} &= E[Y(1)] - E[Y(0)] \\
-&= E[\frac{W Y} {\pi_1(X)}] - E[\frac{(1-W) Y} {1-\pi_1(X)}] \\
+&= E[\frac{W Y} {\pi(X)}] - E[\frac{(1-W) Y} {1-\pi(X)}] \\
 \end{align}
 $$
 
@@ -176,11 +176,16 @@ Suppose there are two types of people, one type has high probability to be treat
 
 ## Doubly Robust Estimators
 
-We can model both outcome and treatment assignment, and use both models to estimate the treatment effect. The intuition is that if either model is correct, the estimator will be consistent. The estimator is called doubly robust because it is robust to either model being misspecified.
+We can model both outcome and treatment assignment, and use both models to estimate the treatment effect. The estimator is called doubly robust because it is consistent if *either* the outcome regression *or* the propensity/treatment model is correctly specified --- we only need one of the two to be right, not both. (Note the precise statement: it is *not* consistent when both are misspecified, so "robust to either model being misspecified" is the wrong reading.)
 
 ### AIPW
 
 $$ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] $$
+
+For the ATT, control units are weighted by the odds $\hat\pi(X_i)/(1-\hat\pi(X_i))$
+rather than $1/(1-\hat\pi(X_i))$: this reweights the controls to the covariate
+distribution of the treated (one can check
+${\rm E}[\frac{\pi(X)}{1-\pi(X)}(1-W)Y] = P(W=1)\, {\rm E}[Y(0)|W=1]$).
 
 $$ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] $$
 

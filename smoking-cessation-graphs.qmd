@@ -190,7 +190,7 @@ Random.seed!(2026)
 nhefs_result = estimate(
     ATE(outcome = :wt82_71, treatment = :qsmk),
     GraphID(graph = nhefs_graph),
-    AIPW(crossfit = 2),
+    AIPW(crossfit = 5),
     nhefs,
 )
 
@@ -202,6 +202,28 @@ continuing smoking on weight change in the complete-case NHEFS population. The
 positive estimate is consistent with weight gain after quitting. The causal
 interpretation depends on the graph, especially the assumption that the measured
 baseline variables block the relevant backdoor paths.
+
+Two settings deserve comment, because both move the number.
+
+**Folds.** `crossfit = 5` is the package default and this chapter's seed makes
+the comparison reproducible. Dropping to `crossfit = 2` gives 3.866 with a
+standard error of 1.331 --- a 95% interval of $[1.26, 6.48]$, more than five
+kilograms wide. Five folds gives 3.452 (0.748) and ten gives 3.312 (0.737). Two
+folds fits each nuisance on 783 observations, and the resulting noise in the
+out-of-fold predictions inflates the point estimate *and* the influence-function
+variance at the same time. Use the default, or more.
+
+**Nuisance estimation.** The [companion R chapter][r-chapter] fits the same
+adjustment set by full-sample parametric nuisances (a linear outcome model
+interacted with treatment, a logistic propensity) and reports 3.293 with a
+standard error of 0.498. The propensity scores in this data set stay inside
+$[0.05, 0.75]$, so there is no overlap problem to explain the gap: the wider
+interval here is the variance price of cross-fitting flexible learners rather
+than trusting a correctly specified parametric model. When the parametric model
+is right, it wins; the cross-fit estimator buys insurance against its being
+wrong.
+
+[r-chapter]: https://xiangao.github.io/causal_econometrics_guide/smoking-cessation-graphs.html
 
 ## Sensitivity Graph
 

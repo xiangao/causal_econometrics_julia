@@ -154,7 +154,7 @@ The call below estimates the average contrast $E[Y(1)-Y(0)]$.
 dag_res = estimate(
     ATE(outcome = :Y, treatment = :A),
     GraphID(graph = g_dag),
-    AIPW(crossfit = 2),
+    AIPW(crossfit = 5),
     df_dag,
 )
 
@@ -162,7 +162,18 @@ effect_table("Backdoor ACE", dag_res)
 ```
 
 The graph chose the adjustment set (Markov pillow of `A`) and the estimator
-used that set. Access it via `dag_res.components[:adjustment_set]`.
+used that set. Access it via `dag_res.components[:adjustment_set]`. The DGP sets
+the coefficient on `A` to 1.5, so the point estimate recovers the true ACE within
+sampling noise.
+
+`crossfit = 5` is the package default, and the number of folds matters more than
+it looks. With `crossfit = 2` each nuisance is fit on only half the sample, and
+the extra noise in the out-of-fold predictions propagates into *both* the point
+estimate and the influence-function variance --- fewer folds means a noisier
+estimate reported with a wider interval, not a cheap approximation to the same
+answer. Two folds is the smallest value the package allows; it is not a sensible
+default. The [next chapter](smoking-cessation-graphs.qmd) measures the size of
+this effect on real data.
 
 ## An ADMG: Front-Door Identification
 
@@ -221,6 +232,22 @@ df_fd = DataFrame(A = A_fd, M = M, Y = Y_fd)
 first(df_fd, 5)
 ```
 
+The DGP has a known truth. Under $do(A=a)$ the mediator is
+$M \sim \text{Bern}(\Lambda(-0.4 + 1.2a))$ while $U$ keeps its marginal $N(0,1)$
+distribution, so
+
+$$
+\tau = \big[\Lambda(0.8) - \Lambda(-0.4)\big]\;
+       \big[g(-0.1) - g(-1.0)\big], \qquad
+g(c) = E_U\big[\Lambda(c + 0.7U)\big],
+$$
+
+which evaluates to $0.2887 \times 0.1894 = 0.0547$. The naive contrast
+$E[Y\mid A=1]-E[Y\mid A=0]$ equals $0.158$ in the population this DGP defines --- almost three times the
+causal effect, because $U$ raises both the chance of treatment and the outcome.
+That gap is what the front-door step removes. The table below reports the
+sample version of the naive contrast alongside the front-door estimate.
+
 Since `identify()` returns `:p_fixable`, this is a front-door effect.
 `CausalEstimate.jl` currently handles backdoor (a-fixable) graphs; for
 p-fixable effects we call `CausalGraphs.estimate_causal` directly, which
@@ -244,9 +271,19 @@ fd_res = with_logger(NullLogger()) do
     )
 end
 
-effect_table("Front-door ACE", fd_res[:TMLE])
+naive_fd = mean(df_fd.Y[df_fd.A .== 1]) - mean(df_fd.Y[df_fd.A .== 0])
+
+vcat(
+    DataFrame(estimand = ["Naive E[Y|A=1] - E[Y|A=0]"], estimate = [r4(naive_fd)],
+              lower_95 = [missing], upper_95 = [missing], se = [missing]),
+    effect_table("Front-door ACE", fd_res[:TMLE]),
+    DataFrame(estimand = ["Truth"], estimate = [0.0547],
+              lower_95 = [missing], upper_95 = [missing], se = [missing]);
+    cols = :union,
+)
 ```
 
+The naive contrast is far above the truth; the front-door estimate brackets it.
 This is the practical advantage of separating identification from estimation.
 State the graph first. Then use the estimator that matches the identified
 functional.
@@ -277,7 +314,10 @@ id_alg_fd = ID_algorithm(g_fd, :A, :Y)
  expression = string(id_alg_fd.expression))
 ```
 
-The expression is symbolic. It is not yet an estimate. For finite-support variables, `CausalGraphs.estimate_causal` evaluates the
+The printed expression reuses `A` as the inner summation index; read it as
+$\sum_M P(M\mid A)\sum_{A'} P(Y\mid A', M)P(A')$, where the inner $A'$ ranges
+over the marginal distribution of treatment and is distinct from the $A$ being
+intervened on. The expression is symbolic. It is not yet an estimate. For finite-support variables, `CausalGraphs.estimate_causal` evaluates the
 symbolic functional by empirical probabilities and attaches a finite-support
 EIF standard error via the `:IDPlugin` key.
 
