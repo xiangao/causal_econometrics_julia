@@ -502,7 +502,7 @@ window.Quarto = {
 </header>
 
 
-<div id="169e20b6" class="cell" data-execution_count="2">
+<div id="89c72661" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -526,14 +526,17 @@ window.Quarto = {
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Continuous treatment, depends on X1, X2</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>D  <span class="op">=</span> @. <span class="fl">2.0</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> X1 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> X2 <span class="op">+</span> <span class="fu">randn</span>()</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Dose-response: nonlinear in D (hump-shaped)</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">true_mu</span>(d) <span class="op">=</span> <span class="fl">1.0</span> <span class="op">+</span> <span class="fl">2.0</span> <span class="op">*</span> d <span class="op">-</span> <span class="fl">0.15</span> <span class="op">*</span> d<span class="op">^</span><span class="fl">2</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Y  <span class="op">=</span> @. <span class="fu">true_mu</span>(D) <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> X1 <span class="op">-</span> <span class="fl">0.3</span> <span class="op">*</span> X2 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">randn</span>()</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X1, X2 <span class="op">=</span> X2)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Treatment range: [%.2f, %.2f]</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">minimum</span>(D), <span class="fu">maximum</span>(D))</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True μ(d=2) = %.2f, μ(d=4) = %.2f, μ(d=6) = %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">true_mu</span>(<span class="fl">2</span>), <span class="fu">true_mu</span>(<span class="fl">4</span>), <span class="fu">true_mu</span>(<span class="fl">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Dose-response: concave in D, with diminishing returns. Not "hump-shaped" over</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># the observed range: the vertex is at d = 2/0.3 = 6.67, beyond the largest dose</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># drawn below, so the slope 2 - 0.3d stays positive throughout the support and no</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># downturn is identified from these data.</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">true_mu</span>(d) <span class="op">=</span> <span class="fl">1.0</span> <span class="op">+</span> <span class="fl">2.0</span> <span class="op">*</span> d <span class="op">-</span> <span class="fl">0.15</span> <span class="op">*</span> d<span class="op">^</span><span class="fl">2</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>Y  <span class="op">=</span> @. <span class="fu">true_mu</span>(D) <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> X1 <span class="op">-</span> <span class="fl">0.3</span> <span class="op">*</span> X2 <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">randn</span>()</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X1, X2 <span class="op">=</span> X2)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Treatment range: [%.2f, %.2f]</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">minimum</span>(D), <span class="fu">maximum</span>(D))</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True μ(d=2) = %.2f, μ(d=4) = %.2f, μ(d=6) = %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">true_mu</span>(<span class="fl">2</span>), <span class="fu">true_mu</span>(<span class="fl">4</span>), <span class="fu">true_mu</span>(<span class="fl">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Treatment range: [-2.01, 5.97]
 True μ(d=2) = 4.40, μ(d=4) = 6.60, μ(d=6) = 7.60</code></pre>

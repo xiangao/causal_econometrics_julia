@@ -170,7 +170,7 @@ combine(groupby(mpdta, :first_treat), nrow)
 mpdta.first_treat_str = string.(mpdta.first_treat)
 mpdta.year_str = string.(mpdta.year)
 
-mod = feols(mpdta, @formula(lemp ~ lpop + first_treat_str & year_str + fe(countyreal) + fe(year)), vcov = Vcov.cluster(:countyreal))
+mod = feols(mpdta, @formula(lemp ~ lpop + first_treat_str & year_str + fe(countyreal) + fe(year)), vcov = Vcov.cluster(:countyreal));
 ```
 
 ```{julia did4}
@@ -373,6 +373,13 @@ combine(groupby(df_count, [:first_treat, :treated]), :count => mean => :mean_cou
 mod_pois = etwfe(df_count, @formula(count ~ 1);
                  gvar = :first_treat, tvar = :year,
                  family = "poisson", vcov = Vcov.cluster(:id))
+
+# Show the coefficient table explicitly. Letting the returned struct be the
+# cell's display value prints a raw
+# `ETWFEResult(Panelest Model: ... CoefTable(Any[[...]]))` dump, because neither
+# ETWFEResult nor CoefTable defines a text/plain show method that Jupyter picks
+# up in that position.
+show_regression_html(mod_pois.model)
 ```
 
 ```{julia did_pois2}

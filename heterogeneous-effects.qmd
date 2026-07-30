@@ -325,7 +325,11 @@ A doubly-robust BLP uses the DR-learner pseudo-outcomes:
 blp_df = DataFrame(hcat(pseudo_DR, X), [:tau_pseudo, :X1, :X2, :X3, :X4, :X5])
 blp_fit = lm(@formula(tau_pseudo ~ X1 + X2 + X3 + X4 + X5), blp_df)
 
-println(coeftable(blp_fit))
+# `display`, not `println`. StatsBase defines only
+# show(io, ::MIME"text/plain", ::CoefTable), so println() falls through to the
+# generic struct show and prints the raw constructor -- `CoefTable(Any[[...]])`
+# -- instead of the formatted table.
+display(coeftable(blp_fit))
 ```
 
 Here the coefficient on $X_1$ should be close to 2, and the coefficients on
@@ -345,8 +349,25 @@ least-affected bins; here that would show high $X_1$ in the top quintile.)
 #| cache: true
 
 nq = 5
-quintile_edges = quantile(tau_DR, range(0, 1, length = nq + 1))
-quintiles      = searchsortedfirst.(Ref(quintile_edges), tau_DR) .- 1
+
+# The ranking score MUST be out-of-fold. `tau_DR` above is an in-sample random
+# forest prediction: it was fit on (X, pseudo_DR) and then predicted back at the
+# same X, so it tracks pseudo_DR's own noise. Binning on it and then averaging
+# pseudo_DR inside the bins puts each bin's noise in its own numerator -- the top
+# bin collects positive noise, the bottom bin negative noise -- and the reported
+# spread explodes. With the in-sample score this table ran from -1.22 to 5.28,
+# outside the true CATE range of [1, 3] entirely, with tight confidence
+# intervals around impossible values. Predicting the score from a model trained
+# without the observation costs six lines and fixes it.
+tau_rank = zeros(n)
+for k in 1:2
+    train = folds .!= k
+    test  = folds .== k
+    tau_rank[test] = rf_fit_predict(X[train, :], pseudo_DR[train], X[test, :])
+end
+
+quintile_edges = quantile(tau_rank, range(0, 1, length = nq + 1))
+quintiles      = searchsortedfirst.(Ref(quintile_edges), tau_rank) .- 1
 quintiles      = clamp.(quintiles, 1, nq)
 
 # AIPW-style ATE within each quintile using the DR pseudo-outcomes
@@ -370,11 +391,21 @@ for row in eachrow(clan_df)
 end
 ```
 
-Quintile 5 should have a larger ATE than quintile 1 in this simulation.
-One caveat: the quintiles are formed from the same pseudo-outcomes used to
-estimate the group ATEs, which biases the spread outward (the top bin
-collects positive noise, the bottom bin negative noise). For inference,
-form the groups and estimate the ATEs on separate folds.
+Quintile 5 has a larger ATE than quintile 1, and because the ranking score is
+out-of-fold the magnitudes are trustworthy: the five estimates above are each
+within about 0.06 of the true within-bin average of $\tau(x) = 1 + 2X_1$
+(1.40, 1.62, 2.03, 2.40, 2.60 for these bins). The nuisance functions behind
+`pseudo_DR` are already cross-fitted, so both halves of the procedure --- forming
+the groups and estimating the group means --- now use predictions from models that
+did not see the observation being scored.
+
+This is worth insisting on because the failure is silent. Ranking on an
+in-sample score leaves the group means unbiased *on average* --- they still
+average to the ATE --- while making the spread meaningless, so nothing in the
+output looks wrong except the numbers themselves. A useful habit is to sanity-check
+group ATEs against the range the estimand can possibly take: here every quintile
+mean must lie in $[1, 3]$, and a table with a negative bottom bin is refuted
+before you read its standard errors.
 
 ## Variable importance — which covariate drives heterogeneity?
 

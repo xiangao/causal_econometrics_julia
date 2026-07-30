@@ -487,7 +487,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2f71c6a2" class="cell" data-execution_count="2">
+<div id="278601ed" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -531,7 +531,7 @@ window.Quarto = {
 <p>In this estimator, both <span class="math inline">\(\hat \mu\)</span> and <span class="math inline">\(\hat \pi\)</span> can be done using any estimator, such as machine learning. One caveat: with adaptive learners (random forests, boosting), the nuisance fits should be <em>cross-fit</em> — predicted for each observation from a model trained without it — otherwise own-observation overfitting can bias the estimate. The manual AIPW below reuses full-sample fits to keep the code short; the <code>CausalEstimate.jl</code> calls use <code>crossfit=5</code>.</p>
 <section id="simulation-setup" class="level3" data-number="8.2.1">
 <h3 data-number="8.2.1" class="anchored" data-anchor-id="simulation-setup"><span class="header-section-number">8.2.1</span> Simulation Setup</h3>
-<div id="0c7df1c1" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="fbfed8d9" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>w1 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Binomial</span>(<span class="fl">1</span>, <span class="fl">0.5</span>), n)</span>
@@ -560,21 +560,52 @@ window.Quarto = {
 <pre><code>True ATE = 0.184</code></pre>
 </div>
 </div>
-<div id="af4201cc" class="cell" data-cache="true" data-message="false" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load MLJ models to form our equivalent of SuperLearner</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>LogisticClassifier <span class="op">=</span> <span class="pp">@load</span> LogisticClassifier pkg<span class="op">=</span>MLJLinearModels verbosity<span class="op">=</span><span class="fl">0</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>EvoTreeClassifier <span class="op">=</span> <span class="pp">@load</span> EvoTreeClassifier pkg<span class="op">=</span>EvoTrees verbosity<span class="op">=</span><span class="fl">0</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>RandomForestClassifier <span class="op">=</span> <span class="pp">@load</span> RandomForestClassifier pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a Stack (SuperLearner)</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>stack <span class="op">=</span> <span class="fu">Stack</span>(</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    metalearner <span class="op">=</span> <span class="fu">LogisticClassifier</span>(),</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    resampling <span class="op">=</span> <span class="fu">CV</span>(nfolds<span class="op">=</span><span class="fl">5</span>),</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    evo <span class="op">=</span> <span class="fu">EvoTreeClassifier</span>(max_depth<span class="op">=</span><span class="fl">4</span>, nrounds<span class="op">=</span><span class="fl">100</span>),</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    rf <span class="op">=</span> <span class="fu">RandomForestClassifier</span>(n_trees<span class="op">=</span><span class="fl">100</span>, max_depth<span class="op">=</span><span class="fl">5</span>),</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    glm <span class="op">=</span> <span class="fu">LogisticClassifier</span>()</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="4">
+<p>The line above reports <code>mean(Y.1 - Y.0)</code> for this particular draw. That is a legitimate quantity — the <em>sample</em> average treatment effect — but it is not a fixed benchmark, and it is easy to mistake for one. The potential outcomes are binary, so at <span class="math inline">\(n = 1000\)</span> this realized average has a sampling standard deviation of about 0.020: two runs of the same DGP under different seeds can differ by 0.04 without anything being wrong. (The R and Julia editions of this chapter print 0.21 and 0.184 for exactly this reason.) Estimator standard errors in this chapter are around 0.03, so a noisy target of that size would swamp the comparison we are trying to make.</p>
+<p>The <em>population</em> ATE is a definite number, and since the DGP is fully specified we can integrate it out rather than simulate it:</p>
+<div id="bd442325" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># w1, w2 ~ Bernoulli(0.5); w3 ~ U(0,4); w4 ~ U(0,5). Average the true individual</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># effect over that covariate distribution on a trapezoid grid.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">population_ate</span>()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    g3 <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">4</span>; length <span class="op">=</span> <span class="fl">1601</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    g4 <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">5</span>; length <span class="op">=</span> <span class="fl">1601</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">trap</span>(g) <span class="op">=</span> (w <span class="op">=</span> <span class="fu">fill</span>(<span class="fu">step</span>(g), <span class="fu">length</span>(g)); w[<span class="fl">1</span>] <span class="op">/=</span> <span class="fl">2</span>; w[<span class="kw">end</span>] <span class="op">/=</span> <span class="fl">2</span>; w)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    w3w, w4w <span class="op">=</span> <span class="fu">trap</span>(g3), <span class="fu">trap</span>(g4)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    total <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> w1 <span class="kw">in</span> (<span class="fl">0</span>, <span class="fl">1</span>), w2 <span class="kw">in</span> (<span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        acc <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (j, u4) <span class="kw">in</span> <span class="fu">enumerate</span>(g4), (i, u3) <span class="kw">in</span> <span class="fu">enumerate</span>(g3)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>            lin0 <span class="op">=</span> <span class="op">-</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.1</span>w1 <span class="op">+</span> <span class="fl">0.3</span>w2 <span class="op">+</span> <span class="fl">0.25</span>u3 <span class="op">+</span> <span class="fl">0.2</span>u4 <span class="op">+</span> <span class="fl">0.15</span>w2 <span class="op">*</span> u4</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            acc <span class="op">+=</span> w3w[i] <span class="op">*</span> w4w[j] <span class="op">*</span> (<span class="fu">logistic</span>(lin0 <span class="op">+</span> <span class="fl">1</span>) <span class="op">-</span> <span class="fu">logistic</span>(lin0))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        total <span class="op">+=</span> acc <span class="op">/</span> (<span class="fl">4</span> <span class="op">*</span> <span class="fl">5</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    total <span class="op">/</span> <span class="fl">4</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>pop_ate <span class="op">=</span> <span class="fu">population_ate</span>()</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Realized-sample ATE (this draw): %.4f</span><span class="sc">\n</span><span class="st">"</span> True_Psi</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Exact population ATE:           %.4f</span><span class="sc">\n</span><span class="st">"</span> pop_ate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Realized-sample ATE (this draw): 0.1840
+Exact population ATE:           0.2028</code></pre>
+</div>
+</div>
+<p>Compare the estimators below against 0.2028, not against the realized draw.</p>
+<div id="f2ca9f29" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load MLJ models to form our equivalent of SuperLearner</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>LogisticClassifier <span class="op">=</span> <span class="pp">@load</span> LogisticClassifier pkg<span class="op">=</span>MLJLinearModels verbosity<span class="op">=</span><span class="fl">0</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>EvoTreeClassifier <span class="op">=</span> <span class="pp">@load</span> EvoTreeClassifier pkg<span class="op">=</span>EvoTrees verbosity<span class="op">=</span><span class="fl">0</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>RandomForestClassifier <span class="op">=</span> <span class="pp">@load</span> RandomForestClassifier pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a Stack (SuperLearner)</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>stack <span class="op">=</span> <span class="fu">Stack</span>(</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    metalearner <span class="op">=</span> <span class="fu">LogisticClassifier</span>(),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    resampling <span class="op">=</span> <span class="fu">CV</span>(nfolds<span class="op">=</span><span class="fl">5</span>),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    evo <span class="op">=</span> <span class="fu">EvoTreeClassifier</span>(max_depth<span class="op">=</span><span class="fl">4</span>, nrounds<span class="op">=</span><span class="fl">100</span>),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    rf <span class="op">=</span> <span class="fu">RandomForestClassifier</span>(n_trees<span class="op">=</span><span class="fl">100</span>, max_depth<span class="op">=</span><span class="fl">5</span>),</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    glm <span class="op">=</span> <span class="fu">LogisticClassifier</span>()</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>ProbabilisticStack(
   metalearner = LogisticClassifier(
         lambda = 2.220446049250313e-16, 
@@ -632,22 +663,22 @@ window.Quarto = {
 </section>
 <section id="plug-in-estimator-from-outcome-regression" class="level3" data-number="8.2.2">
 <h3 data-number="8.2.2" class="anchored" data-anchor-id="plug-in-estimator-from-outcome-regression"><span class="header-section-number">8.2.2</span> Plug-in Estimator from Outcome Regression</h3>
-<div id="1b32686d" class="cell" data-cache="true" data-message="false" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>X_mu <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4, <span class="op">:</span>A)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>mach_mu <span class="op">=</span> <span class="fu">machine</span>(stack, X_mu, <span class="fu">categorical</span>(df.Y))</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>MLJ.<span class="fu">fit!</span>(mach_mu, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># predict the PO Y^1</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>X_mu1 <span class="op">=</span> <span class="fu">copy</span>(X_mu); X_mu1.A <span class="op">.=</span> <span class="fl">1</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>X_mu0 <span class="op">=</span> <span class="fu">copy</span>(X_mu); X_mu0.A <span class="op">.=</span> <span class="fl">0</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict probability of Y=1 (assuming 1 is the positive class)</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>mu1hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu, X_mu1), <span class="fl">1</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>mu0hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu, X_mu0), <span class="fl">1</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>plug_in_ate <span class="op">=</span> <span class="fu">mean</span>(mu1hat <span class="op">.-</span> mu0hat)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (plug-in) = %.4g</span><span class="sc">\n</span><span class="st">"</span> plug_in_ate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fafcd439" class="cell" data-cache="true" data-message="false" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>X_mu <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4, <span class="op">:</span>A)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>mach_mu <span class="op">=</span> <span class="fu">machine</span>(stack, X_mu, <span class="fu">categorical</span>(df.Y))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>MLJ.<span class="fu">fit!</span>(mach_mu, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># predict the PO Y^1</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>X_mu1 <span class="op">=</span> <span class="fu">copy</span>(X_mu); X_mu1.A <span class="op">.=</span> <span class="fl">1</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>X_mu0 <span class="op">=</span> <span class="fu">copy</span>(X_mu); X_mu0.A <span class="op">.=</span> <span class="fl">0</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict probability of Y=1 (assuming 1 is the positive class)</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>mu1hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu, X_mu1), <span class="fl">1</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>mu0hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu, X_mu0), <span class="fl">1</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>plug_in_ate <span class="op">=</span> <span class="fu">mean</span>(mu1hat <span class="op">.-</span> mu0hat)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (plug-in) = %.4g</span><span class="sc">\n</span><span class="st">"</span> plug_in_ate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ATE (plug-in) = 0.1759</code></pre>
 </div>
@@ -655,34 +686,34 @@ window.Quarto = {
 </section>
 <section id="aipw-ate" class="level3" data-number="8.2.3">
 <h3 data-number="8.2.3" class="anchored" data-anchor-id="aipw-ate"><span class="header-section-number">8.2.3</span> AIPW ATE</h3>
-<div id="7c2acc8e" class="cell" data-cache="true" data-message="false" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>X_pi <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>mach_pi <span class="op">=</span> <span class="fu">machine</span>(stack, X_pi, <span class="fu">categorical</span>(df.A))</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>MLJ.<span class="fu">fit!</span>(mach_pi, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>pi1hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_pi, X_pi), <span class="fl">1</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Bound propensity scores to avoid extreme weights</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>pi1hat <span class="op">=</span> <span class="fu">max</span>.(<span class="fu">min</span>.(pi1hat, <span class="fl">0.999</span>), <span class="fl">0.001</span>)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>pi0hat <span class="op">=</span> <span class="fl">1.0</span> <span class="op">.-</span> pi1hat</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Current prediction on observed data</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>mu1hat_obs <span class="op">=</span> mu1hat</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>mu0hat_obs <span class="op">=</span> mu0hat</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>IF_1 <span class="op">=</span> ((df.A <span class="op">./</span> pi1hat) <span class="op">.*</span> (df.Y <span class="op">.-</span> mu1hat_obs) <span class="op">.+</span> mu1hat_obs)</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>IF_0 <span class="op">=</span> (((<span class="fl">1</span> <span class="op">.-</span> df.A) <span class="op">./</span> pi0hat) <span class="op">.*</span> (df.Y <span class="op">.-</span> mu0hat_obs) <span class="op">.+</span> mu0hat_obs)</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>IF <span class="op">=</span> IF_1 <span class="op">.-</span> IF_0</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>aipw_1 <span class="op">=</span> <span class="fu">mean</span>(IF_1); aipw_0 <span class="op">=</span> <span class="fu">mean</span>(IF_0)</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>aipw_manual <span class="op">=</span> aipw_1 <span class="op">-</span> aipw_0</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>ci_lb <span class="op">=</span> <span class="fu">mean</span>(IF) <span class="op">-</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF))</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>ci_ub <span class="op">=</span> <span class="fu">mean</span>(IF) <span class="op">+</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF))</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>res_manual_aipw <span class="op">=</span> [aipw_manual, ci_lb, ci_ub]</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (AIPW)   = %.4g</span><span class="sc">\n</span><span class="st">"</span> aipw_manual</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"95%% CI       = [%.4g, %.4g]</span><span class="sc">\n</span><span class="st">"</span> ci_lb ci_ub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="9b51b2e1" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>X_pi <span class="op">=</span> <span class="fu">select</span>(df, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>mach_pi <span class="op">=</span> <span class="fu">machine</span>(stack, X_pi, <span class="fu">categorical</span>(df.A))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>MLJ.<span class="fu">fit!</span>(mach_pi, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>pi1hat <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_pi, X_pi), <span class="fl">1</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Bound propensity scores to avoid extreme weights</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>pi1hat <span class="op">=</span> <span class="fu">max</span>.(<span class="fu">min</span>.(pi1hat, <span class="fl">0.999</span>), <span class="fl">0.001</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>pi0hat <span class="op">=</span> <span class="fl">1.0</span> <span class="op">.-</span> pi1hat</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Current prediction on observed data</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>mu1hat_obs <span class="op">=</span> mu1hat</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>mu0hat_obs <span class="op">=</span> mu0hat</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>IF_1 <span class="op">=</span> ((df.A <span class="op">./</span> pi1hat) <span class="op">.*</span> (df.Y <span class="op">.-</span> mu1hat_obs) <span class="op">.+</span> mu1hat_obs)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>IF_0 <span class="op">=</span> (((<span class="fl">1</span> <span class="op">.-</span> df.A) <span class="op">./</span> pi0hat) <span class="op">.*</span> (df.Y <span class="op">.-</span> mu0hat_obs) <span class="op">.+</span> mu0hat_obs)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>IF <span class="op">=</span> IF_1 <span class="op">.-</span> IF_0</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>aipw_1 <span class="op">=</span> <span class="fu">mean</span>(IF_1); aipw_0 <span class="op">=</span> <span class="fu">mean</span>(IF_0)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>aipw_manual <span class="op">=</span> aipw_1 <span class="op">-</span> aipw_0</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>ci_lb <span class="op">=</span> <span class="fu">mean</span>(IF) <span class="op">-</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF))</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>ci_ub <span class="op">=</span> <span class="fu">mean</span>(IF) <span class="op">+</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF))</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>res_manual_aipw <span class="op">=</span> [aipw_manual, ci_lb, ci_ub]</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE (AIPW)   = %.4g</span><span class="sc">\n</span><span class="st">"</span> aipw_manual</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"95%% CI       = [%.4g, %.4g]</span><span class="sc">\n</span><span class="st">"</span> ci_lb ci_ub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ATE (AIPW)   = 0.1918
 95% CI       = [0.1311, 0.2525]</code></pre>
@@ -691,20 +722,20 @@ window.Quarto = {
 </section>
 <section id="aipw-ate-using-causalestimate.jl" class="level3" data-number="8.2.4">
 <h3 data-number="8.2.4" class="anchored" data-anchor-id="aipw-ate-using-causalestimate.jl"><span class="header-section-number">8.2.4</span> AIPW ATE Using CausalEstimate.jl</h3>
-<div id="c450b6f9" class="cell" data-cache="true" data-message="false" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">r</span>(x) <span class="op">=</span> <span class="fu">round</span>(x, sigdigits<span class="op">=</span><span class="fl">4</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>psi_ate <span class="op">=</span> <span class="fu">ATE</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4])</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>aipw_result <span class="op">=</span> <span class="fu">estimate</span>(psi_ate, <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    ATE    <span class="op">=</span> <span class="fu">r</span>(<span class="fu">estimate</span>(aipw_result)),</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    CI     <span class="op">=</span> <span class="fu">r</span>.(<span class="fu">confint</span>(aipw_result)),</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    pvalue <span class="op">=</span> <span class="fu">r</span>(<span class="fu">pvalue</span>(aipw_result)),</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="7">
+<div id="a5d570bd" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">r</span>(x) <span class="op">=</span> <span class="fu">round</span>(x, sigdigits<span class="op">=</span><span class="fl">4</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>psi_ate <span class="op">=</span> <span class="fu">ATE</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4])</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>aipw_result <span class="op">=</span> <span class="fu">estimate</span>(psi_ate, <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    ATE    <span class="op">=</span> <span class="fu">r</span>(<span class="fu">estimate</span>(aipw_result)),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    CI     <span class="op">=</span> <span class="fu">r</span>.(<span class="fu">confint</span>(aipw_result)),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    pvalue <span class="op">=</span> <span class="fu">r</span>(<span class="fu">pvalue</span>(aipw_result)),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>(ATE = 0.2072, CI = (0.1206, 0.2939), pvalue = 2.776e-6)</code></pre>
 </div>
 </div>
@@ -712,33 +743,33 @@ window.Quarto = {
 <section id="regression-imputation-att-manual" class="level3" data-number="8.2.5">
 <h3 data-number="8.2.5" class="anchored" data-anchor-id="regression-imputation-att-manual"><span class="header-section-number">8.2.5</span> Regression-imputation ATT (manual)</h3>
 <p>Note that the manual estimator below is evaluated on the <strong>treated subset</strong> <code>df1</code>, where <code>(1 .- df1.A)</code> is identically zero. The augmentation term <code>((1-A)/π₀)(Y-μ₀)</code> therefore vanishes and the estimator collapses to the regression-imputation ATT, <code>mean(Y_treated − μ̂₀(X_treated))</code>. That is consistent if the control outcome model is correct, but it is <strong>not</strong> the doubly-robust / augmented ATT, and the influence-function SE understates uncertainty because it ignores estimation of <code>μ₀</code> and <code>π</code>. The proper ATT efficient influence function (Hahn 1998) is <code>(1/p)[A(Y−μ₀) − (1−A)·π/(1−π)·(Y−μ₀)]</code> evaluated over the <strong>full</strong> sample; the <code>CausalEstimate.jl</code> call in the next subsection computes the cross-fit, doubly-robust version.</p>
-<div id="2296a6f3" class="cell" data-cache="true" data-message="false" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> <span class="fu">copy</span>(df)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df2.pi0hat <span class="op">=</span> pi0hat</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>df2.pi1hat <span class="op">=</span> pi1hat</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>df0 <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row.A <span class="op">==</span> <span class="fl">0</span>, df2)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>df1 <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row.A <span class="op">==</span> <span class="fl">1</span>, df2)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit outcome model only on controls</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>X_mu0 <span class="op">=</span> <span class="fu">select</span>(df0, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>mach_mu0 <span class="op">=</span> <span class="fu">machine</span>(stack, X_mu0, <span class="fu">categorical</span>(df0.Y))</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>MLJ.<span class="fu">fit!</span>(mach_mu0, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict counterfactual for treated</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>X_mu1 <span class="op">=</span> <span class="fu">select</span>(df1, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>mu0hat_treated <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu0, X_mu1), <span class="fl">1</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>IF_0_att <span class="op">=</span> (((<span class="fl">1</span> <span class="op">.-</span> df1.A) <span class="op">./</span> df1.pi0hat) <span class="op">.*</span> (df1.Y <span class="op">.-</span> mu0hat_treated) <span class="op">.+</span> mu0hat_treated)</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>IF_att <span class="op">=</span> df1.Y <span class="op">.-</span> IF_0_att</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>aipw_manual_att <span class="op">=</span> <span class="fu">mean</span>(IF_att)</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>ci_lb_att <span class="op">=</span> <span class="fu">mean</span>(IF_att) <span class="op">-</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF_att) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF_att))</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>ci_ub_att <span class="op">=</span> <span class="fu">mean</span>(IF_att) <span class="op">+</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF_att) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF_att))</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>res_manual_aipw_att <span class="op">=</span> [aipw_manual_att, ci_lb_att, ci_ub_att]</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>res_manual_aipw_att</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
+<div id="ff9588e1" class="cell" data-cache="true" data-message="false" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> <span class="fu">copy</span>(df)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df2.pi0hat <span class="op">=</span> pi0hat</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>df2.pi1hat <span class="op">=</span> pi1hat</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>df0 <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row.A <span class="op">==</span> <span class="fl">0</span>, df2)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>df1 <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row.A <span class="op">==</span> <span class="fl">1</span>, df2)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit outcome model only on controls</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>X_mu0 <span class="op">=</span> <span class="fu">select</span>(df0, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>mach_mu0 <span class="op">=</span> <span class="fu">machine</span>(stack, X_mu0, <span class="fu">categorical</span>(df0.Y))</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>MLJ.<span class="fu">fit!</span>(mach_mu0, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict counterfactual for treated</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>X_mu1 <span class="op">=</span> <span class="fu">select</span>(df1, <span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>mu0hat_treated <span class="op">=</span> <span class="fu">pdf</span>.(MLJ.<span class="fu">predict</span>(mach_mu0, X_mu1), <span class="fl">1</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>IF_0_att <span class="op">=</span> (((<span class="fl">1</span> <span class="op">.-</span> df1.A) <span class="op">./</span> df1.pi0hat) <span class="op">.*</span> (df1.Y <span class="op">.-</span> mu0hat_treated) <span class="op">.+</span> mu0hat_treated)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>IF_att <span class="op">=</span> df1.Y <span class="op">.-</span> IF_0_att</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>aipw_manual_att <span class="op">=</span> <span class="fu">mean</span>(IF_att)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>ci_lb_att <span class="op">=</span> <span class="fu">mean</span>(IF_att) <span class="op">-</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF_att) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF_att))</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>ci_ub_att <span class="op">=</span> <span class="fu">mean</span>(IF_att) <span class="op">+</span> <span class="fu">quantile</span>(<span class="fu">Normal</span>(), <span class="fl">0.975</span>) <span class="op">*</span> <span class="fu">std</span>(IF_att) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(IF_att))</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>res_manual_aipw_att <span class="op">=</span> [aipw_manual_att, ci_lb_att, ci_ub_att]</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>res_manual_aipw_att</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>3-element Vector{Float64}:
  0.20145553037952954
  0.1700985774823039
@@ -748,17 +779,17 @@ window.Quarto = {
 </section>
 <section id="aipw-att-using-causalestimate.jl" class="level3" data-number="8.2.6">
 <h3 data-number="8.2.6" class="anchored" data-anchor-id="aipw-att-using-causalestimate.jl"><span class="header-section-number">8.2.6</span> AIPW ATT Using CausalEstimate.jl</h3>
-<div id="59b1756d" class="cell" data-cache="true" data-message="false" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>psi_att <span class="op">=</span> <span class="fu">ATT</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4])</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>att_result <span class="op">=</span> <span class="fu">estimate</span>(psi_att, <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    ATT    <span class="op">=</span> <span class="fu">r</span>(<span class="fu">estimate</span>(att_result)),</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    CI     <span class="op">=</span> <span class="fu">r</span>.(<span class="fu">confint</span>(att_result)),</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    pvalue <span class="op">=</span> <span class="fu">r</span>(<span class="fu">pvalue</span>(att_result)),</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="9">
-<pre><code>(ATT = 0.1861, CI = (-0.04244, 0.4146), pvalue = 0.1105)</code></pre>
+<div id="86fc458a" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>psi_att <span class="op">=</span> <span class="fu">ATT</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4])</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>att_result <span class="op">=</span> <span class="fu">estimate</span>(psi_att, <span class="fu">AIPW</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    ATT    <span class="op">=</span> <span class="fu">r</span>(<span class="fu">estimate</span>(att_result)),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    CI     <span class="op">=</span> <span class="fu">r</span>.(<span class="fu">confint</span>(att_result)),</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    pvalue <span class="op">=</span> <span class="fu">r</span>(<span class="fu">pvalue</span>(att_result)),</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>(ATT = 0.189, CI = (0.06404, 0.3139), pvalue = 0.00303)</code></pre>
 </div>
 </div>
 </section>
@@ -767,23 +798,25 @@ window.Quarto = {
 <h2 data-number="8.3" class="anchored" data-anchor-id="tmle"><span class="header-section-number">8.3</span> TMLE</h2>
 <p>TMLE is a variant of IF based estimator. It is also a doubly robust estimator. See Mark van der Laan and his coauthors for the recent development of TMLE.</p>
 <p>We should expect AIPW and TMLE to give similar answers.</p>
-<div id="f78b3043" class="cell" data-cache="true" data-message="false" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>tmle_result <span class="op">=</span> <span class="fu">estimate</span>(psi_ate, <span class="fu">TMLE</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    TMLE   <span class="op">=</span> <span class="fu">r</span>(<span class="fu">estimate</span>(tmle_result)),</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    CI     <span class="op">=</span> <span class="fu">r</span>.(<span class="fu">confint</span>(tmle_result)),</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    pvalue <span class="op">=</span> <span class="fu">r</span>(<span class="fu">pvalue</span>(tmle_result)),</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div id="ef5137b0" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>tmle_result <span class="op">=</span> <span class="fu">estimate</span>(psi_ate, <span class="fu">TMLE</span>(crossfit<span class="op">=</span><span class="fl">5</span>), df)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    TMLE   <span class="op">=</span> <span class="fu">r</span>(<span class="fu">estimate</span>(tmle_result)),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    CI     <span class="op">=</span> <span class="fu">r</span>.(<span class="fu">confint</span>(tmle_result)),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    pvalue <span class="op">=</span> <span class="fu">r</span>(<span class="fu">pvalue</span>(tmle_result)),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>(TMLE = 0.1775, CI = (0.08638, 0.2687), pvalue = 0.0001349)</code></pre>
 </div>
 </div>
-<div id="380aa193" class="cell" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"True ATE: %.4g</span><span class="sc">\n</span><span class="st">"</span> True_Psi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fe8a4651" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Population ATE (exact):    %.4f</span><span class="sc">\n</span><span class="st">"</span> pop_ate</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Realized-sample ATE:       %.4f</span><span class="sc">\n</span><span class="st">"</span> True_Psi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>True ATE: 0.184</code></pre>
+<pre><code>Population ATE (exact):    0.2028
+Realized-sample ATE:       0.1840</code></pre>
 </div>
 </div>
 </section>
@@ -800,54 +833,54 @@ window.Quarto = {
 <p><span class="math display">\[\psi (W; \theta, \eta) = \big(Y - l(X) - \theta\,(D-m(X))\big)\,(D-m(X)),\]</span></p>
 <p>with <span class="math inline">\(l(X)=E[Y\mid X]\)</span> and <span class="math inline">\(m(X)=E[D\mid X]\)</span>. The estimator <span class="math inline">\(\hat \theta\)</span> solves the equation that the sample mean of this score function is 0.</p>
 <p>The estimator’s variance is the sandwich <span class="math inline">\(J^{-1}\,E[\psi^2]\,J^{-1}\)</span> with Jacobian <span class="math inline">\(J = E[\partial\psi/\partial\theta] = -E[(D-m(X))^2]\)</span> — this is what the code computes by dividing the score variance by <span class="math inline">\(\big(\tfrac1n\sum \hat V_i^2\big)^2\)</span>.</p>
-<div id="4e1ab485" class="cell" data-cache="true" data-message="false" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># We implement DoubleML PLR (Partially Linear Regression) manually with cross-fitting</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>nsplits <span class="op">=</span> <span class="fl">5</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>n_samples <span class="op">=</span> <span class="fu">nrow</span>(df)</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> <span class="fu">shuffle</span>(<span class="fl">1</span><span class="op">:</span>n_samples)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>folds <span class="op">=</span> [s[<span class="fl">1</span> <span class="op">+</span> <span class="fu">floor</span>(<span class="dt">Int</span>, (k<span class="op">-</span><span class="fl">1</span>)<span class="op">*</span>n_samples<span class="op">/</span>nsplits) <span class="op">:</span> <span class="fu">floor</span>(<span class="dt">Int</span>, k<span class="op">*</span>n_samples<span class="op">/</span>nsplits)] for k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nsplits]</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Base learner (Random Forest for regression)</span></span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>RandomForestRegressor <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>learner <span class="op">=</span> <span class="fu">RandomForestRegressor</span>(n_trees<span class="op">=</span><span class="fl">500</span>, max_depth<span class="op">=</span><span class="fl">5</span>)</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>W_res <span class="op">=</span> <span class="fu">zeros</span>(n_samples)</span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>V_res <span class="op">=</span> <span class="fu">zeros</span>(n_samples)</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fold <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nsplits</span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    test_idx <span class="op">=</span> folds[fold]</span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    train_idx <span class="op">=</span> <span class="fu">setdiff</span>(<span class="fl">1</span><span class="op">:</span>n_samples, test_idx)</span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fit outcome model l_0(X) = E(Y | X)</span></span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    mach_l <span class="op">=</span> <span class="fu">machine</span>(learner, W[train_idx, <span class="op">:</span>], df.Y[train_idx])</span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    MLJ.<span class="fu">fit!</span>(mach_l, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> MLJ.<span class="fu">predict</span>(mach_l, W[test_idx, <span class="op">:</span>])</span>
-<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>    W_res[test_idx] <span class="op">=</span> df.Y[test_idx] <span class="op">.-</span> y_pred</span>
-<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fit treatment model m_0(X) = E(D | X)</span></span>
-<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>    mach_m <span class="op">=</span> <span class="fu">machine</span>(learner, W[train_idx, <span class="op">:</span>], df.A[train_idx])</span>
-<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>    MLJ.<span class="fu">fit!</span>(mach_m, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
-<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>    a_pred <span class="op">=</span> MLJ.<span class="fu">predict</span>(mach_m, W[test_idx, <span class="op">:</span>])</span>
-<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>    V_res[test_idx] <span class="op">=</span> df.A[test_idx] <span class="op">.-</span> a_pred</span>
-<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="eee2354b" class="cell" data-cache="true" data-message="false" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># We implement DoubleML PLR (Partially Linear Regression) manually with cross-fitting</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>nsplits <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>n_samples <span class="op">=</span> <span class="fu">nrow</span>(df)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> <span class="fu">shuffle</span>(<span class="fl">1</span><span class="op">:</span>n_samples)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>folds <span class="op">=</span> [s[<span class="fl">1</span> <span class="op">+</span> <span class="fu">floor</span>(<span class="dt">Int</span>, (k<span class="op">-</span><span class="fl">1</span>)<span class="op">*</span>n_samples<span class="op">/</span>nsplits) <span class="op">:</span> <span class="fu">floor</span>(<span class="dt">Int</span>, k<span class="op">*</span>n_samples<span class="op">/</span>nsplits)] for k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nsplits]</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Base learner (Random Forest for regression)</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>RandomForestRegressor <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>learner <span class="op">=</span> <span class="fu">RandomForestRegressor</span>(n_trees<span class="op">=</span><span class="fl">500</span>, max_depth<span class="op">=</span><span class="fl">5</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>W_res <span class="op">=</span> <span class="fu">zeros</span>(n_samples)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>V_res <span class="op">=</span> <span class="fu">zeros</span>(n_samples)</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fold <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nsplits</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    test_idx <span class="op">=</span> folds[fold]</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    train_idx <span class="op">=</span> <span class="fu">setdiff</span>(<span class="fl">1</span><span class="op">:</span>n_samples, test_idx)</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fit outcome model l_0(X) = E(Y | X)</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    mach_l <span class="op">=</span> <span class="fu">machine</span>(learner, W[train_idx, <span class="op">:</span>], df.Y[train_idx])</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    MLJ.<span class="fu">fit!</span>(mach_l, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> MLJ.<span class="fu">predict</span>(mach_l, W[test_idx, <span class="op">:</span>])</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    W_res[test_idx] <span class="op">=</span> df.Y[test_idx] <span class="op">.-</span> y_pred</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fit treatment model m_0(X) = E(D | X)</span></span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>    mach_m <span class="op">=</span> <span class="fu">machine</span>(learner, W[train_idx, <span class="op">:</span>], df.A[train_idx])</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>    MLJ.<span class="fu">fit!</span>(mach_m, verbosity<span class="op">=</span><span class="fl">0</span>)</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>    a_pred <span class="op">=</span> MLJ.<span class="fu">predict</span>(mach_m, W[test_idx, <span class="op">:</span>])</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>    V_res[test_idx] <span class="op">=</span> df.A[test_idx] <span class="op">.-</span> a_pred</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="ede4b057" class="cell" data-cache="true" data-message="false" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FWL theorem: regress residual W_res on residual V_res</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>theta_hat <span class="op">=</span> <span class="fu">sum</span>(W_res <span class="op">.*</span> V_res) <span class="op">/</span> <span class="fu">sum</span>(V_res <span class="op">.^</span> <span class="fl">2</span>)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Variance of score function (Neyman-orthogonal score)</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>psi <span class="op">=</span> (W_res <span class="op">.-</span> theta_hat <span class="op">.*</span> V_res) <span class="op">.*</span> V_res</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>var_theta <span class="op">=</span> <span class="fu">var</span>(psi) <span class="op">/</span> (<span class="fu">mean</span>(V_res <span class="op">.^</span> <span class="fl">2</span>)<span class="op">^</span><span class="fl">2</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>se_theta <span class="op">=</span> <span class="fu">sqrt</span>(var_theta <span class="op">/</span> n_samples)</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>ci_lb <span class="op">=</span> theta_hat <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se_theta</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>ci_ub <span class="op">=</span> theta_hat <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se_theta</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"DML PLR Estimate = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> theta_hat se_theta</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"95%% CI           = [%.4g, %.4g]</span><span class="sc">\n</span><span class="st">"</span> ci_lb ci_ub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="b6ac964c" class="cell" data-cache="true" data-message="false" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FWL theorem: regress residual W_res on residual V_res</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>theta_hat <span class="op">=</span> <span class="fu">sum</span>(W_res <span class="op">.*</span> V_res) <span class="op">/</span> <span class="fu">sum</span>(V_res <span class="op">.^</span> <span class="fl">2</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Variance of score function (Neyman-orthogonal score)</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>psi <span class="op">=</span> (W_res <span class="op">.-</span> theta_hat <span class="op">.*</span> V_res) <span class="op">.*</span> V_res</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>var_theta <span class="op">=</span> <span class="fu">var</span>(psi) <span class="op">/</span> (<span class="fu">mean</span>(V_res <span class="op">.^</span> <span class="fl">2</span>)<span class="op">^</span><span class="fl">2</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>se_theta <span class="op">=</span> <span class="fu">sqrt</span>(var_theta <span class="op">/</span> n_samples)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>ci_lb <span class="op">=</span> theta_hat <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se_theta</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>ci_ub <span class="op">=</span> theta_hat <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se_theta</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"DML PLR Estimate = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> theta_hat se_theta</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"95%% CI           = [%.4g, %.4g]</span><span class="sc">\n</span><span class="st">"</span> ci_lb ci_ub</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>DML PLR Estimate = 0.192 (SE = 0.03206)
 95% CI           = [0.1292, 0.2549]</code></pre>

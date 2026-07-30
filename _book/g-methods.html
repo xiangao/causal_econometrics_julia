@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="a84cca9c" class="cell" data-execution_count="2">
+<div id="29df35fc" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -617,7 +617,7 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t})}.
 \]</span></p>
 <p>The numerator uses treatment history only. The denominator also conditions on the covariate history up to and including <span class="math inline">\(L_t\)</span> — the covariates measured just before <span class="math inline">\(A_t\)</span>. (Skipping <span class="math inline">\(L_t\)</span> would leave the <span class="math inline">\(L_t \to A_t\)</span> confounding intact in the pseudo-population.)</p>
-<div id="cell-iptw" class="cell" data-cache="true" data-execution_count="6">
+<div id="iptw" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Numerator: P(A0) and P(A1 | A0)</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n0 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A0 <span class="op">~</span> <span class="fl">1</span>),  df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>n1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A1 <span class="op">~</span> A0), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
@@ -639,61 +639,89 @@ SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, 
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Weight summary: min=%.3f, mean=%.3f, max=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">minimum</span>(sw), <span class="fu">mean</span>(sw), <span class="fu">maximum</span>(sw))</span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Trim extreme weights at 99th percentile</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>sw_trim <span class="op">=</span> <span class="fu">min</span>.(sw, <span class="fu">quantile</span>(sw, <span class="fl">0.99</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Trim extreme weights at 99th percentile. Semicolon: without it this is the</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co"># cell's last expression and Jupyter dumps all 5000 weights into the page.</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>sw_trim <span class="op">=</span> <span class="fu">min</span>.(sw, <span class="fu">quantile</span>(sw, <span class="fl">0.99</span>));</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"After trimming at the 99th percentile: max=%.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(sw_trim))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Weight summary: min=0.284, mean=1.000, max=13.489</code></pre>
-</div>
-<div id="iptw" class="cell-output cell-output-display" data-execution_count="6">
-<pre><code>5000-element Vector{Float64}:
- 1.2320285379453222
- 0.7918791756556957
- 1.4947259119545413
- 1.2957761198231386
- 0.47742706181142075
- 2.761282241893212
- 0.9322305437789774
- 0.758079673579434
- 0.4446543045790307
- 1.821169577919855
- 1.0703793185873152
- 1.0814119421933566
- 0.8862804877411058
- ⋮
- 1.1814410813547576
- 0.9407057320445324
- 0.6072055546765932
- 3.0826283622213997
- 0.6439023204591842
- 1.2723812770139957
- 1.700832121460976
- 1.390763055139526
- 1.1802015422293588
- 1.7280793712231706
- 0.612366299960335
- 2.803538167023195</code></pre>
+<pre><code>Weight summary: min=0.284, mean=1.000, max=13.489
+After trimming at the 99th percentile: max=3.370</code></pre>
 </div>
 </div>
 </section>
 <section id="marginal-structural-models" class="level2" data-number="19.4">
 <h2 data-number="19.4" class="anchored" data-anchor-id="marginal-structural-models"><span class="header-section-number">19.4</span> Marginal structural models</h2>
 <p>With stabilized weights, the marginal structural model is a weighted regression of <span class="math inline">\(Y\)</span> on treatment history:</p>
-<div id="msm" class="cell" data-cache="true" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.sw <span class="op">=</span> sw_trim</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>msm_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(msm_fit))</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.500)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># For comparison: the untrimmed weights</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>df.sw_u <span class="op">=</span> sw</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>msm_untrimmed <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw_u)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Untrimmed MSM total effect:         %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_untrimmed)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_untrimmed)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="cell-msm" class="cell" data-cache="true" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df.sw <span class="op">=</span> sw_trim</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>msm_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># display(), not println() -- see the note in the heterogeneous-effects chapter:</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># println() on a CoefTable prints the raw constructor, not the table.</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(<span class="fu">coeftable</span>(msm_fit))</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">MSM total effect (always vs never): %.3f  (true = 1.500)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>])</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># For comparison: the untrimmed weights</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>df.sw_u <span class="op">=</span> sw</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>msm_untrimmed <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A0 <span class="op">+</span> A1), df, wts <span class="op">=</span> df.sw_u)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Untrimmed MSM total effect:         %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(msm_untrimmed)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_untrimmed)[<span class="fl">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="msm" class="cell-output cell-output-display cell-output-markdown">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Coef.</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;">t</th>
+<th style="text-align: left;">Pr(&gt;</th>
+<th style="text-align: left;">t</th>
+<th style="text-align: right;">)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">-0.0498963</td>
+<td style="text-align: right;">0.0288233</td>
+<td style="text-align: right;">-1.73</td>
+<td style="text-align: left;">0.0835</td>
+<td style="text-align: left;">-0.106403</td>
+<td style="text-align: right;">0.00661038</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">A0</td>
+<td style="text-align: right;">1.04559</td>
+<td style="text-align: right;">0.0399352</td>
+<td style="text-align: right;">26.18</td>
+<td style="text-align: left;">&lt;1e-99</td>
+<td style="text-align: left;">0.967303</td>
+<td style="text-align: right;">1.12388</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A1</td>
+<td style="text-align: right;">0.547731</td>
+<td style="text-align: right;">0.0391661</td>
+<td style="text-align: right;">13.98</td>
+<td style="text-align: left;">&lt;1e-42</td>
+<td style="text-align: left;">0.470948</td>
+<td style="text-align: right;">0.624515</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>StatsBase.CoefTable(Any[[-0.04989628698526234, 1.0455936766250338, 0.5477314823226674], [0.028823347044086425, 0.03993523083912306, 0.03916614787775476], [-1.7311066237014057, 26.18223695355993, 13.984818829573053], [0.0834956511758907, 1.5200922797061257e-141, 1.3152335380742825e-43], [-0.10640295676856143, 0.9673027377450147, 0.47094829050850884], [0.006610382798036753, 1.1238846155050528, 0.624514674136826]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "A0", "A1"], 4, 3)
-
+<pre><code>
 MSM total effect (always vs never): 1.593  (true = 1.500)
 Untrimmed MSM total effect:         1.486</code></pre>
 </div>
@@ -735,17 +763,17 @@ Untrimmed MSM total effect:         1.486</code></pre>
 <h2 data-number="19.6" class="anchored" data-anchor-id="a-robustness-check-g-formula-with-covariates-only"><span class="header-section-number">19.6</span> A robustness check: g-formula with covariates only</h2>
 <p>Even without IPTW + MSM, the g-formula is a useful check on standard regression. If standard regression and the g-formula disagree, that gap is a warning about time-varying confounding.</p>
 <div id="comparison" class="cell" data-cache="true" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>g_total <span class="op">=</span> E_Y11 <span class="op">-</span> E_Y00</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>msm_total <span class="op">=</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>]</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.5</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (no L1):"</span>,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (with L1):"</span>,</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"G-formula:"</span>, g_total)</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"MSM (IPTW):"</span>, msm_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>g_total <span class="op">=</span> E_Y11 <span class="op">-</span> E_Y00</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>msm_total <span class="op">=</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(msm_fit)[<span class="fl">3</span>]</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"True total effect:"</span>, <span class="fl">1.5</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (no L1):"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_no_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_no_L1)[<span class="fl">3</span>])</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (wrong)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Standard regression (with L1):"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">coef</span>(naive_with_L1)[<span class="fl">2</span>] <span class="op">+</span> <span class="fu">coef</span>(naive_with_L1)[<span class="fl">3</span>])</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"G-formula:"</span>, g_total)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-30s %.3f  (correct)</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"MSM (IPTW):"</span>, msm_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True total effect:             1.500
 Standard regression (no L1):   1.794  (wrong)

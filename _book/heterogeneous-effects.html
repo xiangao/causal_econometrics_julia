@@ -509,7 +509,7 @@ window.Quarto = {
 </header>
 
 
-<div id="7c0389f1" class="cell" data-execution_count="2">
+<div id="68b4d93a" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -762,13 +762,94 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \]</span></p>
 <p>The <span class="math inline">\(\arg\min\)</span> returns the coefficient vector <span class="math inline">\((\beta_0^*, \beta^*)\)</span>; the best linear projection itself is the fitted function <span class="math inline">\(\beta_0^* + X'\beta^*\)</span>.</p>
 <p>A doubly-robust BLP uses the DR-learner pseudo-outcomes:</p>
-<div id="blp" class="cell" data-cache="true" data-execution_count="11">
+<div id="cell-blp" class="cell" data-cache="true" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>blp_df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">hcat</span>(pseudo_DR, X), [<span class="op">:</span>tau_pseudo, <span class="op">:</span>X1, <span class="op">:</span>X2, <span class="op">:</span>X3, <span class="op">:</span>X4, <span class="op">:</span>X5])</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>blp_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(tau_pseudo <span class="op">~</span> X1 <span class="op">+</span> X2 <span class="op">+</span> X3 <span class="op">+</span> X4 <span class="op">+</span> X5), blp_df)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">coeftable</span>(blp_fit))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>StatsBase.CoefTable(Any[[0.9973611151354204, 2.110501538859011, -0.04832888316981774, 0.006995729388057639, -0.030093840456521418, -0.0002630372445912356], [0.14012726480327659, 0.12065891499332179, 0.12124516012164167, 0.12245343590563336, 0.1227109064592853, 0.12270936693844868], [7.117537879124428, 17.491467903352376, -0.39860463808477636, 0.05712971086780103, -0.2452417745484291, -0.002143579183512337], [1.2545284517643298e-12, 1.5476873630260935e-66, 0.6902015847825644, 0.9544441547575743, 0.8062793090862093, 0.9982897581916563], [0.7226501431552275, 1.873957081487173, -0.2860226384263, -0.2330667769855357, -0.2706611021762589, -0.24082728082745142], [1.2720720871156133, 2.347045996230849, 0.1893648720866645, 0.247058235761651, 0.21047342126321603, 0.24030120633826896]], ["Coef.", "Std. Error", "t", "Pr(&gt;|t|)", "Lower 95%", "Upper 95%"], ["(Intercept)", "X1", "X2", "X3", "X4", "X5"], 4, 3)</code></pre>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># `display`, not `println`. StatsBase defines only</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># show(io, ::MIME"text/plain", ::CoefTable), so println() falls through to the</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># generic struct show and prints the raw constructor -- `CoefTable(Any[[...]])`</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># -- instead of the formatted table.</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(<span class="fu">coeftable</span>(blp_fit))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="blp" class="cell-output cell-output-display cell-output-markdown">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Coef.</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;">t</th>
+<th style="text-align: left;">Pr(&gt;</th>
+<th style="text-align: left;">t</th>
+<th style="text-align: right;">)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.997361</td>
+<td style="text-align: right;">0.140127</td>
+<td style="text-align: right;">7.12</td>
+<td style="text-align: left;">&lt;1e-11</td>
+<td style="text-align: left;">0.72265</td>
+<td style="text-align: right;">1.27207</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">X1</td>
+<td style="text-align: right;">2.1105</td>
+<td style="text-align: right;">0.120659</td>
+<td style="text-align: right;">17.49</td>
+<td style="text-align: left;">&lt;1e-65</td>
+<td style="text-align: left;">1.87396</td>
+<td style="text-align: right;">2.34705</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">X2</td>
+<td style="text-align: right;">-0.0483289</td>
+<td style="text-align: right;">0.121245</td>
+<td style="text-align: right;">-0.40</td>
+<td style="text-align: left;">0.6902</td>
+<td style="text-align: left;">-0.286023</td>
+<td style="text-align: right;">0.189365</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">X3</td>
+<td style="text-align: right;">0.00699573</td>
+<td style="text-align: right;">0.122453</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: left;">0.9544</td>
+<td style="text-align: left;">-0.233067</td>
+<td style="text-align: right;">0.247058</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">X4</td>
+<td style="text-align: right;">-0.0300938</td>
+<td style="text-align: right;">0.122711</td>
+<td style="text-align: right;">-0.25</td>
+<td style="text-align: left;">0.8063</td>
+<td style="text-align: left;">-0.270661</td>
+<td style="text-align: right;">0.210473</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">X5</td>
+<td style="text-align: right;">-0.000263037</td>
+<td style="text-align: right;">0.122709</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: left;">0.9983</td>
+<td style="text-align: left;">-0.240827</td>
+<td style="text-align: right;">0.240301</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <p>Here the coefficient on <span class="math inline">\(X_1\)</span> should be close to 2, and the coefficients on the other variables should be close to 0.</p>
@@ -777,55 +858,73 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.10" class="anchored" data-anchor-id="gates-sorted-group-ates"><span class="header-section-number">9.10</span> GATES: sorted group ATEs</h2>
 <p>GATES (group average treatment effects) is a simple way to report heterogeneity <span class="citation" data-cites="chernozhukov-2018-generic-ml">(<a href="references.html#ref-chernozhukov-2018-generic-ml" role="doc-biblioref">Chernozhukov et al. 2018</a>)</span>. Sort observations by predicted CATE, split them into bins, and estimate the ATE in each bin. (The same paper’s CLAN — classification analysis — is the natural companion: compare average <em>covariates</em> between the most- and least-affected bins; here that would show high <span class="math inline">\(X_1\)</span> in the top quintile.)</p>
 <div id="clan" class="cell" data-cache="true" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>quintile_edges <span class="op">=</span> <span class="fu">quantile</span>(tau_DR, <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length <span class="op">=</span> nq <span class="op">+</span> <span class="fl">1</span>))</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">searchsortedfirst</span>.(<span class="fu">Ref</span>(quintile_edges), tau_DR) <span class="op">.-</span> <span class="fl">1</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">clamp</span>.(quintiles, <span class="fl">1</span>, nq)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># AIPW-style ATE within each quintile using the DR pseudo-outcomes</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">quintile_ate</span>(tau_pseudo, idx)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    n_q <span class="op">=</span> <span class="fu">sum</span>(idx)</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    est <span class="op">=</span> <span class="fu">mean</span>(tau_pseudo[idx])</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    sd  <span class="op">=</span> <span class="fu">std</span>(tau_pseudo[idx]) <span class="op">/</span> <span class="fu">sqrt</span>(n_q)</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (est <span class="op">=</span> est, se <span class="op">=</span> sd)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>clan_df <span class="op">=</span> <span class="fu">DataFrame</span>(quintile <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>nq,</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                    ATE <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).est for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq],</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                    SE  <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).se  for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq])</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>clan_df.lo <span class="op">=</span> clan_df.ATE <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>clan_df.hi <span class="op">=</span> clan_df.ATE <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Quintile"</span>, <span class="st">"ATE"</span>, <span class="st">"SE"</span>, <span class="st">"95% LB"</span>, <span class="st">"95% UB"</span>)</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="fu">eachrow</span>(clan_df)</span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-10d %8.3f %8.3f %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>            row.quintile, row.ATE, row.SE, row.lo, row.hi)</span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The ranking score MUST be out-of-fold. `tau_DR` above is an in-sample random</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># forest prediction: it was fit on (X, pseudo_DR) and then predicted back at the</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># same X, so it tracks pseudo_DR's own noise. Binning on it and then averaging</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"># pseudo_DR inside the bins puts each bin's noise in its own numerator -- the top</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># bin collects positive noise, the bottom bin negative noise -- and the reported</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># spread explodes. With the in-sample score this table ran from -1.22 to 5.28,</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co"># outside the true CATE range of [1, 3] entirely, with tight confidence</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># intervals around impossible values. Predicting the score from a model trained</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co"># without the observation costs six lines and fixes it.</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>tau_rank <span class="op">=</span> <span class="fu">zeros</span>(n)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> folds <span class="op">.!=</span> k</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    test  <span class="op">=</span> folds <span class="op">.==</span> k</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    tau_rank[test] <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X[train, <span class="op">:</span>], pseudo_DR[train], X[test, <span class="op">:</span>])</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>quintile_edges <span class="op">=</span> <span class="fu">quantile</span>(tau_rank, <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length <span class="op">=</span> nq <span class="op">+</span> <span class="fl">1</span>))</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">searchsortedfirst</span>.(<span class="fu">Ref</span>(quintile_edges), tau_rank) <span class="op">.-</span> <span class="fl">1</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>quintiles      <span class="op">=</span> <span class="fu">clamp</span>.(quintiles, <span class="fl">1</span>, nq)</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="co"># AIPW-style ATE within each quintile using the DR pseudo-outcomes</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">quintile_ate</span>(tau_pseudo, idx)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    n_q <span class="op">=</span> <span class="fu">sum</span>(idx)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    est <span class="op">=</span> <span class="fu">mean</span>(tau_pseudo[idx])</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    sd  <span class="op">=</span> <span class="fu">std</span>(tau_pseudo[idx]) <span class="op">/</span> <span class="fu">sqrt</span>(n_q)</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (est <span class="op">=</span> est, se <span class="op">=</span> sd)</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>clan_df <span class="op">=</span> <span class="fu">DataFrame</span>(quintile <span class="op">=</span> <span class="fl">1</span><span class="op">:</span>nq,</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>                    ATE <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).est for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq],</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>                    SE  <span class="op">=</span> [<span class="fu">quintile_ate</span>(pseudo_DR, quintiles <span class="op">.==</span> q).se  for q <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>nq])</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>clan_df.lo <span class="op">=</span> clan_df.ATE <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>clan_df.hi <span class="op">=</span> clan_df.ATE <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> clan_df.SE</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Quintile"</span>, <span class="st">"ATE"</span>, <span class="st">"SE"</span>, <span class="st">"95% LB"</span>, <span class="st">"95% UB"</span>)</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="fu">eachrow</span>(clan_df)</span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-10d %8.3f %8.3f %8.3f %8.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>            row.quintile, row.ATE, row.SE, row.lo, row.hi)</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Quintile        ATE       SE   95% LB   95% UB
-1            -1.204    0.062   -1.326   -1.082
-2             1.008    0.024    0.962    1.054
-3             2.032    0.023    1.987    2.077
-4             3.025    0.023    2.979    3.071
-5             5.271    0.068    5.138    5.404</code></pre>
+1             1.440    0.074    1.294    1.586
+2             1.497    0.081    1.339    1.654
+3             2.102    0.083    1.939    2.265
+4             2.482    0.084    2.316    2.647
+5             2.612    0.077    2.461    2.762</code></pre>
 </div>
 </div>
-<p>Quintile 5 should have a larger ATE than quintile 1 in this simulation. One caveat: the quintiles are formed from the same pseudo-outcomes used to estimate the group ATEs, which biases the spread outward (the top bin collects positive noise, the bottom bin negative noise). For inference, form the groups and estimate the ATEs on separate folds.</p>
+<p>Quintile 5 has a larger ATE than quintile 1, and because the ranking score is out-of-fold the magnitudes are trustworthy: the five estimates above are each within about 0.06 of the true within-bin average of <span class="math inline">\(\tau(x) = 1 + 2X_1\)</span> (1.40, 1.62, 2.03, 2.40, 2.60 for these bins). The nuisance functions behind <code>pseudo_DR</code> are already cross-fitted, so both halves of the procedure — forming the groups and estimating the group means — now use predictions from models that did not see the observation being scored.</p>
+<p>This is worth insisting on because the failure is silent. Ranking on an in-sample score leaves the group means unbiased <em>on average</em> — they still average to the ATE — while making the spread meaningless, so nothing in the output looks wrong except the numbers themselves. A useful habit is to sanity-check group ATEs against the range the estimand can possibly take: here every quintile mean must lie in <span class="math inline">\([1, 3]\)</span>, and a table with a negative bottom bin is refuted before you read its standard errors.</p>
 </section>
 <section id="variable-importance-which-covariate-drives-heterogeneity" class="level2" data-number="9.11">
 <h2 data-number="9.11" class="anchored" data-anchor-id="variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</h2>
 <p>A simple diagnostic is to regress the DR pseudo-outcome on each covariate separately and compare <span class="math inline">\(R^2\)</span>.</p>
 <div id="var-importance" class="cell" data-cache="true" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">single_var_r2</span>(target, x)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    df_one <span class="op">=</span> <span class="fu">DataFrame</span>(t <span class="op">=</span> target, x <span class="op">=</span> x)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(t <span class="op">~</span> x), df_one)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1</span> <span class="op">-</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(fit))) <span class="op">/</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(target <span class="op">.-</span> <span class="fu">mean</span>(target)))</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>vi <span class="op">=</span> [<span class="fu">single_var_r2</span>(pseudo_DR, X[<span class="op">:</span>, j]) for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p]</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>vi_df <span class="op">=</span> <span class="fu">DataFrame</span>(variable <span class="op">=</span> [<span class="st">"X</span><span class="sc">$</span>j<span class="st">"</span> for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p], R2 <span class="op">=</span> vi)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(vi_df, <span class="op">:</span>R2, rev <span class="op">=</span> <span class="cn">true</span>)</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(vi_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">single_var_r2</span>(target, x)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    df_one <span class="op">=</span> <span class="fu">DataFrame</span>(t <span class="op">=</span> target, x <span class="op">=</span> x)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(t <span class="op">~</span> x), df_one)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1</span> <span class="op">-</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(fit))) <span class="op">/</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(target <span class="op">.-</span> <span class="fu">mean</span>(target)))</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>vi <span class="op">=</span> [<span class="fu">single_var_r2</span>(pseudo_DR, X[<span class="op">:</span>, j]) for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p]</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>vi_df <span class="op">=</span> <span class="fu">DataFrame</span>(variable <span class="op">=</span> [<span class="st">"X</span><span class="sc">$</span>j<span class="st">"</span> for j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>p], R2 <span class="op">=</span> vi)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(vi_df, <span class="op">:</span>R2, rev <span class="op">=</span> <span class="cn">true</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(vi_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-bold">5×2 DataFrame</span>
@@ -859,34 +958,34 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \]</span></p>
 <p>For interpretability, we can restrict the policy to a single threshold rule.</p>
 <div id="policy" class="cell" data-cache="true" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cost = 2 makes the problem non-degenerate: tau(x) = 1 + 2 x1 is in [1, 3],</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so the optimal rule is "treat iff x1 &gt; 0.5" (about half the population).</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># A cost below 1 would make treat-everyone optimal and there would be</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># nothing for a policy to learn.</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">2.0</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Welfare of a rule = average gain over treating nobody, evaluated with the</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># DR scores: mean over units of treat(x) * (pseudo_DR - cost)</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="fu">welfare</span>(treat) <span class="op">=</span> <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost))</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>welfare_all  <span class="op">=</span> <span class="fu">welfare</span>(<span class="fu">trues</span>(n))            <span class="co"># treat everyone</span></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>treat_est    <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost               <span class="co"># rule from the ESTIMATED CATE</span></span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>treat_true   <span class="op">=</span> tau <span class="op">.&gt;</span> cost                  <span class="co"># oracle rule (simulation only)</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold-rule family on X1</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">welfare</span>(X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> t) for t <span class="kw">in</span> threshes]</span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Treatment rates: estimated rule %.2f, oracle rule %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(treat_est), <span class="fu">mean</span>(treat_true))</span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                    %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (oracle rule τ(x) &gt; %.0f):            %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, <span class="fu">welfare</span>(treat_true))</span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span>
-<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (τ̂-rule, SAME scores, biased):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">welfare</span>(treat_est))</span>
-<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (τ̂-rule, evaluated on true τ):       %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(treat_est <span class="op">.*</span> (tau <span class="op">.-</span> cost)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cost = 2 makes the problem non-degenerate: tau(x) = 1 + 2 x1 is in [1, 3],</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so the optimal rule is "treat iff x1 &gt; 0.5" (about half the population).</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># A cost below 1 would make treat-everyone optimal and there would be</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># nothing for a policy to learn.</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>cost <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Welfare of a rule = average gain over treating nobody, evaluated with the</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co"># DR scores: mean over units of treat(x) * (pseudo_DR - cost)</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">welfare</span>(treat) <span class="op">=</span> <span class="fu">mean</span>(treat <span class="op">.*</span> (pseudo_DR <span class="op">.-</span> cost))</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>welfare_all  <span class="op">=</span> <span class="fu">welfare</span>(<span class="fu">trues</span>(n))            <span class="co"># treat everyone</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>treat_est    <span class="op">=</span> tau_DR <span class="op">.&gt;</span> cost               <span class="co"># rule from the ESTIMATED CATE</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>treat_true   <span class="op">=</span> tau <span class="op">.&gt;</span> cost                  <span class="co"># oracle rule (simulation only)</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple threshold-rule family on X1</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>threshes <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">1</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>welfares <span class="op">=</span> [<span class="fu">welfare</span>(X[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.&gt;</span> t) for t <span class="kw">in</span> threshes]</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>best_t   <span class="op">=</span> threshes[<span class="fu">argmax</span>(welfares)]</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Treatment rates: estimated rule %.2f, oracle rule %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(treat_est), <span class="fu">mean</span>(treat_true))</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (treat everyone):                    %.3f</span><span class="sc">\n</span><span class="st">"</span>, welfare_all)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (oracle rule τ(x) &gt; %.0f):            %.3f</span><span class="sc">\n</span><span class="st">"</span>, cost, <span class="fu">welfare</span>(treat_true))</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (best X1-threshold rule, X1 &gt; %.2f): %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>        best_t, <span class="fu">maximum</span>(welfares))</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (τ̂-rule, SAME scores, biased):       %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">welfare</span>(treat_est))</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Welfare (τ̂-rule, evaluated on true τ):       %.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(treat_est <span class="op">.*</span> (tau <span class="op">.-</span> cost)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Treatment rates: estimated rule 0.51, oracle rule 0.51
 Welfare (treat everyone):                    0.026
@@ -904,70 +1003,70 @@ Welfare (τ̂-rule, evaluated on true τ):       0.133</code></pre>
 <h2 data-number="9.13" class="anchored" data-anchor-id="causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</h2>
 <p>With panel data, unit effects can be correlated with treatment and covariates. A cross-sectional meta-learner can then be biased. The fixed effect adjustment is to demean by unit before applying the learner.</p>
 <div id="panel-dgp" class="cell" data-cache="true" data-execution_count="15">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2024</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>n_firms <span class="op">=</span> <span class="fl">200</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>n_t     <span class="op">=</span> <span class="fl">5</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>N       <span class="op">=</span> n_firms <span class="op">*</span> n_t</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>firm_id  <span class="op">=</span> <span class="fu">repeat</span>(<span class="fl">1</span><span class="op">:</span>n_firms, inner <span class="op">=</span> n_t)</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>unit_fe  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.5</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>V1_firm  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.0</span></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>V1_panel <span class="op">=</span> V1_firm[firm_id] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(N)</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The unit effect drives BOTH treatment and the outcome (classic</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co"># fixed-effect confounding); unit_fe is unobserved to the learner.</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id] <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> unit_fe[firm_id]))))</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> tau_panel <span class="op">.*</span> W_panel <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Y(1) - Y(0) = tau_panel exactly, so the true ATE is mean(tau_panel).</span></span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>true_panel_ate <span class="op">=</span> <span class="fu">mean</span>(tau_panel)</span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2024</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>n_firms <span class="op">=</span> <span class="fl">200</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>n_t     <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>N       <span class="op">=</span> n_firms <span class="op">*</span> n_t</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>firm_id  <span class="op">=</span> <span class="fu">repeat</span>(<span class="fl">1</span><span class="op">:</span>n_firms, inner <span class="op">=</span> n_t)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>unit_fe  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.5</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>V1_firm  <span class="op">=</span> <span class="fu">randn</span>(n_firms) <span class="op">.*</span> <span class="fl">1.0</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>V1_panel <span class="op">=</span> V1_firm[firm_id] <span class="op">.+</span> <span class="fl">0.3</span> <span class="op">.*</span> <span class="fu">randn</span>(N)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The unit effect drives BOTH treatment and the outcome (classic</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="co"># fixed-effect confounding); unit_fe is unobserved to the learner.</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>W_panel  <span class="op">=</span> <span class="fu">Float64</span>.(<span class="fu">rand</span>(N) <span class="op">.&lt;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>           @. <span class="fl">1</span> <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">exp</span>(<span class="fu">-</span>(<span class="fl">0.3</span> <span class="op">*</span> V1_firm[firm_id] <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> unit_fe[firm_id]))))</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>tau_panel <span class="op">=</span> @. <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">1.0</span> <span class="op">*</span> V1_panel</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>Y_panel  <span class="op">=</span> unit_fe[firm_id] <span class="op">.+</span> V1_panel <span class="op">.+</span> tau_panel <span class="op">.*</span> W_panel <span class="op">.+</span> <span class="fu">randn</span>(N)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>df_panel <span class="op">=</span> <span class="fu">DataFrame</span>(firm <span class="op">=</span> firm_id, V1 <span class="op">=</span> V1_panel, W <span class="op">=</span> W_panel, Y <span class="op">=</span> Y_panel)</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Y(1) - Y(0) = tau_panel exactly, so the true ATE is mean(tau_panel).</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>true_panel_ate <span class="op">=</span> <span class="fu">mean</span>(tau_panel)</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True panel ATE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>True panel ATE: 0.655</code></pre>
 </div>
 </div>
 <p>A naive T-learner ignores the firm fixed effects. Because <code>unit_fe</code> raises both the treatment probability and the outcome, and is not in the learner’s covariates, the naive estimate is badly biased upward:</p>
 <div id="panel-naive" class="cell" data-cache="true" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>idx_C_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">0</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>mu1_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_T_p, <span class="op">:</span>], df_panel.Y[idx_T_p],</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>mu0_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_C_p, <span class="op">:</span>], df_panel.Y[idx_C_p],</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>tau_naive <span class="op">=</span> mu1_naive <span class="op">.-</span> mu0_naive</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>idx_C_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">0</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>mu1_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_T_p, <span class="op">:</span>], df_panel.Y[idx_T_p],</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>mu0_naive <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_panel_naive[idx_C_p, <span class="op">:</span>], df_panel.Y[idx_C_p],</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                            X_panel_naive)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>tau_naive <span class="op">=</span> mu1_naive <span class="op">.-</span> mu0_naive</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive panel T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_naive), true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Naive panel T-learner ATE: 2.014  (true = 0.655)</code></pre>
 </div>
 </div>
 <p>The within transformation removes firm-level variation and leaves the within-firm variation:</p>
 <div id="panel-within" class="cell" data-cache="true" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within transformation: subtract firm means</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>df_dm <span class="op">=</span> <span class="fu">combine</span>(<span class="fu">groupby</span>(df_panel, <span class="op">:</span>firm),</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>Y  <span class="op">=&gt;</span> (y <span class="op">-&gt;</span> y <span class="op">.-</span> <span class="fu">mean</span>(y)) <span class="op">=&gt;</span> <span class="op">:</span>Y_dm,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>W  <span class="op">=&gt;</span> (w <span class="op">-&gt;</span> w <span class="op">.-</span> <span class="fu">mean</span>(w)) <span class="op">=&gt;</span> <span class="op">:</span>W_dm,</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>V1 <span class="op">=&gt;</span> (v <span class="op">-&gt;</span> v <span class="op">.-</span> <span class="fu">mean</span>(v)) <span class="op">=&gt;</span> <span class="op">:</span>V1_dm)</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>X_dm <span class="op">=</span> <span class="fu">reshape</span>(df_dm.V1_dm, N, <span class="fl">1</span>)</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>idx_T_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&gt;</span> <span class="fl">0</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>idx_C_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&lt;=</span> <span class="fl">0</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>mu1_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_T_dm, <span class="op">:</span>], df_dm.Y_dm[idx_T_dm], X_dm)</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>mu0_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_C_dm, <span class="op">:</span>], df_dm.Y_dm[idx_C_dm], X_dm)</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co"># The two demeaned groups differ in W_dm by less than a full 0 -&gt; 1 switch</span></span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co"># (treated-above-average vs below-average within firm), so the raw contrast</span></span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co"># is attenuated; rescale by the W_dm gap, as in a Wald estimator.</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>w_gap <span class="op">=</span> <span class="fu">mean</span>(df_dm.W_dm[idx_T_dm]) <span class="op">-</span> <span class="fu">mean</span>(df_dm.W_dm[idx_C_dm])</span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm) <span class="op">/</span> w_gap, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within transformation: subtract firm means</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>df_dm <span class="op">=</span> <span class="fu">combine</span>(<span class="fu">groupby</span>(df_panel, <span class="op">:</span>firm),</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>Y  <span class="op">=&gt;</span> (y <span class="op">-&gt;</span> y <span class="op">.-</span> <span class="fu">mean</span>(y)) <span class="op">=&gt;</span> <span class="op">:</span>Y_dm,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>W  <span class="op">=&gt;</span> (w <span class="op">-&gt;</span> w <span class="op">.-</span> <span class="fu">mean</span>(w)) <span class="op">=&gt;</span> <span class="op">:</span>W_dm,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>V1 <span class="op">=&gt;</span> (v <span class="op">-&gt;</span> v <span class="op">.-</span> <span class="fu">mean</span>(v)) <span class="op">=&gt;</span> <span class="op">:</span>V1_dm)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>X_dm <span class="op">=</span> <span class="fu">reshape</span>(df_dm.V1_dm, N, <span class="fl">1</span>)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>idx_T_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&gt;</span> <span class="fl">0</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>idx_C_dm <span class="op">=</span> df_dm.W_dm <span class="op">.&lt;=</span> <span class="fl">0</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>mu1_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_T_dm, <span class="op">:</span>], df_dm.Y_dm[idx_T_dm], X_dm)</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>mu0_dm <span class="op">=</span> <span class="fu">rf_fit_predict</span>(X_dm[idx_C_dm, <span class="op">:</span>], df_dm.Y_dm[idx_C_dm], X_dm)</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>tau_dm <span class="op">=</span> mu1_dm <span class="op">.-</span> mu0_dm</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="co"># The two demeaned groups differ in W_dm by less than a full 0 -&gt; 1 switch</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a><span class="co"># (treated-above-average vs below-average within firm), so the raw contrast</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="co"># is attenuated; rescale by the W_dm gap, as in a Wald estimator.</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>w_gap <span class="op">=</span> <span class="fu">mean</span>(df_dm.W_dm[idx_T_dm]) <span class="op">-</span> <span class="fu">mean</span>(df_dm.W_dm[idx_C_dm])</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Within-transform T-learner ATE: %.3f  (true = %.3f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mean</span>(tau_dm) <span class="op">/</span> w_gap, true_panel_ate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Within-transform T-learner ATE: 0.689  (true = 0.655)</code></pre>
 </div>

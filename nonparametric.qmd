@@ -100,6 +100,49 @@ True_Psi = mean(df.Y_1 .- df.Y_0)
 @printf "True ATE = %.4g\n" True_Psi
 ```
 
+The line above reports `mean(Y.1 - Y.0)` for this particular draw. That is a
+legitimate quantity --- the *sample* average treatment effect --- but it is not a
+fixed benchmark, and it is easy to mistake for one. The potential outcomes are
+binary, so at $n = 1000$ this realized average has a sampling standard deviation
+of about 0.020: two runs of the same DGP under different seeds can differ by 0.04
+without anything being wrong. (The R and Julia editions of this chapter print
+0.21 and 0.184 for exactly this reason.) Estimator standard errors in this
+chapter are around 0.03, so a noisy target of that size would swamp the
+comparison we are trying to make.
+
+The *population* ATE is a definite number, and since the DGP is fully specified
+we can integrate it out rather than simulate it:
+
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+# w1, w2 ~ Bernoulli(0.5); w3 ~ U(0,4); w4 ~ U(0,5). Average the true individual
+# effect over that covariate distribution on a trapezoid grid.
+function population_ate()
+    g3 = range(0, 4; length = 1601)
+    g4 = range(0, 5; length = 1601)
+    trap(g) = (w = fill(step(g), length(g)); w[1] /= 2; w[end] /= 2; w)
+    w3w, w4w = trap(g3), trap(g4)
+    total = 0.0
+    for w1 in (0, 1), w2 in (0, 1)
+        acc = 0.0
+        for (j, u4) in enumerate(g4), (i, u3) in enumerate(g3)
+            lin0 = -1 - 0.1w1 + 0.3w2 + 0.25u3 + 0.2u4 + 0.15w2 * u4
+            acc += w3w[i] * w4w[j] * (logistic(lin0 + 1) - logistic(lin0))
+        end
+        total += acc / (4 * 5)
+    end
+    total / 4
+end
+
+pop_ate = population_ate()
+@printf "Realized-sample ATE (this draw): %.4f\n" True_Psi
+@printf "Exact population ATE:           %.4f\n" pop_ate
+```
+
+Compare the estimators below against 0.2028, not against the realized draw.
+
 ```{julia}
 #| warning: false
 #| cache: true
@@ -286,7 +329,8 @@ tmle_result = estimate(psi_ate, TMLE(crossfit=5), df)
 
 ```{julia}
 #| echo: true
-@printf "True ATE: %.4g\n" True_Psi
+@printf "Population ATE (exact):    %.4f\n" pop_ate
+@printf "Realized-sample ATE:       %.4f\n" True_Psi
 ```
 
 ## DoubleML

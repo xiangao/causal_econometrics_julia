@@ -205,8 +205,10 @@ sw = (w0_num .* w1_num) ./ (w0_den .* w1_den)
 @printf("Weight summary: min=%.3f, mean=%.3f, max=%.3f\n",
         minimum(sw), mean(sw), maximum(sw))
 
-# Trim extreme weights at 99th percentile
-sw_trim = min.(sw, quantile(sw, 0.99))
+# Trim extreme weights at 99th percentile. Semicolon: without it this is the
+# cell's last expression and Jupyter dumps all 5000 weights into the page.
+sw_trim = min.(sw, quantile(sw, 0.99));
+@printf("After trimming at the 99th percentile: max=%.3f\n", maximum(sw_trim))
 ```
 
 ## Marginal structural models
@@ -221,7 +223,9 @@ regression of $Y$ on treatment history:
 df.sw = sw_trim
 msm_fit = lm(@formula(Y ~ A0 + A1), df, wts = df.sw)
 
-println(coeftable(msm_fit))
+# display(), not println() -- see the note in the heterogeneous-effects chapter:
+# println() on a CoefTable prints the raw constructor, not the table.
+display(coeftable(msm_fit))
 @printf("\nMSM total effect (always vs never): %.3f  (true = 1.500)\n",
         coef(msm_fit)[2] + coef(msm_fit)[3])
 
