@@ -506,7 +506,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3633aa3d" class="cell" data-execution_count="2">
+<div id="3ef13d5f" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Graphs</span></span>
@@ -552,7 +552,7 @@ window.Quarto = {
 </section>
 <section id="controlled-and-uncontrolled-confounders" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="controlled-and-uncontrolled-confounders"><span class="header-section-number">1.3</span> Controlled and Uncontrolled Confounders</h2>
-<p>If we can control for all confounders then we do have causation from correlation. However, first, do we have all confounders in our data? Secondly, how do we control for them. In a randomised experiment, we don’t have these problems. In an observational study, we have these two problems. In the graph, we may have “c2” unobserved, “c1” observed, for example. Then any estimation of the effect from <span class="math inline">\(w\)</span> to <span class="math inline">\(y\)</span> is biased.</p>
+<p>If we can control for all confounders then we do have causation from correlation. However, first, do we have all confounders in our data? Secondly, how do we control for them? In a randomised experiment, we don’t have these problems. In an observational study, we have these two problems. In the graph, we may have “c2” unobserved, “c1” observed, for example. Then any estimation of the effect from <span class="math inline">\(w\)</span> to <span class="math inline">\(y\)</span> is biased.</p>
 </section>
 <section id="potential-outcome-setup" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="potential-outcome-setup"><span class="header-section-number">1.4</span> Potential Outcome Setup</h2>
@@ -588,7 +588,7 @@ window.Quarto = {
 </section>
 <section id="unconfoundedness-and-overlap" class="level2" data-number="1.7">
 <h2 data-number="1.7" class="anchored" data-anchor-id="unconfoundedness-and-overlap"><span class="header-section-number">1.7</span> Unconfoundedness and Overlap</h2>
-<p>Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability), stated jointly for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for <span class="math inline">\(Y(0)\)</span>): <span class="math display">\[ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\} \]</span> Overlap: <span class="math display">\[ 0 &lt; \pi(X)= P(W=1 | X=x) &lt; 1 \]</span> SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.</p>
+<p>Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability), stated jointly for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for <span class="math inline">\(Y(0)\)</span>): <span class="math display">\[ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\} \]</span> Overlap: <span class="math display">\[ 0 &lt; \pi(x)= P(W=1 | X=x) &lt; 1 \]</span> SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.</p>
 <p>Within each subgroup of <span class="math inline">\(X=x\)</span>, W is independent of <span class="math inline">\(Y(0)\)</span>. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.</p>
 <p>However, these two criteria are often contradictory: we may need more covariates to satisfy conditional independence; meanwhile, if the dimension of covariates goes high, then it’s likely in some partition we don’t have control units.</p>
 <p>We need four assumptions for identification:</p>
@@ -599,6 +599,7 @@ window.Quarto = {
 <li>Consistency</li>
 </ul>
 <p>The last two together are SUTVA, the stable unit treatment value assumption <span class="citation" data-cites="rubin1980">(<a href="references.html#ref-rubin1980" role="doc-biblioref">Rubin 1980</a>)</span>.</p>
+<p>Note: AIPW and IPWRA are themselves influence-function-based, doubly-robust estimators — they can be implemented with either parametric nuisance models (logistic regression, OLS) or flexible machine-learning nuisance models (with cross-fitting, as in DoubleML/TMLE), so they appear on both sides of the split below. The split is really about <em>how the nuisance (propensity/outcome) models are estimated</em>, not about the estimator family itself.</p>
 </section>
 <section id="observational-data-flowchart" class="level2" data-number="1.8">
 <h2 data-number="1.8" class="anchored" data-anchor-id="observational-data-flowchart"><span class="header-section-number">1.8</span> Observational Data Flowchart</h2>
