@@ -111,7 +111,7 @@ The g-formula writes the mean outcome under a treatment regime as:
 $$
 \mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]
 \prod_{t=0}^{K} f(l_t \mid \bar a_{t-1}, \bar l_{t-1}),
-$$
+$$ {#eq-g-methods-1}
 
 where $\bar a=(a_0,a_1,\ldots,a_K)$ is a treatment regime and $\bar l$ is
 the covariate history. In practice we fit models for the time-varying
@@ -173,7 +173,7 @@ treatment history. The stabilized weight is:
 
 $$
 SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t})}.
-$$
+$$ {#eq-g-methods-2}
 
 The numerator uses treatment history only. The denominator also conditions
 on the covariate history up to and including $L_t$ — the covariates measured

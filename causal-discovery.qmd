@@ -7,6 +7,7 @@ using RecursiveCausalDiscovery
 using CausalGraphs
 using Graphs
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using LinearAlgebra
 using Random
@@ -74,6 +75,7 @@ using RecursiveCausalDiscovery
 using CausalGraphs
 using Graphs
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using LinearAlgebra
 using Random
@@ -103,11 +105,11 @@ A CPDAG has the same skeleton (undirected edges) as all DAGs in its MEC. Some ed
 
 Three DAGs are observationally equivalent — they produce the same set of conditional independences — and therefore indistinguishable from data:
 
-$$X \to Y \to Z \qquad X \leftarrow Y \leftarrow Z \qquad X \leftarrow Y \to Z$$
+$$X \to Y \to Z \qquad X \leftarrow Y \leftarrow Z \qquad X \leftarrow Y \to Z$$ {#eq-causal-discovery-1}
 
 All three imply $X \perp\!\!\!\perp Z \mid Y$ and no other CI. Their CPDAG shows $X - Y - Z$ with no arrowheads.
 
-The structure $X \to Y \leftarrow Z$ (a **collider** at $Y$) is *not* equivalent: here $X \perp\!\!\!\perp Z$ but $X \not\!\perp\!\!\!\perp Z \mid Y$. Because it has a unique CI signature, the $\to Y \leftarrow$ orientation is identifiable from data. Algorithms orient these colliders; non-collider edges often remain undirected.
+The structure $X \to Y \leftarrow Z$ (a **collider** at $Y$) is *not* equivalent: here $X \perp\!\!\!\perp Z$ but $X \not\perp\!\!\!\perp Z \mid Y$. Because it has a unique CI signature, the $\to Y \leftarrow$ orientation is identifiable from data. Algorithms orient these colliders; non-collider edges often remain undirected.
 
 ### What a CPDAG tells you
 
@@ -119,7 +121,7 @@ For causal estimation: once you have a CPDAG, you can use background knowledge (
 
 We generate a random Gaussian linear DAG using an Erdős–Rényi random graph with 8 nodes and edge probability 0.35. Each edge $j \to i$ generates a structural equation
 
-$$X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)$$
+$$X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1)$$ {#eq-causal-discovery-2}
 
 where coefficients $\beta_{ji}$ are drawn uniformly from $[-1, -0.25] \cup [0.25, 1]$.
 
@@ -150,7 +152,7 @@ draw_graph(adjmat_to_admg(adj_mat, labels); direction="TB")
 
 Both algorithms use a **Fisher-Z conditional independence test** appropriate for Gaussian data. Given the partial correlation $\hat\rho_{XY \mid Z}$, the test statistic is
 
-$$T = \sqrt{n - |Z| - 3} \cdot \operatorname{atanh}(\hat\rho_{XY \mid Z}) \;\sim\; N(0,1) \quad \text{under } H_0: X \perp\!\!\!\perp Y \mid Z$$
+$$T = \sqrt{n - |Z| - 3} \cdot \operatorname{atanh}(\hat\rho_{XY \mid Z}) \;\sim\; N(0,1) \quad \text{under } H_0: X \perp\!\!\!\perp Y \mid Z$$ {#eq-causal-discovery-3}
 
 **Choosing the significance level** $\alpha$ involves a bias-variance tradeoff on the skeleton:
 
@@ -223,7 +225,7 @@ Under causal sufficiency and faithfulness, $\text{Mb}(X) = \text{Ne}(X)$; the di
 
 Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
 
-$$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W$$
+$$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W$$ {#eq-causal-discovery-4}
 
 (Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.
 
@@ -479,7 +481,7 @@ the outcome. That gives a **tier ordering**
 $$
 \{\text{GENDER}, \text{IMMIG}\} \prec \{\text{HISEI}, \text{HOMEPOS}\}
 \prec \text{GRADE} \prec \text{MATH}.
-$$
+$$ {#eq-causal-discovery-5}
 
 A cross-tier edge must point earlier→later; a within-tier edge the ordering
 cannot decide. We impose this on the discovered **skeleton**, because the

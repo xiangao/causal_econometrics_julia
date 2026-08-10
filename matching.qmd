@@ -9,6 +9,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 ```{julia}
@@ -20,6 +21,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 Matching is a way to make treated and control observations more comparable.
@@ -241,13 +243,13 @@ $$
 \min_{w_i \geq 0} \sum_i w_i \log w_i \quad \text{subject to} \quad
 \sum_i w_i x_{ik} = \bar x_{k}^{\text{treated}} \;\; \forall k, \quad
 \sum_i w_i = 1.
-$$
+$$ {#eq-matching-1}
 
 The dual problem has one parameter per balance constraint:
 
 $$
 \min_{\lambda} \;\; \log\left(\sum_i \exp(-x_i' \lambda)\right) + \lambda' \bar x^{\text{treated}}.
-$$
+$$ {#eq-matching-2}
 
 This is a small convex problem, so Newton's method works well here.
 

@@ -10,6 +10,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using CSV
 ```
 
@@ -23,6 +24,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using CSV
 ```
 
@@ -45,7 +47,7 @@ quantity of interest is the survival function
 
 $$
 S(t) = P(T > t)
-$$
+$$ {#eq-survival-causal-1}
 
 the probability of surviving past time $t$. Causal contrasts are usually
 reported as:
@@ -174,7 +176,7 @@ The **RMST** up to time $\tau$ is
 
 $$
 \text{RMST}(\tau) = E[\min(T, \tau)] = \int_0^\tau S(t) \, dt.
-$$
+$$ {#eq-survival-causal-2}
 
 The contrast $\Delta_{\text{RMST}}(\tau)=\text{RMST}_1(\tau)-\text{RMST}_0(\tau)$
 is interpretable as years gained up to $\tau$. It does not require

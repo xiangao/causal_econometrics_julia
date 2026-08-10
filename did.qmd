@@ -12,6 +12,7 @@ using ReadStatTables
 using CSV
 using SynthDiD
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using Printf
 using RegressionTables
@@ -33,6 +34,7 @@ using ReadStatTables
 using CSV
 using SynthDiD
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using Printf
 using RegressionTables
@@ -52,42 +54,44 @@ What if unconfoundedness fails? We have to settle for weaker assumptions. One su
 
 Suppose we have two periods, $t = (1,2)$. Some units are treated just prior to period 2. For each individual $i$, there are four potential outcomes:
 
-$$ [Y_{i1}(0), Y_{i1}(1), Y_{i2}(0), Y_{i2}(1)] $$
+$$ [Y_{i1}(0), Y_{i1}(1), Y_{i2}(0), Y_{i2}(1)] $$ {#eq-did-1}
 
 We use $D$ to identify the treated group.
 
 The ATT when $T=2$:
 
-$$ \tau_{2,att} = E(Y_2(1) - Y_2(0) | D=1) $$
+$$ \tau_{2,att} = E(Y_2(1) - Y_2(0) | D=1) $$ {#eq-did-2}
 
 In words, we are interested in the ATT in the second period. The difficult part is the second term.
 
 ## Parallel Trends Assumption
 
-$$ E[Y_2(0) -Y_1(0) | D=1] = E[Y_2(0) - Y_1(0) | D =0] $$
+$$ E[Y_2(0) -Y_1(0) | D=1] = E[Y_2(0) - Y_1(0) | D =0] $$ {#eq-did-3}
 
 or
 
-$$ E[\Delta Y(0) | D=1] = E[\Delta Y(0) | D =0] $$
+$$ E[\Delta Y(0) | D=1] = E[\Delta Y(0) | D =0] $$ {#eq-did-4}
 
 In other words, this means the change of potential outcome for untreated state between period 1 and 2 is independent of treatment assignment (unconfounded).
 
 ## No Anticipation Assumption
 
-$$ E[Y_1(1) - Y_1(0) | D=1] = 0 $$
+$$ E[Y_1(1) - Y_1(0) | D=1] = 0 $$ {#eq-did-5}
 
 This is to say, in period 1, there is no treatment effect for the treated group.
 
 ## DiD is Identified with PT and NA
 
-With Parallel Trends, we notice $$\small  E[Y_2(0) | D=1 ]= E[Y_1(0) | D=1] + E[Y_2(0) - Y_1(0) | D=0] $$
+With Parallel Trends, we notice $$\small  E[Y_2(0) | D=1 ]= E[Y_1(0) | D=1] + E[Y_2(0) - Y_1(0) | D=0] $$ {#eq-did-6}
 
-Then, with No Anticipation, $$\small  \begin{align}
+Then, with No Anticipation, $$
+\begin{aligned}
 E[Y_2(0) | D=1 ] &= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 &= E[Y_1 | D=1] + E[Y_2-Y_1 | D=0]
-\end{align} $$
+\end{aligned}
+$$ {#eq-did-7} 
 
-$$\small  \tau_{2,att} = E[Y_2 - Y_1 | D=1] - E[Y_2-Y_1 | D=0] $$
+$$\small  \tau_{2,att} = E[Y_2 - Y_1 | D=1] - E[Y_2-Y_1 | D=0] $$ {#eq-did-8}
 
 ## Advantages and Disadvantages of DiD
 
@@ -104,7 +108,7 @@ Disadvantages:
 
 In practice, DiD in many period setting is usually done with
 
-$$ Y_{it} = \alpha_i + \phi_t + W_{it} \beta + \epsilon_{it} $$
+$$ Y_{it} = \alpha_i + \phi_t + W_{it} \beta + \epsilon_{it} $$ {#eq-did-9}
 
 here $W_{it} =(1[t=2] \cdot D_i)$, which is the interaction of post-treatment indicator and treatment group indicator.
 
@@ -116,7 +120,7 @@ TWFE can be done by "Pooled OLS". That is, using OLS on time dummies and firm (i
 
 The problem comes in when there is different timing of treatment. People used to still use
 
-$$ Y_{it} = \alpha_i + \phi_t + W_{it} \beta + \epsilon_{it} $$
+$$ Y_{it} = \alpha_i + \phi_t + W_{it} \beta + \epsilon_{it} $$ {#eq-did-10}
 
 where $W_{it}$ now is a dummy when an individual $i$ gets treated at time $t$.
 
@@ -134,7 +138,7 @@ Goodman-Bacon (2021) showed that $\beta$ in the TWFE is a weighted average of ma
 
 There are a lot of ways to deal with staggered DiD situation. Wooldridge (2021) is basically saying: This is not a problem of TWFE, it's a mis-use of TWFE. The reason we get non-sensible result of $\beta$ is that we know there is heterogeneous treatment effect, in the sense the treatment effect differs across cohort, but we force them to be the same. If we relax it, it can work. As he shows, this works when we specify cohort effects accordingly.
 
-$$ y_{it} = \alpha_i + \phi_t + \sum_{g=g_0}^G \sum_{t=g}^T \lambda_{g,t} \times 1(g,t) + \epsilon_{i,t} $$
+$$ y_{it} = \alpha_i + \phi_t + \sum_{g=g_0}^G \sum_{t=g}^T \lambda_{g,t} \times 1(g,t) + \epsilon_{i,t} $$ {#eq-did-11}
 
 Here $g$ is a cohort indicator, a cohort is determined by the time of getting treatment. ETWFE is allowing each cohort to have different effect at each different time point after being treated. The baseline group is the never treated group. If there is no never treated group, it can easily changed to comparing to the last treated group.
 
@@ -435,7 +439,7 @@ Everything in this chapter so far assumes SUTVA: one unit's outcome does not dep
 
 Xu [-@xu2023; -@xu2026] develops a doubly robust DiD that keeps the identifying logic of conditional parallel trends but adds an exposure mapping $G_{it} = G(i, W_{-it})$ for unit $i$'s neighborhood treatment status. The estimand is the direct ATT at exposure level $g$,
 
-$$ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{it}(\infty, g) \mid z_i, C_i = c, G_{it} = g], $$
+$$ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{it}(\infty, g) \mid z_i, C_i = c, G_{it} = g], $$ {#eq-did-12}
 
 where $C_i$ is unit $i$'s first treatment period (so $\{C_i > t\}$ is the not-yet-directly-treated comparison group), $S_M = \{C_i = c\} \cup \{C_i > t\}$, and $g$ is a chosen exposure level. The DR plug-in averages three pieces over $S_M$: an IPW term from the treated cohort, an IPW term from the not-yet-treated, and a regression-imputation term, with three propensity models ($\eta_{tc}$ for cohort, $\eta_{tcg}$ and $\eta_{t\infty g}$ for exposure) and two outcome-change regressions. It is consistent if either all three propensities or both outcome models are correctly specified.
 
@@ -463,7 +467,7 @@ For staggered adoption (Xu 2026), `did_int_staggered()` loops over `(cohort, tim
 
 Standard event-study TWFE regressions like
 
-$$ Y_{it} = \alpha_i + \gamma_t + \sum_{j} D_{it}^j \delta_j + X_{it}'\beta + U_{it} $$
+$$ Y_{it} = \alpha_i + \gamma_t + \sum_{j} D_{it}^j \delta_j + X_{it}'\beta + U_{it} $$ {#eq-did-13}
 
 implicitly assume the residual has no serial dependence once unit and
 time fixed effects are absorbed. When outcomes are genuinely
@@ -478,12 +482,12 @@ Botosaru and Liu [-@botosaru-liu-2025] introduce a **dynamic panel
 with correlated random coefficients** that handles both persistence
 and unit-level heterogeneity in dynamic responses:
 
-$$ Y_{it} = \rho_Y Y_{i,t-1} + \alpha_i + \sum_j D_{it}^j \delta_{ij} + X_{it}'\beta + U_{it}, $$
+$$ Y_{it} = \rho_Y Y_{i,t-1} + \alpha_i + \sum_j D_{it}^j \delta_{ij} + X_{it}'\beta + U_{it}, $$ {#eq-did-14}
 
 with a parsimonious AR(1) on the event-time effects to keep
 dimensionality manageable:
 
-$$ \delta_{ij} = \rho_\delta \delta_{i,j-1} + \varepsilon_{ij}, \quad j \geq 1. $$
+$$ \delta_{ij} = \rho_\delta \delta_{i,j-1} + \varepsilon_{ij}, \quad j \geq 1. $$ {#eq-did-15}
 
 The latent $\lambda_i = (\alpha_i, \delta_{i0})$ is a unit-specific
 correlated random coefficient. A two-step semiparametric estimator:

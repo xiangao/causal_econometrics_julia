@@ -7,6 +7,7 @@ using RecursiveCausalDiscovery
 using CausalGraphs
 using Graphs
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using LinearAlgebra
 using Random
@@ -66,6 +67,7 @@ using RecursiveCausalDiscovery
 using CausalGraphs
 using Graphs
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using LinearAlgebra
 using Random
@@ -232,7 +234,7 @@ In practice for economic research: focus first on `<->` edges — these flag def
 
 **L-MARVEL** (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of exhaustive CI-test-based Markov boundary discovery, L-MARVEL uses a **Gaussian precision matrix** estimator:
 
-$$\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} > \tau\right\}$$
+$$\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} > \tau\right\}$$ {#eq-causal-discovery-latent-1}
 
 where $\hat P = \hat\Sigma^{-1}$ is the precision matrix and $\tau$ is a threshold from the Fisher-Z distribution.
 
@@ -242,7 +244,7 @@ Markov boundaries with fewer CI tests.
 
 The removability criterion changes for the latent case (Theorem 32). Recall: $\text{Mb}(X)$ is the Markov boundary of $X$ — the minimal conditioning set that screens $X$ off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and $\text{Ne}(X)$ is the set of variables directly adjacent to $X$ in the current skeleton. Variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X)$:
 
-$$\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\!\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}$$
+$$\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}$$ {#eq-causal-discovery-latent-2}
 
 **Intuition for the two conditions:**
 

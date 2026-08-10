@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="29df35fc" class="cell" data-execution_count="2">
+<div id="95a5fdd4" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -563,10 +563,10 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 <section id="parametric-g-formula" class="level2" data-number="19.2">
 <h2 data-number="19.2" class="anchored" data-anchor-id="parametric-g-formula"><span class="header-section-number">19.2</span> Parametric g-formula</h2>
 <p>The g-formula writes the mean outcome under a treatment regime as:</p>
-<p><span class="math display">\[
+<p><span id="eq-g-methods-1"><span class="math display">\[
 \mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]
 \prod_{t=0}^{K} f(l_t \mid \bar a_{t-1}, \bar l_{t-1}),
-\]</span></p>
+\tag{19.1}\]</span></span></p>
 <p>where <span class="math inline">\(\bar a=(a_0,a_1,\ldots,a_K)\)</span> is a treatment regime and <span class="math inline">\(\bar l\)</span> is the covariate history. In practice we fit models for the time-varying covariates and the outcome, then simulate the data under the treatment regime.</p>
 <div id="gformula" class="cell" data-cache="true" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Fit nuisance models</span></span>
@@ -613,9 +613,9 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 <section id="iptw-for-time-varying-treatments" class="level2" data-number="19.3">
 <h2 data-number="19.3" class="anchored" data-anchor-id="iptw-for-time-varying-treatments"><span class="header-section-number">19.3</span> IPTW for time-varying treatments</h2>
 <p>IPTW reweights observations by the inverse probability of their observed treatment history. The stabilized weight is:</p>
-<p><span class="math display">\[
+<p><span id="eq-g-methods-2"><span class="math display">\[
 SW_i = \prod_{t=0}^{K} \frac{f(A_t \mid \bar A_{t-1})}{f(A_t \mid \bar A_{t-1}, \bar L_{t})}.
-\]</span></p>
+\tag{19.2}\]</span></span></p>
 <p>The numerator uses treatment history only. The denominator also conditions on the covariate history up to and including <span class="math inline">\(L_t\)</span> — the covariates measured just before <span class="math inline">\(A_t\)</span>. (Skipping <span class="math inline">\(L_t\)</span> would leave the <span class="math inline">\(L_t \to A_t\)</span> confounding intact in the pseudo-population.)</p>
 <div id="iptw" class="cell" data-cache="true" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Numerator: P(A0) and P(A1 | A0)</span></span>

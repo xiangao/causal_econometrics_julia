@@ -7,6 +7,7 @@ using LinearAlgebra
 using Statistics
 using Random
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Printf
 using Panelest
 using StatsModels
@@ -23,6 +24,7 @@ using LinearAlgebra
 using Statistics
 using Random
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Panelest
 using StatsModels
 using CSV
@@ -44,7 +46,7 @@ growth rate (or trade shock) for that industry. The shift-share instrument is
 
 $$
 B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
-$$
+$$ {#eq-shift-share-iv-1}
 
 This is "shift-share" because it combines a local share with an
 industry-level shift. Bartik (1991) used local industry mix to predict local
@@ -56,7 +58,7 @@ The first-stage regression is then
 
 $$
 \Delta L_\ell \;=\; \pi_0 + \pi_1 B_\ell + X_\ell'\gamma + \epsilon_\ell,
-$$
+$$ {#eq-shift-share-iv-2}
 
 with $B_\ell$ instrumenting for the observed local shock in a 2SLS for the
 outcome of interest.
@@ -76,7 +78,7 @@ just-identified IVs, one per industry share:
 
 $$
 \hat\beta^{SS} \;=\; \sum_{k=1}^{K} \hat\alpha_k\, \hat\beta_k,
-$$
+$$ {#eq-shift-share-iv-3}
 
 where $\hat\beta_k$ is the just-identified IV using share $s_{\cdot k}$ alone
 and $\hat\alpha_k$ is the **Rotemberg weight**. This gives an important
@@ -280,7 +282,7 @@ industry mixes differ. The instrument is
 $$
 \text{IV}_\ell \;=\; \sum_k \frac{L_{\ell k,\,1990}}{L_{\ell,\,1990}}\,
                    \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
-$$
+$$ {#eq-shift-share-iv-4}
 
 where the shocks $\Delta M^{\text{other}}_k$ are growth in Chinese imports
 into other high-income countries. This leave-one-out construction removes

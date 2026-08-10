@@ -5,6 +5,7 @@
 using DataFrames
 using SynthDiD
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using Printf
 
@@ -16,6 +17,7 @@ using TASC
 using DataFrames
 using SynthDiD
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Statistics
 using Printf
 
@@ -35,7 +37,7 @@ Synthetic control starts from a different idea. Instead of giving every control 
 
 $$
 \hat Y_{1t}(0) = \sum_{i=2}^{N} \hat \omega_i Y_{it},
-$$
+$$ {#eq-synthetic-control-did-tasc-1}
 
 where the weights are chosen to make the synthetic unit close to the treated unit before treatment. The usual Abadie-style version restricts the donor weights to be nonnegative and to sum to one. The identifying hope is not that the average control follows the treated unit, but that some weighted average of controls does.
 
@@ -67,7 +69,7 @@ $$
 = \underset{\tau, \mu, \alpha, \beta}{\arg\min}
 \sum_{i=1}^N \sum_{t=1}^T
 (Y_{it} - \mu - \alpha_i - \beta_t - W_{it}\tau)^2.
-$$
+$$ {#eq-synthetic-control-did-tasc-2}
 
 Synthetic control can be viewed as a weighted version that puts the donor weights into the comparison:
 
@@ -77,7 +79,7 @@ $$
 = \underset{\tau, \mu, \beta}{\arg\min}
 \sum_{i=1}^N \sum_{t=1}^T
 (Y_{it} - \mu - \beta_t - W_{it}\tau)^2 \hat \omega_i^{sc}.
-$$
+$$ {#eq-synthetic-control-did-tasc-3}
 
 Synthetic DiD adds time weights:
 
@@ -88,7 +90,7 @@ $$
 \sum_{i=1}^N \sum_{t=1}^T
 (Y_{it} - \mu - \alpha_i - \beta_t - W_{it}\tau)^2
 \hat \omega_i^{sdid}\hat \lambda_t^{sdid}.
-$$
+$$ {#eq-synthetic-control-did-tasc-4}
 
 The unit weights try to make the donor pool look like the treated unit. The time weights put more emphasis on pre-treatment periods that are more informative about the post-treatment period.
 
@@ -98,11 +100,11 @@ TASC was proposed by @rho2026timeaware. It starts from the same panel-data struc
 
 $$
 x_t = A x_{t-1} + q_t,\qquad q_t \sim N(0,Q),
-$$
+$$ {#eq-synthetic-control-did-tasc-5}
 
 $$
 y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
-$$
+$$ {#eq-synthetic-control-did-tasc-6}
 
 Here $y_t$ is the vector of outcomes across units at time $t$, and $x_t$ is a low-dimensional latent state. The matrix $H$ maps the latent state into unit outcomes, so $HX$ is a low-rank signal. The matrix $A$ is the new piece relative to classical synthetic control: it says that the latent time factors evolve according to a stable trend.
 
@@ -110,13 +112,13 @@ The counterfactual step is simple. TASC learns the state-space model from the pr
 
 $$
 \hat Y_{1t}(0) = h_1^\top \hat x_t,\qquad t > T_0.
-$$
+$$ {#eq-synthetic-control-did-tasc-7}
 
 The estimated treatment effect is then
 
 $$
 \hat \tau_t = Y_{1t} - \hat Y_{1t}(0).
-$$
+$$ {#eq-synthetic-control-did-tasc-8}
 
 Relative to classical synthetic control, TASC uses the order of time. Relative to synthetic DiD, it puts the time dependence in a generative latent-state model rather than in a set of pre-period weights. This can help when trends are stable and outcomes are noisy, but it is also a stronger modeling assumption.
 

@@ -41,18 +41,20 @@ Once we have identification, which means we can identify the causal effect from 
 
 ## Experimental Data
 
-If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator (under randomisation ATE = ATT = ATU, so no subscript is needed): $$ \hat{\tau} = \bar Y_1 - \bar Y_0 $$
+If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator (under randomisation ATE = ATT = ATU, so no subscript is needed): $$ \hat{\tau} = \bar Y_1 - \bar Y_0 $$ {#eq-estimation-1}
 
 In experimental setting, we can do a t test for the difference in means. We can also do a regression of $Y$ on $W$ and $X$.
 
 ## Adjustment Formula
 
-From causal to estimation: $$ \small \begin{align}
+From causal to estimation:  $$
+\begin{aligned}
 E[Y(1)-Y(0)] &= E[Y(1)] - E[Y(0)] \\
 &=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\
 &=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\
 &=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]
-\end{align} $$ where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.
+\end{aligned}
+$$ {#eq-estimation-2}  where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.
 
 ## Regression Adjustment
 
@@ -60,32 +62,36 @@ How do we get $E[Y|W=w, X=x]$? We can use regression adjustment.
 
 We define a conditional mean function:
 
-$$  \begin{align}
+  $$
+\begin{aligned}
 \mu_0(X) &\equiv E[Y|W=0, X] \\
 &= E[Y(0)|W=0, X]  \\
 &= E[Y(0)|W=1, X]
-\end{align}  $$
+\end{aligned}
+$$ {#eq-estimation-3}  
 
 The RA estimators are:
 
 $$
 \hat \tau_{ATT}
 = \frac{1}{n_1}\sum_{i:W_i=1}\{Y_i-\hat\mu_0(X_i)\}
-$$
+$$ {#eq-estimation-4}
 
 $$
 \hat \tau_{ATE}
 = \frac{1}{n}\sum_{i=1}^n\{\hat\mu_1(X_i)-\hat\mu_0(X_i)\}
-$$
+$$ {#eq-estimation-5}
 
 where $\hat \mu_0(X_i)$ is the predicted value of $Y_i$ from a regression of $Y$ on $X$ for the control group.
 
-Target: $$  \begin{align}
+Target:   $$
+\begin{aligned}
 \tau_{ATT} &= E[Y|W=1] - E[Y(0)|W=1] \\
 &= E_X\{E[Y|W=1, X] - \mu_0(X) \mid W=1\}  \\
 & = E_X\{E[Y|W=1, X] \mid W=1\} - (\alpha_0 + E(X \mid W=1) \beta_0)
-\end{align}
-$$
+\end{aligned}
+$$ {#eq-estimation-6}
+
 
 The last term is a linear form of $\mu_0(X)$. We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.
 
@@ -138,35 +144,43 @@ Answers:
 
 Under unconfoundedness and overlap,
 
-$$ \small \begin{align}
+ $$
+\begin{aligned}
 E[Y(w)] &= E[E[Y|W=w,X]] \\
 &= \sum_x (\sum_y y P(y|w,x)) P(x) \\
 &= \sum_x \sum_y y P(y|w,x) P(x) {\frac{P(w|x)}{P(w|x)}} \\
 &= \sum_x \sum_y y P(y,w,x) {\frac{1}{P(w|x)}} \\
 &= \sum_x E[\mathbb{1}(W=w,X=x)Y] {\frac{1}{P(w|x)}} \\
 &= E[\frac{\mathbb{1}(W=w)Y} {P(w|X)}]
-\end{align}
-$$
+\end{aligned}
+$$ {#eq-estimation-7}
+
 
 The IPW equation means that the expected value of the potential outcome is the weighted average of the observed outcome, where the weight is the inverse of the propensity score $P(w|x)$. $\mathbb{1}(W=w)$ is an indicator function, which is 1 if $W=w$ and 0 otherwise.
 
-$$ \begin{align}
+ $$
+\begin{aligned}
 \tau_{ATE} &= E[Y(1)] - E[Y(0)] \\
 &= E[\frac{W Y} {\pi(X)}] - E[\frac{(1-W) Y} {1-\pi(X)}] \\
-\end{align}
-$$
+\end{aligned}
+$$ {#eq-estimation-8}
+
 
 The sample estimators are:
 
-$$ \begin{align}
+ $$
+\begin{aligned}
 \hat \tau_{ATE, IPW} &= \frac{1}{N} \sum_i \frac{W_i Y_i} {\hat\pi(X_i)} - \frac{1}{N} \sum_i \frac{(1-W_i) Y_i} {1-\hat \pi(X_i)}
-\end{align}
-$$
+\end{aligned}
+$$ {#eq-estimation-9}
 
-$$ \begin{align}
+
+ $$
+\begin{aligned}
 \hat \tau_{ATT, IPW} &= \bar Y_1 - \frac{1}{N_1} \sum_i \frac{\hat \pi(X_i)(1-W_i) Y_i} {1-\hat \pi(X_i)}
-\end{align}
-$$
+\end{aligned}
+$$ {#eq-estimation-10}
+
 
 ### IPW Intuition
 
@@ -180,14 +194,14 @@ We can model both outcome and treatment assignment, and use both models to estim
 
 ### AIPW
 
-$$ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] $$
+$$ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)] $$ {#eq-estimation-11}
 
 For the ATT, control units are weighted by the odds $\hat\pi(X_i)/(1-\hat\pi(X_i))$
 rather than $1/(1-\hat\pi(X_i))$: this reweights the controls to the covariate
 distribution of the treated (one can check
 ${\rm E}[\frac{\pi(X)}{1-\pi(X)}(1-W)Y] = P(W=1)\, {\rm E}[Y(0)|W=1]$).
 
-$$ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] $$
+$$ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] $$ {#eq-estimation-12}
 
 ```{julia}
 #| warning: false

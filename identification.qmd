@@ -3,6 +3,7 @@
 ```{julia}
 #| include: false
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using GraphMakie
 using Graphs
 using GeometryBasics
@@ -11,6 +12,7 @@ using GeometryBasics
 ```{julia}
 #| eval: false
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using GraphMakie
 using Graphs
 using GeometryBasics
@@ -145,38 +147,40 @@ We label treatment assignment status $W$, covariates $X$.
 
 Let's define some treatment effects:
 
-$$ \tau_{ATE} = E[Y(1) - Y(0)] $$
+$$ \tau_{ATE} = E[Y(1) - Y(0)] $$ {#eq-identification-1}
 
-$$ \tau_{ATT} =  E[Y(1) - Y(0) | W=1] $$
+$$ \tau_{ATT} =  E[Y(1) - Y(0) | W=1] $$ {#eq-identification-2}
 
-$$ \tau_{ATU} =  E[Y(1) - Y(0)| W=0] $$
+$$ \tau_{ATU} =  E[Y(1) - Y(0)| W=0] $$ {#eq-identification-3}
 
-$$ \tau_{ATE} = \rho \tau_{ATT} + (1-\rho) \tau_{ATU}$$
+$$ \tau_{ATE} = \rho \tau_{ATT} + (1-\rho) \tau_{ATU}$$ {#eq-identification-4}
 
 where $\rho= P(W=1)$.
 
 ## Identification: From Potential Outcome to Observed
 
-We focus on $\tau_{ATT}$. To identify it, we need: $$ E[Y(1) | W=1]$$ which is easy, because we observe it.
+We focus on $\tau_{ATT}$. To identify it, we need: $$ E[Y(1) | W=1]$$ {#eq-identification-5} which is easy, because we observe it.
 
-And we need $$ E[Y(0) | W=1]$$
+And we need $$ E[Y(0) | W=1]$$ {#eq-identification-6}
 
-To identify this, we'll need unconfoundedness: $$ E[Y(0) | W, X] = E[Y(0)| X] $$ and overlap: $$ \pi(x)= P(W=1 | X=x) < 1$$ (for the ATT only $\pi(x)<1$ is needed; the ATE requires $0<\pi(x)<1$).
+To identify this, we'll need unconfoundedness: $$ E[Y(0) | W, X] = E[Y(0)| X] $$ {#eq-identification-7} and overlap: $$ \pi(x)= P(W=1 | X=x) < 1$$ {#eq-identification-8} (for the ATT only $\pi(x)<1$ is needed; the ATE requires $0<\pi(x)<1$).
 
 Unconfoundedness says that within each subgroup $X=x$, treated and
 control units have the same mean of $Y(0)$:
 $E[Y(0)|W=1,X=x]=E[Y(0)|W=0,X=x]=E[Y|W=0,X=x]$. Averaging over the
 covariate distribution of the treated,
 
-$$ E[Y(0)| W=1] = E\big[ E[Y | W=0, X] \mid W=1 \big], $$
+$$ E[Y(0)| W=1] = E\big[ E[Y | W=0, X] \mid W=1 \big], $$ {#eq-identification-9}
 
 which involves only observed data. Therefore ATT is identified:
 
-$$ \small \begin{align}
+ $$
+\begin{aligned}
 \tau_{ATT} &=  E[Y(1) - Y(0) | W=1] \\
 &= E[Y|W=1] - E\big[ E[Y | W=0, X] \mid W=1 \big]
-\end{align}
-$$
+\end{aligned}
+$$ {#eq-identification-10}
+
 
 Note the conditional-on-$X$ assumption does NOT imply the marginal
 equality $E[Y(0)|W=1]=E[Y(0)|W=0]$: treated and control units have
@@ -187,13 +191,13 @@ $E[Y(0)|W=1]=E[Y(0)|W=0]=E[Y|W=0]$, the formula collapses to
 $E[Y|W=1]-E[Y|W=0]$, and a difference-in-means estimator is
 consistent.
 
-$$ \hat{\tau}_{ATT} = \bar Y_1 - \bar Y_0 $$
+$$ \hat{\tau}_{ATT} = \bar Y_1 - \bar Y_0 $$ {#eq-identification-11}
 
 But in observational studies, most cases we cannot assume unconfoundedness. What can we do to justify unconfoundedness better?
 
 ## Unconfoundedness and Overlap
 
-Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability), stated jointly for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for $Y(0)$): $$ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\} $$ Overlap: $$ 0 < \pi(x)= P(W=1 | X=x) < 1 $$ SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.
+Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability), stated jointly for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for $Y(0)$): $$ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\} $$ {#eq-identification-12} Overlap: $$ 0 < \pi(x)= P(W=1 | X=x) < 1 $$ {#eq-identification-13} SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.
 
 Within each subgroup of $X=x$, W is independent of $Y(0)$. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.
 

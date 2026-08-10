@@ -53,15 +53,15 @@ Considerations:
 
 Estimators based on efficient influence function are often $\sqrt n$ consistent, meaning they converge to the truth as fast as $\sqrt n$ rate. This means the bias not only goes to 0 with $n$ goes to infinity, but also as fast as $1/ \sqrt n$ goes to 0. Why does this matter? Because we have limited sample size, when we are based on asymptotics, the faster the bias goes to 0 the smaller sample size we need.
 
-If we have an estimator such that $$ \sqrt n (\hat \psi - \psi) = \sqrt n P_n(\phi) + o_P(1) \rightarrow N(0, var(\phi))$$
+If we have an estimator such that $$ \sqrt n (\hat \psi - \psi) = \sqrt n P_n(\phi) + o_P(1) \rightarrow N(0, var(\phi))$$ {#eq-nonparametric-1}
 
 Then this estimator is $\sqrt n$ consistent and asymptotically normal; and $\phi$ is the influence function. The efficient influence function is the one with variance at the lower bound (similar to parametric case for Cramer-Rao lower bound).
 
 Unfortunately there is no universal formula for efficient influence function for every problem. We need to derive it for each problem. For example, ATE has an IF based estimator, but ATT needs a different formula; and LATE has a different formula too, etc. Deriving them is hard!
 
-For the treated potential-outcome mean, $\psi_1 = E\{E(Y \mid X, A=1)\}$, the efficient influence function is $$\phi_1 (Z; P) = \frac{A}{\pi (X)} \{ Y - \mu_1 (X) \} + \mu_1(X) - \psi_1$$ where $\pi (X) = P(A=1 | X)$ is the propensity score model and $\mu_1 (X) = E(Y |X, A=1)$ is the treated outcome model. The ATE influence function is the difference between the treated and untreated components, $\phi_1-\phi_0$.
+For the treated potential-outcome mean, $\psi_1 = E\{E(Y \mid X, A=1)\}$, the efficient influence function is $$\phi_1 (Z; P) = \frac{A}{\pi (X)} \{ Y - \mu_1 (X) \} + \mu_1(X) - \psi_1$$ {#eq-nonparametric-2} where $\pi (X) = P(A=1 | X)$ is the propensity score model and $\mu_1 (X) = E(Y |X, A=1)$ is the treated outcome model. The ATE influence function is the difference between the treated and untreated components, $\phi_1-\phi_0$.
 
-For example, an IF-based bias-corrected estimator for the treated-arm mean $$\hat \psi_1 = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu_1 (X) \} + \hat \mu_1(X) \right]$$ where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
+For example, an IF-based bias-corrected estimator for the treated-arm mean $$\hat \psi_1 = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu_1 (X) \} + \hat \mu_1(X) \right]$$ {#eq-nonparametric-3} where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
 
 Since we know the influence function, we can calculate its variance. This variance is the same as variance of $\hat \psi$ since they differ by a constant $\psi$. We can use any estimators to estimate the nuisance parameters, then get $\hat \psi$. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.
 
@@ -339,9 +339,9 @@ DoubleML (Double/Debiased Machine Learning) was proposed by Chernozhukov et al. 
 
 They consider a partially linear model:
 
-$$ y_i = \theta d_i + g_0(x_i) + \eta_i $$
+$$ y_i = \theta d_i + g_0(x_i) + \eta_i $$ {#eq-nonparametric-4}
 
-$$ d_i = m_0(x_i) + v_i $$
+$$ d_i = m_0(x_i) + v_i $$ {#eq-nonparametric-5}
 
 This model is quite general, except it does not allow interaction of $d$ and $x$; therefore no heterogeneous treatment effect across $x$. But "DoubleML" implements more than partially linear model, it actually allows for heterogeneous treatment effects, in models such as interactive regression model.
 
@@ -351,7 +351,7 @@ Then regress $\hat W$ on $\hat V$. Based on FWL theorem, you get $\hat \theta$.
 
 An important component here is to specify a Neyman-orthogonal score function. The *partialling-out* form, which is what the residual-on-residual regression below implements, is
 
-$$\psi (W; \theta, \eta) = \big(Y - l(X) - \theta\,(D-m(X))\big)\,(D-m(X)),$$
+$$\psi (W; \theta, \eta) = \big(Y - l(X) - \theta\,(D-m(X))\big)\,(D-m(X)),$$ {#eq-nonparametric-6}
 
 with $l(X)=E[Y\mid X]$ and $m(X)=E[D\mid X]$. The estimator $\hat \theta$ solves the equation that the sample mean of this score function is 0.
 

@@ -7,6 +7,7 @@ using Distributions
 using Random
 using Statistics
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using GLM
 using Printf
 ```
@@ -18,6 +19,7 @@ using Distributions
 using Random
 using Statistics
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using GLM
 ```
 
@@ -84,7 +86,7 @@ only reveals one potential outcome.
 
 $$
 \text{ATE} = \mathbb{E}[Y(1) - Y(0)]
-$$
+$$ {#eq-causal-estimands-1}
 
 ATE is the mean effect in the whole population. It compares the mean outcome
 if everyone were treated with the mean outcome if nobody were treated.
@@ -104,7 +106,7 @@ ate_true = mean(Y1 .- Y0)
 
 $$
 \text{ATT} = \mathbb{E}[Y(1) - Y(0) \mid D = 1]
-$$
+$$ {#eq-causal-estimands-2}
 
 ATT is the mean effect for the units that actually took treatment. It differs
 from ATE when treatment selection is related to treatment-effect
@@ -136,7 +138,7 @@ across different, non-identical subpopulations.
 
 $$
 \text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid D(1) > D(0)]
-$$
+$$ {#eq-causal-estimands-3}
 
 LATE is the mean effect for compliers, the units whose treatment status is
 changed by the instrument. Under the usual IV assumptions, the Wald estimator
@@ -172,7 +174,7 @@ because $Z$ changes treatment only for that group.
 
 $$
 \text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
-$$
+$$ {#eq-causal-estimands-4}
 
 CATE keeps $X$ in the estimand. In this DGP, CATE($x$) is simply
 $\tau(x)=1+2x$.
@@ -200,7 +202,7 @@ cate_est = [mean((Y1 .- Y0)[(X .>= edges[k]) .& (X .< edges[k+1])])
 
 $$
 \text{QTE}(q) = F^{-1}_{Y(1)}(q) - F^{-1}_{Y(0)}(q)
-$$
+$$ {#eq-causal-estimands-5}
 
 (We index quantiles by $q$ to avoid a clash with the treatment-effect
 function $\tau(x)$.)

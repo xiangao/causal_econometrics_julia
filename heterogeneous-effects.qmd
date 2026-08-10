@@ -12,6 +12,7 @@ using MLJ
 using MLJDecisionTreeInterface
 using GLM
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 ```{julia}
@@ -26,6 +27,7 @@ using MLJ
 using MLJDecisionTreeInterface
 using GLM
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 The [estimands chapter](causal-estimands.qmd) defined the conditional
@@ -33,7 +35,7 @@ average treatment effect
 
 $$
 \text{CATE}(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
-$$
+$$ {#eq-heterogeneous-effects-1}
 
 as the effect of treatment for units with covariates $X=x$. In simulation
 we can compute CATE from known potential outcomes. In real data we observe
@@ -237,7 +239,7 @@ The R-learner partials out the main effects of $X$ from both $Y$ and $D$:
 $$
 \tilde Y_i = \frac{Y_i - \hat m(X_i)}{D_i - \hat e(X_i)}, \qquad
 \text{weight}_i = (D_i - \hat e(X_i))^2,
-$$
+$$ {#eq-heterogeneous-effects-2}
 
 where $\hat m(x) = \mathbb{E}[Y \mid X = x]$ and $\hat e(x) = \mathbb{E}[D \mid X = x]$
 are cross-fitted nuisance estimates.
@@ -275,7 +277,7 @@ $$
 \tilde Y_i^{DR} = \hat\mu_1(X_i) - \hat\mu_0(X_i) +
 \frac{D_i (Y_i - \hat\mu_1(X_i))}{\hat e(X_i)} -
 \frac{(1 - D_i) (Y_i - \hat\mu_0(X_i))}{1 - \hat e(X_i)}.
-$$
+$$ {#eq-heterogeneous-effects-3}
 
 ```{julia}
 #| label: dr-learner
@@ -325,7 +327,7 @@ the OLS regression of pseudo-outcomes on covariates:
 $$
 (\beta_0^*, \beta^*) = \arg\min_{\beta_0, \beta} \mathbb{E}\left[(\tau(X) - \beta_0 - X'\beta)^2\right],
 \qquad \text{BLP}(X) = \beta_0^* + X'\beta^*.
-$$
+$$ {#eq-heterogeneous-effects-4}
 
 The $\arg\min$ returns the coefficient vector $(\beta_0^*, \beta^*)$;
 the best linear projection itself is the fitted function
@@ -459,7 +461,7 @@ units:
 
 $$
 \pi^*(x) = \mathbb{1}\{\tau(x) > c\}.
-$$
+$$ {#eq-heterogeneous-effects-5}
 
 For interpretability, we can restrict the policy to a single threshold rule.
 

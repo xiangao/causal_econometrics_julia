@@ -9,6 +9,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 ```{julia}
@@ -20,6 +21,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 The previous chapters often treat identification as yes or no. Applied work
@@ -92,7 +94,7 @@ treatment coefficient and the regression's degrees of freedom:
 $$
 RV_q = \tfrac{1}{2}\left[\sqrt{f_q^4 + 4 f_q^2} - f_q^2\right], \qquad
 f_q = q\, \frac{|t|}{\sqrt{df}},
-$$
+$$ {#eq-sensitivity-analysis-1}
 
 where $|t|$ is the absolute t-stat of the treatment coefficient, $df$ is
 the residual degrees of freedom, and $q$ is the fraction of the estimate
@@ -235,7 +237,7 @@ both treatment and outcome to fully explain the observed association:
 
 $$
 \text{E-value} = RR + \sqrt{RR\,(RR - 1)}.
-$$
+$$ {#eq-sensitivity-analysis-2}
 
 For $RR < 1$, use $1/RR$ first and apply the formula.
 

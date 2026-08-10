@@ -69,7 +69,7 @@ The **control function approach** instead imposes the
 stronger *conditional mean assumption* [@wooldridge-2010-crosssection, sec. 18.5; @wooldridge-2014-qmle]:
 
 $$\boxed{E[y_1 \mid \mathbf{z}_1,\, y_2,\, v_2] = \exp\!\bigl(\mathbf{z}_1\boldsymbol{\delta}_1
-+ \alpha_1 y_2 + \rho v_2\bigr).}$$
++ \alpha_1 y_2 + \rho v_2\bigr).}$$ {#eq-poisson-iv-1}
 
 This says the unobservable enters the conditional mean **linearly inside** $\exp(\cdot)$.
 Under this assumption, substituting $\hat{v}_2$ for $v_2$ and running Poisson QMLE
@@ -345,8 +345,8 @@ the probit index. It is **not** "add the
 generalized residual linearly inside $\exp(\cdot)$" (that is Approach B as
 coded below). The exact result is multiplicative:
 
-$$E(y_1 \mid \mathbf{z}, y_2) = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2)\cdot h(y_2, \mathbf{z}\boldsymbol{\pi}_2, \rho)$$
-$$h(y_2, \mathbf{z}\boldsymbol{\pi}_2, \rho) = \exp(\rho^2/2)\left\{y_2\,\frac{\Phi(\rho + \mathbf{z}\boldsymbol{\pi}_2)}{\Phi(\mathbf{z}\boldsymbol{\pi}_2)} + (1-y_2)\,\frac{1-\Phi(\rho + \mathbf{z}\boldsymbol{\pi}_2)}{1-\Phi(\mathbf{z}\boldsymbol{\pi}_2)}\right\}$$
+$$E(y_1 \mid \mathbf{z}, y_2) = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2)\cdot h(y_2, \mathbf{z}\boldsymbol{\pi}_2, \rho)$$ {#eq-poisson-iv-2}
+$$h(y_2, \mathbf{z}\boldsymbol{\pi}_2, \rho) = \exp(\rho^2/2)\left\{y_2\,\frac{\Phi(\rho + \mathbf{z}\boldsymbol{\pi}_2)}{\Phi(\mathbf{z}\boldsymbol{\pi}_2)} + (1-y_2)\,\frac{1-\Phi(\rho + \mathbf{z}\boldsymbol{\pi}_2)}{1-\Phi(\mathbf{z}\boldsymbol{\pi}_2)}\right\}$$ {#eq-poisson-iv-3}
 
 estimated by plugging in the first-stage probit's $\hat{\boldsymbol{\pi}}_2$
 and then jointly QMLE-fitting $(\boldsymbol\delta_1,\alpha_1,\rho)$ against this
@@ -358,11 +358,11 @@ approximation, and exactly how good.** Taylor-expand $h$ in $\rho$ around
 $\rho=0$. Since $\tfrac{d}{d\rho}\exp(\rho^2/2)\big|_{\rho=0}=0$, only the
 $\Phi$-ratio terms contribute to first order:
 $$\left.\frac{\partial}{\partial\rho}\frac{\Phi(\rho+\mathbf{z}\boldsymbol\pi_2)}{\Phi(\mathbf{z}\boldsymbol\pi_2)}\right|_{\rho=0} = \frac{\phi(\mathbf{z}\boldsymbol\pi_2)}{\Phi(\mathbf{z}\boldsymbol\pi_2)} = \lambda(\mathbf{z}\boldsymbol\pi_2), \qquad
-\left.\frac{\partial}{\partial\rho}\frac{1-\Phi(\rho+\mathbf{z}\boldsymbol\pi_2)}{1-\Phi(\mathbf{z}\boldsymbol\pi_2)}\right|_{\rho=0} = -\lambda(-\mathbf{z}\boldsymbol\pi_2)$$
+\left.\frac{\partial}{\partial\rho}\frac{1-\Phi(\rho+\mathbf{z}\boldsymbol\pi_2)}{1-\Phi(\mathbf{z}\boldsymbol\pi_2)}\right|_{\rho=0} = -\lambda(-\mathbf{z}\boldsymbol\pi_2)$$ {#eq-poisson-iv-4}
 where $\lambda(\cdot)=\phi(\cdot)/\Phi(\cdot)$ is the inverse Mills ratio (this
 is exactly the `gr2` computed via `pdf(nd, η) / cdf(nd, η)` below). Since
 $h(y_2,\mathbf{z}\boldsymbol\pi_2,0)=1$,
-$$h(y_2,\mathbf{z}\boldsymbol\pi_2,\rho) \approx 1 + \rho\cdot\underbrace{\bigl[y_2\lambda(\mathbf{z}\boldsymbol\pi_2) - (1-y_2)\lambda(-\mathbf{z}\boldsymbol\pi_2)\bigr]}_{=\ \hat r_2,\ \text{the generalized residual}}$$
+$$h(y_2,\mathbf{z}\boldsymbol\pi_2,\rho) \approx 1 + \rho\cdot\underbrace{\bigl[y_2\lambda(\mathbf{z}\boldsymbol\pi_2) - (1-y_2)\lambda(-\mathbf{z}\boldsymbol\pi_2)\bigr]}_{=\ \hat r_2,\ \text{the generalized residual}}$$ {#eq-poisson-iv-5}
 and $\exp(x_1\beta_1)\cdot h(\cdot) \approx \exp(x_1\beta_1)\cdot(1+\rho\, \hat r_2) \approx \exp(x_1\beta_1 + \rho\,\hat r_2)$
 for small $\rho\,\hat r_2$ — recovering exactly Approach B's construction
 (adding $\hat r_2$ linearly inside $\exp(\cdot)$). So **Approach B is the
@@ -484,7 +484,7 @@ it collapses to something particularly simple. With $\Lambda(\cdot)$ the
 logistic CDF and $\lambda(\eta)=\Lambda(\eta)[1-\Lambda(\eta)]$ its density,
 
 $$\hat r_2 = y_2\cdot\frac{\lambda(\hat\eta)}{\Lambda(\hat\eta)} - (1-y_2)\cdot\frac{\lambda(\hat\eta)}{1-\Lambda(\hat\eta)}
-= y_2\bigl[1-\Lambda(\hat\eta)\bigr] - (1-y_2)\Lambda(\hat\eta) = y_2 - \Lambda(\hat\eta) = y_2 - \hat p_2,$$
+= y_2\bigl[1-\Lambda(\hat\eta)\bigr] - (1-y_2)\Lambda(\hat\eta) = y_2 - \Lambda(\hat\eta) = y_2 - \hat p_2,$$ {#eq-poisson-iv-6}
 
 i.e. **the logit generalized residual is just the plain response residual**
 $y_2-\hat p_2$ — no Mills-ratio machinery needed: `logit` first stage, then

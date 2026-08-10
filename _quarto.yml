@@ -71,6 +71,18 @@ format:
     theme: cosmo
     css: style.css
     include-in-header: reader-mode-default.html
+  pdf:
+    documentclass: scrbook
+    papersize: letter
+    latex-auto-install: false
+    geometry:
+      - margin=1in
+    fontsize: 11pt
+    code-overflow: wrap
+    colorlinks: true
+    toc: true
+    toc-depth: 2
+    include-in-header: latex-compat.tex
 
 execute:
   freeze: auto

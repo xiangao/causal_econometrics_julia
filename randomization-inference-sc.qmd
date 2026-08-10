@@ -7,6 +7,7 @@ using SynthDiD
 using Statistics
 using Random
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Printf
 
 using TASC
@@ -19,6 +20,7 @@ using SynthDiD
 using Statistics
 using Random
 using CairoMakie
+CairoMakie.activate!(type = "png")
 
 using TASC
 ```
@@ -155,7 +157,7 @@ propose normalising by pre-treatment fit:
 $$
 \text{MSPE ratio}(\ell) = \frac{\frac{1}{T - T_0}\sum_{t > T_0} (Y_{\ell t} - \hat Y_{\ell t})^2}
                               {\frac{1}{T_0}\sum_{t \le T_0} (Y_{\ell t} - \hat Y_{\ell t})^2}.
-$$
+$$ {#eq-randomization-inference-sc-1}
 
 A large ratio means post-treatment gap is large *relative to* pre-treatment
 fit. The MSPE ratio test compares California's ratio to the distribution of

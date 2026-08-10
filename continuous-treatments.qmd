@@ -10,6 +10,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 ```{julia}
@@ -22,6 +23,7 @@ using Random
 using LinearAlgebra
 using Printf
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 So far most examples use a binary treatment. Many treatments are not binary:
@@ -31,7 +33,7 @@ curve,
 
 $$
 \mu(d) = \mathbb{E}[Y(d)], \quad d \in \mathcal{D}.
-$$
+$$ {#eq-continuous-treatments-1}
 
 Here I implement two approaches directly in Julia: the generalized
 propensity score (Hirano-Imbens 2004) and a doubly-robust extension. For
@@ -114,7 +116,7 @@ treatment given covariates:
 
 $$
 r(d, x) = f_{D \mid X}(d \mid x).
-$$
+$$ {#eq-continuous-treatments-2}
 
 Under unconfoundedness, the GPS plays the same role as the propensity score
 for binary treatment. I start with a normal model for treatment given
@@ -180,7 +182,7 @@ $\hat r(d \mid x)$:
 $$
 \hat\mu_{DR}(d) = \frac{1}{n} \sum_i \hat\mu(d, X_i) + \sum_i \tilde w_i(d)\,\bigl(Y_i - \hat\mu(D_i, X_i)\bigr), \qquad
 \tilde w_i(d) = \frac{w_i(d)}{\sum_j w_j(d)}, \quad w_i(d) = \frac{K_h(D_i - d)}{\hat r(D_i \mid X_i)}
-$$
+$$ {#eq-continuous-treatments-3}
 
 where $K_h$ is a kernel around dose $d$. The code self-normalizes the kernel
 weights (a Hájek/stabilized form, $\sum_i \tilde w_i = 1$) rather than dividing
@@ -237,7 +239,7 @@ multinomial probability:
 
 $$
 \hat r(d, x) = \widehat{P}(D = d \mid X = x).
-$$
+$$ {#eq-continuous-treatments-4}
 
 A multinomial regression supplies $\hat r$. The dose-response curve becomes
 the average outcome under each treatment level.

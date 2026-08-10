@@ -3,6 +3,7 @@
 ```{julia}
 #| include: false
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using GraphMakie
 using Graphs
 using GLM
@@ -23,6 +24,7 @@ using Printf
 ```{julia}
 #| eval: false
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using GraphMakie
 using Graphs
 using GLM
@@ -70,7 +72,7 @@ graphplot(g, layout = Point2f.(x, y),
 
 Traditionally mediation model can be represented in the following equations:
 
-$$ Y = a W + b M + \epsilon_1 $$ $$ M = c W + \epsilon_2 $$
+$$ Y = a W + b M + \epsilon_1 $$ {#eq-mediation-1} $$ M = c W + \epsilon_2 $$ {#eq-mediation-2}
 
 That is, we'd like to study the effect of $W$ on $Y$, and we see the effect can be a direct effect, and an indirect effect, through $M$.
 
@@ -126,27 +128,27 @@ fit
 
 Suppose we can set $W$ and $M$ at will to any $(w, m)$, then we have the potential outcome $Y(w,m)$.
 
-Controlled direct effect (CDE) is defined as $$ CDE(m) = E[Y(1,m)-Y(0,m)] $$ That is, setting $M$ to $m$, what is the effect of $W$ on $Y$?
+Controlled direct effect (CDE) is defined as $$ CDE(m) = E[Y(1,m)-Y(0,m)] $$ {#eq-mediation-3} That is, setting $M$ to $m$, what is the effect of $W$ on $Y$?
 
 ### Assumptions
 
 -   Conditional treatment randomization. Suppose we observe confounders X, which can be a joint set of confounders for the W to Y pathway, or the M to Y pathway.
 
-$$  Y(w,m) \perp W|X  $$
+$$  Y(w,m) \perp W|X  $$ {#eq-mediation-4}
 
 This is the usual conditional independence (unconfoundedness, ignorability, etc.) assumption. This is saying the assignment of treatment, given covariates $X$, has nothing to do with potential outcomes.
 
 -   Conditional mediator randomization.
 
-$$  Y(w,m) \perp M|X, W=w  $$
+$$  Y(w,m) \perp M|X, W=w  $$ {#eq-mediation-5}
 
 This is to say, within each strata of X, given treatment status, the assignment of mediator gives no information about potential outcome. This randomization is usually not implemented during many experiments (random trials). This is the assumption that makes a lot of mediation hard to make a causal claim.
 
 -   Positivity (overlap). There are two positivity assumptions:
 
-$$  P(W=w | X=x) > 0  $$ for all $x$. This is the usual positivity assumption.
+$$  P(W=w | X=x) > 0  $$ {#eq-mediation-6} for all $x$. This is the usual positivity assumption.
 
-$$  P(M=m | X=x, W=w) > 0   $$ for all $x$, $w$, and $m$. This is the mediator positivity.
+$$  P(M=m | X=x, W=w) > 0   $$ {#eq-mediation-7} for all $x$, $w$, and $m$. This is the mediator positivity.
 
 ### Estimation
 
@@ -154,12 +156,13 @@ CDE can be estimated using G-computation method, or IPW, or the doubly-robust me
 
 ### G-computation
 
-G-computation is to model the outcome equation: $$ \small
-\begin{eqnarray*}
-CDE_G(m) &=& \sum_x [ E[Y \mid W=1, M=m, X=x] - \\
+G-computation is to model the outcome equation:  $$
+\begin{aligned}
+CDE_G(m) &= \sum_x [ E[Y \mid W=1, M=m, X=x] - \\
 &&  E[Y \mid W=0, M=m, X=x]]  P(X=x)
-\end{eqnarray*}
-$$
+\end{aligned}
+$$ {#eq-mediation-8}
+
 
 ### IPW
 
@@ -167,26 +170,27 @@ IPW is to model the treatment assignment equation and the mediator assignment eq
 
 $$ \small
 E[Y(w,m)] = E\!\left[{\frac{I(W=w)\,I(M=m)}{g_W(w|X)\,g_M(m|w,X)}}\, Y\right]
-$$
+$$ {#eq-mediation-9}
 
 Therefore,
 
 $$ \small
 CDE_{ipw}(m) = E\left[\frac{I(W=1,M=m)}{g_M(m|1,X)\,g_W(1|X)}\, Y - \frac{I(W=0,M=m)}{g_M(m|0,X)\,g_W(0|X)}\, Y\right]
-$$
+$$ {#eq-mediation-10}
 
 where $g_M$ is the probability of the mediator and $g_W$ the probability of treatment. **This indicator-based form applies to a discrete (here binary) mediator.** For a continuous mediator the indicator $I(M=m)$ and probability $g_M$ must be replaced by a conditional density (or a kernel / stochastic-intervention formulation); the estimator does not apply as written.
 
 ### AIPW
 
-$$ CDE_{AIPW} = CDE_G(m) + B(\bar Q, g_M, g_W) $$ where $\bar Q$ is the mean outcome function.
+$$ CDE_{AIPW} = CDE_G(m) + B(\bar Q, g_M, g_W) $$ {#eq-mediation-11} where $\bar Q$ is the mean outcome function.
 
-$$ \small
-\begin{eqnarray*}
-B(\bar Q, g_M, g_W) &=& \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_M(m|1, X_i) g_W(1|X_i)}[Y_i-\bar Q(m,1,X_i)]} \\
+ $$
+\begin{aligned}
+B(\bar Q, g_M, g_W) &= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_M(m|1, X_i) g_W(1|X_i)}[Y_i-\bar Q(m,1,X_i)]} \\
 &  &  - \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=0)}{g_M(m|0, X_i) g_W(0|X_i)}[Y_i-\bar Q(m,0,X_i)]}
-\end{eqnarray*}
-$$
+\end{aligned}
+$$ {#eq-mediation-12}
+
 
 ### Example: G-computation
 
@@ -288,13 +292,15 @@ cde_aipw = aiptw_EY_A1_M0 - aiptw_EY_A0_M0
 
 CDE is to study the effect of treatment, given the level of mediator. Instead, Natural Effect is to set mediator to its natural value with the value of treatment, that is, $M=M(w)$.
 
+
 $$
-\begin{eqnarray*}
-ATE &=& NIE + NDE \\
-&=&  (E[ Y(1,M(1))] - E[Y(1,M(0))]) + \\
+\begin{aligned}
+ATE &= NIE + NDE \\
+&=  (E[ Y(1,M(1))] - E[Y(1,M(0))]) + \\
 && (E[Y(1, M(0))] - E[Y(0,M(0))])
-\end{eqnarray*}
-$$
+\end{aligned}
+$$ {#eq-mediation-13}
+
 
 The advantage of NDE and NIE comparing to CDE is that it's more "natural"; that is, you don't set the level of mediator deterministically. And it can decompose the ATE into direct and indirect effects.
 
@@ -302,7 +308,7 @@ However, there is an additional assumption needed to identify NDE and NIE.
 
 ### Additional Assumption
 
-$$ Y(w, m) \perp M(w^*) | X$$
+$$ Y(w, m) \perp M(w^*) | X$$ {#eq-mediation-14}
 
 This is the "cross-world" condition: the outcome under $(w,m)$ is independent of $M$ under $w^*$. These two situations cannot happen in the same world; you cannot set $W$ to both $w$ and $w^*$. No experiment can implement it.
 
@@ -410,7 +416,7 @@ precisely to repair this: it decomposes the *actual* ATE,
 
 $$
 ATE \;=\; E[Y(1, Z(1), M(1))] - E[Y(0, Z(0), M(0))] \;=\; IIE + IDE,
-$$
+$$ {#eq-mediation-15}
 
 into direct and indirect components by walking a path of intermediate
 "twin" regimes for $Z$ and $M$, each identified without cross-world

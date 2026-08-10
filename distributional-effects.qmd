@@ -7,6 +7,7 @@ using Distributions
 using Random
 using Statistics
 using CairoMakie
+CairoMakie.activate!(type = "png")
 using Printf
 ```
 
@@ -17,6 +18,7 @@ using Distributions
 using Random
 using Statistics
 using CairoMakie
+CairoMakie.activate!(type = "png")
 ```
 
 The previous chapters focus mostly on the average treatment effect. But many
@@ -36,7 +38,7 @@ The most common summary is the **quantile treatment effect** (QTE):
 
 $$
 \text{QTE}(\tau) = F^{-1}_{Y(1)}(\tau) - F^{-1}_{Y(0)}(\tau), \quad \tau \in (0, 1).
-$$
+$$ {#eq-distributional-effects-1}
 
 QTE($\tau$) reports the difference between the $\tau$-th quantile of the
 treated and control distributions. It is *not* the same as the average effect
@@ -117,7 +119,7 @@ CDFs:
 
 $$
 \hat F_{Y(d)}(y) = \frac{\sum_{i=1}^n w_i^{(d)}\,\mathbf{1}\{D_i = d\}\mathbf{1}\{Y_i \le y\}}{\sum_{i=1}^n w_i^{(d)}\,\mathbf{1}\{D_i = d\}}, \qquad w_i^{(d)} = \frac{1}{\hat\pi(x_i)^d (1-\hat\pi(x_i))^{1-d}}.
-$$
+$$ {#eq-distributional-effects-2}
 
 We self-normalize (divide by the sum of the weights rather than by $n$) so that
 $\hat F$ is a proper CDF that reaches 1; the unnormalized Horvitz–Thompson form
