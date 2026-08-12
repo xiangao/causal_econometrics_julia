@@ -169,7 +169,7 @@ window.Quarto = {
 <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="nav-sidebar floating quarto-light">
+<body class="nav-sidebar floating fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -468,43 +468,7 @@ window.Quarto = {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#the-control-function-framework" id="toc-the-control-function-framework" class="nav-link active" data-scroll-target="#the-control-function-framework"><span class="header-section-number">18.1</span> The Control Function Framework</a>
-  <ul class="collapse">
-  <li><a href="#linear-second-stage-cf-equals-2sls" id="toc-linear-second-stage-cf-equals-2sls" class="nav-link" data-scroll-target="#linear-second-stage-cf-equals-2sls"><span class="header-section-number">18.1.1</span> Linear second stage — CF equals 2SLS</a></li>
-  <li><a href="#nonlinear-second-stage-cf-diverges-from-2sls" id="toc-nonlinear-second-stage-cf-diverges-from-2sls" class="nav-link" data-scroll-target="#nonlinear-second-stage-cf-diverges-from-2sls"><span class="header-section-number">18.1.2</span> Nonlinear second stage — CF diverges from 2SLS</a></li>
-  </ul></li>
-  <li><a href="#part-1-continuous-endogenous-variable" id="toc-part-1-continuous-endogenous-variable" class="nav-link" data-scroll-target="#part-1-continuous-endogenous-variable"><span class="header-section-number">18.2</span> Part 1 — Continuous endogenous variable</a>
-  <ul class="collapse">
-  <li><a href="#data-generating-process" id="toc-data-generating-process" class="nav-link" data-scroll-target="#data-generating-process"><span class="header-section-number">18.2.1</span> Data generating process</a></li>
-  <li><a href="#naive-poisson-endogeneity-bias" id="toc-naive-poisson-endogeneity-bias" class="nav-link" data-scroll-target="#naive-poisson-endogeneity-bias"><span class="header-section-number">18.2.2</span> Naive Poisson — endogeneity bias</a></li>
-  <li><a href="#control-function-approach" id="toc-control-function-approach" class="nav-link" data-scroll-target="#control-function-approach"><span class="header-section-number">18.2.3</span> Control function approach</a></li>
-  <li><a href="#bootstrap-standard-errors" id="toc-bootstrap-standard-errors" class="nav-link" data-scroll-target="#bootstrap-standard-errors"><span class="header-section-number">18.2.4</span> Bootstrap standard errors</a></li>
-  </ul></li>
-  <li><a href="#part-2-binary-endogenous-variable" id="toc-part-2-binary-endogenous-variable" class="nav-link" data-scroll-target="#part-2-binary-endogenous-variable"><span class="header-section-number">18.3</span> Part 2 — Binary endogenous variable</a>
-  <ul class="collapse">
-  <li><a href="#data-generating-process-1" id="toc-data-generating-process-1" class="nav-link" data-scroll-target="#data-generating-process-1"><span class="header-section-number">18.3.1</span> Data generating process</a></li>
-  <li><a href="#why-approach-as-assumption-breaks-down-for-binary-y_2" id="toc-why-approach-as-assumption-breaks-down-for-binary-y_2" class="nav-link" data-scroll-target="#why-approach-as-assumption-breaks-down-for-binary-y_2"><span class="header-section-number">18.3.2</span> Why Approach A’s assumption breaks down for binary <span class="math inline">\(y_2\)</span></a></li>
-  <li><a href="#the-exact-correction-terza-1998-and-approach-b-as-its-local-approximation" id="toc-the-exact-correction-terza-1998-and-approach-b-as-its-local-approximation" class="nav-link" data-scroll-target="#the-exact-correction-terza-1998-and-approach-b-as-its-local-approximation"><span class="header-section-number">18.3.3</span> The exact correction (Terza 1998) and Approach B as its local approximation</a></li>
-  <li><a href="#why-use-approach-b-instead-of-the-exact-correction" id="toc-why-use-approach-b-instead-of-the-exact-correction" class="nav-link" data-scroll-target="#why-use-approach-b-instead-of-the-exact-correction"><span class="header-section-number">18.3.4</span> Why use Approach B instead of the exact correction?</a></li>
-  <li><a href="#three-approaches-practical-recap" id="toc-three-approaches-practical-recap" class="nav-link" data-scroll-target="#three-approaches-practical-recap"><span class="header-section-number">18.3.5</span> Three approaches: practical recap</a></li>
-  <li><a href="#approach-a-linear-projection-cf" id="toc-approach-a-linear-projection-cf" class="nav-link" data-scroll-target="#approach-a-linear-projection-cf"><span class="header-section-number">18.3.6</span> Approach A — Linear projection CF</a></li>
-  <li><a href="#approach-b-probit-generalized-residuals" id="toc-approach-b-probit-generalized-residuals" class="nav-link" data-scroll-target="#approach-b-probit-generalized-residuals"><span class="header-section-number">18.3.7</span> Approach B — Probit generalized residuals</a></li>
-  <li><a href="#does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat" id="toc-does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat" class="nav-link" data-scroll-target="#does-the-first-stage-have-to-be-probit-logit-works-too-with-a-caveat"><span class="header-section-number">18.3.8</span> Does the first stage have to be probit? Logit works too — with a caveat</a></li>
-  <li><a href="#approach-c-fitted-values-as-instrument-ivgmm-poisson" id="toc-approach-c-fitted-values-as-instrument-ivgmm-poisson" class="nav-link" data-scroll-target="#approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.9</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</a></li>
-  <li><a href="#a-vs-c-not-equivalent-in-poisson" id="toc-a-vs-c-not-equivalent-in-poisson" class="nav-link" data-scroll-target="#a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.10</span> A vs C — not equivalent in Poisson</a></li>
-  <li><a href="#bootstrap-for-approach-a-binary-eev" id="toc-bootstrap-for-approach-a-binary-eev" class="nav-link" data-scroll-target="#bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.11</span> Bootstrap for Approach A (binary EEV)</a></li>
-  <li><a href="#comparison-across-all-methods" id="toc-comparison-across-all-methods" class="nav-link" data-scroll-target="#comparison-across-all-methods"><span class="header-section-number">18.3.12</span> Comparison across all methods</a></li>
-  <li><a href="#takeaway-for-the-binary-case" id="toc-takeaway-for-the-binary-case" class="nav-link" data-scroll-target="#takeaway-for-the-binary-case"><span class="header-section-number">18.3.13</span> Takeaway for the binary case</a></li>
-  </ul></li>
-  <li><a href="#why-julia-is-faster" id="toc-why-julia-is-faster" class="nav-link" data-scroll-target="#why-julia-is-faster"><span class="header-section-number">18.4</span> Why Julia is faster</a></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/poisson-iv.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
-    </div>
+    
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -1799,4 +1763,4 @@ Wooldridge, Jeffrey M. 2010. <em>Econometric Analysis of Cross Section and Panel
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/poisson-iv.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/xiangao/causal_econometrics_julia/edit/main/poisson-iv.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/xiangao/causal_econometrics_julia/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
