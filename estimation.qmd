@@ -37,28 +37,28 @@ using Printf
 using RegressionTables
 ```
 
-Once we have identification, which means we can identify the causal effect from the observed data, we can move to estimation. Estimation is to estimate the identified causal effect from the observed data. We have several methods for estimation, including regression adjustment (RA), inverse probability weighting (IPW), augmented inverse probability weighting (AIPW) and inverse probability weighted regression adjustment (IPWRA).
+Once the causal effect is identified, we need an estimator. This chapter covers four: regression adjustment (RA), inverse probability weighting (IPW), augmented IPW (AIPW), and inverse-probability-weighted regression adjustment (IPWRA).
 
 ## Experimental Data
 
-If we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator (under randomisation ATE = ATT = ATU, so no subscript is needed): $$ \hat{\tau} = \bar Y_1 - \bar Y_0 $$ {#eq-estimation-1}
+With experimental data the assumptions hold by design. A difference-in-means estimator suffices (under randomization ATE = ATT = ATU): $$ \hat{\tau} = \bar Y_1 - \bar Y_0 $$ {#eq-estimation-1}
 
-In experimental setting, we can do a t test for the difference in means. We can also do a regression of $Y$ on $W$ and $X$.
+A $t$-test or a regression of $Y$ on $W$ and $X$ both recover the same estimate.
 
 ## Adjustment Formula
 
-From causal to estimation:  $$
+The adjustment formula connects causal and statistical quantities: $$
 \begin{aligned}
 E[Y(1)-Y(0)] &= E[Y(1)] - E[Y(0)] \\
 &=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\
 &=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\
 &=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]
 \end{aligned}
-$$ {#eq-estimation-2}  where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.
+$$ {#eq-estimation-2}  The steps are: linearity of expectation, iterated expectations, unconfoundedness plus overlap, and consistency.
 
 ## Regression Adjustment
 
-How do we get $E[Y|W=w, X=x]$? We can use regression adjustment.
+We estimate $E[Y \mid W=w, X=x]$ by regression.
 
 We define a conditional mean function:
 

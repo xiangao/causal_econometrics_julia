@@ -20,13 +20,11 @@ using GeometryBasics
 
 ## Why Do We Need Tools for Causal Inference?
 
-The main reason we need tools for causal inference is that "association is not causation". We have known how to do association for a long time. In econometrics, people have studied various models for different situations, but mostly associational. But why is association not causation?
-
-The reason is that we may have confounding variables.
+Association is not causation. We have known how to measure associations for a long time, but most econometric models are associational. The gap between the two arises from confounding.
 
 ## Confounders
 
-In this graph, we have $w$ (treatment), $y$ (outcome), and two confounders $c1$ and $c2$. Both $c1$ and $c2$ affect both $w$ and $y$. Therefore, if we just look at the association between $w$ and $y$, it may be due to the confounding effect of $c1$ and $c2$. We cannot say that the association is causal.
+In this graph, $w$ is the treatment, $y$ the outcome, and $c_1$, $c_2$ are confounders. Both confounders affect both $w$ and $y$, so the observed association between $w$ and $y$ may reflect confounding rather than a causal effect.
 
 ```{julia}
 #| label: dag1
@@ -61,7 +59,7 @@ hidespines!(ax)
 fig
 ```
 
-Here is a concrete example with 401(k) participation and assets:  It could be the case that income and age are causing both 401(k) participation and assets. Therefore, the association between 401(k) participation and assets may not be causal. We need to control for income and age to identify the causal effect of 401(k) participation on assets.
+A concrete example: income and age may both drive 401(k) participation and assets. To identify the causal effect of participation on assets, we need to control for income and age.
 
 ```{julia}
 #| label: dag1-2
@@ -96,7 +94,7 @@ hidespines!(ax)
 fig
 ```
 
-And another example with birth weight and maternal smoking:  It could be the case that prenatal care and maternal age are causing both maternal smoking and birth weight. It could be that maternal smoking has nothing to do with birth weight.  But age and prenatal care are causing both maternal smoking and birth weight, therefore maternal smoking appears to cause birth weight.
+Another example: prenatal care and maternal age may affect both smoking and birth weight. Even if smoking has no causal effect on birth weight, it will appear to because of these shared causes.
 
 ```{julia}
 #| label: dag1-3
@@ -133,19 +131,19 @@ fig
 
 ## Controlled and Uncontrolled Confounders
 
-If we can control for all confounders then we do have causation from correlation. However, first, do we have all confounders in our data? Secondly, how do we control for them? In a randomised experiment, we don't have these problems. In an observational study, we have these two problems. In the graph, we may have "c2" unobserved, "c1" observed, for example. Then any estimation of the effect from $w$ to $y$ is biased.
+If we can control for all confounders, correlation does imply causation. The two questions are: do we observe all confounders, and how do we control for them? In a randomized experiment neither question arises. In an observational study both do. If $c_2$ is unobserved, any estimate of the effect of $w$ on $y$ is biased.
 
 ## Potential Outcome Setup
 
-We use the Potential Outcomes framework, also called counterfactual framework to study causal effect. What is a potential outcome? Suppose we have the simplest situation. A treatment has two states, treated and control (untreated). And we have a person (subject) who then has two potential outcomes $Y(1)$ and $Y(0)$. Consider these two fixed.
+We study causal effects through the potential outcomes (counterfactual) framework. Each unit has two potential outcomes, $Y(1)$ and $Y(0)$, one for each treatment state. These are fixed before any assignment; the experiment tries to recover them.
 
-That is, every one subject has two potential outcomes. That can be seen as pre-determined. That is, even before the experiment, or program, they are already there. The experiment is to try to recover them. However, recovering each individual treatment effect $\tau_i = Y_i(1) - Y_i(0)$ is not possible, because it's impossible to observe both $Y_i(1)$ and $Y_i(0)$. Only some average treatment effects can be estimated.
+The fundamental problem is that we never observe both: only the realized outcome $Y = WY(1) + (1-W)Y(0)$ is seen. Individual treatment effects $\tau_i = Y_i(1) - Y_i(0)$ are not identifiable; only averages can be estimated.
 
-We label treatment assignment status $W$, covariates $X$.
+We write $W$ for treatment assignment and $X$ for covariates.
 
 ## ATE, ATT and ATU
 
-Let's define some treatment effects:
+The standard estimands are:
 
 $$ \tau_{ATE} = E[Y(1) - Y(0)] $$ {#eq-identification-1}
 

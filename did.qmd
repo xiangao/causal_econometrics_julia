@@ -42,7 +42,7 @@ using Random
 using Distributions
 ```
 
-What if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.
+When unconfoundedness fails, we need weaker assumptions. The parallel trends assumption leads to the difference-in-differences estimator.
 
 > **Related reading**: For a side-by-side comparison of DiD, synthetic
 > control, synthetic DiD, and multivariate SC on a *single* panel — and
@@ -56,13 +56,11 @@ Suppose we have two periods, $t = (1,2)$. Some units are treated just prior to p
 
 $$ [Y_{i1}(0), Y_{i1}(1), Y_{i2}(0), Y_{i2}(1)] $$ {#eq-did-1}
 
-We use $D$ to identify the treated group.
-
-The ATT when $T=2$:
+Let $D$ denote the treated group. The ATT in period 2 is
 
 $$ \tau_{2,att} = E(Y_2(1) - Y_2(0) | D=1) $$ {#eq-did-2}
 
-In words, we are interested in the ATT in the second period. The difficult part is the second term.
+The first term is observed. The second is the counterfactual.
 
 ## Parallel Trends Assumption
 
@@ -72,7 +70,7 @@ or
 
 $$ E[\Delta Y(0) | D=1] = E[\Delta Y(0) | D =0] $$ {#eq-did-4}
 
-In other words, this means the change of potential outcome for untreated state between period 1 and 2 is independent of treatment assignment (unconfounded).
+In words, the change in untreated potential outcomes between periods 1 and 2 is the same for treated and control groups.
 
 ## No Anticipation Assumption
 
