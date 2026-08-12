@@ -24,7 +24,7 @@
     "href": "identification.html",
     "title": "1  Identification & Potential Outcomes",
     "section": "",
-    "text": "1.1 Why Do We Need Tools for Causal Inference?\nThe main reason we need tools for causal inference is that “association is not causation”. We have known how to do association for a long time. In econometrics, people have studied various models for different situations, but mostly associational. But why is association not causation?\nThe reason is that we may have confounding variables.",
+    "text": "1.1 Why Do We Need Tools for Causal Inference?\nAssociation is not causation. We have known how to measure associations for a long time, but most econometric models are associational. The gap between the two arises from confounding.",
     "crumbs": [
       "Identification",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Identification & Potential Outcomes</span>"
@@ -35,7 +35,7 @@
     "href": "identification.html#confounders",
     "title": "1  Identification & Potential Outcomes",
     "section": "1.2 Confounders",
-    "text": "1.2 Confounders\nIn this graph, we have \\(w\\) (treatment), \\(y\\) (outcome), and two confounders \\(c1\\) and \\(c2\\). Both \\(c1\\) and \\(c2\\) affect both \\(w\\) and \\(y\\). Therefore, if we just look at the association between \\(w\\) and \\(y\\), it may be due to the confounding effect of \\(c1\\) and \\(c2\\). We cannot say that the association is causal.\n\n\n\n\n\nHere is a concrete example with 401(k) participation and assets: It could be the case that income and age are causing both 401(k) participation and assets. Therefore, the association between 401(k) participation and assets may not be causal. We need to control for income and age to identify the causal effect of 401(k) participation on assets.\n\n\n\n\n\nAnd another example with birth weight and maternal smoking: It could be the case that prenatal care and maternal age are causing both maternal smoking and birth weight. It could be that maternal smoking has nothing to do with birth weight. But age and prenatal care are causing both maternal smoking and birth weight, therefore maternal smoking appears to cause birth weight.",
+    "text": "1.2 Confounders\nIn this graph, \\(w\\) is the treatment, \\(y\\) the outcome, and \\(c_1\\), \\(c_2\\) are confounders. Both confounders affect both \\(w\\) and \\(y\\), so the observed association between \\(w\\) and \\(y\\) may reflect confounding rather than a causal effect.\n\n\n\n\n\nA concrete example: income and age may both drive 401(k) participation and assets. To identify the causal effect of participation on assets, we need to control for income and age.\n\n\n\n\n\nAnother example: prenatal care and maternal age may affect both smoking and birth weight. Even if smoking has no causal effect on birth weight, it will appear to because of these shared causes.",
     "crumbs": [
       "Identification",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Identification & Potential Outcomes</span>"
@@ -46,7 +46,7 @@
     "href": "identification.html#controlled-and-uncontrolled-confounders",
     "title": "1  Identification & Potential Outcomes",
     "section": "1.3 Controlled and Uncontrolled Confounders",
-    "text": "1.3 Controlled and Uncontrolled Confounders\nIf we can control for all confounders then we do have causation from correlation. However, first, do we have all confounders in our data? Secondly, how do we control for them? In a randomised experiment, we don’t have these problems. In an observational study, we have these two problems. In the graph, we may have “c2” unobserved, “c1” observed, for example. Then any estimation of the effect from \\(w\\) to \\(y\\) is biased.",
+    "text": "1.3 Controlled and Uncontrolled Confounders\nIf we can control for all confounders, correlation does imply causation. The two questions are: do we observe all confounders, and how do we control for them? In a randomized experiment neither question arises. In an observational study both do. If \\(c_2\\) is unobserved, any estimate of the effect of \\(w\\) on \\(y\\) is biased.",
     "crumbs": [
       "Identification",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Identification & Potential Outcomes</span>"
@@ -57,7 +57,7 @@
     "href": "identification.html#potential-outcome-setup",
     "title": "1  Identification & Potential Outcomes",
     "section": "1.4 Potential Outcome Setup",
-    "text": "1.4 Potential Outcome Setup\nWe use the Potential Outcomes framework, also called counterfactual framework to study causal effect. What is a potential outcome? Suppose we have the simplest situation. A treatment has two states, treated and control (untreated). And we have a person (subject) who then has two potential outcomes \\(Y(1)\\) and \\(Y(0)\\). Consider these two fixed.\nThat is, every one subject has two potential outcomes. That can be seen as pre-determined. That is, even before the experiment, or program, they are already there. The experiment is to try to recover them. However, recovering each individual treatment effect \\(\\tau_i = Y_i(1) - Y_i(0)\\) is not possible, because it’s impossible to observe both \\(Y_i(1)\\) and \\(Y_i(0)\\). Only some average treatment effects can be estimated.\nWe label treatment assignment status \\(W\\), covariates \\(X\\).",
+    "text": "1.4 Potential Outcome Setup\nWe study causal effects through the potential outcomes (counterfactual) framework. Each unit has two potential outcomes, \\(Y(1)\\) and \\(Y(0)\\), one for each treatment state. These are fixed before any assignment; the experiment tries to recover them.\nThe fundamental problem is that we never observe both: only the realized outcome \\(Y = WY(1) + (1-W)Y(0)\\) is seen. Individual treatment effects \\(\\tau_i = Y_i(1) - Y_i(0)\\) are not identifiable; only averages can be estimated.\nWe write \\(W\\) for treatment assignment and \\(X\\) for covariates.",
     "crumbs": [
       "Identification",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Identification & Potential Outcomes</span>"
@@ -68,7 +68,7 @@
     "href": "identification.html#ate-att-and-atu",
     "title": "1  Identification & Potential Outcomes",
     "section": "1.5 ATE, ATT and ATU",
-    "text": "1.5 ATE, ATT and ATU\nLet’s define some treatment effects:\n\\[ \\tau_{ATE} = E[Y(1) - Y(0)]  \\tag{1.1}\\]\n\\[ \\tau_{ATT} =  E[Y(1) - Y(0) | W=1]  \\tag{1.2}\\]\n\\[ \\tau_{ATU} =  E[Y(1) - Y(0)| W=0]  \\tag{1.3}\\]\n\\[ \\tau_{ATE} = \\rho \\tau_{ATT} + (1-\\rho) \\tau_{ATU} \\tag{1.4}\\]\nwhere \\(\\rho= P(W=1)\\).",
+    "text": "1.5 ATE, ATT and ATU\nThe standard estimands are:\n\\[ \\tau_{ATE} = E[Y(1) - Y(0)]  \\tag{1.1}\\]\n\\[ \\tau_{ATT} =  E[Y(1) - Y(0) | W=1]  \\tag{1.2}\\]\n\\[ \\tau_{ATU} =  E[Y(1) - Y(0)| W=0]  \\tag{1.3}\\]\n\\[ \\tau_{ATE} = \\rho \\tau_{ATT} + (1-\\rho) \\tau_{ATU} \\tag{1.4}\\]\nwhere \\(\\rho= P(W=1)\\).",
     "crumbs": [
       "Identification",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Identification & Potential Outcomes</span>"
@@ -409,7 +409,7 @@
     "href": "estimation.html",
     "title": "6  Estimation: RA, IPW, AIPW and IPWRA",
     "section": "",
-    "text": "6.1 Experimental Data\nOnce we have identification, which means we can identify the causal effect from the observed data, we can move to estimation. Estimation is to estimate the identified causal effect from the observed data. We have several methods for estimation, including regression adjustment (RA), inverse probability weighting (IPW), augmented inverse probability weighting (AIPW) and inverse probability weighted regression adjustment (IPWRA).\nIf we have experimental data, then we have the assumptions satisfied. We can directly compare the treated and control groups. We can use a difference-in-means estimator (under randomisation ATE = ATT = ATU, so no subscript is needed): \\[ \\hat{\\tau} = \\bar Y_1 - \\bar Y_0  \\tag{6.1}\\]\nIn experimental setting, we can do a t test for the difference in means. We can also do a regression of \\(Y\\) on \\(W\\) and \\(X\\).",
+    "text": "6.1 Experimental Data\nOnce the causal effect is identified, we need an estimator. This chapter covers four: regression adjustment (RA), inverse probability weighting (IPW), augmented IPW (AIPW), and inverse-probability-weighted regression adjustment (IPWRA).\nWith experimental data the assumptions hold by design. A difference-in-means estimator suffices (under randomization ATE = ATT = ATU): \\[ \\hat{\\tau} = \\bar Y_1 - \\bar Y_0  \\tag{6.1}\\]\nA \\(t\\)-test or a regression of \\(Y\\) on \\(W\\) and \\(X\\) both recover the same estimate.",
     "crumbs": [
       "Estimation",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Estimation: RA, IPW, AIPW and IPWRA</span>"
@@ -420,7 +420,7 @@
     "href": "estimation.html#adjustment-formula",
     "title": "6  Estimation: RA, IPW, AIPW and IPWRA",
     "section": "6.2 Adjustment Formula",
-    "text": "6.2 Adjustment Formula\nFrom causal to estimation: \\[\n\\begin{aligned}\nE[Y(1)-Y(0)] &= E[Y(1)] - E[Y(0)] \\\\\n&=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\\\\n&=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\\\\n&=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]\n\\end{aligned}\n\\tag{6.2}\\] where the first step is linear expectation. Second step is law of iterated expectation. Third step is unconfoundedness and overlap. Fourth step is consistency.",
+    "text": "6.2 Adjustment Formula\nThe adjustment formula connects causal and statistical quantities: \\[\n\\begin{aligned}\nE[Y(1)-Y(0)] &= E[Y(1)] - E[Y(0)] \\\\\n&=E_X[E[Y(1)|X]] - E_X[E[Y(0)|X]] \\\\\n&=E_X[E[Y(1)|W=1, X]] - E_X[E[Y(0)|W=0, X]] \\\\\n&=E_X[E[Y|W=1, X]] - E_X[E[Y|W=0, X]]\n\\end{aligned}\n\\tag{6.2}\\] The steps are: linearity of expectation, iterated expectations, unconfoundedness plus overlap, and consistency.",
     "crumbs": [
       "Estimation",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Estimation: RA, IPW, AIPW and IPWRA</span>"
@@ -431,7 +431,7 @@
     "href": "estimation.html#regression-adjustment",
     "title": "6  Estimation: RA, IPW, AIPW and IPWRA",
     "section": "6.3 Regression Adjustment",
-    "text": "6.3 Regression Adjustment\nHow do we get \\(E[Y|W=w, X=x]\\)? We can use regression adjustment.\nWe define a conditional mean function:\n\\[\n\\begin{aligned}\n\\mu_0(X) &\\equiv E[Y|W=0, X] \\\\\n&= E[Y(0)|W=0, X]  \\\\\n&= E[Y(0)|W=1, X]\n\\end{aligned}\n\\tag{6.3}\\]\nThe RA estimators are:\n\\[\n\\hat \\tau_{ATT}\n= \\frac{1}{n_1}\\sum_{i:W_i=1}\\{Y_i-\\hat\\mu_0(X_i)\\}\n\\tag{6.4}\\]\n\\[\n\\hat \\tau_{ATE}\n= \\frac{1}{n}\\sum_{i=1}^n\\{\\hat\\mu_1(X_i)-\\hat\\mu_0(X_i)\\}\n\\tag{6.5}\\]\nwhere \\(\\hat \\mu_0(X_i)\\) is the predicted value of \\(Y_i\\) from a regression of \\(Y\\) on \\(X\\) for the control group.\nTarget: \\[\n\\begin{aligned}\n\\tau_{ATT} &= E[Y|W=1] - E[Y(0)|W=1] \\\\\n&= E_X\\{E[Y|W=1, X] - \\mu_0(X) \\mid W=1\\}  \\\\\n& = E_X\\{E[Y|W=1, X] \\mid W=1\\} - (\\alpha_0 + E(X \\mid W=1) \\beta_0)\n\\end{aligned}\n\\tag{6.6}\\]\nThe last term is a linear form of \\(\\mu_0(X)\\). We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.",
+    "text": "6.3 Regression Adjustment\nWe estimate \\(E[Y \\mid W=w, X=x]\\) by regression.\nWe define a conditional mean function:\n\\[\n\\begin{aligned}\n\\mu_0(X) &\\equiv E[Y|W=0, X] \\\\\n&= E[Y(0)|W=0, X]  \\\\\n&= E[Y(0)|W=1, X]\n\\end{aligned}\n\\tag{6.3}\\]\nThe RA estimators are:\n\\[\n\\hat \\tau_{ATT}\n= \\frac{1}{n_1}\\sum_{i:W_i=1}\\{Y_i-\\hat\\mu_0(X_i)\\}\n\\tag{6.4}\\]\n\\[\n\\hat \\tau_{ATE}\n= \\frac{1}{n}\\sum_{i=1}^n\\{\\hat\\mu_1(X_i)-\\hat\\mu_0(X_i)\\}\n\\tag{6.5}\\]\nwhere \\(\\hat \\mu_0(X_i)\\) is the predicted value of \\(Y_i\\) from a regression of \\(Y\\) on \\(X\\) for the control group.\nTarget: \\[\n\\begin{aligned}\n\\tau_{ATT} &= E[Y|W=1] - E[Y(0)|W=1] \\\\\n&= E_X\\{E[Y|W=1, X] - \\mu_0(X) \\mid W=1\\}  \\\\\n& = E_X\\{E[Y|W=1, X] \\mid W=1\\} - (\\alpha_0 + E(X \\mid W=1) \\beta_0)\n\\end{aligned}\n\\tag{6.6}\\]\nThe last term is a linear form of \\(\\mu_0(X)\\). We can specify other forms, but the idea is to model it with some functional form. For parametric forms, we need to make sure extrapolation does not go out of control.",
     "crumbs": [
       "Estimation",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Estimation: RA, IPW, AIPW and IPWRA</span>"
@@ -1025,7 +1025,7 @@
     "href": "did.html",
     "title": "13  Difference-in-Differences",
     "section": "",
-    "text": "13.1 \\(T=2\\) Panel Data\nWhat if unconfoundedness fails? We have to settle for weaker assumptions. One such assumption is the parallel trends assumption. If we have this assumption, we can use a difference-in-differences estimator.\nSuppose we have two periods, \\(t = (1,2)\\). Some units are treated just prior to period 2. For each individual \\(i\\), there are four potential outcomes:\n\\[ [Y_{i1}(0), Y_{i1}(1), Y_{i2}(0), Y_{i2}(1)]  \\tag{13.1}\\]\nWe use \\(D\\) to identify the treated group.\nThe ATT when \\(T=2\\):\n\\[ \\tau_{2,att} = E(Y_2(1) - Y_2(0) | D=1)  \\tag{13.2}\\]\nIn words, we are interested in the ATT in the second period. The difficult part is the second term.",
+    "text": "13.1 \\(T=2\\) Panel Data\nWhen unconfoundedness fails, we need weaker assumptions. The parallel trends assumption leads to the difference-in-differences estimator.\nSuppose we have two periods, \\(t = (1,2)\\). Some units are treated just prior to period 2. For each individual \\(i\\), there are four potential outcomes:\n\\[ [Y_{i1}(0), Y_{i1}(1), Y_{i2}(0), Y_{i2}(1)]  \\tag{13.1}\\]\nLet \\(D\\) denote the treated group. The ATT in period 2 is\n\\[ \\tau_{2,att} = E(Y_2(1) - Y_2(0) | D=1)  \\tag{13.2}\\]\nThe first term is observed. The second is the counterfactual.",
     "crumbs": [
       "Designs",
       "<span class='chapter-number'>13</span>  <span class='chapter-title'>Difference-in-Differences</span>"
@@ -1036,7 +1036,7 @@
     "href": "did.html#parallel-trends-assumption",
     "title": "13  Difference-in-Differences",
     "section": "13.2 Parallel Trends Assumption",
-    "text": "13.2 Parallel Trends Assumption\n\\[ E[Y_2(0) -Y_1(0) | D=1] = E[Y_2(0) - Y_1(0) | D =0]  \\tag{13.3}\\]\nor\n\\[ E[\\Delta Y(0) | D=1] = E[\\Delta Y(0) | D =0]  \\tag{13.4}\\]\nIn other words, this means the change of potential outcome for untreated state between period 1 and 2 is independent of treatment assignment (unconfounded).",
+    "text": "13.2 Parallel Trends Assumption\n\\[ E[Y_2(0) -Y_1(0) | D=1] = E[Y_2(0) - Y_1(0) | D =0]  \\tag{13.3}\\]\nor\n\\[ E[\\Delta Y(0) | D=1] = E[\\Delta Y(0) | D =0]  \\tag{13.4}\\]\nIn words, the change in untreated potential outcomes between periods 1 and 2 is the same for treated and control groups.",
     "crumbs": [
       "Designs",
       "<span class='chapter-number'>13</span>  <span class='chapter-title'>Difference-in-Differences</span>"
@@ -1300,7 +1300,7 @@
     "href": "iv-rdd.html",
     "title": "16  IV & Regression Discontinuity",
     "section": "",
-    "text": "16.1 Instrumental Variables\nIf we have an unobserved confounder, unconfoundedness fails. Even when we have random experiment, we could have noncompliance. In that case, subjects are randomly assigned to treatment or control, but some of them do not comply with the assignment. In other words, there is selection bias in the sense that the treated group is self-selected. This selection could be correlated with the outcome.",
+    "text": "16.1 Instrumental Variables\nWith an unobserved confounder, unconfoundedness fails. Even a randomized experiment can face this problem through noncompliance: subjects are randomly assigned but some do not comply, so the actually-treated group is self-selected and that selection may be correlated with the outcome.",
     "crumbs": [
       "Designs",
       "<span class='chapter-number'>16</span>  <span class='chapter-title'>IV & Regression Discontinuity</span>"
