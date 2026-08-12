@@ -129,6 +129,8 @@ Julia 1.12+ and Quarto. See `Project.toml` for the full package list.
 
 > **2026-07-30:** Review of the 2026-07-28 `poisson-iv` rewrite (report in `../_review3/review_20260730.md`). The mathematics checked out — Terza's exact correction, the first-order Taylor expansion behind Approach B, the logit generalized-residual collapse, and the claimed probability limits were all re-derived or re-verified at n=10^6. Four corrections: all six citations to Imbens & Wooldridge were re-pointed from the 2009 *JEL* paper to their actual source, the 2007 NBER Summer Institute Lecture Notes 6 on control functions (new bib entry); a truncated quote was restored to include "and still adopt (3.25)", which had reversed its meaning; rho is now defined as the coefficient in E(exp(c1)|v2) = exp(rho*v2) rather than as a correlation (the chapter's own DGP has correlation 1 while rho = 0.2); and two leftover passages recommending Approach A were reconciled with the takeaway's recommendation of B. Approach C is now presented as a bias-variance tradeoff rather than a ranking: Mullahy's moments are consistent here (0.8015 at n=10^6), but at the chapter's n=5000 C is roughly three times as noisy as B and so has the worst RMSE of the three.
 
+> **2026-08-12:** Prose tightening pass across 4 foundational chapters (`identification`, `estimation`, `did`, `iv-rdd`) — compressed wordy openings, switched to "we" voice, tightened explanations. Mirrored in the R companion. No code or results changes.
+
 > **2026-07-30 (deep read):** Full-depth pass over every topic, reviewed **paired**
 > against the companion book so each acts as the other's control (log:
 > `../_review3/deepread_causal_books.md`). The pairing is what found most of the

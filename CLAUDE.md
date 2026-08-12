@@ -203,6 +203,10 @@ Review of the 2026-07-28 rewrite of `poisson-iv.qmd` (10 commits), the only chap
 
 **Approach C: state it as a bias-variance tradeoff, not a ranking.** Mullahy's multiplicative moments are genuinely *consistent* for this DGP — the omitted `ad`/`female` effects are independent multiplicative heterogeneity, absorbed by the intercept ($\beta_0 \to \beta_0 + \log E[e^c]$) — verified at $n=10^6$: 0.8015, sd 0.0013. **But consistency is not accuracy at a given $n$.** At the chapter's own $n=5000$ over 10 seeds: A mean 0.8323 / sd 0.0236 / RMSE 0.0393; B 0.8185 / 0.0262 / 0.0310; C 0.7985 / 0.0679 / 0.0645. C is nearly unbiased and yet has the **worst RMSE**, being ~3× noisier without the fixed effects. My first draft of this fix said "prefer Approach C" and had to be corrected — the rendered output refuted it. Its own comparison table shows the Mullahy version at 0.7260 — *worse* than A (0.8128) and B (0.7636) — so the paragraph now explains explicitly why the table can look like it contradicts the consistency claim.
 
+## Prose tightening pass (2026-08-12)
+
+Voice and concision edit across 4 foundational chapters shared with the R companion: `identification.qmd`, `estimation.qmd`, `did.qmd`, `iv-rdd.qmd`. Compressed wordy openings and multi-sentence explanations into shorter paratactic prose, switched to "we" voice. 20 insertions, 24 deletions. Mirrored identically in `causal_econometrics_guide`. Source committed, rendered, pushed.
+
 ## Deep read (2026-07-30) — reusable gotchas
 
 Full-depth pass over all 25 topics, paired against the R companion. Log:
