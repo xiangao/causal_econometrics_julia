@@ -2162,5 +2162,16 @@
     "crumbs": [
       "References"
     ]
+  },
+  {
+    "objectID": "causal-estimands.html#all-five-estimands-on-two-plots",
+    "href": "causal-estimands.html#all-five-estimands-on-two-plots",
+    "title": "2  Five Estimands on One DGP",
+    "section": "2.3 All five estimands on two plots",
+    "text": "2.3 All five estimands on two plots\n\nfig = Figure(size = (820, 380), fontsize = 13)\n\nax1 = Axis(fig[1, 1], xlabel = \"X (covariate)\", ylabel = \"Effect\",\n           title = \"CATE(x) vs scalar estimands\")\nlines!(ax1, centers, cate_est, color = :firebrick, linewidth = 2, label = \"CATE(x)\")\nlines!(ax1, [0, 1], [τ(0), τ(1)], color = :firebrick, linestyle = :dot, label = \"True τ(x)\")\nhlines!(ax1, [ate_true], color = :black,     linewidth = 1.5, linestyle = :dash, label = \"ATE\")\nhlines!(ax1, [att_true], color = :steelblue, linewidth = 1.5, linestyle = :dash, label = \"ATT\")\nhlines!(ax1, [late_true], color = :seagreen,  linewidth = 1.5, linestyle = :dash, label = \"LATE\")\naxislegend(ax1, position = :lt, framevisible = false)\n\nax2 = Axis(fig[1, 2], xlabel = \"Quantile q\", ylabel = \"QTE(q)\",\n           title = \"QTE — distribution-level effect\")\nlines!(ax2, collect(qte_grid), qte_est, color = :purple, linewidth = 2)\nhlines!(ax2, [ate_true], color = :black, linewidth = 1.5, linestyle = :dash)\ntext!(ax2, 0.05, ate_true + 0.05; text = \"ATE\", color = :black, fontsize = 11)\nfig\n\n\nFive views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(q) shows how the effect varies across the outcome distribution. Each curve answers a different question.\n\n\nThe left panel shows why the scalar estimands can differ. ATE averages \\(\\tau(x)\\) over the whole population. ATT averages it over the treated. LATE averages it over compliers. CATE does not collapse the curve.\nQTE, in the right panel, is different again. It describes how the treatment changes the outcome distribution. It is not a conditional treatment effect as a function of \\(X\\).",
+    "crumbs": [
+      "Identification",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Five Estimands on One DGP</span>"
+    ]
   }
 ]
