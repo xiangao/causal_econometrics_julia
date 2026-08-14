@@ -472,6 +472,8 @@ window.Quarto = {
 
 
 <div id="972b62a4" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -485,6 +487,7 @@ window.Quarto = {
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Combinatorics</span>: powerset</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span>: Normal, quantile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <p>The previous chapter assumed all causally relevant variables were observed. That is a strong assumption. In economics, ability, demand shocks, and peer effects are often unobserved.</p>
 <p>When latent confounders exist, PC and RSL-D can give the wrong graph. Here I use algorithms designed for latent variables.</p>
@@ -550,6 +553,8 @@ window.Quarto = {
 <h2 data-number="23.2" class="anchored" data-anchor-id="simulation-with-hidden-variables"><span class="header-section-number">23.2</span> Simulation with Hidden Variables</h2>
 <p>We reuse the same 8-node Gaussian linear DAG from the previous chapter and hide 2 nodes, treating them as unobserved confounders.</p>
 <div id="8383ffcb" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -566,6 +571,7 @@ window.Quarto = {
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>n_obs     <span class="op">=</span> <span class="fu">length</span>(obs_idx)</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Total variables: %d   Hidden: %s   Observed: %d</span><span class="sc">\n</span><span class="st">"</span> n_vars latent n_obs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Total variables: 8   Hidden: [3, 6]   Observed: 6</code></pre>
 </div>
@@ -574,6 +580,8 @@ window.Quarto = {
 <h3 data-number="23.2.1" class="anchored" data-anchor-id="true-structure-over-observed-variables"><span class="header-section-number">23.2.1</span> True structure over observed variables</h3>
 <p>Two observed variables are adjacent in the MAG iff no subset of the <em>observed</em> variables d-separates them in the full DAG.</p>
 <div id="1fc6eaea" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>true_dag <span class="op">=</span> <span class="fu">SimpleDiGraph</span>(adj_mat)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">true_mag_skeleton</span>(dag, observed)</span>
@@ -590,15 +598,19 @@ window.Quarto = {
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>true_obs_skel <span class="op">=</span> <span class="fu">true_mag_skeleton</span>(true_dag, obs_idx)</span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"True MAG skeleton edges (over %d observed nodes): %d</span><span class="sc">\n</span><span class="st">"</span> n_obs <span class="fu">ne</span>(true_obs_skel)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>True MAG skeleton edges (over 6 observed nodes): 5</code></pre>
 </div>
 </div>
 <div id="cell-fig-latent-dag" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">side_by_side</span>([</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">admg_with_latent</span>(adj_mat, all_labels, latent), <span class="st">"Full DAG (square = hidden)"</span>),</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">skeleton_to_admg</span>(true_obs_skel, obs_labels),   <span class="st">"True MAG skeleton (observed)"</span>),</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>]; note<span class="op">=</span><span class="st">"Square nodes are unobserved (latent). Plaintext nodes are observed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="fig-latent-dag" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-latent-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -798,6 +810,8 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 </ol>
 <p>The extra marks let FCI say what is known and what remains uncertain, but the output is harder to read than a DAG.</p>
 <div id="e45dedd0" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>count_fci <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
@@ -811,17 +825,21 @@ Figure&nbsp;23.1: Full DAG (square nodes are hidden) and true MAG skeleton over 
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>f1_fci <span class="op">=</span> <span class="fu">f1_score</span>(true_obs_skel, skel_fci)</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"FCI:     skeleton F1 = %.3f   CI tests = %d</span><span class="sc">\n</span><span class="st">"</span> f1_fci count_fci[]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>FCI:     skeleton F1 = 0.889   CI tests = 72</code></pre>
 </div>
 </div>
-<div id="fig-fci-pag" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-fci-pag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># No `println` here: plot_fci_graph_text prints the edge list as a side effect and</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># returns nothing, so wrapping it in println() appends a literal "nothing" to the</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># output -- which is what the rendered page used to show.</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_fci_graph_text</span>(pag_fci, [<span class="st">"X</span><span class="sc">$</span>(obs_idx[i])<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_obs])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="fig-fci-pag" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-fci-pag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-stdout">
 <pre><code>X1&lt;-X2   X1&lt;-X7   X2o-oX5  X5o-oX7                                      </code></pre>
 </div>
@@ -869,6 +887,8 @@ Note
 </ul>
 <p>Together, the two conditions ensure that removing <span class="math inline">\(X\)</span> does not destroy information about the latent structure connecting its neighbours.</p>
 <div id="221c8712" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>count_lm <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ci_lm <span class="op">=</span> (x, y, S, d) <span class="op">-&gt;</span> <span class="cf">begin</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    count_lm[] <span class="op">+=</span> <span class="fl">1</span></span>
@@ -879,6 +899,7 @@ Note
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>f1_lm <span class="op">=</span> <span class="fu">f1_score</span>(true_obs_skel, lm_skel)</span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"L-MARVEL: skeleton F1 = %.3f   CI tests = %d</span><span class="sc">\n</span><span class="st">"</span> f1_lm count_lm[]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>L-MARVEL: skeleton F1 = 1.000   CI tests = 14</code></pre>
 </div>
@@ -903,12 +924,15 @@ Note
 <section id="comparison" class="level2" data-number="23.5">
 <h2 data-number="23.5" class="anchored" data-anchor-id="comparison"><span class="header-section-number">23.5</span> Comparison</h2>
 <div class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    Algorithm   <span class="op">=</span> [<span class="st">"FCI"</span>, <span class="st">"L-MARVEL"</span>],</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    Output      <span class="op">=</span> [<span class="st">"PAG (orientations + skeleton)"</span>, <span class="st">"Skeleton only"</span>],</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    Skeleton_F1 <span class="op">=</span> <span class="fu">round</span>.([f1_fci, f1_lm], digits<span class="op">=</span><span class="fl">3</span>),</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    CI_Tests    <span class="op">=</span> [count_fci[], count_lm[]],</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="tbl-latent-comparison" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="9">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-latent-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -958,11 +982,14 @@ Table&nbsp;23.1: Algorithm comparison on the latent-variable scenario (2 hidden 
 </div>
 </div>
 <div id="cell-fig-latent-skeletons" class="cell" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">side_by_side</span>([</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">skeleton_to_admg</span>(true_obs_skel, obs_labels), <span class="st">"True MAG skeleton"</span>),</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">skeleton_to_admg</span>(skel_fci,      obs_labels), <span class="st">"FCI — estimated skeleton"</span>),</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">skeleton_to_admg</span>(lm_skel,       obs_labels), <span class="st">"L-MARVEL — estimated skeleton"</span>),</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>]; note<span class="op">=</span><span class="st">"All edges shown as undirected (skeleton comparison only)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="fig-latent-skeletons" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="10">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-latent-skeletons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1185,6 +1212,8 @@ Figure&nbsp;23.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 <section id="monte-carlo-evaluation" class="level2" data-number="23.6">
 <h2 data-number="23.6" class="anchored" data-anchor-id="monte-carlo-evaluation"><span class="header-section-number">23.6</span> Monte Carlo Evaluation</h2>
 <div id="137e2091" class="cell" data-cache="true" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_latent</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, n_latent<span class="op">=</span><span class="fl">2</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    adj       <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1217,6 +1246,7 @@ Figure&nbsp;23.3: True MAG skeleton vs.&nbsp;skeletons recovered by FCI and L-MA
 <span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"%-10s  Skeleton F1  CI tests</span><span class="sc">\n</span><span class="st">"</span> <span class="st">"Method"</span></span>
 <span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"%-10s  %10.3f  %8.1f</span><span class="sc">\n</span><span class="st">"</span> <span class="st">"FCI"</span>      <span class="fu">mean</span>(r.f1_fci <span class="cf">for</span> r <span class="kw">in</span> mc) <span class="fu">mean</span>(r.ci_fci <span class="cf">for</span> r <span class="kw">in</span> mc)</span>
 <span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"%-10s  %10.3f  %8.1f</span><span class="sc">\n</span><span class="st">"</span> <span class="st">"L-MARVEL"</span> <span class="fu">mean</span>(r.f1_lm  <span class="cf">for</span> r <span class="kw">in</span> mc) <span class="fu">mean</span>(r.ci_lm  <span class="cf">for</span> r <span class="kw">in</span> mc)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Monte Carlo averages (100 replications, n=2000, p=8, 2 latent)
@@ -1226,6 +1256,8 @@ L-MARVEL         0.934      80.9</code></pre>
 </div>
 </div>
 <div id="cell-fig-latent-mc" class="cell" data-fig-height="4" data-fig-width="7" data-execution_count="12">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">650</span>, <span class="fl">380</span>))</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>,<span class="fl">1</span>];</span>
@@ -1237,6 +1269,7 @@ L-MARVEL         0.934      80.9</code></pre>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">axislegend</span>(ax)</span>
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    fig</span>
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="fig-latent-mc" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="12">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-latent-mc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">

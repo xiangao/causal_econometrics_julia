@@ -472,6 +472,8 @@ window.Quarto = {
 
 
 <div id="ccf5211f" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>CairoMakie.<span class="fu">activate!</span>(<span class="kw">type</span> <span class="op">=</span> <span class="st">"png"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
@@ -487,6 +489,7 @@ window.Quarto = {
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Lavaan</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Crumble</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <div id="cell-dag4" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <div id="dag4" class="cell-output cell-output-display" data-execution_count="3">
@@ -500,6 +503,8 @@ window.Quarto = {
 <p>That is, we’d like to study the effect of <span class="math inline">\(W\)</span> on <span class="math inline">\(Y\)</span>, and we see the effect can be a direct effect, and an indirect effect, through <span class="math inline">\(M\)</span>.</p>
 <p>Baron and Kenny’s (http://davidakenny.net/cm/mediate.htm) method is done in four steps. Modern approach tends to use SEM (structural equation modeling) to model these two equations directly.</p>
 <div id="cell-med1" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
@@ -521,13 +526,17 @@ window.Quarto = {
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">   # total effect</span></span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">   total := a + (b*c)</span></span>
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="med1" class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>"   Y ~ a*X + b*M\n   M ~ c*X\n   # direct effect (a)\n   # indirect effect (b*c)\n   bc := b*c\n   # total effect\n   total := a + (b*c)\n"</code></pre>
 </div>
 </div>
 <div id="cell-med2" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">sem</span>(model, Data)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fit</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="med2" class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>lavaan 0.1.0-dev fit object
   Estimator:   ML
@@ -607,6 +616,8 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <section id="example-g-computation" class="level3" data-number="21.2.7">
 <h3 data-number="21.2.7" class="anchored" data-anchor-id="example-g-computation"><span class="header-section-number">21.2.7</span> Example: G-computation</h3>
 <div id="med3" class="cell" data-cache="true" data-message="false" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsFuns</span></span>
@@ -642,6 +653,7 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="co"># gcomp estimate of CDE(0)</span></span>
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>cde_gcomp <span class="op">=</span> <span class="fu">mean</span>(Qbar_A1_M0 <span class="op">.-</span> Qbar_A0_M0)</span>
 <span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) G-computation = %.4g</span><span class="sc">\n</span><span class="st">"</span> cde_gcomp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>CDE(0) G-computation = 0.2113</code></pre>
 </div>
@@ -650,6 +662,8 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <section id="example-ipw" class="level3" data-number="21.2.8">
 <h3 data-number="21.2.8" class="anchored" data-anchor-id="example-ipw"><span class="header-section-number">21.2.8</span> Example: IPW</h3>
 <div id="med4" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># model for P(A = 1 | W)</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ps_fit1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A <span class="op">~</span> W1 <span class="op">+</span> W2), full_data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>P_A1_W <span class="op">=</span> <span class="fu">predict</span>(ps_fit1)</span>
@@ -670,6 +684,7 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>cde_ipw <span class="op">=</span> <span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">1</span>) <span class="op">./</span> P_A1_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A1_W <span class="op">.*</span> Y ) <span class="op">-</span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_A0_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A0_W <span class="op">.*</span> Y )</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) IPW = %.4g</span><span class="sc">\n</span><span class="st">"</span> cde_ipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>CDE(0) IPW = 0.226</code></pre>
 </div>
@@ -678,6 +693,8 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <section id="example-aipw" class="level3" data-number="21.2.9">
 <h3 data-number="21.2.9" class="anchored" data-anchor-id="example-aipw"><span class="header-section-number">21.2.9</span> Example: AIPW</h3>
 <div id="med5" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># aipw estimate of E[Y(1,0)]</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>aiptw_EY_A1_M0 <span class="op">=</span> <span class="fu">mean</span>(Qbar_A1_M0) <span class="op">+</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">1</span>) <span class="op">./</span> P_A1_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A1_W <span class="op">.*</span> (Y <span class="op">.-</span> Qbar_A1_M0) )</span>
@@ -689,6 +706,7 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># aipw estimate of CDE(0)</span></span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>cde_aipw <span class="op">=</span> aiptw_EY_A1_M0 <span class="op">-</span> aiptw_EY_A0_M0</span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"CDE(0) AIPW = %.4g</span><span class="sc">\n</span><span class="st">"</span> cde_aipw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>CDE(0) AIPW = 0.2245</code></pre>
 </div>
@@ -723,6 +741,8 @@ ATE &amp;= NIE + NDE \\
 <section id="estimation-1" class="level3" data-number="21.3.2">
 <h3 data-number="21.3.2" class="anchored" data-anchor-id="estimation-1"><span class="header-section-number">21.3.2</span> Estimation</h3>
 <div id="med6" class="cell" data-cache="true" data-message="false" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit outcome regression (include interaction because we can)</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>or_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A <span class="op">+</span> M <span class="op">+</span> W1 <span class="op">+</span> W2 <span class="op">+</span> A<span class="op">&amp;</span>M <span class="op">+</span> M<span class="op">&amp;</span>W1), full_data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -783,6 +803,7 @@ ATE &amp;= NIE + NDE \\
 <span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NDE = %.4g</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M0 <span class="op">-</span> E_Y0M0)</span>
 <span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"NIE = %.4g</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y1M0)</span>
 <span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE = %.4g</span><span class="sc">\n</span><span class="st">"</span> (E_Y1M1 <span class="op">-</span> E_Y0M0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>NDE = 0.2093
 NIE = -0.01266
@@ -816,6 +837,8 @@ Warning
 <section id="example" class="level3" data-number="21.4.1">
 <h3 data-number="21.4.1" class="anchored" data-anchor-id="example"><span class="header-section-number">21.4.1</span> Example</h3>
 <div id="cell-med7" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -853,11 +876,14 @@ Warning
 <span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>    dat <span class="op">=</span> <span class="fu">DataFrame</span>(W_1 <span class="op">=</span> w_1, W_2 <span class="op">=</span> w_2, W_3 <span class="op">=</span> w_3, A <span class="op">=</span> a, Z <span class="op">=</span> z, M <span class="op">=</span> m, Y <span class="op">=</span> y)</span>
 <span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dat</span>
 <span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="med7" class="cell-output cell-output-display" data-execution_count="10">
 <pre><code>make_example_data (generic function with 2 methods)</code></pre>
 </div>
 </div>
 <div id="cell-med8" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set seed and simulate example data</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>example_data <span class="op">=</span> <span class="fu">make_example_data</span>()</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>w_names <span class="op">=</span> [<span class="st">"W_1"</span>, <span class="st">"W_2"</span>, <span class="st">"W_3"</span>]</span>
@@ -865,6 +891,7 @@ Warning
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># quick look at the data</span></span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span>(example_data, <span class="fl">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="med8" class="cell-output cell-output-display" data-execution_count="11">
 <div><div style="float: left;"><span>6×7 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -957,6 +984,8 @@ Warning
 </div>
 </div>
 <div id="cell-med9" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate interventional direct and indirect effects using Crumble.jl</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># effect = "RT" is the recanting twin estimand, which gives IDE and IIE</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># while handling Z (mediator-outcome confounder affected by treatment)</span></span>
@@ -968,6 +997,7 @@ Warning
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                 effect    <span class="op">=</span> <span class="st">"RT"</span>,        <span class="co"># recanting twin</span></span>
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                 learners  <span class="op">=</span> [<span class="st">"glm"</span>])</span>
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>result</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="med9" class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>CrumbleResult
   Effect type: RT
@@ -979,12 +1009,15 @@ Estimates:
 </div>
 </div>
 <div id="med10" class="cell" data-cache="true" data-message="false" data-execution_count="13">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract direct and indirect effect estimates</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>ide <span class="op">=</span> result.estimates[<span class="st">"direct"</span>]</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>iie <span class="op">=</span> result.estimates[<span class="st">"indirect"</span>]</span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IDE (Direct)   = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> ide[<span class="st">"estimate"</span>] ide[<span class="st">"std.error"</span>]</span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"IIE (Indirect) = %.4g (SE = %.4g)</span><span class="sc">\n</span><span class="st">"</span> iie[<span class="st">"estimate"</span>] iie[<span class="st">"std.error"</span>]</span>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"ATE            = %.4g</span><span class="sc">\n</span><span class="st">"</span> result.estimates[<span class="st">"ate"</span>][<span class="st">"estimate"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>IDE (Direct)   = -0.0005093 (SE = 0.02408)
 IIE (Indirect) = -2.789e-05 (SE = 0.0241)

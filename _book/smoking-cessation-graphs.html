@@ -475,6 +475,8 @@ window.Quarto = {
 
 
 <div id="5bead8d0" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">CausalGraphs</span>: identify, make_graph, to_mermaid, markov_pillow</span>
@@ -484,6 +486,7 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Downloads</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Logging</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <p>The previous chapter used small graph examples. Here I apply the same graph-identification-estimation workflow to a real data set: the complete-case National Health and Nutrition Examination Survey I Epidemiologic Follow-up Study (NHEFS) data distributed through <code>causaldata</code> and mirrored by RDatasets.</p>
 <p>The question is:</p>
@@ -493,6 +496,8 @@ window.Quarto = {
 <h2 data-number="4.1" class="anchored" data-anchor-id="data"><span class="header-section-number">4.1</span> Data</h2>
 <p>For this example, keep the treatment, outcome, and baseline covariates that are commonly used in NHEFS smoking-cessation examples.</p>
 <div id="f543f681" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">read_rdatasets_csv</span>(url, cols)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    local_file <span class="op">=</span> <span class="bu">Downloads</span>.<span class="fu">download</span>(url; timeout <span class="op">=</span> <span class="fl">120</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    x, header <span class="op">=</span> <span class="fu">readdlm</span>(local_file, <span class="ch">','</span>, <span class="dt">Any</span>, <span class="ch">'\n'</span>; header <span class="op">=</span> <span class="cn">true</span>)</span>
@@ -511,12 +516,16 @@ window.Quarto = {
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>nhefs <span class="op">=</span> <span class="fu">read_rdatasets_csv</span>(nhefs_url, nhefs_cols);</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>(n <span class="op">=</span> <span class="fu">nrow</span>(nhefs), variables <span class="op">=</span> <span class="fu">ncol</span>(nhefs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>(n = 1566, variables = 11)</code></pre>
 </div>
 </div>
 <div id="faa1bf6d" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">preview_table</span>(nhefs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <div><div style="float: left;"><span>5×11 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -634,14 +643,20 @@ window.Quarto = {
 X -----&gt; Y</code></pre>
 <p>where <code>X</code> is the baseline covariate set, <code>A</code> is quitting smoking, and <code>Y</code> is later weight change. This graph says the baseline variables may affect both quitting and later weight change, and that there is no unmeasured common cause of quitting and later weight change after conditioning on those baseline variables.</p>
 <div id="9b770717" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>conceptual_graph <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> [(<span class="op">:</span>X, <span class="op">:</span>A), (<span class="op">:</span>X, <span class="op">:</span>Y), (<span class="op">:</span>A, <span class="op">:</span>Y)],</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"```{mermaid}"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">to_mermaid</span>(conceptual_graph; direction <span class="op">=</span> <span class="st">"LR"</span>))</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"```"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -666,6 +681,8 @@ X -----&gt; Y</code></pre>
 </div>
 <p>For estimation, expand <code>X</code> into the observed NHEFS columns. The expanded graph is still an adjustment DAG: each baseline variable is allowed to point into quitting and into later weight change.</p>
 <div id="6ed86f05" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>nhefs_vertices <span class="op">=</span> [</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>sex, <span class="op">:</span>race, <span class="op">:</span>age, <span class="op">:</span>school,</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>smokeintensity, <span class="op">:</span>smokeyrs,</span>
@@ -684,6 +701,7 @@ X -----&gt; Y</code></pre>
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>nhefs_graph <span class="op">=</span> <span class="fu">make_graph</span>(vertices <span class="op">=</span> nhefs_vertices, di_edges <span class="op">=</span> nhefs_edges);</span>
 <span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>(vertices <span class="op">=</span> <span class="fu">length</span>(nhefs_vertices), directed_edges <span class="op">=</span> <span class="fu">length</span>(nhefs_edges))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>(vertices = 11, directed_edges = 19)</code></pre>
 </div>
@@ -693,12 +711,15 @@ X -----&gt; Y</code></pre>
 <h2 data-number="4.3" class="anchored" data-anchor-id="identification"><span class="header-section-number">4.3</span> Identification</h2>
 <p><code>CausalGraphs.identify</code> checks the graph before estimation. In this adjustment DAG, the quitting node is a-fixable. The Markov pillow is the sufficient adjustment set:</p>
 <div id="dbb7eb14" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>nhefs_id <span class="op">=</span> <span class="fu">identify</span>(nhefs_graph, <span class="op">:</span>qsmk, <span class="op">:</span>wt82_71)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    strategy <span class="op">=</span> [<span class="fu">string</span>(nhefs_id.strategy)],</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    markov_pillow <span class="op">=</span> [<span class="fu">join</span>(<span class="fu">string</span>.(<span class="fu">markov_pillow</span>(nhefs_graph, <span class="op">:</span>qsmk; treatment <span class="op">=</span> <span class="op">:</span>qsmk)), <span class="st">", "</span>)],</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <div><div style="float: left;"><span>1×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -735,6 +756,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <h2 data-number="4.4" class="anchored" data-anchor-id="estimation-with-causalestimate"><span class="header-section-number">4.4</span> Estimation with CausalEstimate</h2>
 <p>The book keeps identification and estimation as separate steps. Here <code>CausalGraphs</code> supplies the graph result and <code>CausalEstimate</code> estimates the identified functional. Because the graph is a-fixable, <code>GraphID</code> routes to the AIPW average treatment effect machinery.</p>
 <div id="5f1f587e" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>nhefs_result <span class="op">=</span> <span class="fu">estimate</span>(</span>
@@ -745,6 +768,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="fu">effect_table</span>(<span class="st">"Quit smoking vs continued smoking"</span>, nhefs_result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="10">
 <div><div style="float: left;"><span>1×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -789,6 +813,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <h2 data-number="4.5" class="anchored" data-anchor-id="sensitivity-graph"><span class="header-section-number">4.5</span> Sensitivity Graph</h2>
 <p>Now encode a different assumption: quitting and later weight change share an unobserved common cause even after conditioning on the measured baseline variables. In an ADMG this is a bidirected edge, <code>qsmk &lt;-&gt; wt82_71</code>.</p>
 <div id="1bfe8555" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sensitivity_graph <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> nhefs_vertices,</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    di_edges <span class="op">=</span> nhefs_edges,</span>
@@ -796,10 +822,14 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>sensitivity_id <span class="op">=</span> <span class="fu">identify</span>(sensitivity_graph, <span class="op">:</span>qsmk, <span class="op">:</span>wt82_71);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"```{mermaid}"</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">to_mermaid</span>(sensitivity_graph; direction <span class="op">=</span> <span class="st">"LR"</span>))</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"```"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -865,7 +895,10 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <div id="c7ec26b5" class="cell" data-execution_count="13">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(strategy <span class="op">=</span> [<span class="fu">string</span>(sensitivity_id.strategy)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <div><div style="float: left;"><span>1×1 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
@@ -895,6 +928,8 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <h2 data-number="4.6" class="anchored" data-anchor-id="structured-baseline-graph"><span class="header-section-number">4.6</span> Structured Baseline Graph</h2>
 <p>The simple adjustment graph is often the clearest starting point. A more detailed DAG can record baseline ordering: demographics may precede education, smoking history, activity, and baseline weight; those variables may then affect quitting and later weight change.</p>
 <div id="368b0fd2" class="cell" data-execution_count="14">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>structured_edges <span class="op">=</span> [</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    (<span class="op">:</span>age, <span class="op">:</span>school), (<span class="op">:</span>age, <span class="op">:</span>smokeyrs), (<span class="op">:</span>age, <span class="op">:</span>wt71),</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    (<span class="op">:</span>age, <span class="op">:</span>active), (<span class="op">:</span>age, <span class="op">:</span>exercise), (<span class="op">:</span>age, <span class="op">:</span>qsmk), (<span class="op">:</span>age, <span class="op">:</span>wt82_71),</span>
@@ -926,6 +961,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">Set</span>(<span class="fu">markov_pillow</span>(structured_graph, <span class="op">:</span>qsmk; treatment <span class="op">=</span> <span class="op">:</span>qsmk)) <span class="op">==</span> <span class="fu">Set</span>(baseline)</span>
 <span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>    ],</span>
 <span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="14">
 <div><div style="float: left;"><span>1×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">

@@ -469,6 +469,8 @@ window.Quarto = {
 
 
 <div id="60b46e23" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -477,6 +479,7 @@ window.Quarto = {
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>CairoMakie.<span class="fu">activate!</span>(<span class="kw">type</span> <span class="op">=</span> <span class="st">"png"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <p>Matching is a way to make treated and control observations more comparable. For each treated observation, we look for controls with similar covariates. Then we compare outcomes in this matched sample.</p>
 <p>This does not solve endogeneity. Matching only helps with selection on observables. If treatment is selected on unobserved variables, matching will not fix the problem. Its value is that it makes overlap visible.</p>
@@ -496,6 +499,8 @@ window.Quarto = {
 <section id="a-simulated-example" class="level2" data-number="7.2">
 <h2 data-number="7.2" class="anchored" data-anchor-id="a-simulated-example"><span class="header-section-number">7.2</span> A simulated example</h2>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fl">2000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -511,6 +516,7 @@ window.Quarto = {
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(Y <span class="op">=</span> Y, D <span class="op">=</span> D, X1 <span class="op">=</span> X1, X2 <span class="op">=</span> X2)</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naive difference in means: %.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(Y[D <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[D <span class="op">.==</span> <span class="fl">0</span>]))</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE: 1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Naive difference in means: 1.713
 True ATE: 1.000</code></pre>
@@ -520,10 +526,13 @@ True ATE: 1.000</code></pre>
 <section id="estimating-the-propensity-score" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="estimating-the-propensity-score"><span class="header-section-number">7.3</span> Estimating the propensity score</h2>
 <div id="ps" class="cell" data-cache="true" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(D <span class="op">~</span> X1 <span class="op">+</span> X2), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"PS range: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">minimum</span>(df.ps), <span class="fu">maximum</span>(df.ps))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>PS range: [0.060, 0.927]</code></pre>
 </div>
@@ -532,6 +541,8 @@ True ATE: 1.000</code></pre>
 <section id="nearest-neighbour-11-matching" class="level2" data-number="7.4">
 <h2 data-number="7.4" class="anchored" data-anchor-id="nearest-neighbour-11-matching"><span class="header-section-number">7.4</span> Nearest-neighbour 1:1 matching</h2>
 <div id="nn-match" class="cell" data-cache="true" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">    nearest_neighbor_match(ps_treated, ps_control)</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">Return a vector of indices into the control group, matching each treated</span></span>
@@ -563,6 +574,7 @@ True ATE: 1.000</code></pre>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched %d treated to %d controls</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">length</span>(matched_idx_T), <span class="fu">length</span>(matched_idx_C))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Matched 818 treated to 818 controls</code></pre>
 </div>
@@ -572,6 +584,8 @@ True ATE: 1.000</code></pre>
 <h2 data-number="7.5" class="anchored" data-anchor-id="balance-diagnostics"><span class="header-section-number">7.5</span> Balance diagnostics</h2>
 <p>The standardized mean difference before and after matching tells us whether the matched groups are balanced:</p>
 <div id="balance" class="cell" data-cache="true" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">smd</span>(x_t, x_c)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">mean</span>(x_t) <span class="op">-</span> <span class="fu">mean</span>(x_c)) <span class="op">/</span> <span class="fu">sqrt</span>((<span class="fu">var</span>(x_t) <span class="op">+</span> <span class="fu">var</span>(x_c)) <span class="op">/</span> <span class="fl">2</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
@@ -582,6 +596,7 @@ True ATE: 1.000</code></pre>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    smd_after  <span class="op">=</span> <span class="fu">smd</span>(df[!, v][matched_idx_T], df[!, v][matched_idx_C])</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@printf</span>(<span class="st">"%-15s %12.3f %12.3f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">String</span>(v), smd_before, smd_after)</span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Covariate         SMD before    SMD after
 X1                     0.614        0.270
@@ -594,6 +609,8 @@ X2                     0.394        0.152</code></pre>
 <h2 data-number="7.6" class="anchored" data-anchor-id="estimating-the-att-on-matched-data"><span class="header-section-number">7.6</span> Estimating the ATT on matched data</h2>
 <p>After matching, the ATT is the simple difference in means:</p>
 <div id="att" class="cell" data-cache="true" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">mean</span>(df.Y[matched_idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[matched_idx_C])</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -602,6 +619,7 @@ X2                     0.394        0.152</code></pre>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>se    <span class="op">=</span> <span class="fu">std</span>(diffs) <span class="op">/</span> <span class="fu">sqrt</span>(<span class="fu">length</span>(diffs))</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Paired-diff SE: %.3f</span><span class="sc">\n</span><span class="st">"</span>, se)</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"95%% CI: [%.3f, %.3f]</span><span class="sc">\n</span><span class="st">"</span>, att <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> se, att <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> se)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Matched ATT: 1.287  (true ATE = 1.000)
 Paired-diff SE: 0.032
@@ -614,6 +632,8 @@ Paired-diff SE: 0.032
 <h2 data-number="7.7" class="anchored" data-anchor-id="matching-with-replacement"><span class="header-section-number">7.7</span> Matching with replacement</h2>
 <p>With replacement, the same control can be used several times. This can improve balance when good controls are scarce, but the effective sample size is smaller.</p>
 <div id="nn-replace" class="cell" data-cache="true" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">nn_match_replace</span>(ps_treated, ps_control)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    [<span class="fu">argmin</span>(<span class="fu">abs</span>.(ps_control <span class="op">.-</span> p)) for p <span class="kw">in</span> ps_treated]</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
@@ -624,6 +644,7 @@ Paired-diff SE: 0.032
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>att_repl <span class="op">=</span> <span class="fu">mean</span>(df.Y[idx_T]) <span class="op">-</span> <span class="fu">mean</span>(df.Y[idx_C[matched_repl]])</span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched-with-replacement ATT: %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Average reuse: 1.76 (1.0 = no replacement)
 Matched-with-replacement ATT: 0.988</code></pre>
@@ -634,6 +655,8 @@ Matched-with-replacement ATT: 0.988</code></pre>
 <h2 data-number="7.8" class="anchored" data-anchor-id="matching-vs-weighting"><span class="header-section-number">7.8</span> Matching vs weighting</h2>
 <p>IPW is very close to matching in spirit. Instead of dropping or pairing observations, we reweight observations by the inverse probability of receiving their observed treatment.</p>
 <div id="ipw" class="cell" data-cache="true" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># These are the ATE (Horvitz-Thompson/Hajek) weights: treated by 1/ps and</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># controls by 1/(1-ps). They target the ATE, not the ATT. With a homogeneous</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># +1 effect here, ATE = ATT numerically, but the estimand is the ATE.</span></span>
@@ -646,6 +669,7 @@ Matched-with-replacement ATT: 0.988</code></pre>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (NN):      %.3f</span><span class="sc">\n</span><span class="st">"</span>, att)</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Matched ATT (replace): %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_repl)</span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"True ATE:              1.000</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>IPW ATE:               1.064
 Matched ATT (NN):      1.287
@@ -670,6 +694,8 @@ True ATE:              1.000</code></pre>
 \tag{7.2}\]</span></span></p>
 <p>This is a small convex problem, so Newton’s method works well here.</p>
 <div id="ebal" class="cell" data-cache="true" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">    entropy_balance(X_control, X_treated; tol=1e-8, maxiter=50)</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute entropy-balancing weights on the control units so that the</span></span>
@@ -731,6 +757,7 @@ True ATE:              1.000</code></pre>
 <span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>            treated_means[j], control_means_unweighted[j],</span>
 <span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>            control_means_balanced[j])</span>
 <span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Sum of weights: 1.000000  (should be 1.0)
 Max weight: 0.0095, min weight: 0.000079
@@ -743,12 +770,15 @@ X2                    0.2395      -0.1541       0.2395</code></pre>
 <p>The weighted control means equal the treated means because the optimization imposes that constraint. If overlap is poor, the weights can become very uneven.</p>
 <p>The ATT estimate uses these weights on the control outcomes:</p>
 <div id="ebal-att" class="cell" data-cache="true" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>Yt <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">1</span>]</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Yc <span class="op">=</span> df.Y[df.D <span class="op">.==</span> <span class="fl">0</span>]</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ATT = mean(Y_treated) - weighted mean(Y_control)</span></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>att_ebal <span class="op">=</span> <span class="fu">mean</span>(Yt) <span class="op">-</span> <span class="fu">dot</span>(w_ebal, Yc)</span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Entropy-balanced ATT: %.3f  (true ATE = 1.000)</span><span class="sc">\n</span><span class="st">"</span>, att_ebal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entropy-balanced ATT: 1.014  (true ATE = 1.000)</code></pre>
 </div>
