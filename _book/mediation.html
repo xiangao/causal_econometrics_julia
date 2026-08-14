@@ -471,9 +471,9 @@ window.Quarto = {
 </header>
 
 
-<div id="ccf5211f" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<div id="5802bae7" class="cell" data-execution_count="2">
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>CairoMakie.<span class="fu">activate!</span>(<span class="kw">type</span> <span class="op">=</span> <span class="st">"png"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span></span>
@@ -503,8 +503,8 @@ window.Quarto = {
 <p>That is, we’d like to study the effect of <span class="math inline">\(W\)</span> on <span class="math inline">\(Y\)</span>, and we see the effect can be a direct effect, and an indirect effect, through <span class="math inline">\(M\)</span>.</p>
 <p>Baron and Kenny’s (http://davidakenny.net/cm/mediate.htm) method is done in four steps. Modern approach tends to use SEM (structural equation modeling) to model these two equations directly.</p>
 <div id="cell-med1" class="cell" data-cache="true" data-message="false" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
@@ -532,8 +532,8 @@ window.Quarto = {
 </div>
 </div>
 <div id="cell-med2" class="cell" data-cache="true" data-message="false" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> <span class="fu">sem</span>(model, Data)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fit</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
@@ -586,8 +586,8 @@ window.Quarto = {
 <h3 data-number="21.2.4" class="anchored" data-anchor-id="g-computation"><span class="header-section-number">21.2.4</span> G-computation</h3>
 <p>G-computation is to model the outcome equation: <span id="eq-mediation-8"><span class="math display">\[
 \begin{aligned}
-CDE_G(m) &amp;= \sum_x [ E[Y \mid W=1, M=m, X=x] - \\
-&amp;&amp;  E[Y \mid W=0, M=m, X=x]]  P(X=x)
+CDE_G(m) &amp;= \sum_x [ E[Y \mid W=1, M=m, X=x] \\
+&amp;\quad - E[Y \mid W=0, M=m, X=x]]\, P(X=x)
 \end{aligned}
 \tag{21.8}\]</span></span></p>
 </section>
@@ -609,15 +609,15 @@ CDE_{ipw}(m) = E\left[\frac{I(W=1,M=m)}{g_M(m|1,X)\,g_W(1|X)}\, Y - \frac{I(W=0,
 <p><span id="eq-mediation-12"><span class="math display">\[
 \begin{aligned}
 B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_M(m|1, X_i) g_W(1|X_i)}[Y_i-\bar Q(m,1,X_i)]} \\
-&amp;  &amp;  - \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=0)}{g_M(m|0, X_i) g_W(0|X_i)}[Y_i-\bar Q(m,0,X_i)]}
+&amp;\quad - \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=0)}{g_M(m|0, X_i) g_W(0|X_i)}[Y_i-\bar Q(m,0,X_i)]}
 \end{aligned}
 \tag{21.12}\]</span></span></p>
 </section>
 <section id="example-g-computation" class="level3" data-number="21.2.7">
 <h3 data-number="21.2.7" class="anchored" data-anchor-id="example-g-computation"><span class="header-section-number">21.2.7</span> Example: G-computation</h3>
 <div id="med3" class="cell" data-cache="true" data-message="false" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsFuns</span></span>
@@ -662,8 +662,8 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <section id="example-ipw" class="level3" data-number="21.2.8">
 <h3 data-number="21.2.8" class="anchored" data-anchor-id="example-ipw"><span class="header-section-number">21.2.8</span> Example: IPW</h3>
 <div id="med4" class="cell" data-cache="true" data-message="false" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># model for P(A = 1 | W)</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ps_fit1 <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(A <span class="op">~</span> W1 <span class="op">+</span> W2), full_data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>P_A1_W <span class="op">=</span> <span class="fu">predict</span>(ps_fit1)</span>
@@ -693,8 +693,8 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <section id="example-aipw" class="level3" data-number="21.2.9">
 <h3 data-number="21.2.9" class="anchored" data-anchor-id="example-aipw"><span class="header-section-number">21.2.9</span> Example: AIPW</h3>
 <div id="med5" class="cell" data-cache="true" data-message="false" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># aipw estimate of E[Y(1,0)]</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>aiptw_EY_A1_M0 <span class="op">=</span> <span class="fu">mean</span>(Qbar_A1_M0) <span class="op">+</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>( (A <span class="op">.==</span> <span class="fl">1</span>) <span class="op">./</span> P_A1_W <span class="op">.*</span> (M <span class="op">.==</span> <span class="fl">0</span>) <span class="op">./</span> P_M0_A1_W <span class="op">.*</span> (Y <span class="op">.-</span> Qbar_A1_M0) )</span>
@@ -719,8 +719,8 @@ B(\bar Q, g_M, g_W) &amp;= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_
 <p><span id="eq-mediation-13"><span class="math display">\[
 \begin{aligned}
 ATE &amp;= NIE + NDE \\
-&amp;=  (E[ Y(1,M(1))] - E[Y(1,M(0))]) + \\
-&amp;&amp; (E[Y(1, M(0))] - E[Y(0,M(0))])
+&amp;= (E[Y(1,M(1))] - E[Y(1,M(0))]) \\
+&amp;\quad + (E[Y(1, M(0))] - E[Y(0,M(0))])
 \end{aligned}
 \tag{21.13}\]</span></span></p>
 <p>The advantage of NDE and NIE comparing to CDE is that it’s more “natural”; that is, you don’t set the level of mediator deterministically. And it can decompose the ATE into direct and indirect effects.</p>
@@ -741,8 +741,8 @@ ATE &amp;= NIE + NDE \\
 <section id="estimation-1" class="level3" data-number="21.3.2">
 <h3 data-number="21.3.2" class="anchored" data-anchor-id="estimation-1"><span class="header-section-number">21.3.2</span> Estimation</h3>
 <div id="med6" class="cell" data-cache="true" data-message="false" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit outcome regression (include interaction because we can)</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>or_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> A <span class="op">+</span> M <span class="op">+</span> W1 <span class="op">+</span> W2 <span class="op">+</span> A<span class="op">&amp;</span>M <span class="op">+</span> M<span class="op">&amp;</span>W1), full_data, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -837,8 +837,8 @@ Warning
 <section id="example" class="level3" data-number="21.4.1">
 <h3 data-number="21.4.1" class="anchored" data-anchor-id="example"><span class="header-section-number">21.4.1</span> Example</h3>
 <div id="cell-med7" class="cell" data-cache="true" data-message="false" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">StatsModels</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -882,8 +882,8 @@ Warning
 </div>
 </div>
 <div id="cell-med8" class="cell" data-cache="true" data-message="false" data-execution_count="11">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set seed and simulate example data</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>example_data <span class="op">=</span> <span class="fu">make_example_data</span>()</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>w_names <span class="op">=</span> [<span class="st">"W_1"</span>, <span class="st">"W_2"</span>, <span class="st">"W_3"</span>]</span>
@@ -984,8 +984,8 @@ Warning
 </div>
 </div>
 <div id="cell-med9" class="cell" data-cache="true" data-message="false" data-execution_count="12">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate interventional direct and indirect effects using Crumble.jl</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># effect = "RT" is the recanting twin estimand, which gives IDE and IIE</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># while handling Z (mediator-outcome confounder affected by treatment)</span></span>
@@ -1009,8 +1009,8 @@ Estimates:
 </div>
 </div>
 <div id="med10" class="cell" data-cache="true" data-message="false" data-execution_count="13">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract direct and indirect effect estimates</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>ide <span class="op">=</span> result.estimates[<span class="st">"direct"</span>]</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>iie <span class="op">=</span> result.estimates[<span class="st">"indirect"</span>]</span>

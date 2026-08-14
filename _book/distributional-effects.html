@@ -472,8 +472,8 @@ window.Quarto = {
 
 
 <div id="61d8d28a" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -493,8 +493,8 @@ window.Quarto = {
 <p>QTE(<span class="math inline">\(\tau\)</span>) reports the difference between the <span class="math inline">\(\tau\)</span>-th quantile of the treated and control distributions. It is <em>not</em> the same as the average effect <em>at</em> a given pre-treatment quantile — QTE does not track individuals; it compares quantile to quantile across two marginal distributions.</p>
 <p>Consider a treatment whose effect grows with the baseline outcome:</p>
 <div id="sim-qte" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -527,8 +527,8 @@ QTE(0.90)    = 0.535</code></pre>
 </div>
 <p>The ATE is one number. The QTEs show that the effect is much larger near the top of the distribution.</p>
 <div id="cell-plot-distributions" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>τ_grid <span class="op">=</span> <span class="fl">0.05</span><span class="op">:</span><span class="fl">0.025</span><span class="op">:</span><span class="fl">0.95</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>qte_curve <span class="op">=</span> [<span class="fu">quantile</span>(Y1, τ) <span class="op">-</span> <span class="fu">quantile</span>(Y0, τ) for τ <span class="kw">in</span> τ_grid]</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -585,8 +585,8 @@ Note
 </div>
 </div>
 <div id="a26cc228" class="cell" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Endid</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Panel data: y outcome, id unit, time period, post 1 if post-treatment</span></span>
@@ -618,8 +618,8 @@ Note
 <h2 data-number="12.4" class="anchored" data-anchor-id="when-qte-differs-from-att-a-panel-simulation"><span class="header-section-number">12.4</span> When QTE differs from ATT: a panel simulation</h2>
 <p>Now simulate panel data where the treatment effect depends on unit type:</p>
 <div id="cell-panel-sim" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">11</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>n_units <span class="op">=</span> <span class="fl">500</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>n_time  <span class="op">=</span> <span class="fl">4</span></span>
@@ -712,8 +712,8 @@ Note
 </div>
 <p>A standard ATT regression reports the mean effect. Here that hides the fact that low-type and high-type units have different effects.</p>
 <div id="cell-empirical-qte" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute empirical QTE on the simulated data by comparing treated post-period</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># outcomes to a benchmark constructed from pre-period treated outcomes shifted</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># by the control units' time trend (the standard DiD-style counterfactual,</span></span>
@@ -804,8 +804,8 @@ Note
 <p>The curve below is a difference-in-quantiles: it subtracts quantile-by-quantile the treated change from the control change. This is a descriptive device, not an identified QTE. The difference of quantiles is not the quantile of the difference, so it equals the true QTE only under rank invariance.</p>
 <p>Its <em>average</em>, though, is not a separate quantity: because <span class="math inline">\(\int_0^1 F^{-1}(\tau)\,d\tau = E[Y]\)</span>, averaging this curve over the whole unit interval returns exactly the ordinary difference-in-means DiD. On the nine-point grid used here the average is 0.531 against a difference-in-means DiD of 0.538, and the gap closes as the grid is refined (0.534 on a 199-point grid, 0.536 on a 999-point grid) — it is discretization, not a difference in estimand. So the honest summary is that the quantile-DiD curve tells you nothing new about the <em>level</em> of the effect and everything about its <em>shape</em>: here, larger differences at the top of the outcome distribution.</p>
 <div id="cell-qte-plot" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">360</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Quantile τ"</span>, ylabel <span class="op">=</span> <span class="st">"Difference-in-quantiles"</span>,</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Difference-in-quantiles (descriptive quantile-DiD)"</span>)</span>

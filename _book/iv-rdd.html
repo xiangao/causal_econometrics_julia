@@ -492,8 +492,8 @@ window.Quarto = {
 
 
 <div id="d8ec5c18" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>CairoMakie.<span class="fu">activate!</span>(<span class="kw">type</span> <span class="op">=</span> <span class="st">"png"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GraphMakie</span>, <span class="bu">Graphs</span></span>
@@ -633,8 +633,8 @@ window.Quarto = {
 <section id="example" class="level3" data-number="16.1.7">
 <h3 data-number="16.1.7" class="anchored" data-anchor-id="example"><span class="header-section-number">16.1.7</span> Example</h3>
 <div id="d6bad687" class="cell" data-message="false" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">66</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>nobs <span class="op">=</span> <span class="fl">10000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -670,8 +670,8 @@ window.Quarto = {
 </details>
 </div>
 <div id="f842be99" class="cell" data-message="false" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Biased OLS</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"── Biased OLS (w only) ──────────────────────"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(lm_biased)</span>
@@ -836,8 +836,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p><span id="eq-iv-rdd-4"><span class="math display">\[y = \alpha + \beta w + \rho\,\hat{v} + \text{error}. \tag{16.4}\]</span></span></p>
 <p>OLS on this <strong>augmented</strong> second stage gives a consistent <span class="math inline">\(\hat\beta\)</span> — identical to 2SLS by the Frisch–Waugh–Lovell (FWL) theorem. The coefficient <span class="math inline">\(\hat\rho\)</span> on <span class="math inline">\(\hat{v}\)</span> doubles as a <strong>Durbin–Wu–Hausman (DWH) endogeneity test</strong>: under <span class="math inline">\(H_0\)</span> (w is exogenous), <span class="math inline">\(\rho = 0\)</span>.</p>
 <div id="de125db8" class="cell" data-message="false" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="bu">StatsBase</span>: coef, stderror, coefnames</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Control function: add first-stage residual v̂ to the second stage OLS</span></span>
@@ -918,8 +918,8 @@ Warning
 <h3 data-number="16.2.2" class="anchored" data-anchor-id="a-simulation"><span class="header-section-number">16.2.2</span> A Simulation</h3>
 <p>We build a DGP where <span class="math inline">\(E[Z \mid X]\)</span> is wildly nonlinear in <span class="math inline">\(X\)</span>, so the linear-in-<span class="math inline">\(X\)</span> specification has to fail. Then we compare four estimators against the true LATE.</p>
 <div id="74742934" class="cell" data-cache="true" data-message="false" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DecisionTree</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -969,8 +969,8 @@ True unconditional LATE = 0.617</code></pre>
 </div>
 <p>Now we compare four estimators. Julia has no equivalent of R’s <code>DoubleML</code> package, so we implement DDML PLIV manually with 5-fold cross-fitting using random-forest nuisance estimates. This is the same pattern the <code>nonparametric.qmd</code> chapter uses for DDML PLR.</p>
 <div id="84698d77" class="cell" data-cache="true" data-message="false" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper: TSLS via the matrix expression (X is the exogenous matrix incl. constant).</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">tsls_matrix</span>(Y, W, Z, Xmat)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    Wmat <span class="op">=</span> <span class="fu">hcat</span>(W, Xmat)</span>
@@ -1081,8 +1081,8 @@ True unconditional LATE = 0.617</code></pre>
 <h3 data-number="16.2.3" class="anchored" data-anchor-id="diagnostic-reset-on-z-x"><span class="header-section-number">16.2.3</span> Diagnostic: RESET on Z ~ X</h3>
 <p>Rich covariates says <span class="math inline">\(E[Z \mid X]\)</span> is linear in <span class="math inline">\(X\)</span>. That is exactly the null of Ramsey’s RESET test <span class="citation" data-cites="ramsey-1969">(<a href="references.html#ref-ramsey-1969" role="doc-biblioref">Ramsey 1969</a>)</span>. Julia has no direct equivalent of R’s <code>lmtest::resettest()</code>, but the test is just an F-test of joint significance of higher powers of <span class="math inline">\(X\)</span>.</p>
 <div id="50c78424" class="cell" data-cache="true" data-message="false" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df_reset       <span class="op">=</span> <span class="fu">DataFrame</span>(Z <span class="op">=</span> <span class="fu">Float64</span>.(Z), X <span class="op">=</span> X, X2 <span class="op">=</span> X <span class="op">.^</span> <span class="fl">2</span>, X3 <span class="op">=</span> X <span class="op">.^</span> <span class="fl">3</span>)</span>
@@ -1135,8 +1135,8 @@ True unconditional LATE = 0.617</code></pre>
 <p><span id="eq-iv-rdd-9"><span class="math display">\[ W=\mathbb{1}(X&gt;c) \tag{16.9}\]</span></span></p>
 <p>Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable <span class="math inline">\(X_i\)</span> is the difference in vote share between the Democratic and Republican parties in one election, with the threshold <span class="math inline">\(c = 0\)</span>. The outcome variable <span class="math inline">\(Y_i\)</span> is vote share at the second election.</p>
 <div id="563b9db0" class="cell" data-message="false" data-execution_count="11">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>senate <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/rdrobust_senate.csv"</span>, DataFrame)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1172,8 +1172,8 @@ True unconditional LATE = 0.617</code></pre>
 <section id="estimation-of-srdd" class="level3" data-number="16.3.3">
 <h3 data-number="16.3.3" class="anchored" data-anchor-id="estimation-of-srdd"><span class="header-section-number">16.3.3</span> Estimation of SRDD</h3>
 <div id="ce2e9ad1" class="cell" data-message="false" data-execution_count="12">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>GPA <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">4</span>), <span class="fl">1000</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment is W = 1(GPA &gt; 3), so the +2 jump must sit on the right</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># (above-cutoff) side to match the right-minus-left estimand above.</span></span>
@@ -1200,8 +1200,8 @@ True unconditional LATE = 0.617</code></pre>
 </div>
 </div>
 <div id="f8fbf98e" class="cell" data-message="false" data-execution_count="13">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the sharp RDD model</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>rdd_gpa <span class="op">=</span> <span class="fu">rdrobust</span>(future_success, GPA, c<span class="op">=</span><span class="fl">3.0</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (conventional)   = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_gpa.Estimate.tau_us[<span class="fl">1</span>]</span>
@@ -1216,8 +1216,8 @@ P-value (robust)     = 0.0003</code></pre>
 <section id="nonparametric-estimation" class="level3" data-number="16.3.4">
 <h3 data-number="16.3.4" class="anchored" data-anchor-id="nonparametric-estimation"><span class="header-section-number">16.3.4</span> Nonparametric Estimation</h3>
 <div id="ed06758d" class="cell" data-message="false" data-execution_count="14">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>rdd_house <span class="op">=</span> <span class="fu">rdrobust</span>(senate.vote, senate.margin, c<span class="op">=</span><span class="fl">0.0</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Tau (conventional)   = %.4g</span><span class="sc">\n</span><span class="st">"</span> rdd_house.Estimate.tau_us[<span class="fl">1</span>]</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"P-value (robust)     = %.4f</span><span class="sc">\n</span><span class="st">"</span> rdd_house.pv.PValue[<span class="fl">3</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1240,8 +1240,8 @@ P-value (robust)     = 0.0000</code></pre>
 <p>Fetter (2013)’s main question of interest is how much of the increase in the home ownership rate in the midcentury US was due to mortgage subsidies given out by the government.</p>
 <p>We’re using the running variable quarter of birth (qob), which has been centered on the quarter of birth you’d need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).</p>
 <div id="a1fa2ba5" class="cell" data-cache="true" data-message="false" data-execution_count="15">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the real mortgages dataset (Fetter 2013) from causaldata R package</span></span>
@@ -1329,8 +1329,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 <div id="e43ca4e0" class="cell" data-cache="true" data-message="false" data-execution_count="16">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: rdrobust uses a data-driven bandwidth — no global FE needed</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>m_rdd <span class="op">=</span> <span class="fu">rdrobust</span>(vet.home_ownership,</span>

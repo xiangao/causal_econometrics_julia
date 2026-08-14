@@ -492,8 +492,8 @@ window.Quarto = {
 
 
 <div id="5501c30d" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -509,8 +509,8 @@ window.Quarto = {
 <h2 data-number="2.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">2.1</span> The data-generating process</h2>
 <p>Each person has an observed covariate <span class="math inline">\(X_i\)</span>, an unobserved type <span class="math inline">\(U_i\)</span>, and a binary treatment <span class="math inline">\(D_i\)</span>. The instrument <span class="math inline">\(Z_i\)</span> is a random offer. It changes the probability of treatment, but it has no direct effect on the outcome.</p>
 <div id="cell-dgp" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -622,8 +622,8 @@ window.Quarto = {
 \tag{2.1}\]</span></span></p>
 <p>ATE is the mean effect in the whole population. It compares the mean outcome if everyone were treated with the mean outcome if nobody were treated.</p>
 <div id="ate" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ate_true <span class="op">=</span> <span class="fu">mean</span>(Y1 <span class="op">.-</span> Y0)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATE (population mean of Y1 - Y0) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, ate_true)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -643,8 +643,8 @@ Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</code></pre>
 \tag{2.2}\]</span></span></p>
 <p>ATT is the mean effect for the units that actually took treatment. It differs from ATE when treatment selection is related to treatment-effect heterogeneity.</p>
 <div id="att" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>att_true <span class="op">=</span> <span class="fu">mean</span>(Y1[D] <span class="op">.-</span> Y0[D])</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"ATT (mean of Y1-Y0 conditional on D=1) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, att_true)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
@@ -661,8 +661,8 @@ Theoretical ATE = ∫(1 + 2x)dx on [0,1] = 2.000</code></pre>
 \tag{2.3}\]</span></span></p>
 <p>LATE is the mean effect for compliers, the units whose treatment status is changed by the instrument. Under the usual IV assumptions, the Wald estimator identifies this effect, not the ATE. Identifying LATE by the Wald ratio additionally requires monotonicity (no defiers): <span class="math inline">\(D(1) \ge D(0)\)</span> for all <span class="math inline">\(i\)</span>. This DGP imposes it by generating both potential treatments from one shared latent draw <span class="math inline">\(V_i\)</span> with ordered thresholds (<span class="math inline">\(D(z) = \mathbb{1}\{V_i &lt; p_{Dz}\}\)</span> and <span class="math inline">\(p_{D1} \ge p_{D0}\)</span>), so no unit is pushed out of treatment by the offer. Raising the <em>probability</em> alone would not be enough: with independent draws for <span class="math inline">\(D(0)\)</span> and <span class="math inline">\(D(1)\)</span>, about 3% of units would be defiers and the Wald ratio would no longer equal the complier mean.</p>
 <div id="late" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>compliers <span class="op">=</span> (D1 <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (D0 <span class="op">.==</span> <span class="fl">0</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>late_true <span class="op">=</span> <span class="fu">mean</span>(Y1[compliers] <span class="op">.-</span> Y0[compliers])</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"LATE (mean of Y1-Y0 conditional on complier status) = %.3f</span><span class="sc">\n</span><span class="st">"</span>, late_true)</span>
@@ -688,8 +688,8 @@ Wald IV estimate (should match LATE): 2.004</code></pre>
 \tag{2.4}\]</span></span></p>
 <p>CATE keeps <span class="math inline">\(X\)</span> in the estimand. In this DGP, CATE(<span class="math inline">\(x\)</span>) is simply <span class="math inline">\(\tau(x)=1+2x\)</span>.</p>
 <div id="cate" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bin X and compute mean of (Y1 - Y0) in each bin</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>nbins <span class="op">=</span> <span class="fl">20</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span>nbins <span class="op">+</span> <span class="fl">1</span>)</span>
@@ -718,8 +718,8 @@ CATE at x=0.825: estimated 2.65, true 2.65</code></pre>
 <p>(We index quantiles by <span class="math inline">\(q\)</span> to avoid a clash with the treatment-effect function <span class="math inline">\(\tau(x)\)</span>.)</p>
 <p>QTE compares the two marginal outcome distributions. It is the difference between a quantile under treatment and the same quantile under control. It does not follow the same person across the two potential outcomes.</p>
 <div id="qte" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>qte_grid <span class="op">=</span> <span class="fl">0.05</span><span class="op">:</span><span class="fl">0.05</span><span class="op">:</span><span class="fl">0.95</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>qte_est  <span class="op">=</span> [<span class="fu">quantile</span>(Y1, q) <span class="op">-</span> <span class="fu">quantile</span>(Y0, q) for q <span class="kw">in</span> qte_grid]</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -738,8 +738,8 @@ QTE(0.90) = 2.289</code></pre>
 <section id="all-five-estimands-on-two-plots" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="all-five-estimands-on-two-plots"><span class="header-section-number">2.3</span> All five estimands on two plots</h2>
 <div id="cell-estimand-plot" class="cell" data-cache="true" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>ax1 <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"X (covariate)"</span>, ylabel <span class="op">=</span> <span class="st">"Effect"</span>,</span>
@@ -776,8 +776,8 @@ QTE(0.90) = 2.289</code></pre>
 </ul>
 <p>If treatment selection depends on the effect modifier, the numbers separate. Here I make high-<span class="math inline">\(X\)</span> units more likely to take treatment:</p>
 <div id="dgp-selective" class="cell" data-cache="true" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">20_000</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> <span class="fu">rand</span>(<span class="fu">Uniform</span>(<span class="fl">0</span>, <span class="fl">1</span>), n)</span>

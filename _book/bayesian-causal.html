@@ -472,8 +472,8 @@ window.Quarto = {
 
 
 <div id="70ec575f" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -498,8 +498,8 @@ window.Quarto = {
 <section id="setup" class="level2" data-number="11.1">
 <h2 data-number="11.1" class="anchored" data-anchor-id="setup"><span class="header-section-number">11.1</span> Setup</h2>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">1500</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">3</span></span>
@@ -531,8 +531,8 @@ window.Quarto = {
 </ol>
 <p>A Bayesian linear regression with a flat prior is enough to show the idea:</p>
 <div id="bayes-gcomp" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    bayes_linreg(X, y; n_samples=2000)</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior</span></span>
@@ -591,8 +591,8 @@ window.Quarto = {
 <section id="individual-level-credible-intervals" class="level3" data-number="11.2.1">
 <h3 data-number="11.2.1" class="anchored" data-anchor-id="individual-level-credible-intervals"><span class="header-section-number">11.2.1</span> Individual-level credible intervals</h3>
 <div id="cell-ite-credible" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ite_mean <span class="op">=</span> <span class="fu">vec</span>(<span class="fu">mean</span>(ite_post, dims <span class="op">=</span> <span class="fl">1</span>))</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ite_lo   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.025</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ite_hi   <span class="op">=</span> [<span class="fu">quantile</span>(ite_post[<span class="op">:</span>, i], <span class="fl">0.975</span>) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n]</span>

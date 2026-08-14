@@ -492,8 +492,8 @@ window.Quarto = {
 
 
 <div id="f332b910" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -524,8 +524,8 @@ S(t) = P(T &gt; t)
 <section id="simulated-survival-data" class="level2" data-number="20.2">
 <h2 data-number="20.2" class="anchored" data-anchor-id="simulated-survival-data"><span class="header-section-number">20.2</span> Simulated survival data</h2>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/survival_sim.csv"</span>, DataFrame)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fu">nrow</span>(df)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"n = %d, events = %d (%.1f%%), censored = %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
@@ -540,8 +540,8 @@ S(t) = P(T &gt; t)
 <h2 data-number="20.3" class="anchored" data-anchor-id="kaplan-meier-estimator"><span class="header-section-number">20.3</span> Kaplan-Meier estimator</h2>
 <p>The Kaplan-Meier estimator computes <span class="math inline">\(\hat S(t)\)</span> nonparametrically. It is short enough to implement directly:</p>
 <div id="cell-km" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    kaplan_meier(time, event)</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute Kaplan-Meier survival estimates at the unique event times.</span></span>
@@ -584,8 +584,8 @@ S(t) = P(T &gt; t)
 <h2 data-number="20.4" class="anchored" data-anchor-id="ipw-adjusted-survival"><span class="header-section-number">20.4</span> IPW-adjusted survival</h2>
 <p>To adjust for confounding, weight observations by the inverse propensity score before computing KM:</p>
 <div id="cell-ipw-survival" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ps_fit <span class="op">=</span> <span class="fu">glm</span>(<span class="pp">@formula</span>(trt <span class="op">~</span> age <span class="op">+</span> sex), df, <span class="fu">Binomial</span>(), <span class="fu">LogitLink</span>())</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>df.ps  <span class="op">=</span> <span class="fu">predict</span>(ps_fit)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>df.ipw <span class="op">=</span> <span class="fu">ifelse</span>.(df.trt <span class="op">.==</span> <span class="fl">1</span>, <span class="fl">1</span> <span class="op">./</span> df.ps, <span class="fl">1</span> <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps))</span>
@@ -641,8 +641,8 @@ S(t) = P(T &gt; t)
 <p>The contrast <span class="math inline">\(\Delta_{\text{RMST}}(\tau)=\text{RMST}_1(\tau)-\text{RMST}_0(\tau)\)</span> is interpretable as years gained up to <span class="math inline">\(\tau\)</span>. It does not require proportional hazards.</p>
 <p>Because the KM curve is a step function, its integral is computed exactly by a left rectangle sum (width times the survival value at the left endpoint of each segment):</p>
 <div id="rmst" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">rmst</span>(times, survival, tau)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add time 0 and the truncation point, with appropriate S values</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    t_vec <span class="op">=</span> [<span class="fl">0.0</span>; times; tau]</span>

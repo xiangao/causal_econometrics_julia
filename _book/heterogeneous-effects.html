@@ -492,8 +492,8 @@ window.Quarto = {
 
 
 <div id="3a364e94" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -518,8 +518,8 @@ window.Quarto = {
 <h2 data-number="9.1" class="anchored" data-anchor-id="the-data-generating-process"><span class="header-section-number">9.1</span> The data-generating process</h2>
 <p>I use the same CATE function as the estimands chapter, <span class="math inline">\(\tau(x)=1+2x_1\)</span> (the rest of the DGP differs: five covariates and confounding through the observed <span class="math inline">\(X_2\)</span>).</p>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">5000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">5</span></span>
@@ -551,8 +551,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.2" class="anchored" data-anchor-id="a-wrapper-for-fitting-random-forests"><span class="header-section-number">9.2</span> A wrapper for fitting random forests</h2>
 <p>To keep the code short, define a helper that fits a random forest and returns predictions.</p>
 <div id="helper" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> RFR <span class="op">=</span> <span class="pp">@load</span> RandomForestRegressor pkg<span class="op">=</span>DecisionTree verbosity<span class="op">=</span><span class="fl">0</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
@@ -622,8 +622,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.3" class="anchored" data-anchor-id="s-learner-single"><span class="header-section-number">9.3</span> S-learner (“single”)</h2>
 <p>Fit one regression of <span class="math inline">\(Y\)</span> on <span class="math inline">\((D, X)\)</span>, then predict the difference between <span class="math inline">\(D = 1\)</span> and <span class="math inline">\(D = 0\)</span> for each <span class="math inline">\(x\)</span>:</p>
 <div id="s-learner" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_with_D <span class="op">=</span> <span class="fu">hcat</span>(D, X)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X1_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(n), X)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>X0_test  <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">zeros</span>(n), X)</span>
@@ -644,8 +644,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.4" class="anchored" data-anchor-id="t-learner-two"><span class="header-section-number">9.4</span> T-learner (“two”)</h2>
 <p>Fit two separate regressions, one on treated units and one on controls:</p>
 <div id="t-learner" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>idx_T <span class="op">=</span> D <span class="op">.==</span> <span class="fl">1</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>idx_C <span class="op">=</span> D <span class="op">.==</span> <span class="fl">0</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -665,8 +665,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.5" class="anchored" data-anchor-id="x-learner-kunzel-2019-metalearners"><span class="header-section-number">9.5</span> X-learner <span class="citation" data-cites="kunzel-2019-metalearners">(<a href="references.html#ref-kunzel-2019-metalearners" role="doc-biblioref">Künzel et al. 2019</a>)</span></h2>
 <p>The X-learner starts from the T-learner. It imputes missing potential outcomes, creates pseudo-treatment effects, smooths them over <span class="math inline">\(X\)</span>, and then combines the two arms with propensity-score weights.</p>
 <div id="x-learner" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: pseudo-outcomes, stored full-length so the arm models can be fit</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># out-of-fold with `rows` (entries outside each arm are never used for training)</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>D1_pseudo <span class="op">=</span> <span class="fu">zeros</span>(n); D1_pseudo[idx_T] <span class="op">=</span> Y[idx_T] <span class="op">.-</span> mu0_T[idx_T]   <span class="co"># observed - imputed Y(0)</span></span>
@@ -697,8 +697,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \tag{9.2}\]</span></span></p>
 <p>where <span class="math inline">\(\hat m(x) = \mathbb{E}[Y \mid X = x]\)</span> and <span class="math inline">\(\hat e(x) = \mathbb{E}[D \mid X = x]\)</span> are cross-fitted nuisance estimates.</p>
 <div id="r-learner" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nuisances cross-fitted on the shared folds defined in the helper chunk</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>m_hat    <span class="op">=</span> <span class="fu">rf_oof</span>(X, Y, X, folds)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>e_hat_cv <span class="op">=</span> <span class="fu">clamp</span>.(<span class="fu">rf_oof</span>(X, D, X, folds), <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
@@ -730,8 +730,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \frac{(1 - D_i) (Y_i - \hat\mu_0(X_i))}{1 - \hat e(X_i)}.
 \tag{9.3}\]</span></span></p>
 <div id="dr-learner" class="cell" data-cache="true" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mu1_cf <span class="op">=</span> <span class="fu">rf_oof</span>(X, Y, X, folds; rows <span class="op">=</span> D <span class="op">.==</span> <span class="fl">1</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>mu0_cf <span class="op">=</span> <span class="fu">rf_oof</span>(X, Y, X, folds; rows <span class="op">=</span> D <span class="op">.==</span> <span class="fl">0</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>e_cf   <span class="op">=</span> <span class="fu">clamp</span>.(<span class="fu">rf_oof</span>(X, D, X, folds), <span class="fl">0.02</span>, <span class="fl">0.98</span>)</span>
@@ -751,8 +751,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <section id="comparing-all-five-estimators" class="level2" data-number="9.8">
 <h2 data-number="9.8" class="anchored" data-anchor-id="comparing-all-five-estimators"><span class="header-section-number">9.8</span> Comparing all five estimators</h2>
 <div id="cell-compare-plot" class="cell" data-cache="true" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">1000</span>, <span class="fl">700</span>))</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>labs <span class="op">=</span> [<span class="st">"S-learner"</span>, <span class="st">"T-learner"</span>, <span class="st">"X-learner"</span>, <span class="st">"R-learner"</span>, <span class="st">"DR-learner"</span>]</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> [tau_S, tau_T, tau_X, tau_R, tau_DR]</span>
@@ -784,8 +784,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <p>The <span class="math inline">\(\arg\min\)</span> returns the coefficient vector <span class="math inline">\((\beta_0^*, \beta^*)\)</span>; the best linear projection itself is the fitted function <span class="math inline">\(\beta_0^* + X'\beta^*\)</span>.</p>
 <p>A doubly-robust BLP uses the DR-learner pseudo-outcomes:</p>
 <div id="cell-blp" class="cell" data-cache="true" data-execution_count="11">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>blp_df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="fu">hcat</span>(pseudo_DR, X), [<span class="op">:</span>tau_pseudo, <span class="op">:</span>X1, <span class="op">:</span>X2, <span class="op">:</span>X3, <span class="op">:</span>X4, <span class="op">:</span>X5])</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>blp_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(tau_pseudo <span class="op">~</span> X1 <span class="op">+</span> X2 <span class="op">+</span> X3 <span class="op">+</span> X4 <span class="op">+</span> X5), blp_df)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -882,8 +882,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.10" class="anchored" data-anchor-id="gates-sorted-group-ates"><span class="header-section-number">9.10</span> GATES: sorted group ATEs</h2>
 <p>GATES (group average treatment effects) is a simple way to report heterogeneity <span class="citation" data-cites="chernozhukov-2018-generic-ml">(<a href="references.html#ref-chernozhukov-2018-generic-ml" role="doc-biblioref">Chernozhukov et al. 2018</a>)</span>. Sort observations by predicted CATE, split them into bins, and estimate the ATE in each bin. (The same paper’s CLAN — classification analysis — is the natural companion: compare average <em>covariates</em> between the most- and least-affected bins; here that would show high <span class="math inline">\(X_1\)</span> in the top quintile.)</p>
 <div id="clan" class="cell" data-cache="true" data-execution_count="12">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>nq <span class="op">=</span> <span class="fl">5</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The ranking score MUST be out-of-fold, which `tau_DR` now is (it comes from</span></span>
@@ -941,8 +941,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <h2 data-number="9.11" class="anchored" data-anchor-id="variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</h2>
 <p>A simple diagnostic is to regress the DR pseudo-outcome on each covariate separately and compare <span class="math inline">\(R^2\)</span>.</p>
 <div id="var-importance" class="cell" data-cache="true" data-execution_count="13">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">single_var_r2</span>(target, x)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    df_one <span class="op">=</span> <span class="fu">DataFrame</span>(t <span class="op">=</span> target, x <span class="op">=</span> x)</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(t <span class="op">~</span> x), df_one)</span>
@@ -987,8 +987,8 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 \tag{9.5}\]</span></span></p>
 <p>For interpretability, we can restrict the policy to a single threshold rule.</p>
 <div id="policy" class="cell" data-cache="true" data-execution_count="14">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cost = 2 makes the problem non-degenerate: tau(x) = 1 + 2 x1 is in [1, 3],</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so the optimal rule is "treat iff x1 &gt; 0.5" (about half the population).</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># A cost below 1 would make treat-everyone optimal and there would be</span></span>
@@ -1035,8 +1035,8 @@ Welfare (τ̂-rule, evaluated on true τ):       0.215</code></pre>
 <h2 data-number="9.13" class="anchored" data-anchor-id="causal-forests-with-panel-data"><span class="header-section-number">9.13</span> Causal forests with panel data</h2>
 <p>With panel data, unit effects can be correlated with treatment and covariates. A cross-sectional meta-learner can then be biased. The fixed effect adjustment is to demean by unit before applying the learner.</p>
 <div id="panel-dgp" class="cell" data-cache="true" data-execution_count="15">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2024</span>)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>n_firms <span class="op">=</span> <span class="fl">200</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>n_t     <span class="op">=</span> <span class="fl">5</span></span>
@@ -1064,8 +1064,8 @@ Welfare (τ̂-rule, evaluated on true τ):       0.215</code></pre>
 </div>
 <p>A naive T-learner ignores the firm fixed effects. Because <code>unit_fe</code> raises both the treatment probability and the outcome, and is not in the learner’s covariates, the naive estimate is badly biased upward:</p>
 <div id="panel-naive" class="cell" data-cache="true" data-execution_count="16">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>X_panel_naive <span class="op">=</span> <span class="fu">reshape</span>(df_panel.V1, N, <span class="fl">1</span>)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>idx_T_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">1</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>idx_C_p <span class="op">=</span> df_panel.W <span class="op">.==</span> <span class="fl">0</span></span>
@@ -1091,8 +1091,8 @@ Welfare (τ̂-rule, evaluated on true τ):       0.215</code></pre>
 </div>
 <p>The within transformation removes firm-level variation and leaves the within-firm variation:</p>
 <div id="panel-within" class="cell" data-cache="true" data-execution_count="17">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within transformation: subtract firm means</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>df_dm <span class="op">=</span> <span class="fu">combine</span>(<span class="fu">groupby</span>(df_panel, <span class="op">:</span>firm),</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                <span class="op">:</span>Y  <span class="op">=&gt;</span> (y <span class="op">-&gt;</span> y <span class="op">.-</span> <span class="fu">mean</span>(y)) <span class="op">=&gt;</span> <span class="op">:</span>Y_dm,</span>

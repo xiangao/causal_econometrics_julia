@@ -158,8 +158,8 @@ CDE can be estimated using G-computation method, or IPW, or the doubly-robust me
 
 G-computation is to model the outcome equation:  $$
 \begin{aligned}
-CDE_G(m) &= \sum_x [ E[Y \mid W=1, M=m, X=x] - \\
-&&  E[Y \mid W=0, M=m, X=x]]  P(X=x)
+CDE_G(m) &= \sum_x [ E[Y \mid W=1, M=m, X=x] \\
+&\quad - E[Y \mid W=0, M=m, X=x]]\, P(X=x)
 \end{aligned}
 $$ {#eq-mediation-8}
 
@@ -187,7 +187,7 @@ $$ CDE_{AIPW} = CDE_G(m) + B(\bar Q, g_M, g_W) $$ {#eq-mediation-11} where $\bar
  $$
 \begin{aligned}
 B(\bar Q, g_M, g_W) &= \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=1)}{g_M(m|1, X_i) g_W(1|X_i)}[Y_i-\bar Q(m,1,X_i)]} \\
-&  &  - \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=0)}{g_M(m|0, X_i) g_W(0|X_i)}[Y_i-\bar Q(m,0,X_i)]}
+&\quad - \frac{1}{n} \sum_{i=1}^{n} {\frac{I(M_i=m, W_i=0)}{g_M(m|0, X_i) g_W(0|X_i)}[Y_i-\bar Q(m,0,X_i)]}
 \end{aligned}
 $$ {#eq-mediation-12}
 
@@ -296,8 +296,8 @@ CDE is to study the effect of treatment, given the level of mediator. Instead, N
 $$
 \begin{aligned}
 ATE &= NIE + NDE \\
-&=  (E[ Y(1,M(1))] - E[Y(1,M(0))]) + \\
-&& (E[Y(1, M(0))] - E[Y(0,M(0))])
+&= (E[Y(1,M(1))] - E[Y(1,M(0))]) \\
+&\quad + (E[Y(1, M(0))] - E[Y(0,M(0))])
 \end{aligned}
 $$ {#eq-mediation-13}
 

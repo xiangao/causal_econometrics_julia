@@ -472,8 +472,8 @@ window.Quarto = {
 
 
 <div id="cc458a2e" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">RecursiveCausalDiscovery</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -514,8 +514,8 @@ window.Quarto = {
 <p><span id="eq-causal-discovery-2"><span class="math display">\[X_i = \sum_{j \in \text{pa}(i)} \beta_{ji} X_j + \varepsilon_i, \quad \varepsilon_i \sim N(0,1) \tag{22.2}\]</span></span></p>
 <p>where coefficients <span class="math inline">\(\beta_{ji}\)</span> are drawn uniformly from <span class="math inline">\([-1, -0.25] \cup [0.25, 1]\)</span>.</p>
 <div id="22aaa594" class="cell" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2025</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n_vars    <span class="op">=</span> <span class="fl">8</span></span>
@@ -536,8 +536,8 @@ window.Quarto = {
 </div>
 </div>
 <div id="cell-fig-true-dag" class="cell" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_graph</span>(<span class="fu">adjmat_to_admg</span>(adj_mat, labels); direction<span class="op">=</span><span class="st">"TB"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div id="fig-true-dag" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
@@ -663,8 +663,8 @@ Figure&nbsp;22.1: True DAG used for simulation.
 <p>With <span class="math inline">\(n = 2000\)</span> and <span class="math inline">\(p = 8\)</span> we use <span class="math inline">\(\alpha = 0.01\)</span>, a common default. With smaller <span class="math inline">\(n\)</span> or larger <span class="math inline">\(p\)</span> the CI tests lose power and true edges get dropped, so consider raising <span class="math inline">\(\alpha\)</span> to avoid over-pruning.</p>
 <p>We wrap <code>fisher_z</code> in a counter to track exactly how many CI tests each algorithm calls:</p>
 <div id="29c6b591" class="cell" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">make_counted_ci</span>(data, sig)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="fu">Ref</span>(<span class="fl">0</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="fu">ci</span>(x, y, S, d)</span>
@@ -691,8 +691,8 @@ Figure&nbsp;22.1: True DAG used for simulation.
 <li>Apply Meek’s orientation rules to propagate orientations without creating new colliders or cycles.</li>
 </ol>
 <div id="d9469b8e" class="cell" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="op">=</span> <span class="fl">0.01</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ci_pc, ctr_pc <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
@@ -752,8 +752,8 @@ Note
 </ol>
 <p>The key efficiency advantage: RSL-D uses at most <span class="math inline">\(O(p \cdot d \cdot |\text{MB}|^2)\)</span> CI tests (where <span class="math inline">\(d\)</span> is the max neighbourhood size). PC can require exponentially many in the worst case as the separator-set search grows.</p>
 <div id="010503a3" class="cell" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ci_rsl, ctr_rsl <span class="op">=</span> <span class="fu">make_counted_ci</span>(data_mat, sig_level)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cpdag_rsl <span class="op">=</span> <span class="fu">rsld</span>(data_mat, ci_rsl)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>skel_rsl  <span class="op">=</span> <span class="fu">SimpleGraph</span>(cpdag_rsl)</span>
@@ -791,8 +791,8 @@ Note
 </div>
 </div>
 <div class="cell" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    Algorithm   <span class="op">=</span> [<span class="st">"PC"</span>,              <span class="st">"RSL-D"</span>],</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    Skeleton_F1 <span class="op">=</span> <span class="fu">round</span>.([f1_skel_pc,  f1_skel_rsl],  digits<span class="op">=</span><span class="fl">3</span>),</span>
@@ -849,8 +849,8 @@ Table&nbsp;22.1: Algorithm comparison on the simulated 8-node DAG (n = 2000, sig
 </div>
 </div>
 <div id="cell-fig-cpdags" class="cell" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">side_by_side</span>([</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">adjmat_to_admg</span>(adj_mat, labels),  <span class="st">"True DAG"</span>),</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">cpdag_to_admg</span>(cpdag_pc,  labels), <span class="st">"PC — estimated CPDAG"</span>),</span>
@@ -1192,8 +1192,8 @@ Note
 <li>High variance in F1 across replications suggests the algorithms are sensitive to the particular random graph — denser or sparser graphs drawn from the same Erdős–Rényi model can be very different problems.</li>
 </ul>
 <div id="b1e3c59c" class="cell" data-cache="true" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">evaluate_once</span>(seed; n_vars<span class="op">=</span><span class="fl">8</span>, n_samples<span class="op">=</span><span class="fl">2000</span>, edge_prob<span class="op">=</span><span class="fl">0.35</span>, sig<span class="op">=</span><span class="fl">0.01</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    adj  <span class="op">=</span> <span class="fu">gen_er_dag_adj_mat</span>(n_vars, edge_prob)</span>
@@ -1230,8 +1230,8 @@ RSL-D          0.937      56.5</code></pre>
 </div>
 </div>
 <div id="cell-fig-mc-ci" class="cell" data-fig-height="4" data-fig-width="7" data-execution_count="11">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">650</span>, <span class="fl">380</span>))</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>,<span class="fl">1</span>];</span>
@@ -1307,8 +1307,8 @@ Figure&nbsp;22.3: Distribution of CI test counts over 100 replications. RSL-D co
 </tbody>
 </table>
 <div id="753d2703" class="cell" data-execution_count="12">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>pisa   <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/pisa_usa2022.csv"</span>, DataFrame)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>plabs  <span class="op">=</span> [<span class="st">"HISEI"</span>,<span class="st">"HOMEPOS"</span>,<span class="st">"IMMIG"</span>,<span class="st">"GRADE"</span>,<span class="st">"GENDER"</span>,<span class="st">"MATH"</span>]</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>Xp     <span class="op">=</span> <span class="fu">Matrix</span><span class="dt">{Float64}</span>(pisa[<span class="op">:</span>, plabs])</span>
@@ -1342,8 +1342,8 @@ Note
 <h3 data-number="22.8.1" class="anchored" data-anchor-id="respecting-the-survey-design"><span class="header-section-number">22.8.1</span> Respecting the survey design</h3>
 <p>PISA is not a simple random sample — students carry final weights <code>W_FSTUWT</code>. The CI tests are functions of the <strong>covariance matrix</strong> and a <strong>sample size</strong>, so we supply design-consistent inputs: a <strong>weighted covariance/correlation</strong> matrix, and <strong>Kish’s effective sample size</strong> <span class="math inline">\(n_{\text{eff}} = (\sum_i w_i)^2 / \sum_i w_i^2\)</span>.</p>
 <div id="446e5468" class="cell" data-execution_count="13">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mu_p  <span class="op">=</span> (Xp<span class="op">'</span> <span class="op">*</span> wp) <span class="op">./</span> <span class="fu">sum</span>(wp)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Xc_p  <span class="op">=</span> Xp <span class="op">.-</span> mu_p<span class="op">'</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>Sig_p <span class="op">=</span> (Xc_p<span class="op">'</span> <span class="op">*</span> (wp <span class="op">.*</span> Xc_p)) <span class="op">./</span> <span class="fu">sum</span>(wp)      <span class="co"># design-weighted covariance</span></span>
@@ -1356,8 +1356,8 @@ Note
 </div>
 </div>
 <div class="cell" data-execution_count="14">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> dfc <span class="op">=</span> <span class="fu">DataFrame</span>(Variable <span class="op">=</span> plabs)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k, l) <span class="kw">in</span> <span class="fu">enumerate</span>(plabs); dfc[!, l] <span class="op">=</span> <span class="fu">round</span>.(Cw_p[<span class="op">:</span>, k], digits<span class="op">=</span><span class="fl">2</span>); <span class="cf">end</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    dfc</span>
@@ -1468,8 +1468,8 @@ Table&nbsp;22.2: Design-weighted correlation matrix (PISA 2022, USA).
 <h3 data-number="22.8.2" class="anchored" data-anchor-id="two-algorithms-on-the-weighted-data"><span class="header-section-number">22.8.2</span> Two algorithms on the weighted data</h3>
 <p>The CI test recomputes correlations from a data matrix, so to honour the design we build a synthetic sample of <span class="math inline">\(n_{\text{eff}}\)</span> rows whose empirical covariance equals the design-weighted <span class="math inline">\(\Sigma_w\)</span> exactly (a Cholesky recolour). Both PC and RSL-D then run on these design-consistent inputs unchanged.</p>
 <div id="58a85ee3" class="cell" data-execution_count="15">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>m_eff <span class="op">=</span> <span class="fu">round</span>(<span class="dt">Int</span>, neff)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Z  <span class="op">=</span> <span class="fu">randn</span>(m_eff, pp_); Z <span class="op">.-=</span> <span class="fu">mean</span>(Z, dims<span class="op">=</span><span class="fl">1</span>)</span>
@@ -1495,8 +1495,8 @@ Skeleton edges — PC: 9   RSL-D: 9   in both: 9</code></pre>
 </div>
 </div>
 <div id="cell-fig-pisa-cpdags" class="cell" data-execution_count="16">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">side_by_side</span>([</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">cpdag_to_admg</span>(cpdag_pcp,  plabs), <span class="st">"PC — estimated CPDAG"</span>),</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">cpdag_to_admg</span>(cpdag_rslp, plabs), <span class="st">"RSL-D — estimated CPDAG"</span>),</span>
@@ -1717,8 +1717,8 @@ Important
 \tag{22.5}\]</span></span></p>
 <p>A cross-tier edge must point earlier→later; a within-tier edge the ordering cannot decide. We impose this on the discovered <strong>skeleton</strong>, because the ordering is knowledge we hold independently of how the data oriented things.</p>
 <div id="fd32d176" class="cell" data-execution_count="17">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>tier_p <span class="op">=</span> <span class="fu">Dict</span>(<span class="st">"GENDER"</span><span class="op">=&gt;</span><span class="fl">0</span>,<span class="st">"IMMIG"</span><span class="op">=&gt;</span><span class="fl">0</span>,<span class="st">"HISEI"</span><span class="op">=&gt;</span><span class="fl">1</span>,<span class="st">"HOMEPOS"</span><span class="op">=&gt;</span><span class="fl">1</span>,<span class="st">"GRADE"</span><span class="op">=&gt;</span><span class="fl">2</span>,<span class="st">"MATH"</span><span class="op">=&gt;</span><span class="fl">3</span>)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>di_e <span class="op">=</span> <span class="dt">Tuple</span>{<span class="dt">Symbol</span>,<span class="dt">Symbol</span>}[]; bi_e <span class="op">=</span> <span class="dt">Tuple</span>{<span class="dt">Symbol</span>,<span class="dt">Symbol</span>}[]</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">edges</span>(skel_pcp)</span>
@@ -1750,8 +1750,8 @@ Warning
 </div>
 </div>
 <div id="cell-fig-pisa-oriented" class="cell" data-execution_count="18">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_graph</span>(oriented_admg; direction<span class="op">=</span><span class="st">"LR"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div id="fig-pisa-oriented" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
@@ -1861,8 +1861,8 @@ Figure&nbsp;22.5: PC skeleton oriented by the temporal/logical tiers. Cross-tier
 <h3 data-number="22.8.4" class="anchored" data-anchor-id="stability-does-the-skeleton-survive-resampling"><span class="header-section-number">22.8.4</span> Stability: does the skeleton survive resampling?</h3>
 <p>A single fit can be lucky. We resample students with replacement, re-estimate the <strong>weighted</strong> PC skeleton, and record how often each edge appears.</p>
 <div id="08569b03" class="cell" data-cache="true" data-execution_count="19">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">weighted_skel</span>(Xb, wb, labs, sig)</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    mu <span class="op">=</span> (Xb<span class="op">'</span> <span class="op">*</span> wb) <span class="op">./</span> <span class="fu">sum</span>(wb); Xc <span class="op">=</span> Xb <span class="op">.-</span> mu<span class="op">'</span></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    Σ  <span class="op">=</span> (Xc<span class="op">'</span> <span class="op">*</span> (wb <span class="op">.*</span> Xc)) <span class="op">./</span> <span class="fu">sum</span>(wb)</span>
@@ -1897,8 +1897,8 @@ Figure&nbsp;22.5: PC skeleton oriented by the temporal/logical tiers. Cross-tier
 </div>
 </div>
 <div id="cell-fig-pisa-stability" class="cell" data-fig-height="4" data-fig-width="7" data-execution_count="20">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>edge_names <span class="op">=</span> <span class="dt">String</span>[]; edge_vals <span class="op">=</span> <span class="dt">Float64</span>[]</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>pp_<span class="op">-</span><span class="fl">1</span>, j <span class="kw">in</span> i<span class="op">+</span><span class="fl">1</span><span class="op">:</span>pp_</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> edge_freq[i, j] <span class="op">&gt;</span> <span class="fl">0</span></span>

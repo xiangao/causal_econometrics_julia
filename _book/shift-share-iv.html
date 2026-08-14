@@ -472,8 +472,8 @@ window.Quarto = {
 
 
 <div id="e2977541" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -530,8 +530,8 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <h2 data-number="17.4" class="anchored" data-anchor-id="simulation-build-intuition"><span class="header-section-number">17.4</span> Simulation: build intuition</h2>
 <p>Use a small DGP with regions, industries, and a known causal effect.</p>
 <div id="cell-sim-data" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The CSVs below are 500 locations x 20 industries; beta_true is the DGP coefficient.</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>beta_true  <span class="op">=</span> <span class="fl">0.5</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -610,8 +610,8 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 </div>
 <p>A naive OLS suffers from the confounder <code>u</code>:</p>
 <div id="naive-ols" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ols  <span class="op">=</span> <span class="fu">feols</span>(df, <span class="pp">@formula</span>(Y <span class="op">~</span> X))</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ivss <span class="op">=</span> <span class="fu">feiv</span>(df, <span class="pp">@formula</span>(Y <span class="op">~</span> <span class="fl">1</span>), endo <span class="op">=</span> <span class="op">:</span>X, inst <span class="op">=</span> <span class="op">:</span>B)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -634,8 +634,8 @@ True beta: 0.500</code></pre>
 <h3 data-number="17.4.1" class="anchored" data-anchor-id="rotemberg-weights"><span class="header-section-number">17.4.1</span> Rotemberg weights</h3>
 <p>The GPSS decomposition says the shift-share IV is a weighted average of <span class="math inline">\(K\)</span> just-identified IVs (one per industry share). Compute the weights:</p>
 <div id="rotemberg" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rw <span class="op">=</span> <span class="fu">rotemberg_weights</span>(shares, shocks, X, Y)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"%-10s %8s %8s %8s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"Industry"</span>, <span class="st">"Shock"</span>, <span class="st">"α_k"</span>, <span class="st">"β_k"</span>)</span>
@@ -679,8 +679,8 @@ Shift-share IV estimate: 0.5309</code></pre>
 <li><strong>Heterogeneous <span class="math inline">\(\hat\beta_k\)</span></strong>: in this benign simulation, the industry-specific IVs are all near the true effect (with sampling noise). In real data, if a few industries give wildly different estimates, the “average” shift-share IV is averaging over heterogeneous treatment effects you should report explicitly.</li>
 </ol>
 <div id="cell-rotemberg-plot" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">380</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>],</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>           xlabel <span class="op">=</span> <span class="st">"Industry"</span>,</span>
@@ -705,8 +705,8 @@ Shift-share IV estimate: 0.5309</code></pre>
 <h3 data-number="17.4.2" class="anchored" data-anchor-id="what-goes-wrong-when-shares-are-endogenous"><span class="header-section-number">17.4.2</span> What goes wrong when shares are endogenous</h3>
 <p>Now break the share-exogeneity assumption: make industry 1’s share correlated with the second-stage error.</p>
 <div id="bad-shares" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/shift_share_bad_v.csv"</span>, DataFrame).v</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>shares_bad <span class="op">=</span> <span class="fu">copy</span>(shares)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>shares_bad[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.=</span> <span class="fu">max</span>.(<span class="fl">0.01</span>, shares[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.+</span> <span class="fl">0.15</span> <span class="op">.*</span> v)</span>
@@ -750,8 +750,8 @@ Leave-industry-1-out IV: 0.480</code></pre>
 <h2 data-number="17.5" class="anchored" data-anchor-id="bhj-shock-level-inference"><span class="header-section-number">17.5</span> BHJ shock-level inference</h2>
 <p>Collapse the location-level data to the shock level and run a weighted IV at the shock (industry) level. This reframes the identifying assumption: shocks must be uncorrelated with the shock-level aggregated outcome residual.</p>
 <div id="bhj" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>collapsed <span class="op">=</span> <span class="fu">bhj_collapse</span>(shares, shocks, Y, X)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># BHJ shock-level 2SLS: regress Y_agg ~ X_agg | shock, weighted by weight</span></span>
@@ -781,8 +781,8 @@ BHJ shock-level IV:             0.537
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into other high-income countries. This leave-one-out construction removes US-specific demand from the shock.</p>
 <p>The snippet below is schematic — the full ADH specification additionally needs period effects, the ADH control set, and population weights (a validated replication against the GPSS benchmark lives in the <code>ShiftShareIV.jl</code> repository).</p>
 <div id="a0639308" class="cell" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Files needed:</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   workfile_china.csv  (commuting zone data, 1990–2007)</span></span>

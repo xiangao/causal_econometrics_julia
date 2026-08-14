@@ -492,8 +492,8 @@ window.Quarto = {
 
 
 <div id="7317cc2f" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
@@ -513,8 +513,8 @@ window.Quarto = {
 <section id="setup" class="level2" data-number="10.1">
 <h2 data-number="10.1" class="anchored" data-anchor-id="setup"><span class="header-section-number">10.1</span> Setup</h2>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n  <span class="op">=</span> <span class="fl">2000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -543,8 +543,8 @@ True μ(d=2) = 4.40, μ(d=4) = 6.60, μ(d=6) = 7.60</code></pre>
 <h2 data-number="10.2" class="anchored" data-anchor-id="naive-regression-vs-adjusted-regression"><span class="header-section-number">10.2</span> Naive regression vs adjusted regression</h2>
 <p>A linear fit on <span class="math inline">\(D\)</span> alone has two problems: it ignores confounding by <span class="math inline">\(X\)</span>, and it imposes a straight line on a nonlinear dose-response curve.</p>
 <div id="cell-naive" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df.D2 <span class="op">=</span> df.D <span class="op">.^</span> <span class="fl">2</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>linear_naive <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D),                       df)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>linear_adj   <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> X1 <span class="op">+</span> X2),             df)</span>
@@ -587,8 +587,8 @@ r(d, x) = f_{D \mid X}(d \mid x).
 \tag{10.2}\]</span></span></p>
 <p>Under unconfoundedness, the GPS plays the same role as the propensity score for binary treatment. I start with a normal model for treatment given covariates:</p>
 <div id="gps" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>gps_model <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(D <span class="op">~</span> X1 <span class="op">+</span> X2), df)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>d_pred    <span class="op">=</span> <span class="fu">predict</span>(gps_model)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sigma_e   <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(gps_model))) <span class="op">/</span> <span class="fu">dof_residual</span>(gps_model))</span>
@@ -603,8 +603,8 @@ r(d, x) = f_{D \mid X}(d \mid x).
 </div>
 <p>The Hirano-Imbens estimator has two steps. First regress <span class="math inline">\(Y\)</span> on flexible functions of <span class="math inline">\(D\)</span> and the estimated GPS. Then, for each dose <span class="math inline">\(d\)</span>, average the predicted outcome over the sample.</p>
 <div id="cell-hi-est" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: regress Y on flexible function of D and the GPS</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>df.gps2 <span class="op">=</span> df.gps <span class="op">.^</span> <span class="fl">2</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>hi_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> D2 <span class="op">+</span> gps <span class="op">+</span> gps2 <span class="op">+</span> D <span class="op">&amp;</span> gps), df)</span>
@@ -644,8 +644,8 @@ r(d, x) = f_{D \mid X}(d \mid x).
 \tag{10.3}\]</span></span></p>
 <p>where <span class="math inline">\(K_h\)</span> is a kernel around dose <span class="math inline">\(d\)</span>. The code self-normalizes the kernel weights (a Hájek/stabilized form, <span class="math inline">\(\sum_i \tilde w_i = 1\)</span>) rather than dividing by <span class="math inline">\(n\)</span>, which stabilizes the correction term in finite samples.</p>
 <div id="cell-dr-cont" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome model: μ̂(D, X)</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mu_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> D <span class="op">+</span> D2 <span class="op">+</span> X1 <span class="op">+</span> X2 <span class="op">+</span> D <span class="op">&amp;</span> X1 <span class="op">+</span> D <span class="op">&amp;</span> X2), df)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -690,8 +690,8 @@ r(d, x) = f_{D \mid X}(d \mid x).
 \tag{10.4}\]</span></span></p>
 <p>A multinomial regression supplies <span class="math inline">\(\hat r\)</span>. The dose-response curve becomes the average outcome under each treatment level.</p>
 <div id="multivalued" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate a 4-level treatment</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">99</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>n_mv <span class="op">=</span> <span class="fl">2000</span></span>

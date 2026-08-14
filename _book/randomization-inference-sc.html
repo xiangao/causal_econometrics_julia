@@ -472,8 +472,8 @@ window.Quarto = {
 
 
 <div id="b44731a6" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">SynthDiD</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -495,8 +495,8 @@ window.Quarto = {
 <p>The placebo idea is simple. Take each control unit in turn, pretend it was treated, and re-run synthetic control. This produces a placebo gap for each donor. The collection of placebo gaps is the empirical null distribution under no effect.</p>
 <p>If California’s gap is large relative to the placebo gaps, that is evidence against the no-effect null.</p>
 <div id="setup-prop99" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>setup <span class="op">=</span> <span class="fu">panel_matrices</span>(california, <span class="op">:</span>State, <span class="op">:</span>Year, <span class="op">:</span>PacksPerCapita, <span class="op">:</span>treated)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Y    <span class="op">=</span> setup.Y</span>
@@ -519,8 +519,8 @@ window.Quarto = {
 </div>
 <p>Now run the placebo: each control state takes a turn as the “treated” unit.</p>
 <div id="placebo-units" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">run_placebo</span>(Y, N0, T0, treated_idx)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Swap treated_idx into the last row (treated slot); remaining donors fill 1..N0-1</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    donor_idx <span class="op">=</span> <span class="fu">setdiff</span>(<span class="fl">1</span><span class="op">:</span>N0, treated_idx)</span>
@@ -559,8 +559,8 @@ Placebo distribution sd:   10.76</code></pre>
 <h3 data-number="15.1.1" class="anchored" data-anchor-id="the-two-sided-p-value"><span class="header-section-number">15.1.1</span> The two-sided p-value</h3>
 <p>A Fisher-style exact <span class="math inline">\(p\)</span>-value is the fraction of placebo effects at least as extreme (in absolute value) as the observed effect:</p>
 <div id="pvalue" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fisher exact convention: count California itself in numerator and denominator,</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so the p-value floor is 1/(N0+1) = 1/39 rather than 0.</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>p_value <span class="op">=</span> (<span class="fl">1</span> <span class="op">+</span> <span class="fu">sum</span>(<span class="fu">abs</span>.(placebo_effects) <span class="op">.&gt;=</span> <span class="fu">abs</span>(ca_effect))) <span class="op">/</span> (<span class="fu">length</span>(placebo_effects) <span class="op">+</span> <span class="fl">1</span>)</span>
@@ -576,8 +576,8 @@ Placebo distribution sd:   10.76</code></pre>
 <h3 data-number="15.1.2" class="anchored" data-anchor-id="the-placebo-plot"><span class="header-section-number">15.1.2</span> The placebo plot</h3>
 <p>The usual plot overlays the placebo gaps in grey and California’s gap in black. If the black line is outside the grey cloud, California looks unusual.</p>
 <div id="cell-placebo-plot" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">740</span>, <span class="fl">380</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Year"</span>, ylabel <span class="op">=</span> <span class="st">"Gap: observed − synthetic"</span>,</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>           title <span class="op">=</span> <span class="st">"Placebo gap trajectories"</span>)</span>
@@ -607,8 +607,8 @@ Placebo distribution sd:   10.76</code></pre>
 \tag{15.1}\]</span></span></p>
 <p>A large ratio means post-treatment gap is large <em>relative to</em> pre-treatment fit. The MSPE ratio test compares California’s ratio to the distribution of placebo ratios.</p>
 <div id="mspe-test" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">mspe_ratio</span>(treated, cfact, T0)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pre  <span class="op">=</span> <span class="fu">mean</span>((treated[<span class="fl">1</span><span class="op">:</span>T0] <span class="op">.-</span> cfact[<span class="fl">1</span><span class="op">:</span>T0])<span class="op">.^</span><span class="fl">2</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    post <span class="op">=</span> <span class="fu">mean</span>((treated[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>] <span class="op">.-</span> cfact[(T0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>])<span class="op">.^</span><span class="fl">2</span>)</span>
@@ -638,8 +638,8 @@ One-sided p-value (ratio): 0.077</code></pre>
 </div>
 <p>The MSPE ratio discounts placebo states that were poorly fit before treatment.</p>
 <div id="cell-mspe-plot" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">640</span>, <span class="fl">360</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Post/Pre MSPE ratio"</span>,</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>           ylabel <span class="op">=</span> <span class="st">"Count"</span>, title <span class="op">=</span> <span class="st">"MSPE ratio distribution"</span>)</span>
@@ -659,8 +659,8 @@ One-sided p-value (ratio): 0.077</code></pre>
 <h2 data-number="15.3" class="anchored" data-anchor-id="time-placebo"><span class="header-section-number">15.3</span> Time placebo</h2>
 <p>Another check moves the treatment date backward into the pre-period. If the method finds a large placebo effect before Proposition 99, the post-treatment effect is less credible.</p>
 <div id="time-placebo" class="cell" data-cache="true" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pretend treatment started in 1980 instead of 1989</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>T0_placebo <span class="op">=</span> <span class="fu">findfirst</span>(<span class="op">==</span>(<span class="fl">1980</span>), years) <span class="op">-</span> <span class="fl">1</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>Y_pre      <span class="op">=</span> Y[<span class="op">:</span>, <span class="fl">1</span><span class="op">:</span>T0]   <span class="co"># cut off real treatment period</span></span>
@@ -684,8 +684,8 @@ Real effect (treatment in 1989):               -19.62</code></pre>
 <h2 data-number="15.4" class="anchored" data-anchor-id="tasc-posterior-as-bayesian-alternative"><span class="header-section-number">15.4</span> TASC posterior as Bayesian alternative</h2>
 <p>TASC models the panel with a linear Gaussian state-space process and returns a posterior distribution over the counterfactual path. This is model-based uncertainty, not a placebo distribution.</p>
 <div id="tasc-band" class="cell" data-cache="true" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(Y[(N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], Y[<span class="fl">1</span><span class="op">:</span>N0, <span class="op">:</span>])</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>tasc_model <span class="op">=</span> <span class="fu">fit_tasc</span>(Y_tasc; d <span class="op">=</span> <span class="fl">2</span>, T0 <span class="op">=</span> T0, n_em <span class="op">=</span> <span class="fl">200</span>, tol <span class="op">=</span> <span class="fl">1e-3</span>)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>tasc_pred  <span class="op">=</span> <span class="fu">predict_counterfactual</span>(tasc_model, Y_tasc)</span>
@@ -707,8 +707,8 @@ Real effect (treatment in 1989):               -19.62</code></pre>
 </div>
 </div>
 <div id="cell-combined-plot" class="cell" data-cache="true" data-execution_count="11">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert placebo gaps to counterfactual paths for visualisation</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> <span class="fu">Figure</span>(size <span class="op">=</span> (<span class="fl">820</span>, <span class="fl">420</span>), fontsize <span class="op">=</span> <span class="fl">13</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>ax  <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> <span class="st">"Year"</span>, ylabel <span class="op">=</span> <span class="st">"Packs per capita"</span>,</span>

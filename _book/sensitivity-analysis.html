@@ -472,8 +472,8 @@ window.Quarto = {
 
 
 <div id="1c83d77a" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GLM</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -499,8 +499,8 @@ window.Quarto = {
 <h2 data-number="5.1" class="anchored" data-anchor-id="a-simulated-example"><span class="header-section-number">5.1</span> A simulated example</h2>
 <p>Use a simulation so the truth is known:</p>
 <div id="dgp" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n   <span class="op">=</span> <span class="fl">2000</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X1  <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -545,8 +545,8 @@ f_q = q\, \frac{|t|}{\sqrt{df}},
 \tag{5.1}\]</span></span></p>
 <p>where <span class="math inline">\(|t|\)</span> is the absolute t-stat of the treatment coefficient, <span class="math inline">\(df\)</span> is the residual degrees of freedom, and <span class="math inline">\(q\)</span> is the fraction of the estimate we want explained away (<span class="math inline">\(q = 1\)</span> for full explanation).</p>
 <div id="rv" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">    robustness_value(t_stat, df; q=1.0)</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Minimum partial R² with both treatment and outcome that an unmeasured</span></span>
@@ -585,8 +585,8 @@ RV to reach insignificance:      0.4521  (= 45.21% partial R²)</code></pre>
 <h3 data-number="5.2.1" class="anchored" data-anchor-id="benchmarking-against-observed-covariates"><span class="header-section-number">5.2.1</span> Benchmarking against observed covariates</h3>
 <p>How strong are the observed covariates as a reference? Compute their partial <span class="math inline">\(R^2\)</span> contributions:</p>
 <div id="benchmark" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Partial R² of a covariate: variance explained over a model that omits it</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">partial_r2</span>(full_fit, reduced_fit)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    ss_full     <span class="op">=</span> <span class="fu">sum</span>(<span class="fu">abs2</span>.(<span class="fu">residuals</span>(full_fit)))</span>
@@ -630,8 +630,8 @@ would it explain the estimate? NO — robust to this benchmark</code></pre>
 <h3 data-number="5.2.2" class="anchored" data-anchor-id="a-sensitivity-contour-plot"><span class="header-section-number">5.2.2</span> A sensitivity contour plot</h3>
 <p>The contour plot below shows, for each <span class="math inline">\((R^2_{D \sim U}, R^2_{Y \sim U})\)</span> pair, the implied estimate of the treatment effect under that strength of unobserved confounding:</p>
 <div id="cell-contour" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bias formula (Cinelli-Hazlett 2020, eqn 4):</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># bias = se(τ̂) * sqrt(df) * sqrt( R²_Y * R²_D / (1 - R²_D) )</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># adjusted_estimate = τ̂ - bias (or + bias, the worst case is the larger absolute)</span></span>
@@ -672,8 +672,8 @@ would it explain the estimate? NO — robust to this benchmark</code></pre>
 \tag{5.2}\]</span></span></p>
 <p>For <span class="math inline">\(RR &lt; 1\)</span>, use <span class="math inline">\(1/RR\)</span> first and apply the formula.</p>
 <div id="evalue" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">    evalue(rr; lo=missing, hi=missing)</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">Compute the E-value for a risk ratio and (optionally) its 95% confidence</span></span>
@@ -718,8 +718,8 @@ E-value (CI):    1.69</code></pre>
 <p>For matched estimators (propensity score matching, full matching, optimal matching), <strong>Rosenbaum bounds</strong> (Rosenbaum 2002) parametrise hidden bias as <span class="math inline">\(\Gamma\)</span>, the maximum ratio of treatment odds between the two units of a matched pair due to unobservables. <span class="math inline">\(\Gamma = 1\)</span> corresponds to within-pair randomisation; <span class="math inline">\(\Gamma = 2\)</span> means one unit’s odds of receiving treatment can be up to twice the other’s.</p>
 <p>For each value of <span class="math inline">\(\Gamma\)</span>, the upper-bound <span class="math inline">\(p\)</span>-value of the Wilcoxon signed-rank test on matched-pair outcome differences is:</p>
 <div id="rosenbaum" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate matched-pair differences from a known DGP</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">7</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>n_pairs <span class="op">=</span> <span class="fl">500</span></span>

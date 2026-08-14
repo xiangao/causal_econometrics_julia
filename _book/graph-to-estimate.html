@@ -469,8 +469,8 @@ window.Quarto = {
 
 
 <div id="a5ece5d8" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span></span>
@@ -490,8 +490,8 @@ window.Quarto = {
 <h2 data-number="24.1" class="anchored" data-anchor-id="backdoor-a-fixable-effects"><span class="header-section-number">24.1</span> Backdoor: a-fixable effects</h2>
 <p>Start with the simple case. <span class="math inline">\(X\)</span> is a common cause of treatment <span class="math inline">\(A\)</span> and outcome <span class="math inline">\(Y\)</span>, and <span class="math inline">\(X\)</span> is observed. Backdoor adjustment applies. In the package terminology this is <code>a_fixable</code>.</p>
 <div id="backdoor-graph" class="cell" data-cache="true" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build the graph: X is a common cause of A and Y</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>g_backdoor <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>X, <span class="op">:</span>A, <span class="op">:</span>Y],</span>
@@ -507,8 +507,8 @@ window.Quarto = {
 </div>
 <p>The package recognises the backdoor structure: <code>X</code> blocks the only open backdoor path from <span class="math inline">\(A\)</span> to <span class="math inline">\(Y\)</span>, so adjusting on <span class="math inline">\(X\)</span> identifies the ACE.</p>
 <div id="backdoor-sim" class="cell" data-cache="true" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">2000</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> <span class="fu">randn</span>(n)</span>
@@ -548,8 +548,8 @@ Backdoor estimation (true ACE = 2.0):
 <p>Now suppose <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span> have an unmeasured common cause <span class="math inline">\(U\)</span>, but there is a measured mediator <span class="math inline">\(M\)</span> on the path <span class="math inline">\(A \rightarrow M \rightarrow Y\)</span>. Backdoor adjustment fails because <span class="math inline">\(U\)</span> is unobserved. The front-door formula can still identify the effect.</p>
 <p>In ADMG notation, the unmeasured confounder appears as a bidirected edge between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>.</p>
 <div id="frontdoor-graph" class="cell" data-cache="true" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A → M → Y, with unmeasured confounding between A and Y (bidirected edge)</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>g_frontdoor <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>M, <span class="op">:</span>Y],</span>
@@ -566,8 +566,8 @@ Backdoor estimation (true ACE = 2.0):
 </div>
 <p>The package returns <code>p_fixable</code>, recognizing the front-door structure. This uses a different functional than backdoor adjustment and must model <span class="math inline">\(M\)</span> too.</p>
 <div id="frontdoor-sim" class="cell" data-cache="true" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="fl">3000</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>U <span class="op">=</span> <span class="fu">randn</span>(n)                                          <span class="co"># unmeasured confounder</span></span>
@@ -604,8 +604,8 @@ Front-door estimation:
 </div>
 <p>The front-door functional pins down the effect even though <span class="math inline">\(U\)</span> is unobserved. A naive mean difference is badly biased:</p>
 <div id="frontdoor-naive" class="cell" data-cache="true" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>naive_ace <span class="op">=</span> <span class="fu">mean</span>(Y[A <span class="op">.==</span> <span class="fl">1</span>]) <span class="op">-</span> <span class="fu">mean</span>(Y[A <span class="op">.==</span> <span class="fl">0</span>])</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Naïve mean difference (Y|A=1) - (Y|A=0): %.3f  (biased!)</span><span class="sc">\n</span><span class="st">"</span>, naive_ace)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span>(<span class="st">"Front-door TMLE estimate:                 %.3f</span><span class="sc">\n</span><span class="st">"</span>, result_fd[<span class="op">:</span>TMLE].ACE)</span>
@@ -623,8 +623,8 @@ True ACE:                                 0.453</code></pre>
 <h2 data-number="24.3" class="anchored" data-anchor-id="when-identification-fails"><span class="header-section-number">24.3</span> When identification fails</h2>
 <p>Not every graph identifies the effect. If <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span> have a hidden common cause and there is no front-door variable, the effect is not identified.</p>
 <div id="not-identified" class="cell" data-cache="true" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A → Y with unmeasured confounding and no mediator</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>g_unident <span class="op">=</span> <span class="fu">make_graph</span>(</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    vertices <span class="op">=</span> [<span class="op">:</span>A, <span class="op">:</span>Y],</span>
@@ -655,8 +655,8 @@ True ACE:                                 0.453</code></pre>
 <h2 data-number="24.4" class="anchored" data-anchor-id="end-to-end-discover-identify-estimate"><span class="header-section-number">24.4</span> End-to-end: discover, identify, estimate</h2>
 <p>The previous chapters’ discovery algorithms (PC, FCI, RSL-D, L-MARVEL) return graphs that can be passed directly to <code>identify()</code> and <code>estimate_causal()</code>. The full pipeline is:</p>
 <div id="8d8b6462" class="cell" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span>   <span class="co"># for PC algorithm</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: discover the graph (chapter 11)</span></span>

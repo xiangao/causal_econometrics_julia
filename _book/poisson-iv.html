@@ -492,8 +492,8 @@ window.Quarto = {
 
 
 <div id="c798c5fb" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span>, <span class="bu">DataFramesMeta</span></span>
@@ -585,8 +585,8 @@ Note
 <h3 data-number="18.2.1" class="anchored" data-anchor-id="data-generating-process"><span class="header-section-number">18.2.1</span> Data generating process</h3>
 <p>We simulate a panel where <code>time</code> (continuous, e.g.&nbsp;minutes on site) is endogenous: it is correlated with an unobserved factor <code>e</code> that also affects <code>visits</code>. The excluded instrument is <code>phone</code> (binary, e.g.&nbsp;phone-access indicator). Fixed effects are <code>ad</code> (20 groups) and <code>female</code>.</p>
 <div id="99f088d5" class="cell" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_ad <span class="op">=</span> <span class="fl">20</span>; obs_per <span class="op">=</span> <span class="fl">250</span>; n <span class="op">=</span> n_ad <span class="op">*</span> obs_per</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -622,8 +622,8 @@ Note
 <h3 data-number="18.2.2" class="anchored" data-anchor-id="naive-poisson-endogeneity-bias"><span class="header-section-number">18.2.2</span> Naive Poisson — endogeneity bias</h3>
 <p>Ignoring the endogeneity of <code>time</code> gives a biased estimate of <code>α₁</code>:</p>
 <div id="4b209844" class="cell" data-execution_count="4">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>naive1 <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Naive (biased):"</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(naive1; title<span class="op">=</span><span class="st">"Naive Poisson — time is endogenous"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -683,8 +683,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </ol>
 <p>Note that unlike 2SLS in a linear model, <span class="math inline">\(\hat{v}_2\)</span> does <em>not</em> replace <span class="math inline">\(y_2\)</span> — both enter together. This is what makes the CF estimator different from IV/GMM Poisson (confirmed numerically in Part 2).</p>
 <div id="00555f7d" class="cell" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>fs1 <span class="op">=</span> <span class="fu">feols</span>(df1, <span class="pp">@formula</span>(time <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>df1.v2hat <span class="op">=</span> fs1.residuals</span>
@@ -752,8 +752,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <h3 data-number="18.2.4" class="anchored" data-anchor-id="bootstrap-standard-errors"><span class="header-section-number">18.2.4</span> Bootstrap standard errors</h3>
 <p>The second-stage standard errors are incorrect because the first-stage estimation error propagates. Julia’s <code>Threads.@threads</code> parallelises the cluster bootstrap across all CPU cores:</p>
 <div id="cb04d83c" class="cell" data-execution_count="6">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_resample</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Random</span>.<span class="fu">seed!</span>(seed)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    clusters <span class="op">=</span> <span class="fu">unique</span>(df.ad)</span>
@@ -815,8 +815,8 @@ Bootstrap 95% CI: [0.7868, 0.8312]</code></pre>
 <h3 data-number="18.3.1" class="anchored" data-anchor-id="data-generating-process-1"><span class="header-section-number">18.3.1</span> Data generating process</h3>
 <p>We use a clean probit DGP for the binary endogenous variable with a fresh structural error <code>e2</code> independent of Part 1. The endogeneity coefficient <code>ρ = 0.2</code> is kept small so the CF assumption holds approximately well and estimates are close to the true value.</p>
 <div id="eac89f66" class="cell" data-execution_count="7">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fresh structural error for Part 2 (independent of Part 1's e)</span></span>
@@ -924,8 +924,8 @@ z\hat{\boldsymbol\pi}_2,\rho)\)</span>, and <span class="math inline">\(h(\cdot)
 <section id="approach-a-linear-projection-cf" class="level3" data-number="18.3.6">
 <h3 data-number="18.3.6" class="anchored" data-anchor-id="approach-a-linear-projection-cf"><span class="header-section-number">18.3.6</span> Approach A — Linear projection CF</h3>
 <div id="c519ac87" class="cell" data-execution_count="8">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection of binary time_hi</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fs_a <span class="op">=</span> <span class="fu">feols</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df2.v2hat <span class="op">=</span> fs_a.residuals</span>
@@ -991,8 +991,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="approach-b-probit-generalized-residuals" class="level3" data-number="18.3.7">
 <h3 data-number="18.3.7" class="anchored" data-anchor-id="approach-b-probit-generalized-residuals"><span class="header-section-number">18.3.7</span> Approach B — Probit generalized residuals</h3>
 <div id="105f79de" class="cell" data-execution_count="9">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: probit first stage</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fs_b <span class="op">=</span> <span class="fu">feprobit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1069,8 +1069,8 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 = y_2\bigl[1-\Lambda(\hat\eta)\bigr] - (1-y_2)\Lambda(\hat\eta) = y_2 - \Lambda(\hat\eta) = y_2 - \hat p_2, \tag{18.6}\]</span></span></p>
 <p>i.e.&nbsp;<strong>the logit generalized residual is just the plain response residual</strong> <span class="math inline">\(y_2-\hat p_2\)</span> — no Mills-ratio machinery needed: <code>logit</code> first stage, then <code>y2 .- predict(fit)</code>, is the right generalized residual, not a shortcut.</p>
 <div id="f276d8a1" class="cell" data-execution_count="10">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fs_b_logit <span class="op">=</span> <span class="fu">felogit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>phat_logit <span class="op">=</span> fs_b_logit.mu</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>df2.gr2_logit <span class="op">=</span> df2.time_hi <span class="op">.-</span> phat_logit    <span class="co"># algebraically = generalized residual</span></span>
@@ -1150,8 +1150,8 @@ Logit-based  Approach B: alpha1 = 0.8000</code></pre>
 <h3 data-number="18.3.9" class="anchored" data-anchor-id="approach-c-fitted-values-as-instrument-ivgmm-poisson"><span class="header-section-number">18.3.9</span> Approach C — Fitted values as instrument (IV/GMM Poisson)</h3>
 <p>Any function of the exogenous <span class="math inline">\(\mathbf{z}\)</span> is a valid instrument. Probit, logit, and linear probability fitted values are all equally valid from a consistency standpoint — the choice affects efficiency (instrument strength). We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument. We code <strong>both moment forms</strong>: the additive moments are what “IV Poisson” often means in practice (e.g.&nbsp;Stata’s <code>ivpoisson gmm</code> default additive option), but because this chapter’s DGP puts the unobservable inside <span class="math inline">\(\exp(\cdot)\)</span>, only the multiplicative (Mullahy) moments are consistent here:</p>
 <div id="3fac60bf" class="cell" data-execution_count="11">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="st">    ivpois(y, X, Z) -&gt; (β, se)</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1246,8 +1246,8 @@ Note
 <h3 data-number="18.3.10" class="anchored" data-anchor-id="a-vs-c-not-equivalent-in-poisson"><span class="header-section-number">18.3.10</span> A vs C — not equivalent in Poisson</h3>
 <p>In a linear model, using <span class="math inline">\(\hat{y}_2\)</span> as an instrument (2SLS) is numerically identical to adding <span class="math inline">\(\hat{v}_2 = y_2 - \hat{y}_2\)</span> as a regressor — the Frisch-Waugh-Lovell theorem. <strong>In Poisson this equivalence breaks</strong>, because Approach A puts <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> while Approach C uses <span class="math inline">\(\hat{y}_2\)</span> in the moment conditions without modifying the exponential mean.</p>
 <div id="03685554" class="cell" data-execution_count="12">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (Approach C with linear first stage)</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>ŷ<span class="fl">2</span>  <span class="op">=</span> <span class="fu">Float64</span>.(df2.time_hi) <span class="op">.-</span> <span class="fu">Float64</span>.(fs_a.residuals)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>X_l <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">Float64</span>.(df2.time_hi), <span class="fu">Float64</span>.(df2.frfam), <span class="fu">ones</span>(n))</span>
@@ -1275,8 +1275,8 @@ True α₁ = 0.8</code></pre>
 <section id="bootstrap-for-approach-a-binary-eev" class="level3" data-number="18.3.11">
 <h3 data-number="18.3.11" class="anchored" data-anchor-id="bootstrap-for-approach-a-binary-eev"><span class="header-section-number">18.3.11</span> Bootstrap for Approach A (binary EEV)</h3>
 <div id="67680285" class="cell" data-execution_count="13">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_cf_binary</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>=<span class="fl">500</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    draws   <span class="op">=</span> <span class="fu">bootstrap_resample</span>(df, B; seed<span class="op">=</span>seed)</span>
@@ -1314,8 +1314,8 @@ True α₁ = 0.8</code></pre>
 <section id="comparison-across-all-methods" class="level3" data-number="18.3.12">
 <h3 data-number="18.3.12" class="anchored" data-anchor-id="comparison-across-all-methods"><span class="header-section-number">18.3.12</span> Comparison across all methods</h3>
 <div id="a9347c55" class="cell" data-execution_count="14">
-<details class="code-fold">
-<summary>Show code</summary>
+<details open="" class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fepois</span>(df2, <span class="pp">@formula</span>(visits <span class="op">~</span> time_hi <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>)[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="st">"time_hi"</span>),</span>
