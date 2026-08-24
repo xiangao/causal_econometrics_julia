@@ -471,7 +471,7 @@ window.Quarto = {
 </header>
 
 
-<div id="e2977541" class="cell" data-execution_count="2">
+<div id="88929e43" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -487,18 +487,26 @@ window.Quarto = {
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">ShiftShareIV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Shift-share, or Bartik, instruments combine local industry shares with industry-level shocks. The idea is simple: a location with a large baseline share in an industry is more exposed to shocks in that industry. The difficult part is not constructing the instrument. The difficult part is stating what is assumed exogenous: the shares, the shocks, or both.</p>
+<p>Shift-share, or Bartik, instruments answer one specific problem, so it is clearest to write the regression down first.</p>
+<p>We want the effect of a local economic shock on a local outcome. For region <span class="math inline">\(\ell\)</span>,</p>
+<p><span id="eq-shift-share-iv-structural"><span class="math display">\[
+Y_\ell \;=\; \beta X_\ell + Z_\ell'\gamma + u_\ell ,
+\tag{17.1}\]</span></span></p>
+<p>where <span class="math inline">\(X_\ell\)</span> is the shock the region actually experienced — local import competition per worker, in the China-shock literature — and <span class="math inline">\(Y_\ell\)</span> is the outcome, say the change in the local manufacturing employment share. The parameter we want is <span class="math inline">\(\beta\)</span>.</p>
+<p>The endogenous regressor is <span class="math inline">\(X_\ell\)</span>. Regions do not receive their shocks at random. A region whose import competition rises sharply may be a region whose industries were already losing ground, and whatever caused that decline sits in <span class="math inline">\(u_\ell\)</span> and moves <span class="math inline">\(Y_\ell\)</span> on its own. Then <span class="math inline">\(\text{Cov}(X_\ell, u_\ell) \ne 0\)</span>, and OLS mixes the effect of the shock with the local conditions that produced it. We cannot sign that bias in advance; it depends on whether those local conditions push the outcome up or down.</p>
+<p>The shift-share instrument replaces the realised local shock with a predicted one, assembled from two pieces that are meant to have nothing to do with <span class="math inline">\(u_\ell\)</span>: each region’s <em>baseline</em> industry shares, fixed before the outcome period, and <em>national</em> or foreign industry-level shocks, common across regions. A region with a large baseline share in an industry is mechanically more exposed to a shock hitting that industry, and that exposure is predicted rather than realised.</p>
+<p>Building the instrument is the easy part. The difficult part is saying which of the two pieces carries the exogeneity assumption — the shares, the shocks, or both — because the two answers lead to different identification arguments, different diagnostics, and different standard errors. That is what the rest of the chapter is about.</p>
 <section id="the-construction" class="level2" data-number="17.1">
 <h2 data-number="17.1" class="anchored" data-anchor-id="the-construction"><span class="header-section-number">17.1</span> The construction</h2>
 <p>For each location <span class="math inline">\(\ell\)</span> and industry <span class="math inline">\(k\)</span>, let <span class="math inline">\(s_{\ell k}\)</span> be the share of local employment in industry <span class="math inline">\(k\)</span> at baseline, and let <span class="math inline">\(g_k\)</span> be a national growth rate (or trade shock) for that industry. The shift-share instrument is</p>
 <p><span id="eq-shift-share-iv-1"><span class="math display">\[
 B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
-\tag{17.1}\]</span></span></p>
+\tag{17.2}\]</span></span></p>
 <p>This is “shift-share” because it combines a local share with an industry-level shift. Bartik (1991) used local industry mix to predict local employment growth. Autor, Dorn, and Hanson (2013) used local industry shares interacted with industry-level Chinese import growth in other high-income countries.</p>
 <p>The first-stage regression is then</p>
 <p><span id="eq-shift-share-iv-2"><span class="math display">\[
 \Delta L_\ell \;=\; \pi_0 + \pi_1 B_\ell + X_\ell'\gamma + \epsilon_\ell,
-\tag{17.2}\]</span></span></p>
+\tag{17.3}\]</span></span></p>
 <p>with <span class="math inline">\(B_\ell\)</span> instrumenting for the observed local shock in a 2SLS for the outcome of interest.</p>
 </section>
 <section id="two-identification-views" class="level2" data-number="17.2">
@@ -509,7 +517,7 @@ B_\ell \;=\; \sum_{k=1}^{K} s_{\ell k}\, g_k.
 <p>Treat the shares <span class="math inline">\(s_{\ell k}\)</span> as the source of identifying variation, with the shocks <span class="math inline">\(g_k\)</span> acting as weights. The instrument is valid if shares are exogenous to the outcome (conditional on controls). GPSS prove that the shift-share IV is numerically equivalent to a GMM combination of <span class="math inline">\(K\)</span> just-identified IVs, one per industry share:</p>
 <p><span id="eq-shift-share-iv-3"><span class="math display">\[
 \hat\beta^{SS} \;=\; \sum_{k=1}^{K} \hat\alpha_k\, \hat\beta_k,
-\tag{17.3}\]</span></span></p>
+\tag{17.4}\]</span></span></p>
 <p>where <span class="math inline">\(\hat\beta_k\)</span> is the just-identified IV using share <span class="math inline">\(s_{\cdot k}\)</span> alone and <span class="math inline">\(\hat\alpha_k\)</span> is the <strong>Rotemberg weight</strong>. This gives an important diagnostic: which industry shares are driving the estimate?</p>
 </section>
 <section id="shock-view-bhj-2022" class="level3" data-number="17.2.2">
@@ -777,10 +785,10 @@ BHJ shock-level IV:             0.537
 <p><span id="eq-shift-share-iv-4"><span class="math display">\[
 \text{IV}_\ell \;=\; \sum_k \frac{L_{\ell k,\,1990}}{L_{\ell,\,1990}}\,
                    \frac{\Delta M^{\text{other}}_{k}}{L_{k,\,1990}},
-\tag{17.4}\]</span></span></p>
+\tag{17.5}\]</span></span></p>
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into other high-income countries. This leave-one-out construction removes US-specific demand from the shock.</p>
 <p>The snippet below is schematic — the full ADH specification additionally needs period effects, the ADH control set, and population weights (a validated replication against the GPSS benchmark lives in the <code>ShiftShareIV.jl</code> repository).</p>
-<div id="a0639308" class="cell" data-execution_count="9">
+<div id="ea0cb699" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>

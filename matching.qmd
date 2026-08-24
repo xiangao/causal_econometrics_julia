@@ -342,6 +342,126 @@ Entropy balancing is useful when mean balance is the main diagnostic. If we
 need balance over whole covariate distributions, energy balancing in R's
 `WeightIt` is a better tool. There is no Julia equivalent yet.
 
+## Matching, weighting, and direct estimation
+
+The estimation chapter estimated a treatment effect by regression adjustment,
+IPW and AIPW. This chapter has estimated one by matching, by IPW and by entropy
+balancing. Those are not two families of estimators. They are one estimand and
+several ways of building it, and it is worth saying how they line up.
+
+The ATT is
+
+$$
+\tau_{ATT} = E[Y \mid D = 1] - E_{X \mid D = 1}\bigl[\, E[Y \mid D = 0, X] \,\bigr].
+$$ {#eq-matching-att-routes}
+
+The first term is observed. The second is not: it is the mean outcome the
+treated would have had untreated, averaged over the covariate distribution of
+the treated. Every method here forms that second term, and every one of them
+ends up as a weighted average of control outcomes,
+$\sum_{i: D_i = 0} w_i Y_i$. What differs is where the weights come from.
+
+| Route | What is modelled | Weight on control $i$ |
+|---|---|---|
+| Regression adjustment | the outcome, $\mu_0(x) = E[Y \mid D=0, X=x]$ | implicit in the fitted values used to predict at treated $x$ |
+| IPW | the propensity score $\pi(x)$ | the odds $\pi(x_i)/(1-\pi(x_i))$ |
+| Matching | neither; a distance rule | 0 if unmatched, 1 if matched |
+| Entropy balancing | the weights themselves | whatever satisfies the balance constraints |
+| AIPW | both | the odds, applied to the residual $Y - \hat\mu_0(X)$ |
+
+Weighting is IPW. That is the second row, and the odds are what the IPW section
+above computed. Entropy balancing does not change the estimator, only how the
+weights are found: IPW fits $\pi$ by maximum likelihood and transforms it, while
+entropy balancing skips the likelihood and solves for weights satisfying the
+balance constraints directly. Its solution has the form $w_i \propto \exp(x_i'\lambda)$,
+which is the odds of a logistic propensity score — so entropy balancing is IPW
+for a logit model whose coefficients are set by exact mean balance rather than by
+likelihood.
+
+Matching is weighting too, with the weights restricted to zero and one and
+chosen by a distance rule rather than by a model. The restriction is where the
+trade-off lives: matching sets some weights to zero, so it discards
+observations, while weighting keeps everyone and pays with extreme weights when
+overlap is poor. Matching buys stability with the estimand; weighting buys the
+estimand with variance.
+
+AIPW uses both columns: start from regression adjustment, then add the
+odds-weighted average of the control residuals $Y - \hat\mu_0(X)$. It is
+consistent if either model is right.
+
+Five routes, one data set. Each row is built by hand from the weight
+representation so the arithmetic is visible.
+
+```{julia}
+#| label: compare-routes
+#| cache: true
+
+trt = df.D .== 1
+
+# Outcome model fitted on controls only, then predicted everywhere
+mu0_fit = lm(@formula(Y ~ X1 + X2), df[.!trt, :])
+mu0 = predict(mu0_fit, df)
+
+# Odds weights from the logistic propensity score fitted above
+odds   = df.ps ./ (1 .- df.ps)
+wt_ipw = ifelse.(trt, 1.0, odds)
+
+# Weighted difference in means: the common shape of rows 2 to 4
+hajek(w) = sum(df.Y[trt] .* w[trt]) / sum(w[trt]) -
+           sum(df.Y[.!trt] .* w[.!trt]) / sum(w[.!trt])
+
+# Matching as 0/1 weights on the units the matcher kept
+w_nn = zeros(nrow(df))
+w_nn[matched_idx_T] .= 1.0
+w_nn[matched_idx_C] .= 1.0
+
+# Entropy-balancing weights, treated at 1
+w_eb = zeros(nrow(df))
+w_eb[trt] .= 1.0
+w_eb[.!trt] .= w_ebal
+
+att_ra   = mean(df.Y[trt] .- mu0[trt])
+att_ipw  = hajek(wt_ipw)
+att_eb   = hajek(w_eb)
+att_nn   = hajek(w_nn)
+att_aipw = att_ra - sum((df.Y[.!trt] .- mu0[.!trt]) .* odds[.!trt]) / sum(odds[.!trt])
+
+DataFrame(
+    route = ["Regression adjustment (outcome model)",
+             "IPW (propensity model)",
+             "Entropy balancing (balance constraints)",
+             "1:1 matching, no replacement (distance rule)",
+             "AIPW (both models)"],
+    ATT = round.([att_ra, att_ipw, att_eb, att_nn, att_aipw], digits = 3))
+```
+
+Two of these confirm the algebra directly. Expressing the matched comparison as
+a weighted mean with zero-one weights reproduces the 1.287 printed earlier,
+which is what "matching is a weighting estimator" means concretely. And entropy
+balancing returns 1.014, the same figure the entropy-balancing section printed,
+since that section computed the same weighted difference.
+
+The spread is the part worth reading. Four of the five routes land between 1.009
+and 1.014 against a true effect of 1.000. They agree because this DGP gives them
+every reason to: the treatment effect is constant at 1, so there is no
+heterogeneity for differing weights to average differently, and the propensity
+score runs from 0.060 to 0.927, so no unit carries an extreme weight. Under
+those two conditions the routes are estimating the same number and differ only
+by noise. The [R companion chapter](https://xiangao.github.io/causal_econometrics_guide/matching.html)
+runs the same five routes on the Lalonde data, where effects are heterogeneous
+and overlap is poor, and there they spread from \$1,214 to \$1,855.
+
+The exception here is instructive. One-to-one matching without replacement gives
+1.287, nearly 30% high, and it is the one route that throws data away: 364 of the
+1,182 controls receive weight zero. Matching with replacement, which reuses good
+controls instead of discarding them, gave 0.988 earlier in the chapter. That gap
+is the cost of the zero weights, not of matching as an idea.
+
+These are point estimates, and standard errors are not comparable across the
+rows: matching is not a smooth functional of the data, so the bootstrap is
+invalid for it, while IPW and AIPW have influence-function variances and AIPW
+attains the semiparametric efficiency bound that fixed-$M$ matching does not.
+
 ## When to use which method
 
 | Method | When to use | Limitation |

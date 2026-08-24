@@ -491,7 +491,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3a364e94" class="cell" data-execution_count="2">
+<div id="8de9c0d4" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -939,7 +939,10 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 </section>
 <section id="variable-importance-which-covariate-drives-heterogeneity" class="level2" data-number="9.11">
 <h2 data-number="9.11" class="anchored" data-anchor-id="variable-importance-which-covariate-drives-heterogeneity"><span class="header-section-number">9.11</span> Variable importance — which covariate drives heterogeneity?</h2>
-<p>A simple diagnostic is to regress the DR pseudo-outcome on each covariate separately and compare <span class="math inline">\(R^2\)</span>.</p>
+<p>A simple diagnostic is to regress the DR pseudo-outcome on each covariate separately and compare <span class="math inline">\(R^2\)</span>. It answers a different question from the BLP, and the two are easy to run together and confuse.</p>
+<p>The BLP is a <em>joint</em> projection with inference attached. Its target, <a href="#eq-heterogeneous-effects-4" class="quarto-xref">Equation&nbsp;<span>9.4</span></a>, is defined without reference to any fitted object: it is the best linear approximation to <span class="math inline">\(\tau(x)\)</span> using all covariates at once, it comes in the units of the outcome, it has a sign, and <code>coeftable</code> gives it a standard error we can test against zero. The importance measure below is <em>marginal</em> and descriptive: one univariate <span class="math inline">\(R^2\)</span> per covariate, with no units, no sign, and no standard error.</p>
+<p>The difference that matters in practice is joint versus marginal. A covariate that is merely correlated with the true effect modifier picks up a high univariate <span class="math inline">\(R^2\)</span>, because on its own it does predict the pseudo-outcome, while its BLP coefficient is near zero once the real modifier is in the regression. The projection splits shared variation between correlated covariates; the marginal measure gives each of them full credit for it. Here the five covariates are drawn independently, so the two agree.</p>
+<p>Both share one blind spot worth naming, since it is not obvious: this importance measure is itself a <em>linear</em> fit, so a covariate that modifies the effect non-monotonically — large effects at both ends of its range, small in the middle — scores near zero on both the BLP and the <span class="math inline">\(R^2\)</span>. A tree-based importance of the kind <code>grf</code> reports would flag it, because trees can split on it. Neither diagnostic here can.</p>
 <div id="var-importance" class="cell" data-cache="true" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1120,6 +1123,7 @@ Welfare (τ̂-rule, evaluated on true τ):       0.215</code></pre>
 </div>
 <p>The within transformation removes the fixed effects, and the rescaled contrast lands near the truth in this DGP. The cost is variance, because identification now comes from within-firm variation.</p>
 <p>A caveat on what this estimator targets. Splitting on <span class="math inline">\(W_{dm} &gt; 0\)</span> vs <span class="math inline">\(W_{dm} \le 0\)</span> and dividing the T-learner contrast by the average <span class="math inline">\(W_{dm}\)</span> gap is <em>not</em> a general fixed-effect CATE estimator. It is a heuristic within-firm contrast whose target depends on the distribution of demeaned treatment values and on the grouping rule, and the rescaling is a Wald-style approximation rather than an identified within estimand. It works here because the treatment effect is linear in <span class="math inline">\(V_1\)</span> and the DGP is benign. Properly identified heterogeneous panel effects require a proper orthogonal score or a dedicated panel causal-forest / DML construction; treat this section as intuition, not a turnkey method.</p>
+<p>So how much does ignoring the panel cost? On this DGP the naive T-learner returns 2.014 against a true panel ATE of 0.655 — about three times the truth — while the within transform recovers 0.689. The magnitude is specific to this design, since it scales with how strongly the unit effect drives both treatment and outcome, but the direction is not: a unit effect that raises both leaves the naive estimate biased upward. Read those two numbers as the size of the confounding being removed, not as clean CATE accuracy figures, for the estimand reasons given just above.</p>
 <p>For R’s <code>grf::causal_forest</code>, pass <code>clusters = firm_id</code> so the honest sample split keeps each firm’s observations together. Julia does not currently have an equivalent; see the <a href="https://xiangao.github.io/blog_book/causal-forest-panel.html">companion blog chapter on causal forests in panel data</a> and the <a href="https://xiangao.github.io/causal_econometrics_guide/heterogeneous-effects.html">R companion to this chapter</a> for the GRF-based workflow.</p>
 </section>
 <section id="summary" class="level2" data-number="9.14">

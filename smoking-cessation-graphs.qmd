@@ -299,9 +299,19 @@ DataFrame(
 )
 ```
 
-For this treatment effect, the detailed baseline DAG is adjustment-equivalent to
-the simpler expanded DAG. It gives the same measured parents for `qsmk` and
-therefore the same identifying functional. The extra arrows among baseline
-variables may be useful for documentation, but they are also extra causal
-assumptions. If those assumptions are not needed for the estimand, the grouped
-adjustment graph is usually easier to defend.
+The check returns `true`, and the reason is worth spelling out, because it is not
+an accident of this data set. Every arrow we added runs between baseline
+variables, and every baseline variable is pre-treatment and in the adjustment
+set. A back-door path from `qsmk` to `wt82_71` has to leave `qsmk` through an
+incoming arrow, travel among the baseline variables, and then enter `wt82_71`
+from one of them. That last baseline variable has an arrow pointing into the
+outcome, so on this path it is a non-collider, and we are conditioning on it.
+The path is blocked whatever the arrows upstream of it look like. The measured
+parents of `qsmk` are therefore still the full baseline, and the identifying
+functional is unchanged.
+
+That does not make the detail useless. It records what we believe about the
+baseline ordering, which a reader may want to see. But each arrow is a causal
+assumption that can be wrong, and here none of them buys anything for this
+estimand. The grouped adjustment graph asserts less and identifies the same
+thing.

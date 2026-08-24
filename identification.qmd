@@ -210,18 +210,13 @@ We need four assumptions for identification:
 
 The last two together are SUTVA, the stable unit treatment value assumption [@rubin1980].
 
-Note: AIPW and IPWRA are themselves influence-function-based, doubly-robust
-estimators --- they can be implemented with either parametric nuisance models
-(logistic regression, OLS) or flexible machine-learning nuisance models (with
-cross-fitting, as in DoubleML/TMLE), so they appear on both sides of the split
-below. The split is really about *how the nuisance (propensity/outcome) models are
-estimated*, not about the estimator family itself.
-
 ## Observational Data Flowchart
 
 In observational studies, I summarise the decision what method to use for identification of causal effect:
 
 ```{mermaid}
+%%| fig-width: 6.5
+%%{init: {'flowchart': {'diagramPadding': 30}}}%%
 flowchart LR
   A[Observational data Y,W,X] --> B{Unconfoundedness?}
   B --> | Yes | C{Parametric?}

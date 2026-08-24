@@ -494,7 +494,7 @@ window.Quarto = {
 </header>
 
 
-<div id="0dc72e99" class="cell" data-execution_count="2">
+<div id="5969e659" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -579,17 +579,17 @@ window.Quarto = {
 <li>Consistency</li>
 </ul>
 <p>The last two together are SUTVA, the stable unit treatment value assumption <span class="citation" data-cites="rubin1980">(<a href="references.html#ref-rubin1980" role="doc-biblioref">Rubin 1980</a>)</span>.</p>
-<p>Note: AIPW and IPWRA are themselves influence-function-based, doubly-robust estimators — they can be implemented with either parametric nuisance models (logistic regression, OLS) or flexible machine-learning nuisance models (with cross-fitting, as in DoubleML/TMLE), so they appear on both sides of the split below. The split is really about <em>how the nuisance (propensity/outcome) models are estimated</em>, not about the estimator family itself.</p>
 </section>
 <section id="observational-data-flowchart" class="level2" data-number="1.8">
 <h2 data-number="1.8" class="anchored" data-anchor-id="observational-data-flowchart"><span class="header-section-number">1.8</span> Observational Data Flowchart</h2>
 <p>In observational studies, I summarise the decision what method to use for identification of causal effect:</p>
-<div class="cell" data-layout-align="default">
+<div class="cell" data-fig-width="6.5" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">flowchart LR
+<pre class="mermaid mermaid-js">%%{init: {'flowchart': {'diagramPadding': 30}}}%%
+flowchart LR
   A[Observational data Y,W,X] --&gt; B{Unconfoundedness?}
   B --&gt; | Yes | C{Parametric?}
   C --&gt; | Yes | D(RA)

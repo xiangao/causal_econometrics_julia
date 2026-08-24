@@ -32,11 +32,42 @@ using CSV
 using ShiftShareIV
 ```
 
-Shift-share, or Bartik, instruments combine local industry shares with
-industry-level shocks. The idea is simple: a location with a large baseline
-share in an industry is more exposed to shocks in that industry. The
-difficult part is not constructing the instrument. The difficult part is
-stating what is assumed exogenous: the shares, the shocks, or both.
+Shift-share, or Bartik, instruments answer one specific problem, so it is
+clearest to write the regression down first.
+
+We want the effect of a local economic shock on a local outcome. For region
+$\ell$,
+
+$$
+Y_\ell \;=\; \beta X_\ell + Z_\ell'\gamma + u_\ell ,
+$$ {#eq-shift-share-iv-structural}
+
+where $X_\ell$ is the shock the region actually experienced --- local import
+competition per worker, in the China-shock literature --- and $Y_\ell$ is the
+outcome, say the change in the local manufacturing employment share. The
+parameter we want is $\beta$.
+
+The endogenous regressor is $X_\ell$. Regions do not receive their shocks at
+random. A region whose import competition rises sharply may be a region whose
+industries were already losing ground, and whatever caused that decline sits in
+$u_\ell$ and moves $Y_\ell$ on its own. Then $\text{Cov}(X_\ell, u_\ell) \ne 0$,
+and OLS mixes the effect of the shock with the local conditions that produced
+it. We cannot sign that bias in advance; it depends on whether those local
+conditions push the outcome up or down.
+
+The shift-share instrument replaces the realised local shock with a predicted
+one, assembled from two pieces that are meant to have nothing to do with
+$u_\ell$: each region's *baseline* industry shares, fixed before the outcome
+period, and *national* or foreign industry-level shocks, common across regions.
+A region with a large baseline share in an industry is mechanically more exposed
+to a shock hitting that industry, and that exposure is predicted rather than
+realised.
+
+Building the instrument is the easy part. The difficult part is saying which of
+the two pieces carries the exogeneity assumption --- the shares, the shocks, or
+both --- because the two answers lead to different identification arguments,
+different diagnostics, and different standard errors. That is what the rest of
+the chapter is about.
 
 ## The construction
 

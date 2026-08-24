@@ -167,3 +167,35 @@ Julia 1.12+ and Quarto. See `Project.toml` for the full package list.
 > out-of-fold there must split by firm, not by row — and the GATES table now prints a
 > `Truth` column, which makes both the estimates' accuracy and the intervals' imperfect
 > coverage visible in the output.
+
+> **2026-08-24:** Parity pass with the R companion, which had just been revised
+> from a handwritten markup of its rendered PDF. This book was not itself
+> annotated; the pass exists because the two are twins and the defect that keeps
+> recurring across audits is a correction landing in one book and not the other.
+>
+> The port justified itself immediately. The nonparametric chapter still carried
+> a claim about plug-in estimators — that they are biased "because they are trying
+> to estimate E[Y(0)] and E[Y(1)], not the difference" — that the R book had
+> corrected in June and this one never received. It now has both the correction
+> and a new derivation showing where the plug-in's first-order nuisance term comes
+> from and why the augmentation term cancels it.
+>
+> Also ported: a section deleted at the author's instruction and four struck
+> sentences; the layout fixes, since this book shares the same `scrbook` setup and
+> had the same mid-page gaps and the same flowchart running off the page; a
+> rewritten shift-share opening that names the endogenous regressor; the
+> adjustment-equivalence argument; GPS and doubly-robust dose-response theory; and
+> a prose trim of the Poisson-IV chapter with every code chunk left byte-identical.
+>
+> A new matching section relates matching and weighting to regression adjustment,
+> IPW and AIPW. It reads differently from the R version by design: this book's
+> simulated data has a constant effect and good overlap, so four of the five routes
+> agree to within 0.005 of each other, and the section explains why rather than
+> manufacturing a disagreement. The one route that misses is 1:1 matching without
+> replacement, at 1.287 against a truth of 1 — and it is the only route that throws
+> data away, discarding 364 of 1,182 controls.
+>
+> Three of the R book's fixes did not apply and are recorded in `CLAUDE.md` with
+> the reason: this book has no partial-identification section, its sensitivity
+> contour is a hand-rolled plot without the label-overprinting problem, and two
+> items were specific to R packages.

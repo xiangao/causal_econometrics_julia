@@ -284,15 +284,11 @@ vcat(
 ```
 
 The naive contrast is far above the truth; the front-door estimate brackets it.
-This is the practical advantage of separating identification from estimation.
-State the graph first. Then use the estimator that matches the identified
-functional.
 
 ## General ID Algorithm
 
-The named routes above are useful because they are easy to estimate:
-backdoor/a-fixable, p-fixable/front-door, and nested-fixable. ADMGs can be more
-general. The Pearl-Shpitser ID algorithm asks the broader question:
+Backdoor/a-fixable, p-fixable/front-door and nested-fixable are useful because
+they are easy to estimate. ADMGs can be more general. The Pearl-Shpitser ID algorithm asks the broader question:
 
 ```text
 Can P(Y | do(A)) be written using only the observed joint law P(V)?
@@ -373,9 +369,6 @@ id_alg_bow = ID_algorithm(g_bow, :A, :Y)
  id_algorithm_identified = id_alg_bow.identified,
  hedge = id_alg_bow.hedge)
 ```
-
-This is a useful failure mode. If the graph does not justify the causal effect,
-the estimator should not manufacture one.
 
 ## Practical Workflow
 

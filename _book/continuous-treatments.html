@@ -491,7 +491,7 @@ window.Quarto = {
 </header>
 
 
-<div id="7317cc2f" class="cell" data-execution_count="2">
+<div id="28476c7d" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -585,7 +585,24 @@ True μ(d=2) = 4.40, μ(d=4) = 6.60, μ(d=6) = 7.60</code></pre>
 <p><span id="eq-continuous-treatments-2"><span class="math display">\[
 r(d, x) = f_{D \mid X}(d \mid x).
 \tag{10.2}\]</span></span></p>
-<p>Under unconfoundedness, the GPS plays the same role as the propensity score for binary treatment. I start with a normal model for treatment given covariates:</p>
+<p>Two results from <span class="citation" data-cites="hirano-imbens-2004-gps">Hirano and Imbens (<a href="references.html#ref-hirano-imbens-2004-gps" role="doc-biblioref">2004</a>)</span> are what make this object useful, and both are worth stating before we compute anything.</p>
+<p>The first is the assumption they need, which is weaker than it looks. <em>Weak unconfoundedness</em> requires <span class="math inline">\(Y(d) \perp D \mid X\)</span> separately for each dose <span class="math inline">\(d\)</span>. It does not require the whole path <span class="math inline">\(\{Y(d) : d\}\)</span> to be jointly independent of <span class="math inline">\(D\)</span> given <span class="math inline">\(X\)</span>, which would be a much stronger demand at a continuous treatment.</p>
+<p>The second is the balancing property. Conditional on the scalar <span class="math inline">\(r(d, X)\)</span>, the covariates carry no further information about whether a unit received dose <span class="math inline">\(d\)</span>:</p>
+<p><span id="eq-continuous-treatments-balance"><span class="math display">\[
+f_D\bigl(d \mid r(d, X)\bigr) = f_D\bigl(d \mid r(d, X),\, X\bigr).
+\tag{10.3}\]</span></span></p>
+<p>So a one-dimensional score does the job of the full covariate vector, exactly as in the binary case. Put the two together and the dose-response function is</p>
+<p><span id="eq-continuous-treatments-doseresp"><span class="math display">\[
+\mu(d) = E[Y(d)] = E\Bigl[\, E\bigl(Y \mid D = d,\; r(d, X)\bigr) \Bigr],
+\tag{10.4}\]</span></span></p>
+<p>where the outer expectation runs over the distribution of <span class="math inline">\(r(d, X)\)</span> in the whole sample. Read the argument of <span class="math inline">\(r\)</span> carefully, because it is where this estimator is usually got wrong: at each counterfactual dose <span class="math inline">\(d\)</span> we must recompute every unit’s score <em>at that</em> <span class="math inline">\(d\)</span>, not reuse the score at the dose the unit happened to receive. The <code>estimate_dose</code> function below does exactly that, which is why the GPS is recomputed inside it rather than taken from <code>df.gps</code>.</p>
+<p>One more point of theory explains why the GPS enters the outcome model as a regressor rather than as a weight. The GPS is a conditional <em>density</em>, not a probability, so it carries the units of <span class="math inline">\(1/D\)</span>; weights of the form <span class="math inline">\(1/\hat r\)</span> are therefore not scale-free and change if the dose is rescaled. Dividing by the marginal density of <span class="math inline">\(D\)</span> would restore scale invariance, but Hirano and Imbens sidestep the issue altogether by putting the score in the outcome model.</p>
+<p>In practice we start with a normal model for <span class="math inline">\(D \mid X\)</span>, <span class="math inline">\(D \mid X \sim \mathcal{N}(\beta_0 + \beta'X, \sigma^2)\)</span>. Fitting <span class="math inline">\(D\)</span> on <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> by OLS gives <span class="math inline">\(\hat\beta\)</span> and <span class="math inline">\(\hat\sigma\)</span>, and the score at any dose <span class="math inline">\(d\)</span> for unit <span class="math inline">\(i\)</span> is the normal density evaluated there,</p>
+<p><span id="eq-continuous-treatments-gpshat"><span class="math display">\[
+\hat r(d, x_i) = \frac{1}{\hat\sigma\sqrt{2\pi}}
+  \exp\!\left\{-\frac{\bigl(d - x_i'\hat\beta\bigr)^2}{2\hat\sigma^2}\right\}.
+\tag{10.5}\]</span></span></p>
+<p>That is the whole calculation: one linear regression, then one density evaluation per unit per dose.</p>
 <div id="gps" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -641,8 +658,11 @@ r(d, x) = f_{D \mid X}(d \mid x).
 <p><span id="eq-continuous-treatments-3"><span class="math display">\[
 \hat\mu_{DR}(d) = \frac{1}{n} \sum_i \hat\mu(d, X_i) + \sum_i \tilde w_i(d)\,\bigl(Y_i - \hat\mu(D_i, X_i)\bigr), \qquad
 \tilde w_i(d) = \frac{w_i(d)}{\sum_j w_j(d)}, \quad w_i(d) = \frac{K_h(D_i - d)}{\hat r(D_i \mid X_i)}
-\tag{10.3}\]</span></span></p>
+\tag{10.6}\]</span></span></p>
 <p>where <span class="math inline">\(K_h\)</span> is a kernel around dose <span class="math inline">\(d\)</span>. The code self-normalizes the kernel weights (a Hájek/stabilized form, <span class="math inline">\(\sum_i \tilde w_i = 1\)</span>) rather than dividing by <span class="math inline">\(n\)</span>, which stabilizes the correction term in finite samples.</p>
+<p>Two features of this estimator are worth understanding. The first is why it is doubly robust, and the algebra is the same as in the binary case worked through in <a href="nonparametric.html#sec-plug-in-bias" class="quarto-xref"><span>Section 8.2.1</span></a>: the first term is a plug-in built from the outcome model, the second subtracts that model’s own residual reweighted by the score, so a first-order error in <span class="math inline">\(\hat\mu\)</span> enters twice with opposite signs and cancels, and what survives involves the <em>product</em> of the error in <span class="math inline">\(\hat\mu\)</span> and the error in <span class="math inline">\(\hat r\)</span>. If either nuisance is right, the product is zero.</p>
+<p>The second is why a bandwidth appears here when none appeared for the ATE. The ATE is a single number and is estimable at the <span class="math inline">\(\sqrt n\)</span> rate. But <span class="math inline">\(\mu(d)\)</span> at a <em>point</em> <span class="math inline">\(d\)</span> is a regression function, and no <span class="math inline">\(\sqrt n\)</span> estimator of it exists without smoothness assumptions, because the data hold only finitely many observations near any given dose. The kernel is how we borrow from neighbouring doses, and <span class="math inline">\(h\)</span> sets the exchange rate: too wide pulls in doses where the truth is different, too narrow leaves too few observations to average. Under the usual second-order smoothness the best trade is <span class="math inline">\(h \propto n^{-1/5}\)</span> and the rate is <span class="math inline">\(n^{-2/5}\)</span>, slower than <span class="math inline">\(\sqrt n\)</span> by construction. Bandwidth sensitivity is therefore a cost of the method, not a tuning detail.</p>
+<p><span class="citation" data-cites="kennedy-2017-continuous">Kennedy et al. (<a href="references.html#ref-kennedy-2017-continuous" role="doc-biblioref">2017</a>)</span> handle the localisation more carefully: instead of smoothing the correction term, they construct a pseudo-outcome whose conditional mean given <span class="math inline">\(D = d\)</span> is exactly <span class="math inline">\(\mu(d)\)</span>, then run a single nonparametric regression of that pseudo-outcome on <span class="math inline">\(D\)</span>. All the smoothing sits in one place, which is what lets them state formal guarantees. The version here keeps the doubly-robust structure and is easier to read, with weaker theory behind it.</p>
 <div id="cell-dr-cont" class="cell" data-cache="true" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -687,7 +707,7 @@ r(d, x) = f_{D \mid X}(d \mid x).
 <p>For a discrete multivalued treatment <span class="math inline">\(D \in \{0,1,\ldots,K\}\)</span>, the GPS is a multinomial probability:</p>
 <p><span id="eq-continuous-treatments-4"><span class="math display">\[
 \hat r(d, x) = \widehat{P}(D = d \mid X = x).
-\tag{10.4}\]</span></span></p>
+\tag{10.7}\]</span></span></p>
 <p>A multinomial regression supplies <span class="math inline">\(\hat r\)</span>. The dose-response curve becomes the average outcome under each treatment level.</p>
 <div id="multivalued" class="cell" data-cache="true" data-execution_count="8">
 <details open="" class="code-fold">
@@ -746,6 +766,9 @@ r(d, x) = f_{D \mid X}(d \mid x).
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-hirano-imbens-2004-gps" class="csl-entry" role="listitem">
+Hirano, Keisuke, and Guido W. Imbens. 2004. <span>“The Propensity Score with Continuous Treatments.”</span> In <em>Applied Bayesian Modeling and Causal Inference from Incomplete-Data Perspectives</em>, 73–84. Wiley.
+</div>
 <div id="ref-kennedy-2017-continuous" class="csl-entry" role="listitem">
 Kennedy, Edward H., Zongming Ma, Matthew D. McHugh, and Dylan S. Small. 2017. <span>“Non-Parametric Methods for Doubly Robust Estimation of Continuous Treatment Effects.”</span> <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 79 (4): 1229–45.
 </div>

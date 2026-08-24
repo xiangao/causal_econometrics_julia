@@ -25,8 +25,7 @@ using GLM
 
 Before choosing an estimator, we need to know the estimand. ATE, ATT,
 LATE, CATE and QTE are not five ways to estimate the same object. They are
-five different objects. Sometimes they are numerically close, but that is a
-feature of the data-generating process, not a general result.
+five different objects.
 
 Here I use one simulated data set so we can calculate all of them. The
 simulation is useful because we observe both potential outcomes. In real
@@ -222,40 +221,6 @@ qte_est  = [quantile(Y1, q) - quantile(Y0, q) for q in qte_grid]
 @printf("QTE(0.50) = %.3f\n", quantile(Y1, 0.50) - quantile(Y0, 0.50))
 @printf("QTE(0.90) = %.3f\n", quantile(Y1, 0.90) - quantile(Y0, 0.90))
 ```
-
-## All five estimands on two plots
-
-```{julia}
-#| label: estimand-plot
-#| cache: true
-#| fig-cap: "Five views of the same DGP. The horizontal lines for ATE/ATT/LATE collapse the effect to a single scalar. CATE(x) shows how the effect varies with X. QTE(q) shows how the effect varies across the outcome distribution. Each curve answers a different question."
-
-fig = Figure(size = (820, 380), fontsize = 13)
-
-ax1 = Axis(fig[1, 1], xlabel = "X (covariate)", ylabel = "Effect",
-           title = "CATE(x) vs scalar estimands")
-lines!(ax1, centers, cate_est, color = :firebrick, linewidth = 2, label = "CATE(x)")
-lines!(ax1, [0, 1], [τ(0), τ(1)], color = :firebrick, linestyle = :dot, label = "True τ(x)")
-hlines!(ax1, [ate_true], color = :black,     linewidth = 1.5, linestyle = :dash, label = "ATE")
-hlines!(ax1, [att_true], color = :steelblue, linewidth = 1.5, linestyle = :dash, label = "ATT")
-hlines!(ax1, [late_true], color = :seagreen,  linewidth = 1.5, linestyle = :dash, label = "LATE")
-axislegend(ax1, position = :lt, framevisible = false)
-
-ax2 = Axis(fig[1, 2], xlabel = "Quantile q", ylabel = "QTE(q)",
-           title = "QTE — distribution-level effect")
-lines!(ax2, collect(qte_grid), qte_est, color = :purple, linewidth = 2)
-hlines!(ax2, [ate_true], color = :black, linewidth = 1.5, linestyle = :dash)
-text!(ax2, 0.05, ate_true + 0.05; text = "ATE", color = :black, fontsize = 11)
-fig
-```
-
-The left panel shows why the scalar estimands can differ. ATE averages
-$\tau(x)$ over the whole population. ATT averages it over the treated.
-LATE averages it over compliers. CATE does not collapse the curve.
-
-QTE, in the right panel, is different again. It describes how the treatment
-changes the outcome distribution. It is not a conditional treatment effect
-as a function of $X$.
 
 ## When the estimands differ
 

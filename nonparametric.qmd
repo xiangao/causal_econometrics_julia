@@ -43,11 +43,11 @@ using Printf
 
 Considerations:
 
--   Plug-in estimators are easy
--   But they are biased, or inefficient, because they are trying to estimate $E[Y(0)]$ and $E[Y(1)]$, not the difference.
--   They can be consistent, but convergence rate can be terrible, especially when the dimension is high
--   Ideally we can correct the biases, and get efficiency
--   Influence function based estimators are shown to be efficient.
+-   Plug-in (g-computation) estimators are easy.
+-   The problem is not the decomposition into $E[Y(0)]$ and $E[Y(1)]$ itself: with correctly specified models and regularity, a plug-in estimator can be efficient. The problem appears once the nuisance models are flexible and regularised. Then the error in the nuisance estimate enters the plug-in target *linearly*, and the plug-in has no term that cancels it. An influence-function estimator adds exactly such a term, and the error that survives is a product of two nuisance errors rather than one. @sec-plug-in-bias does the algebra.
+-   So they can be consistent, but the convergence rate inherits the (often slow) nuisance rate, which is especially bad in high dimensions.
+-   Ideally we remove that first-order sensitivity using an orthogonal influence function, and get $\sqrt n$ efficiency.
+-   Influence-function-based (one-step/AIPW/TMLE) estimators are shown to be efficient and orthogonal to first-order nuisance error.
 
 ## Influence Function Based Estimators
 
@@ -66,6 +66,56 @@ For example, an IF-based bias-corrected estimator for the treated-arm mean $$\ha
 Since we know the influence function, we can calculate its variance. This variance is the same as variance of $\hat \psi$ since they differ by a constant $\psi$. We can use any estimators to estimate the nuisance parameters, then get $\hat \psi$. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.
 
 In this estimator, both $\hat \mu$ and $\hat \pi$ can be done using any estimator, such as machine learning. One caveat: with adaptive learners (random forests, boosting), the nuisance fits should be *cross-fit* — predicted for each observation from a model trained without it — otherwise own-observation overfitting can bias the estimate. The manual AIPW below reuses full-sample fits to keep the code short; the `CausalEstimate.jl` calls use `crossfit=5`.
+
+### Why the Plug-In Is Off {#sec-plug-in-bias}
+
+The bullets above claimed that the plug-in inherits the nuisance error at first
+order and that the augmentation term removes it. That is algebra, not a
+simulation finding, so it is worth doing before we run anything.
+
+Take $\psi_1 = E[\mu_1(X)]$ with $\mu_1(x) = E(Y \mid X = x, A = 1)$. The plug-in
+estimator is $\hat\psi_1^{\,\text{pi}} = P_n[\hat\mu_1(X)]$. Split its error into
+a sampling part and a nuisance part:
+
+$$
+\hat\psi_1^{\,\text{pi}} - \psi_1
+= \underbrace{(P_n - P)[\mu_1]}_{O_P(n^{-1/2})}
+\; + \; \underbrace{P[\hat\mu_1 - \mu_1]}_{\text{nuisance error, linear}}
+\; + \; \underbrace{(P_n - P)[\hat\mu_1 - \mu_1]}_{\text{smaller still}} .
+$$ {#eq-nonparametric-plugin}
+
+The middle term is $E[\hat\mu_1(X) - \mu_1(X)]$, and it is linear in the nuisance
+error. If $\hat\mu_1$ converges at rate $n^{-\alpha}$, that term is of order
+$n^{-\alpha}$, and a regularised learner in even a moderate number of dimensions
+gives $\alpha < 1/2$. The nuisance error then dominates the sampling error, the
+estimator is not $\sqrt n$ consistent, and nothing in the plug-in cancels it.
+
+Now do the same for the AIPW estimator of @eq-nonparametric-3. Evaluate it under
+the population distribution, holding the estimated nuisances fixed. Because
+$E[A\{Y - \hat\mu_1(X)\} \mid X] = \pi(X)\{\mu_1(X) - \hat\mu_1(X)\}$,
+
+$$
+P\Bigl[\frac{A}{\hat\pi(X)}\bigl\{Y - \hat\mu_1(X)\bigr\} + \hat\mu_1(X)\Bigr]
+= \psi_1 + E\Bigl[\frac{\pi(X) - \hat\pi(X)}{\hat\pi(X)}\,
+                  \bigl\{\mu_1(X) - \hat\mu_1(X)\bigr\}\Bigr].
+$$ {#eq-nonparametric-drift}
+
+The bias is a *product* of the two nuisance errors, and that is the entire
+difference between the two estimators. The term linear in $\hat\mu_1 - \mu_1$ has
+cancelled: the $\hat\mu_1$ that the outcome model carries in is subtracted back
+out by the $\hat\mu_1$ sitting inside the augmentation, and what survives is
+multiplied by the propensity-score error. By Cauchy-Schwarz the bias is bounded
+by $\lVert \pi - \hat\pi \rVert \, \lVert \mu_1 - \hat\mu_1 \rVert$ up to the
+overlap constant, so rates of $o(n^{-1/4})$ on each nuisance suffice to make it
+$o(n^{-1/2})$ --- slower than $\sqrt n$ on each piece, fast enough for $\sqrt n$
+on the target.
+
+Two familiar facts fall out of @eq-nonparametric-drift directly. Double
+robustness is immediate: if either factor is zero the whole bias is zero, which
+is why one correct model is enough. And the $n^{-1/4}$ requirement is the reason
+cross-fitting matters, since reusing the same observations to fit and to evaluate
+$\hat\mu_1$ makes the product term behave worse than the rate calculation
+assumes.
 
 ### Simulation Setup
 

@@ -301,3 +301,67 @@ before estimating, and GATES true bin means computed under a 2-fold split that m
 to 5 folds changed. Both times the chapter's own rendered output then contradicted the
 prose. If a claim is checkable from the data, make the chunk compute and print it (as
 the GATES `Truth` column now does) instead of hardcoding it into the text.
+
+## Stylus-markup parity pass (2026-08-24)
+
+Ported the fixes made to `causal_econometrics_guide` from its handwritten markup
+(see that book's CLAUDE.md for how the ink was extracted). This book was not
+itself annotated; the pass exists because the two books are twins and the
+recurring defect across audits is a correction landing in one and not the other.
+
+### Found by porting, not by the markup
+
+`nonparametric.qmd` still carried the pre-2026-06-13 claim that plug-in
+estimators "are biased, or inefficient, because they are trying to estimate
+$E[Y(0)]$ and $E[Y(1)]$, not the difference." The R book had that corrected in
+the 2026-06-13 technical-audit pass and the Julia twin never received it. It now
+has the corrected bullets *and* the new derivation.
+
+### What ported
+
+- Deleted: `causal-estimands` "All five estimands on two plots" and its struck
+  sentence; the AIPW/IPWRA note in `identification`; struck sentences in
+  `graphs-identification-estimation` (two) and `estimation`.
+- `\raggedbottom` in `latex-compat.tex` — same `scrbook` `\flushbottom` cause,
+  same mid-page gaps.
+- Mermaid flowchart in `identification.qmd`: same overflow across two pages,
+  same fix (`%%| fig-width: 6.5` **plus** `diagramPadding: 30`).
+- `\boxed` removed from eq. 15.1 in `poisson-iv`; `CrIs` spelled out in
+  `bayesian-causal`; `ACE` defined on first prose use in `graph-to-estimate`
+  (the code cannot be renamed — `.ACE` is `CausalEstimate.jl`'s field).
+- `shift-share-iv` opening rewritten to name the endogenous regressor.
+- `smoking-cessation-graphs` adjustment-equivalence argument rewritten.
+- `nonparametric`: new §"Why the Plug-In Is Off" (`{#sec-plug-in-bias}`).
+- `continuous-treatments`: GPS theory and the Kennedy DR theory (why a bandwidth
+  appears at all). **No LMTP section here**, so that part did not port.
+- `heterogeneous-effects`: panel cost answered with this book's own numbers
+  (naive 2.014 against a true 0.655, within-transform 0.689).
+- `poisson-iv`: same prose trim, 752 → 669 lines, all 14 chunks byte-identical.
+- `matching.qmd`: new §"Matching, weighting, and direct estimation".
+
+### What did NOT port, and why
+
+- **Manski bounds / partial identification** — no such section in this book.
+- **sensemakr contour label overprinting** — this book's contour is a hand-rolled
+  Makie plot with a single benchmark dot, so it has no overlap problem.
+- **`causal.effect()` LaTeX-string output** and the "seven proportions" wording —
+  R-package-specific, no counterpart here.
+- **BLP vs variable importance** — ported but *rewritten*, not copied. This book's
+  variable importance is a univariate $R^2$ of the DR pseudo-outcome, not `grf`'s
+  split-count measure, so the contrast is joint-vs-marginal (correlated
+  covariates) rather than linear-vs-tree. Both diagnostics here are linear fits
+  and so share a blind spot for non-monotone modification, which the R version
+  does not — stated explicitly.
+
+### The matching section reads differently here, on purpose
+
+The R book's five-route table on Lalonde spreads from \$1,214 to \$1,855. This
+book's DGP has a **constant** effect of 1 and good overlap (ps in [0.060, 0.927]),
+so four of five routes land in 1.009–1.014 and the section says *why* they agree,
+pointing at the R companion for the case where they do not. The exception is
+instructive and is the better illustration of the two: 1:1 matching without
+replacement gives 1.287, ~29% high, and it is the only route that discards data
+(364 of 1,182 controls get weight zero). Expressing it as a weighted mean with
+0/1 weights reproduces the chapter's own 1.287 exactly.
+
+Rendered clean to HTML and PDF (284 pages, was 282). Not committed.

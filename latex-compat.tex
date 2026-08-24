@@ -13,3 +13,12 @@
 \DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
 \DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
 \makeatother
+
+% Do not stretch vertical glue to force every page to the same height.
+% KOMA-Script's scrbook sets \flushbottom, so on any page whose content falls
+% short -- a page ending before a wide figure, or before a long code block that
+% cannot be split -- LaTeX absorbs the slack into the flexible space around
+% headings and lists. The result reads as unexplained gaps in the middle of a
+% page. \raggedbottom leaves the slack at the foot of the page instead, which
+% is the conventional choice for a technical book with many floats.
+\raggedbottom

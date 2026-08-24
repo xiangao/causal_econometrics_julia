@@ -433,7 +433,31 @@ before you read its standard errors.
 ## Variable importance — which covariate drives heterogeneity?
 
 A simple diagnostic is to regress the DR pseudo-outcome on each covariate
-separately and compare $R^2$.
+separately and compare $R^2$. It answers a different question from the BLP, and
+the two are easy to run together and confuse.
+
+The BLP is a *joint* projection with inference attached. Its target,
+@eq-heterogeneous-effects-4, is defined without reference to any fitted object:
+it is the best linear approximation to $\tau(x)$ using all covariates at once, it
+comes in the units of the outcome, it has a sign, and `coeftable` gives it a
+standard error we can test against zero. The importance measure below is
+*marginal* and descriptive: one univariate $R^2$ per covariate, with no units, no
+sign, and no standard error.
+
+The difference that matters in practice is joint versus marginal. A covariate
+that is merely correlated with the true effect modifier picks up a high
+univariate $R^2$, because on its own it does predict the pseudo-outcome, while
+its BLP coefficient is near zero once the real modifier is in the regression.
+The projection splits shared variation between correlated covariates; the
+marginal measure gives each of them full credit for it. Here the five covariates
+are drawn independently, so the two agree.
+
+Both share one blind spot worth naming, since it is not obvious: this importance
+measure is itself a *linear* fit, so a covariate that modifies the effect
+non-monotonically — large effects at both ends of its range, small in the middle
+— scores near zero on both the BLP and the $R^2$. A tree-based importance of the
+kind `grf` reports would flag it, because trees can split on it. Neither
+diagnostic here can.
 
 ```{julia}
 #| label: var-importance
@@ -626,6 +650,15 @@ It works here because the treatment effect is linear in $V_1$ and the
 DGP is benign. Properly identified heterogeneous panel effects require a
 proper orthogonal score or a dedicated panel causal-forest / DML
 construction; treat this section as intuition, not a turnkey method.
+
+So how much does ignoring the panel cost? On this DGP the naive T-learner returns
+2.014 against a true panel ATE of 0.655 — about three times the truth — while the
+within transform recovers 0.689. The magnitude is specific to this design, since
+it scales with how strongly the unit effect drives both treatment and outcome,
+but the direction is not: a unit effect that raises both leaves the naive
+estimate biased upward. Read those two numbers as the size of the confounding
+being removed, not as clean CATE accuracy figures, for the estimand reasons given
+just above.
 
 For R's `grf::causal_forest`, pass `clusters = firm_id` so the honest sample
 split keeps each firm's observations together. Julia does not currently have

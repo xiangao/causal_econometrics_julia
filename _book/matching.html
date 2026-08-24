@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -112,6 +112,9 @@ try {
   }
 } catch (e) {}
 </script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -468,7 +471,7 @@ window.Quarto = {
 </header>
 
 
-<div id="60b46e23" class="cell" data-execution_count="2">
+<div id="a71433ae" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -785,8 +788,153 @@ X2                    0.2395      -0.1541       0.2395</code></pre>
 </div>
 <p>Entropy balancing is useful when mean balance is the main diagnostic. If we need balance over whole covariate distributions, energy balancing in R’s <code>WeightIt</code> is a better tool. There is no Julia equivalent yet.</p>
 </section>
-<section id="when-to-use-which-method" class="level2" data-number="7.10">
-<h2 data-number="7.10" class="anchored" data-anchor-id="when-to-use-which-method"><span class="header-section-number">7.10</span> When to use which method</h2>
+<section id="matching-weighting-and-direct-estimation" class="level2" data-number="7.10">
+<h2 data-number="7.10" class="anchored" data-anchor-id="matching-weighting-and-direct-estimation"><span class="header-section-number">7.10</span> Matching, weighting, and direct estimation</h2>
+<p>The estimation chapter estimated a treatment effect by regression adjustment, IPW and AIPW. This chapter has estimated one by matching, by IPW and by entropy balancing. Those are not two families of estimators. They are one estimand and several ways of building it, and it is worth saying how they line up.</p>
+<p>The ATT is</p>
+<p><span id="eq-matching-att-routes"><span class="math display">\[
+\tau_{ATT} = E[Y \mid D = 1] - E_{X \mid D = 1}\bigl[\, E[Y \mid D = 0, X] \,\bigr].
+\tag{7.3}\]</span></span></p>
+<p>The first term is observed. The second is not: it is the mean outcome the treated would have had untreated, averaged over the covariate distribution of the treated. Every method here forms that second term, and every one of them ends up as a weighted average of control outcomes, <span class="math inline">\(\sum_{i: D_i = 0} w_i Y_i\)</span>. What differs is where the weights come from.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Route</th>
+<th>What is modelled</th>
+<th>Weight on control <span class="math inline">\(i\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Regression adjustment</td>
+<td>the outcome, <span class="math inline">\(\mu_0(x) = E[Y \mid D=0, X=x]\)</span></td>
+<td>implicit in the fitted values used to predict at treated <span class="math inline">\(x\)</span></td>
+</tr>
+<tr class="even">
+<td>IPW</td>
+<td>the propensity score <span class="math inline">\(\pi(x)\)</span></td>
+<td>the odds <span class="math inline">\(\pi(x_i)/(1-\pi(x_i))\)</span></td>
+</tr>
+<tr class="odd">
+<td>Matching</td>
+<td>neither; a distance rule</td>
+<td>0 if unmatched, 1 if matched</td>
+</tr>
+<tr class="even">
+<td>Entropy balancing</td>
+<td>the weights themselves</td>
+<td>whatever satisfies the balance constraints</td>
+</tr>
+<tr class="odd">
+<td>AIPW</td>
+<td>both</td>
+<td>the odds, applied to the residual <span class="math inline">\(Y - \hat\mu_0(X)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Weighting is IPW. That is the second row, and the odds are what the IPW section above computed. Entropy balancing does not change the estimator, only how the weights are found: IPW fits <span class="math inline">\(\pi\)</span> by maximum likelihood and transforms it, while entropy balancing skips the likelihood and solves for weights satisfying the balance constraints directly. Its solution has the form <span class="math inline">\(w_i \propto \exp(x_i'\lambda)\)</span>, which is the odds of a logistic propensity score — so entropy balancing is IPW for a logit model whose coefficients are set by exact mean balance rather than by likelihood.</p>
+<p>Matching is weighting too, with the weights restricted to zero and one and chosen by a distance rule rather than by a model. The restriction is where the trade-off lives: matching sets some weights to zero, so it discards observations, while weighting keeps everyone and pays with extreme weights when overlap is poor. Matching buys stability with the estimand; weighting buys the estimand with variance.</p>
+<p>AIPW uses both columns: start from regression adjustment, then add the odds-weighted average of the control residuals <span class="math inline">\(Y - \hat\mu_0(X)\)</span>. It is consistent if either model is right.</p>
+<p>Five routes, one data set. Each row is built by hand from the weight representation so the arithmetic is visible.</p>
+<div id="cell-compare-routes" class="cell" data-cache="true" data-execution_count="12">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>trt <span class="op">=</span> df.D <span class="op">.==</span> <span class="fl">1</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome model fitted on controls only, then predicted everywhere</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>mu0_fit <span class="op">=</span> <span class="fu">lm</span>(<span class="pp">@formula</span>(Y <span class="op">~</span> X1 <span class="op">+</span> X2), df[.!trt, <span class="op">:</span>])</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>mu0 <span class="op">=</span> <span class="fu">predict</span>(mu0_fit, df)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Odds weights from the logistic propensity score fitted above</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>odds   <span class="op">=</span> df.ps <span class="op">./</span> (<span class="fl">1</span> <span class="op">.-</span> df.ps)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>wt_ipw <span class="op">=</span> <span class="fu">ifelse</span>.(trt, <span class="fl">1.0</span>, odds)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted difference in means: the common shape of rows 2 to 4</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="fu">hajek</span>(w) <span class="op">=</span> <span class="fu">sum</span>(df.Y[trt] <span class="op">.*</span> w[trt]) <span class="op">/</span> <span class="fu">sum</span>(w[trt]) <span class="op">-</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>           <span class="fu">sum</span>(df.Y[.!trt] <span class="op">.*</span> w[.!trt]) <span class="op">/</span> <span class="fu">sum</span>(w[.!trt])</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Matching as 0/1 weights on the units the matcher kept</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>w_nn <span class="op">=</span> <span class="fu">zeros</span>(<span class="fu">nrow</span>(df))</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>w_nn[matched_idx_T] <span class="op">.=</span> <span class="fl">1.0</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>w_nn[matched_idx_C] <span class="op">.=</span> <span class="fl">1.0</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Entropy-balancing weights, treated at 1</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>w_eb <span class="op">=</span> <span class="fu">zeros</span>(<span class="fu">nrow</span>(df))</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>w_eb[trt] <span class="op">.=</span> <span class="fl">1.0</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>w_eb[.!trt] <span class="op">.=</span> w_ebal</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>att_ra   <span class="op">=</span> <span class="fu">mean</span>(df.Y[trt] <span class="op">.-</span> mu0[trt])</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>att_ipw  <span class="op">=</span> <span class="fu">hajek</span>(wt_ipw)</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>att_eb   <span class="op">=</span> <span class="fu">hajek</span>(w_eb)</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>att_nn   <span class="op">=</span> <span class="fu">hajek</span>(w_nn)</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>att_aipw <span class="op">=</span> att_ra <span class="op">-</span> <span class="fu">sum</span>((df.Y[.!trt] <span class="op">.-</span> mu0[.!trt]) <span class="op">.*</span> odds[.!trt]) <span class="op">/</span> <span class="fu">sum</span>(odds[.!trt])</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>    route <span class="op">=</span> [<span class="st">"Regression adjustment (outcome model)"</span>,</span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>             <span class="st">"IPW (propensity model)"</span>,</span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Entropy balancing (balance constraints)"</span>,</span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>             <span class="st">"1:1 matching, no replacement (distance rule)"</span>,</span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>             <span class="st">"AIPW (both models)"</span>],</span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>    ATT <span class="op">=</span> <span class="fu">round</span>.([att_ra, att_ipw, att_eb, att_nn, att_aipw], digits <span class="op">=</span> <span class="fl">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="compare-routes" class="cell-output cell-output-display" data-execution_count="12">
+<div><div style="float: left;"><span>5×2 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">route</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">ATT</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">Regression adjustment (outcome model)</td>
+<td style="text-align: right;">1.009</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: left;">IPW (propensity model)</td>
+<td style="text-align: right;">1.014</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: left;">Entropy balancing (balance constraints)</td>
+<td style="text-align: right;">1.014</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: left;">1:1 matching, no replacement (distance rule)</td>
+<td style="text-align: right;">1.287</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: left;">AIPW (both models)</td>
+<td style="text-align: right;">1.014</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Two of these confirm the algebra directly. Expressing the matched comparison as a weighted mean with zero-one weights reproduces the 1.287 printed earlier, which is what “matching is a weighting estimator” means concretely. And entropy balancing returns 1.014, the same figure the entropy-balancing section printed, since that section computed the same weighted difference.</p>
+<p>The spread is the part worth reading. Four of the five routes land between 1.009 and 1.014 against a true effect of 1.000. They agree because this DGP gives them every reason to: the treatment effect is constant at 1, so there is no heterogeneity for differing weights to average differently, and the propensity score runs from 0.060 to 0.927, so no unit carries an extreme weight. Under those two conditions the routes are estimating the same number and differ only by noise. The <a href="https://xiangao.github.io/causal_econometrics_guide/matching.html">R companion chapter</a> runs the same five routes on the Lalonde data, where effects are heterogeneous and overlap is poor, and there they spread from $1,214 to $1,855.</p>
+<p>The exception here is instructive. One-to-one matching without replacement gives 1.287, nearly 30% high, and it is the one route that throws data away: 364 of the 1,182 controls receive weight zero. Matching with replacement, which reuses good controls instead of discarding them, gave 0.988 earlier in the chapter. That gap is the cost of the zero weights, not of matching as an idea.</p>
+<p>These are point estimates, and standard errors are not comparable across the rows: matching is not a smooth functional of the data, so the bootstrap is invalid for it, while IPW and AIPW have influence-function variances and AIPW attains the semiparametric efficiency bound that fixed-<span class="math inline">\(M\)</span> matching does not.</p>
+</section>
+<section id="when-to-use-which-method" class="level2" data-number="7.11">
+<h2 data-number="7.11" class="anchored" data-anchor-id="when-to-use-which-method"><span class="header-section-number">7.11</span> When to use which method</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -830,8 +978,8 @@ X2                    0.2395      -0.1541       0.2395</code></pre>
 </table>
 <p>For applied work in Julia, IPW or AIPW is usually more practical than 1:1 matching. Julia has good regression tools, but not yet a full matching toolkit. For a matched analysis with many diagnostics, I would still use R’s <code>MatchIt</code> and <code>cobalt</code>.</p>
 </section>
-<section id="summary" class="level2" data-number="7.11">
-<h2 data-number="7.11" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.11</span> Summary</h2>
+<section id="summary" class="level2" data-number="7.12">
+<h2 data-number="7.12" class="anchored" data-anchor-id="summary"><span class="header-section-number">7.12</span> Summary</h2>
 <ul>
 <li>Matching is for selection on observables. It does not fix unobserved confounding.</li>
 <li>The main diagnostic is balance, not the treatment-effect coefficient.</li>

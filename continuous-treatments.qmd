@@ -118,9 +118,54 @@ $$
 r(d, x) = f_{D \mid X}(d \mid x).
 $$ {#eq-continuous-treatments-2}
 
-Under unconfoundedness, the GPS plays the same role as the propensity score
-for binary treatment. I start with a normal model for treatment given
-covariates:
+Two results from @hirano-imbens-2004-gps are what make this object useful, and
+both are worth stating before we compute anything.
+
+The first is the assumption they need, which is weaker than it looks. *Weak
+unconfoundedness* requires $Y(d) \perp D \mid X$ separately for each dose $d$. It
+does not require the whole path $\{Y(d) : d\}$ to be jointly independent of $D$
+given $X$, which would be a much stronger demand at a continuous treatment.
+
+The second is the balancing property. Conditional on the scalar $r(d, X)$, the
+covariates carry no further information about whether a unit received dose $d$:
+
+$$
+f_D\bigl(d \mid r(d, X)\bigr) = f_D\bigl(d \mid r(d, X),\, X\bigr).
+$$ {#eq-continuous-treatments-balance}
+
+So a one-dimensional score does the job of the full covariate vector, exactly as
+in the binary case. Put the two together and the dose-response function is
+
+$$
+\mu(d) = E[Y(d)] = E\Bigl[\, E\bigl(Y \mid D = d,\; r(d, X)\bigr) \Bigr],
+$$ {#eq-continuous-treatments-doseresp}
+
+where the outer expectation runs over the distribution of $r(d, X)$ in the whole
+sample. Read the argument of $r$ carefully, because it is where this estimator is
+usually got wrong: at each counterfactual dose $d$ we must recompute every unit's
+score *at that* $d$, not reuse the score at the dose the unit happened to
+receive. The `estimate_dose` function below does exactly that, which is why the
+GPS is recomputed inside it rather than taken from `df.gps`.
+
+One more point of theory explains why the GPS enters the outcome model as a
+regressor rather than as a weight. The GPS is a conditional *density*, not a
+probability, so it carries the units of $1/D$; weights of the form $1/\hat r$ are
+therefore not scale-free and change if the dose is rescaled. Dividing by the
+marginal density of $D$ would restore scale invariance, but Hirano and Imbens
+sidestep the issue altogether by putting the score in the outcome model.
+
+In practice we start with a normal model for $D \mid X$,
+$D \mid X \sim \mathcal{N}(\beta_0 + \beta'X, \sigma^2)$. Fitting $D$ on $X_1$ and
+$X_2$ by OLS gives $\hat\beta$ and $\hat\sigma$, and the score at any dose $d$ for
+unit $i$ is the normal density evaluated there,
+
+$$
+\hat r(d, x_i) = \frac{1}{\hat\sigma\sqrt{2\pi}}
+  \exp\!\left\{-\frac{\bigl(d - x_i'\hat\beta\bigr)^2}{2\hat\sigma^2}\right\}.
+$$ {#eq-continuous-treatments-gpshat}
+
+That is the whole calculation: one linear regression, then one density evaluation
+per unit per dose.
 
 ```{julia}
 #| label: gps
@@ -187,6 +232,32 @@ $$ {#eq-continuous-treatments-3}
 where $K_h$ is a kernel around dose $d$. The code self-normalizes the kernel
 weights (a Hájek/stabilized form, $\sum_i \tilde w_i = 1$) rather than dividing
 by $n$, which stabilizes the correction term in finite samples.
+
+Two features of this estimator are worth understanding. The first is why it is
+doubly robust, and the algebra is the same as in the binary case worked through
+in @sec-plug-in-bias: the first term is a plug-in built from the outcome model,
+the second subtracts that model's own residual reweighted by the score, so a
+first-order error in $\hat\mu$ enters twice with opposite signs and cancels, and
+what survives involves the *product* of the error in $\hat\mu$ and the error in
+$\hat r$. If either nuisance is right, the product is zero.
+
+The second is why a bandwidth appears here when none appeared for the ATE. The
+ATE is a single number and is estimable at the $\sqrt n$ rate. But $\mu(d)$ at a
+*point* $d$ is a regression function, and no $\sqrt n$ estimator of it exists
+without smoothness assumptions, because the data hold only finitely many
+observations near any given dose. The kernel is how we borrow from neighbouring
+doses, and $h$ sets the exchange rate: too wide pulls in doses where the truth is
+different, too narrow leaves too few observations to average. Under the usual
+second-order smoothness the best trade is $h \propto n^{-1/5}$ and the rate is
+$n^{-2/5}$, slower than $\sqrt n$ by construction. Bandwidth sensitivity is
+therefore a cost of the method, not a tuning detail.
+
+@kennedy-2017-continuous handle the localisation more carefully: instead of
+smoothing the correction term, they construct a pseudo-outcome whose conditional
+mean given $D = d$ is exactly $\mu(d)$, then run a single nonparametric
+regression of that pseudo-outcome on $D$. All the smoothing sits in one place,
+which is what lets them state formal guarantees. The version here keeps the
+doubly-robust structure and is easier to read, with weaker theory behind it.
 
 ```{julia}
 #| label: dr-cont

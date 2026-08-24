@@ -61,7 +61,9 @@ id_backdoor = identify(g_backdoor, :A, :Y)
 ```
 
 The package recognises the backdoor structure: `X` blocks the only open
-backdoor path from $A$ to $Y$, so adjusting on $X$ identifies the ACE.
+backdoor path from $A$ to $Y$, so adjusting on $X$ identifies the ACE --- the
+average causal effect, which is the ATE of the earlier chapters under a name
+`CausalEstimate.jl` uses for the field it returns.
 
 ```{julia}
 #| label: backdoor-sim
