@@ -440,7 +440,8 @@ try {
 
 
 <p>This appendix lists the Julia packages used in the book. Several were written alongside the examples and live under <code>~/projects/software</code>. They fill the gaps needed for the workflows here: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.</p>
-<p>The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as <code>../../software/Panelest.jl</code>, which resolves to <code>~/projects/software/Panelest.jl</code>.</p>
+<p>The packages are regular Julia projects, and the manifest reaches them by path rather than through the registry. Three entries are relative – <code>Panelest</code>, <code>RDRobust</code> and <code>SynthDiD</code> resolve through <code>../../software/</code>. The other nine are absolute paths under <code>/home/xao/projects</code>, seven in <code>software/</code> and two, <code>CausalInference</code> and <code>RecursiveCausalDiscovery</code>, in <code>repo_cloned/</code> where they are local clones of registered packages. The manifest is therefore machine-specific: <code>Pkg.instantiate()</code> on another machine will fail until those paths exist or are re-pointed.</p>
+<p><code>LinearAlgebra</code>, <code>Random</code>, <code>Statistics</code>, <code>Printf</code>, <code>DelimitedFiles</code>, <code>Downloads</code> and <code>Logging</code> are Julia standard libraries. They sit on the default load path, so they need no <code>Project.toml</code> entry and no installation.</p>
 <section id="working-with-the-environment" class="level2" data-number="25.1">
 <h2 data-number="25.1" class="anchored" data-anchor-id="working-with-the-environment"><span class="header-section-number">25.1</span> Working With The Environment</h2>
 <p>The reproducible workflow is:</p>
@@ -482,12 +483,12 @@ try {
 <td>Estimation, Nonparametric, Smoking cessation</td>
 </tr>
 <tr class="even">
-<td><code>CausalInference.jl</code> (registry)</td>
+<td><code>CausalInference.jl</code> (local clone)</td>
 <td>PC and FCI algorithms, Fisher-Z CI tests</td>
 <td>Causal Discovery (both chapters)</td>
 </tr>
 <tr class="odd">
-<td><code>RecursiveCausalDiscovery.jl</code> (registry)</td>
+<td><code>RecursiveCausalDiscovery.jl</code> (local clone)</td>
 <td>RSL-D and L-MARVEL recursive discovery, F1 scoring</td>
 <td>Causal Discovery (both chapters)</td>
 </tr>
@@ -515,6 +516,106 @@ try {
 <td><code>Crumble.jl</code></td>
 <td>Flexible causal mediation using cross-fitting, Riesz representers, and neural-network nuisance estimation</td>
 <td>Mediation</td>
+</tr>
+<tr class="odd">
+<td><code>ShiftShareIV.jl</code></td>
+<td>Bartik/shift-share IV, Rotemberg weights, BHJ shock-level collapse</td>
+<td>Shift-share IV</td>
+</tr>
+<tr class="even">
+<td><code>DidInterference.jl</code></td>
+<td>DiD with spatial interference between units (<code>eval: false</code>)</td>
+<td>DiD</td>
+</tr>
+<tr class="odd">
+<td><code>Endid.jl</code></td>
+<td>Distributional difference-in-differences (<code>eval: false</code>)</td>
+<td>Distributional effects</td>
+</tr>
+<tr class="even">
+<td><code>TVHTE.jl</code></td>
+<td>Time-varying heterogeneous event-study effects (<code>eval: false</code>)</td>
+<td>DiD</td>
+</tr>
+<tr class="odd">
+<td><code>CairoMakie.jl</code> (registry)</td>
+<td>Every figure in the book, via Makie’s Cairo backend</td>
+<td>Almost every chapter</td>
+</tr>
+<tr class="even">
+<td><code>GraphMakie.jl</code> (registry)</td>
+<td>Graph layouts for DAGs and mediation diagrams</td>
+<td>Identification, IV/RDD, Mediation</td>
+</tr>
+<tr class="odd">
+<td><code>GeometryBasics.jl</code> (registry)</td>
+<td>Geometric primitives for the identification figure</td>
+<td>Identification</td>
+</tr>
+<tr class="even">
+<td><code>CSV.jl</code> (registry)</td>
+<td>Reading the example data files</td>
+<td>Estimation, DiD, IV/RDD, Shift-share IV, Survival, Causal Discovery</td>
+</tr>
+<tr class="odd">
+<td><code>ReadStatTables.jl</code> (registry)</td>
+<td>Reading Stata <code>.dta</code> example data</td>
+<td>Estimation, DiD</td>
+</tr>
+<tr class="even">
+<td><code>DataFramesMeta.jl</code> (registry)</td>
+<td><code>@chain</code>/<code>@transform</code> data wrangling</td>
+<td>DiD, IV/RDD, Mediation, Poisson-IV</td>
+</tr>
+<tr class="odd">
+<td><code>RegressionTables.jl</code> (registry)</td>
+<td>Formatted regression output</td>
+<td>Estimation, DiD, IV/RDD</td>
+</tr>
+<tr class="even">
+<td><code>Distributions.jl</code> (registry)</td>
+<td>Draws and distributional calculations in the DGPs</td>
+<td>Most chapters with a simulation</td>
+</tr>
+<tr class="odd">
+<td><code>StatsBase.jl</code> (registry)</td>
+<td>Descriptive statistics and sampling helpers</td>
+<td>Poisson-IV</td>
+</tr>
+<tr class="even">
+<td><code>StatsFuns.jl</code> (registry)</td>
+<td>Log/exp and distribution helper functions</td>
+<td>Mediation</td>
+</tr>
+<tr class="odd">
+<td><code>MLJ.jl</code> (registry)</td>
+<td>Machine-learning interface for nuisance estimation</td>
+<td>Estimation, Nonparametric, Heterogeneous effects, IV/RDD</td>
+</tr>
+<tr class="even">
+<td><code>MLJLinearModels.jl</code> (registry)</td>
+<td>Linear and logistic learners for MLJ</td>
+<td>Nonparametric</td>
+</tr>
+<tr class="odd">
+<td><code>MLJDecisionTreeInterface.jl</code> (registry)</td>
+<td>Decision-tree learners for MLJ</td>
+<td>Heterogeneous effects</td>
+</tr>
+<tr class="even">
+<td><code>DecisionTree.jl</code> (registry)</td>
+<td>Decision trees and random forests</td>
+<td>Estimation, Nonparametric, IV/RDD</td>
+</tr>
+<tr class="odd">
+<td><code>EvoTrees.jl</code> (registry)</td>
+<td>Gradient-boosted trees as a nuisance learner</td>
+<td>Nonparametric</td>
+</tr>
+<tr class="even">
+<td><code>GLMNet.jl</code> (registry)</td>
+<td>Lasso and elastic net for high-dimensional nuisance models</td>
+<td>Estimation</td>
 </tr>
 </tbody>
 </table>

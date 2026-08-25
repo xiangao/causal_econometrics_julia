@@ -2,7 +2,9 @@
 
 This appendix lists the Julia packages used in the book. Several were written alongside the examples and live under `~/projects/software`. They fill the gaps needed for the workflows here: fixed effects, semiparametric causal estimators, staggered DiD, synthetic control, TASC, regression discontinuity, SEM, and causal mediation.
 
-The packages are regular Julia projects. From this book directory, the manifest points to them through paths such as `../../software/Panelest.jl`, which resolves to `~/projects/software/Panelest.jl`.
+The packages are regular Julia projects, and the manifest reaches them by path rather than through the registry. Three entries are relative -- `Panelest`, `RDRobust` and `SynthDiD` resolve through `../../software/`. The other nine are absolute paths under `/home/xao/projects`, seven in `software/` and two, `CausalInference` and `RecursiveCausalDiscovery`, in `repo_cloned/` where they are local clones of registered packages. The manifest is therefore machine-specific: `Pkg.instantiate()` on another machine will fail until those paths exist or are re-pointed.
+
+`LinearAlgebra`, `Random`, `Statistics`, `Printf`, `DelimitedFiles`, `Downloads` and `Logging` are Julia standard libraries. They sit on the default load path, so they need no `Project.toml` entry and no installation.
 
 ## Working With The Environment
 
@@ -24,13 +26,33 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 | `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, IV/2SLS (`feiv`), and ETWFE post-processing (`emfx()`, `dataset()`) | Estimation, DiD, IV/RDD |
 | `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs, Smoking cessation |
 | `CausalEstimate.jl` | Unified TMLE and AIPW estimation: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` and graph-implied backdoor via `GraphID` | Estimation, Nonparametric, Smoking cessation |
-| `CausalInference.jl` (registry) | PC and FCI algorithms, Fisher-Z CI tests | Causal Discovery (both chapters) |
-| `RecursiveCausalDiscovery.jl` (registry) | RSL-D and L-MARVEL recursive discovery, F1 scoring | Causal Discovery (both chapters) |
+| `CausalInference.jl` (local clone) | PC and FCI algorithms, Fisher-Z CI tests | Causal Discovery (both chapters) |
+| `RecursiveCausalDiscovery.jl` (local clone) | RSL-D and L-MARVEL recursive discovery, F1 scoring | Causal Discovery (both chapters) |
 | `SynthDiD.jl` | Synthetic control, standard DiD, and synthetic DiD estimators | DiD |
 | `TASC.jl` | Time-Aware Synthetic Control with Kalman filtering, RTS smoothing, EM fitting, SC/RSC utilities, and TASC plot recipes | Synthetic control, DiD, and TASC |
 | `RDRobust.jl` | Local-polynomial RD estimation, bandwidth selection, RD plot data, and fuzzy RD | IV/RDD |
 | `Lavaan.jl` | SEM, CFA, defined parameters, fit measures, and lavaan-style mediation syntax | Mediation |
 | `Crumble.jl` | Flexible causal mediation using cross-fitting, Riesz representers, and neural-network nuisance estimation | Mediation |
+| `ShiftShareIV.jl` | Bartik/shift-share IV, Rotemberg weights, BHJ shock-level collapse | Shift-share IV |
+| `DidInterference.jl` | DiD with spatial interference between units (`eval: false`) | DiD |
+| `Endid.jl` | Distributional difference-in-differences (`eval: false`) | Distributional effects |
+| `TVHTE.jl` | Time-varying heterogeneous event-study effects (`eval: false`) | DiD |
+| `CairoMakie.jl` (registry) | Every figure in the book, via Makie's Cairo backend | Almost every chapter |
+| `GraphMakie.jl` (registry) | Graph layouts for DAGs and mediation diagrams | Identification, IV/RDD, Mediation |
+| `GeometryBasics.jl` (registry) | Geometric primitives for the identification figure | Identification |
+| `CSV.jl` (registry) | Reading the example data files | Estimation, DiD, IV/RDD, Shift-share IV, Survival, Causal Discovery |
+| `ReadStatTables.jl` (registry) | Reading Stata `.dta` example data | Estimation, DiD |
+| `DataFramesMeta.jl` (registry) | `@chain`/`@transform` data wrangling | DiD, IV/RDD, Mediation, Poisson-IV |
+| `RegressionTables.jl` (registry) | Formatted regression output | Estimation, DiD, IV/RDD |
+| `Distributions.jl` (registry) | Draws and distributional calculations in the DGPs | Most chapters with a simulation |
+| `StatsBase.jl` (registry) | Descriptive statistics and sampling helpers | Poisson-IV |
+| `StatsFuns.jl` (registry) | Log/exp and distribution helper functions | Mediation |
+| `MLJ.jl` (registry) | Machine-learning interface for nuisance estimation | Estimation, Nonparametric, Heterogeneous effects, IV/RDD |
+| `MLJLinearModels.jl` (registry) | Linear and logistic learners for MLJ | Nonparametric |
+| `MLJDecisionTreeInterface.jl` (registry) | Decision-tree learners for MLJ | Heterogeneous effects |
+| `DecisionTree.jl` (registry) | Decision trees and random forests | Estimation, Nonparametric, IV/RDD |
+| `EvoTrees.jl` (registry) | Gradient-boosted trees as a nuisance learner | Nonparametric |
+| `GLMNet.jl` (registry) | Lasso and elastic net for high-dimensional nuisance models | Estimation |
 
 ## Panelest.jl
 

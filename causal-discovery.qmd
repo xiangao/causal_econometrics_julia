@@ -597,7 +597,7 @@ the graph gets denser.
 2. **Check identifiability.** With a fully oriented DAG, apply the backdoor, front-door, or ID algorithm (Chapter 3) to determine whether the effect of interest is identifiable.
 3. **Estimate.** Use the identified functional with the estimators from Chapter 4 (RA, IPW, AIPW).
 
-If some edges remain undirected after exhausting background knowledge, you can either report the CPDAG and bound the estimand over the equivalence class, or collect additional interventional data to break the remaining equivalences.
+If some edges remain undirected after exhausting background knowledge, the bound over the equivalence class is not automatic. Something has to enumerate what the class permits. For total effects under a linear Gaussian model that procedure is IDA (intervention calculus when the DAG is absent): walk the DAGs consistent with the CPDAG, compute the effect in each, and report the range of the resulting multiset. `CausalInference.jl` does not implement it -- it gives you adjustment-set search (`find_backdoor_adjustment`, `list_covariate_adjustment` and relatives) rather than effect enumeration -- so in Julia you either enumerate the consistent DAGs yourself with `Graphs.jl` and apply the identified functional to each, or call R's `pcalg::ida` through `RCall.jl`. The alternative is to collect interventional data and break the remaining equivalences.
 
 ::: {.callout-note}
 **What cannot be recovered from observational data alone**
