@@ -55,10 +55,8 @@ $\boldsymbol{\delta}_1$ and $\boldsymbol{\pi}_2$ — each subscript says which
 equation the object belongs to. This is the simultaneous-equations convention,
 and it scales: a second endogenous regressor is $y_3$, with no renaming.
 
-Read instead as "$y$-one and $y$-two, two outcomes," it means nothing — which is
-the misreading the notation invites. One deliberate deviation: Wooldridge writes
-the coefficient on $y_2$ as $\gamma_1$; this chapter calls it $\alpha_1$
-throughout. Quoted equations are left exactly as he writes them.
+One deliberate deviation: Wooldridge writes the coefficient on $y_2$ as
+$\gamma_1$; this chapter calls it $\alpha_1$ throughout. Quoted equations are left exactly as he writes them.
 
 ### The three estimators
 
@@ -87,22 +85,41 @@ then simulations, continuous case and binary case.
 
 #### A linear second stage: the CF *is* 2SLS
 
-Add the first-stage residual $\hat v_2$ to an OLS second stage and you recover
-the 2SLS coefficient exactly. The algebra:
+Set the exponential mean aside and take the linear analogue of
+@eq-poisson-iv-1,
 
-1. **First stage.** $y_2 = \mathbf{z}\boldsymbol{\pi} + v_2$, by OLS. The
+$$y_1 = \mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \varepsilon_1,
+\qquad E(\mathbf{z}'\varepsilon_1) = 0,$$
+
+which is what defines $\varepsilon_1$. Two-stage least squares fits
+
+$$
+\begin{aligned}
+\text{first stage:}  &\quad y_2 = \mathbf{z}\boldsymbol{\pi}_2 + v_2, \\
+\text{second stage:} &\quad y_1 = \mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 \hat y_2 + (\varepsilon_1 + \alpha_1 \hat v_2),
+\end{aligned}
+$$
+
+with $\hat y_2 = \mathbf{z}\hat{\boldsymbol{\pi}}_2$ and
+$\hat v_2 = y_2 - \hat y_2$. The second-stage error is not $\varepsilon_1$:
+replacing $y_2$ by $\hat y_2$ moves $\alpha_1\hat v_2$ into it. Add $\hat v_2$ to
+an OLS second stage instead, and you recover the 2SLS coefficient exactly. The
+algebra:
+
+1. **First stage.** $y_2 = \mathbf{z}\boldsymbol{\pi}_2 + v_2$, by OLS. The
    residual satisfies $E(\mathbf{z}'\hat v_2) = 0$ by construction.
-2. **Error decomposition.** Write $\varepsilon_1 = \rho v_2 + \eta_1$, with
-   $E(\mathbf{z}'\eta_1) = 0$ and $E(v_2\eta_1) = 0$.
+2. **Error decomposition.** Project $\varepsilon_1$ on $v_2$:
+   $\varepsilon_1 = \rho v_2 + \eta_1$ with $\rho = \mathrm{Cov}(\varepsilon_1, v_2)/\mathrm{Var}(v_2)$.
+   Then $E(v_2\eta_1) = 0$ by construction of the projection, and
+   $E(\mathbf{z}'\eta_1) = E(\mathbf{z}'\varepsilon_1) - \rho E(\mathbf{z}'v_2) = 0$.
 3. **Augmented second stage.**
    $y_1 = \mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \rho\hat v_2 + \eta_1$.
 
 OLS on step 3 is the **control function estimator**, and Frisch–Waugh–Lovell
-makes it numerically identical to 2SLS. **No assumption beyond
-$E(\mathbf{z}'\varepsilon_1) = 0$ is required.** This matters more than it looks:
-in the linear model the control-function story is a *reinterpretation* of an
-estimator justified by a moment condition. If the story is wrong, 2SLS is still
-consistent.
+makes it numerically identical to 2SLS. No assumption beyond
+$E(\mathbf{z}'\varepsilon_1) = 0$ is required: step 2 is a projection, so both of
+its orthogonality conditions are consequences of that moment condition and the
+first stage, not additions to them.
 
 #### A nonlinear second stage: the CF is a genuine assumption
 
@@ -200,9 +217,9 @@ $\mathbf{z}$, which is a substantive assumption about the reduced form and not
 something OLS supplies.
 
 For binary $y_2$ it cannot hold. Conditional on $\mathbf{z}$, the residual
-$v_2 = y_2 - \mathbf{z}\boldsymbol{\pi}$ takes exactly two values,
+$v_2 = y_2 - \mathbf{z}\boldsymbol{\pi}_2$ takes exactly two values,
 
-$$v_2 \mid \mathbf{z} = \begin{cases} 1 - \mathbf{z}\boldsymbol{\pi} & \text{with probability } p(\mathbf{z}) \\ -\mathbf{z}\boldsymbol{\pi} & \text{with probability } 1 - p(\mathbf{z}),\end{cases}$$ {#eq-poisson-iv-4}
+$$v_2 \mid \mathbf{z} = \begin{cases} 1 - \mathbf{z}\boldsymbol{\pi}_2 & \text{with probability } p(\mathbf{z}) \\ -\mathbf{z}\boldsymbol{\pi}_2 & \text{with probability } 1 - p(\mathbf{z}),\end{cases}$$ {#eq-poisson-iv-4}
 
 so both the two support points *and* the probabilities of landing on them are
 functions of $\mathbf{z}$. Its variance,
@@ -233,17 +250,17 @@ but the failure runs through three links:
    step he leaves as "very unusual", and it is in fact airtight. Independence
    means the conditional distribution of $v_2$ given $\mathbf{z}$ is *the same
    for every* $\mathbf{z}$. But by @eq-poisson-iv-4 the support is
-   $\{-\mathbf{z}\boldsymbol{\pi},\ 1-\mathbf{z}\boldsymbol{\pi}\}$, and both
+   $\{-\mathbf{z}\boldsymbol{\pi}_2,\ 1-\mathbf{z}\boldsymbol{\pi}_2\}$, and both
    points **slide as $\mathbf{z}$ changes**. A distribution whose support moves
    with $\mathbf{z}$ cannot be independent of it — unless
-   $\boldsymbol{\pi} = \mathbf{0}$, in which case there is no first stage at all.
+   $\boldsymbol{\pi}_2 = \mathbf{0}$, in which case there is no first stage at all.
    The same argument covers count and corner responses: the mass point sits at
-   $-\mathbf{z}\boldsymbol{\pi}$ and travels.
+   $-\mathbf{z}\boldsymbol{\pi}_2$ and travels.
 
 So the sentence reads: *the correction needs $e_1 \perp (v_2, \mathbf{z})$; that
 needs $v_2 \perp \mathbf{z}$; and $v_2 \perp \mathbf{z}$ cannot hold when $y_2$
 is discrete, because the residual's support is pinned to
-$\mathbf{z}\boldsymbol{\pi}$.*
+$\mathbf{z}\boldsymbol{\pi}_2$.*
 
 Note what does **not** break. $E[\mathbf{z}'v_2] = 0$ still holds exactly — the
 projection is fine, and OLS has done nothing wrong. It is independence that

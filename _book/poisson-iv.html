@@ -492,7 +492,7 @@ window.Quarto = {
 
 
 <p>Poisson regression specifies the conditional mean as an exponential function. As a quasi-MLE it needs that mean to be correct, not the full count distribution. If a regressor is endogenous, the IV strategy has to respect the nonlinear mean — and this is where intuition carried over from 2SLS starts to mislead. This chapter works through what goes wrong, what to do instead, and how much the choice costs.</p>
-<div id="7857765c" class="cell" data-execution_count="2">
+<div id="7f85fc6b" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
@@ -513,7 +513,7 @@ window.Quarto = {
 <h3 data-number="18.1.1" class="anchored" data-anchor-id="a-note-on-the-notation-the-subscript-indexes-equations-not-variables"><span class="header-section-number">18.1.1</span> A note on the notation: the subscript indexes <em>equations</em>, not variables</h3>
 <p>This chapter follows <span class="citation" data-cites="wooldridge-2010-crosssection">Wooldridge (<a href="references.html#ref-wooldridge-2010-crosssection" role="doc-biblioref">2010</a>)</span> (sec.&nbsp;18.5), because it quotes his equations (18.37)–(18.45) directly and the symbols need to match the source.</p>
 <p>The subscript is the source of most of the confusion, so it is worth saying what it means: <strong>it indexes the equation, not the variable.</strong> <span class="math inline">\(y_1\)</span> is the variable explained by equation 1, the structural equation; <span class="math inline">\(y_2\)</span> is the variable explained by equation 2, the reduced form. The same convention governs <span class="math inline">\(c_1\)</span>, <span class="math inline">\(v_2\)</span>, <span class="math inline">\(\boldsymbol{\delta}_1\)</span> and <span class="math inline">\(\boldsymbol{\pi}_2\)</span> — each subscript says which equation the object belongs to. This is the simultaneous-equations convention, and it scales: a second endogenous regressor is <span class="math inline">\(y_3\)</span>, with no renaming.</p>
-<p>Read instead as “<span class="math inline">\(y\)</span>-one and <span class="math inline">\(y\)</span>-two, two outcomes,” it means nothing — which is the misreading the notation invites. One deliberate deviation: Wooldridge writes the coefficient on <span class="math inline">\(y_2\)</span> as <span class="math inline">\(\gamma_1\)</span>; this chapter calls it <span class="math inline">\(\alpha_1\)</span> throughout. Quoted equations are left exactly as he writes them.</p>
+<p>One deliberate deviation: Wooldridge writes the coefficient on <span class="math inline">\(y_2\)</span> as <span class="math inline">\(\gamma_1\)</span>; this chapter calls it <span class="math inline">\(\alpha_1\)</span> throughout. Quoted equations are left exactly as he writes them.</p>
 </section>
 <section id="the-three-estimators" class="level3" data-number="18.1.2">
 <h3 data-number="18.1.2" class="anchored" data-anchor-id="the-three-estimators"><span class="header-section-number">18.1.2</span> The three estimators</h3>
@@ -564,13 +564,23 @@ window.Quarto = {
 <h3 data-number="18.2.1" class="anchored" data-anchor-id="the-control-function-idea"><span class="header-section-number">18.2.1</span> The control function idea</h3>
 <section id="a-linear-second-stage-the-cf-is-2sls" class="level4" data-number="18.2.1.1">
 <h4 data-number="18.2.1.1" class="anchored" data-anchor-id="a-linear-second-stage-the-cf-is-2sls"><span class="header-section-number">18.2.1.1</span> A linear second stage: the CF <em>is</em> 2SLS</h4>
-<p>Add the first-stage residual <span class="math inline">\(\hat v_2\)</span> to an OLS second stage and you recover the 2SLS coefficient exactly. The algebra:</p>
+<p>Set the exponential mean aside and take the linear analogue of <a href="#eq-poisson-iv-1" class="quarto-xref">Equation&nbsp;<span>18.1</span></a>,</p>
+<p><span class="math display">\[y_1 = \mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \varepsilon_1,
+\qquad E(\mathbf{z}'\varepsilon_1) = 0,\]</span></p>
+<p>which is what defines <span class="math inline">\(\varepsilon_1\)</span>. Two-stage least squares fits</p>
+<p><span class="math display">\[
+\begin{aligned}
+\text{first stage:}  &amp;\quad y_2 = \mathbf{z}\boldsymbol{\pi}_2 + v_2, \\
+\text{second stage:} &amp;\quad y_1 = \mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 \hat y_2 + (\varepsilon_1 + \alpha_1 \hat v_2),
+\end{aligned}
+\]</span></p>
+<p>with <span class="math inline">\(\hat y_2 = \mathbf{z}\hat{\boldsymbol{\pi}}_2\)</span> and <span class="math inline">\(\hat v_2 = y_2 - \hat y_2\)</span>. The second-stage error is not <span class="math inline">\(\varepsilon_1\)</span>: replacing <span class="math inline">\(y_2\)</span> by <span class="math inline">\(\hat y_2\)</span> moves <span class="math inline">\(\alpha_1\hat v_2\)</span> into it. Add <span class="math inline">\(\hat v_2\)</span> to an OLS second stage instead, and you recover the 2SLS coefficient exactly. The algebra:</p>
 <ol type="1">
-<li><strong>First stage.</strong> <span class="math inline">\(y_2 = \mathbf{z}\boldsymbol{\pi} + v_2\)</span>, by OLS. The residual satisfies <span class="math inline">\(E(\mathbf{z}'\hat v_2) = 0\)</span> by construction.</li>
-<li><strong>Error decomposition.</strong> Write <span class="math inline">\(\varepsilon_1 = \rho v_2 + \eta_1\)</span>, with <span class="math inline">\(E(\mathbf{z}'\eta_1) = 0\)</span> and <span class="math inline">\(E(v_2\eta_1) = 0\)</span>.</li>
+<li><strong>First stage.</strong> <span class="math inline">\(y_2 = \mathbf{z}\boldsymbol{\pi}_2 + v_2\)</span>, by OLS. The residual satisfies <span class="math inline">\(E(\mathbf{z}'\hat v_2) = 0\)</span> by construction.</li>
+<li><strong>Error decomposition.</strong> Project <span class="math inline">\(\varepsilon_1\)</span> on <span class="math inline">\(v_2\)</span>: <span class="math inline">\(\varepsilon_1 = \rho v_2 + \eta_1\)</span> with <span class="math inline">\(\rho = \mathrm{Cov}(\varepsilon_1, v_2)/\mathrm{Var}(v_2)\)</span>. Then <span class="math inline">\(E(v_2\eta_1) = 0\)</span> by construction of the projection, and <span class="math inline">\(E(\mathbf{z}'\eta_1) = E(\mathbf{z}'\varepsilon_1) - \rho E(\mathbf{z}'v_2) = 0\)</span>.</li>
 <li><strong>Augmented second stage.</strong> <span class="math inline">\(y_1 = \mathbf{z}_1\boldsymbol{\delta}_1 + \alpha_1 y_2 + \rho\hat v_2 + \eta_1\)</span>.</li>
 </ol>
-<p>OLS on step 3 is the <strong>control function estimator</strong>, and Frisch–Waugh–Lovell makes it numerically identical to 2SLS. <strong>No assumption beyond <span class="math inline">\(E(\mathbf{z}'\varepsilon_1) = 0\)</span> is required.</strong> This matters more than it looks: in the linear model the control-function story is a <em>reinterpretation</em> of an estimator justified by a moment condition. If the story is wrong, 2SLS is still consistent.</p>
+<p>OLS on step 3 is the <strong>control function estimator</strong>, and Frisch–Waugh–Lovell makes it numerically identical to 2SLS. No assumption beyond <span class="math inline">\(E(\mathbf{z}'\varepsilon_1) = 0\)</span> is required: step 2 is a projection, so both of its orthogonality conditions are consequences of that moment condition and the first stage, not additions to them.</p>
 </section>
 <section id="a-nonlinear-second-stage-the-cf-is-a-genuine-assumption" class="level4" data-number="18.2.1.2">
 <h4 data-number="18.2.1.2" class="anchored" data-anchor-id="a-nonlinear-second-stage-the-cf-is-a-genuine-assumption"><span class="header-section-number">18.2.1.2</span> A nonlinear second stage: the CF is a genuine assumption</h4>
@@ -644,8 +654,8 @@ window.Quarto = {
 <section id="a-binary-y_2-why-the-linear-reduced-form-fails" class="level3" data-number="18.2.3">
 <h3 data-number="18.2.3" class="anchored" data-anchor-id="a-binary-y_2-why-the-linear-reduced-form-fails"><span class="header-section-number">18.2.3</span> A binary <span class="math inline">\(y_2\)</span>: why the linear reduced form fails</h3>
 <p>OLS always produces a residual uncorrelated with <span class="math inline">\(\mathbf{z}\)</span>. That is a property of the population linear projection and it holds whatever <span class="math inline">\(y_2\)</span> looks like. But the control-function derivation needs <span class="math inline">\(v_2\)</span> <em>independent</em> of <span class="math inline">\(\mathbf{z}\)</span>, which is a substantive assumption about the reduced form and not something OLS supplies.</p>
-<p>For binary <span class="math inline">\(y_2\)</span> it cannot hold. Conditional on <span class="math inline">\(\mathbf{z}\)</span>, the residual <span class="math inline">\(v_2 = y_2 - \mathbf{z}\boldsymbol{\pi}\)</span> takes exactly two values,</p>
-<p><span id="eq-poisson-iv-4"><span class="math display">\[v_2 \mid \mathbf{z} = \begin{cases} 1 - \mathbf{z}\boldsymbol{\pi} &amp; \text{with probability } p(\mathbf{z}) \\ -\mathbf{z}\boldsymbol{\pi} &amp; \text{with probability } 1 - p(\mathbf{z}),\end{cases} \tag{18.5}\]</span></span></p>
+<p>For binary <span class="math inline">\(y_2\)</span> it cannot hold. Conditional on <span class="math inline">\(\mathbf{z}\)</span>, the residual <span class="math inline">\(v_2 = y_2 - \mathbf{z}\boldsymbol{\pi}_2\)</span> takes exactly two values,</p>
+<p><span id="eq-poisson-iv-4"><span class="math display">\[v_2 \mid \mathbf{z} = \begin{cases} 1 - \mathbf{z}\boldsymbol{\pi}_2 &amp; \text{with probability } p(\mathbf{z}) \\ -\mathbf{z}\boldsymbol{\pi}_2 &amp; \text{with probability } 1 - p(\mathbf{z}),\end{cases} \tag{18.5}\]</span></span></p>
 <p>so both the two support points <em>and</em> the probabilities of landing on them are functions of <span class="math inline">\(\mathbf{z}\)</span>. Its variance, <span class="math inline">\(\mathrm{Var}(v_2 \mid \mathbf{z}) = p(\mathbf{z})[1 - p(\mathbf{z})]\)</span>, is a function of <span class="math inline">\(\mathbf{z}\)</span> too. Independence fails by construction, not by approximation.</p>
 <p>Wooldridge states this outright, at <span class="citation" data-cites="wooldridge-2010-crosssection">(<a href="references.html#ref-wooldridge-2010-crosssection" role="doc-biblioref">Wooldridge 2010, 746</a>)</span>:</p>
 <blockquote class="blockquote">
@@ -655,9 +665,9 @@ window.Quarto = {
 <ol type="1">
 <li><strong>What the correction needs.</strong> From <a href="#eq-poisson-iv-17" class="quarto-xref">Equation&nbsp;<span>18.4</span></a>, <span class="math inline">\(e_1\)</span> must be independent of <span class="math inline">\((\mathbf{z}, y_2, v_2)\)</span>, so that <span class="math inline">\(E[\exp(e_1)\mid\cdot]\)</span> is constant.</li>
 <li><strong>That silently requires <span class="math inline">\(v_2 \perp \mathbf{z}\)</span>.</strong> <span class="math inline">\(e_1\)</span> is defined as what is left of <span class="math inline">\(c_1\)</span> after projecting on <span class="math inline">\(v_2\)</span>, so if <span class="math inline">\(v_2\)</span> depends on <span class="math inline">\(\mathbf{z}\)</span>, <span class="math inline">\(e_1\)</span> inherits the dependence. This is what “the independence assumption likewise fails unless” refers to.</li>
-<li><strong>And <span class="math inline">\(v_2 \perp \mathbf{z}\)</span> cannot hold for discrete <span class="math inline">\(y_2\)</span>.</strong> This is the step he leaves as “very unusual”, and it is in fact airtight. Independence means the conditional distribution of <span class="math inline">\(v_2\)</span> given <span class="math inline">\(\mathbf{z}\)</span> is <em>the same for every</em> <span class="math inline">\(\mathbf{z}\)</span>. But by <a href="#eq-poisson-iv-4" class="quarto-xref">Equation&nbsp;<span>18.5</span></a> the support is <span class="math inline">\(\{-\mathbf{z}\boldsymbol{\pi},\ 1-\mathbf{z}\boldsymbol{\pi}\}\)</span>, and both points <strong>slide as <span class="math inline">\(\mathbf{z}\)</span> changes</strong>. A distribution whose support moves with <span class="math inline">\(\mathbf{z}\)</span> cannot be independent of it — unless <span class="math inline">\(\boldsymbol{\pi} = \mathbf{0}\)</span>, in which case there is no first stage at all. The same argument covers count and corner responses: the mass point sits at <span class="math inline">\(-\mathbf{z}\boldsymbol{\pi}\)</span> and travels.</li>
+<li><strong>And <span class="math inline">\(v_2 \perp \mathbf{z}\)</span> cannot hold for discrete <span class="math inline">\(y_2\)</span>.</strong> This is the step he leaves as “very unusual”, and it is in fact airtight. Independence means the conditional distribution of <span class="math inline">\(v_2\)</span> given <span class="math inline">\(\mathbf{z}\)</span> is <em>the same for every</em> <span class="math inline">\(\mathbf{z}\)</span>. But by <a href="#eq-poisson-iv-4" class="quarto-xref">Equation&nbsp;<span>18.5</span></a> the support is <span class="math inline">\(\{-\mathbf{z}\boldsymbol{\pi}_2,\ 1-\mathbf{z}\boldsymbol{\pi}_2\}\)</span>, and both points <strong>slide as <span class="math inline">\(\mathbf{z}\)</span> changes</strong>. A distribution whose support moves with <span class="math inline">\(\mathbf{z}\)</span> cannot be independent of it — unless <span class="math inline">\(\boldsymbol{\pi}_2 = \mathbf{0}\)</span>, in which case there is no first stage at all. The same argument covers count and corner responses: the mass point sits at <span class="math inline">\(-\mathbf{z}\boldsymbol{\pi}_2\)</span> and travels.</li>
 </ol>
-<p>So the sentence reads: <em>the correction needs <span class="math inline">\(e_1 \perp (v_2, \mathbf{z})\)</span>; that needs <span class="math inline">\(v_2 \perp \mathbf{z}\)</span>; and <span class="math inline">\(v_2 \perp \mathbf{z}\)</span> cannot hold when <span class="math inline">\(y_2\)</span> is discrete, because the residual’s support is pinned to <span class="math inline">\(\mathbf{z}\boldsymbol{\pi}\)</span>.</em></p>
+<p>So the sentence reads: <em>the correction needs <span class="math inline">\(e_1 \perp (v_2, \mathbf{z})\)</span>; that needs <span class="math inline">\(v_2 \perp \mathbf{z}\)</span>; and <span class="math inline">\(v_2 \perp \mathbf{z}\)</span> cannot hold when <span class="math inline">\(y_2\)</span> is discrete, because the residual’s support is pinned to <span class="math inline">\(\mathbf{z}\boldsymbol{\pi}_2\)</span>.</em></p>
 <p>Note what does <strong>not</strong> break. <span class="math inline">\(E[\mathbf{z}'v_2] = 0\)</span> still holds exactly — the projection is fine, and OLS has done nothing wrong. It is independence that fails, and only the exponential mean cares about the difference.</p>
 <section id="the-subtlety-discreteness-of-the-residual-is-not-the-problem" class="level4" data-number="18.2.3.1">
 <h4 data-number="18.2.3.1" class="anchored" data-anchor-id="the-subtlety-discreteness-of-the-residual-is-not-the-problem"><span class="header-section-number">18.2.3.1</span> The subtlety: discreteness of the residual is not the problem</h4>
@@ -768,7 +778,7 @@ window.Quarto = {
 <section id="data-generating-process" class="level3" data-number="18.4.1">
 <h3 data-number="18.4.1" class="anchored" data-anchor-id="data-generating-process"><span class="header-section-number">18.4.1</span> Data generating process</h3>
 <p>We simulate a panel where <code>time</code> (continuous, e.g.&nbsp;minutes on site) is endogenous: it is correlated with an unobserved factor <code>e</code> that also affects <code>visits</code>. The excluded instrument is <code>phone</code> (binary, e.g.&nbsp;phone-access indicator). Fixed effects are <code>ad</code> (20 groups) and <code>female</code>.</p>
-<div id="f9464ddf" class="cell" data-execution_count="3">
+<div id="916e68bc" class="cell" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
@@ -805,7 +815,7 @@ window.Quarto = {
 <section id="naive-poisson-the-endogeneity-bias" class="level3" data-number="18.4.2">
 <h3 data-number="18.4.2" class="anchored" data-anchor-id="naive-poisson-the-endogeneity-bias"><span class="header-section-number">18.4.2</span> Naive Poisson — the endogeneity bias</h3>
 <p>Ignoring the endogeneity of <code>time</code> gives a biased estimate of <code>α₁</code>:</p>
-<div id="921664e8" class="cell" data-execution_count="4">
+<div id="0a79ee59" class="cell" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>naive1 <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
@@ -866,7 +876,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <li><strong>Second stage</strong> — Poisson QMLE with <span class="math inline">\(\hat{v}_2\)</span> added as a regressor inside the exponential mean. <a href="#eq-poisson-iv-2" class="quarto-xref">Equation&nbsp;<span>18.2</span></a> holds exactly here because the DGP specifies <span class="math inline">\(0.5\,e\)</span> linearly inside <span class="math inline">\(\exp(\cdot)\)</span>.</li>
 </ol>
 <p>Note that unlike 2SLS in a linear model, <span class="math inline">\(\hat{v}_2\)</span> does <em>not</em> replace <span class="math inline">\(y_2\)</span> — both enter together. This is what makes the control function different from IV/GMM Poisson, confirmed numerically in Simulation 2.</p>
-<div id="ceffdb93" class="cell" data-execution_count="5">
+<div id="e33fcf0a" class="cell" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection</span></span>
@@ -935,7 +945,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="bootstrap-standard-errors" class="level3" data-number="18.4.4">
 <h3 data-number="18.4.4" class="anchored" data-anchor-id="bootstrap-standard-errors"><span class="header-section-number">18.4.4</span> Bootstrap standard errors</h3>
 <p>The second-stage standard errors are incorrect because the first-stage estimation error propagates. Julia’s <code>Threads.@threads</code> parallelises the cluster bootstrap across all CPU cores:</p>
-<div id="29d89671" class="cell" data-execution_count="6">
+<div id="34b8274d" class="cell" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_resample</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
@@ -996,7 +1006,7 @@ Bootstrap 95% CI: [0.7868, 0.8312]</code></pre>
 <section id="data-generating-process-1" class="level3" data-number="18.5.1">
 <h3 data-number="18.5.1" class="anchored" data-anchor-id="data-generating-process-1"><span class="header-section-number">18.5.1</span> Data generating process</h3>
 <p>A clean probit DGP, with a fresh structural error <code>e2</code> independent of Simulation 1. The endogeneity coefficient <code>ρ = 0.2</code> is kept small so the first-order approximation stays tight and the estimators can be compared without that error dominating.</p>
-<div id="ca45020d" class="cell" data-execution_count="7">
+<div id="012d196e" class="cell" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
@@ -1032,7 +1042,7 @@ visits mean:       4.78</code></pre>
 <section id="linear-residual-cf" class="level3" data-number="18.5.2">
 <h3 data-number="18.5.2" class="anchored" data-anchor-id="linear-residual-cf"><span class="header-section-number">18.5.2</span> Linear-residual CF</h3>
 <p>The estimator with no valid reduced-form assumption here, included to see how far wrong it goes.</p>
-<div id="690ce918" class="cell" data-execution_count="8">
+<div id="2fb7f1a9" class="cell" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection of binary time_hi</span></span>
@@ -1099,7 +1109,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="generalized-residual-cf" class="level3" data-number="18.5.3">
 <h3 data-number="18.5.3" class="anchored" data-anchor-id="generalized-residual-cf"><span class="header-section-number">18.5.3</span> Generalized-residual CF</h3>
-<div id="b97adc8d" class="cell" data-execution_count="9">
+<div id="f1eb2586" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: probit first stage</span></span>
@@ -1174,7 +1184,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="probit-or-logit" class="level3" data-number="18.5.4">
 <h3 data-number="18.5.4" class="anchored" data-anchor-id="probit-or-logit"><span class="header-section-number">18.5.4</span> Probit or logit</h3>
 <p>Confirming <a href="#eq-poisson-iv-11" class="quarto-xref">Equation&nbsp;<span>18.12</span></a> numerically — the logit generalized residual is <code>time_hi .- phat</code>:</p>
-<div id="8c62c972" class="cell" data-execution_count="10">
+<div id="ea716e50" class="cell" data-execution_count="10">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fs_b_logit <span class="op">=</span> <span class="fu">felogit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
@@ -1250,7 +1260,7 @@ Logit  first stage: alpha1 = 0.8000</code></pre>
 <section id="multiplicative-moment-gmm" class="level3" data-number="18.5.5">
 <h3 data-number="18.5.5" class="anchored" data-anchor-id="multiplicative-moment-gmm"><span class="header-section-number">18.5.5</span> Multiplicative-moment GMM</h3>
 <p>We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument. <strong>Both moment forms</strong> are coded: the additive moments are what “IV Poisson” often means in practice (e.g. Stata’s <code>ivpoisson gmm</code> default), but because this chapter’s DGP puts the unobservable inside <span class="math inline">\(\exp(\cdot)\)</span>, only the multiplicative moments of <span class="citation" data-cites="mullahy-1997">Mullahy (<a href="references.html#ref-mullahy-1997" role="doc-biblioref">1997</a>)</span> are consistent here.</p>
-<div id="d39c08ae" class="cell" data-execution_count="11">
+<div id="a7e22e49" class="cell" data-execution_count="11">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
@@ -1333,7 +1343,7 @@ Multiplicative-moment GMM (no FE, for illustration)
 <section id="control-function-and-gmm-are-not-equivalent-in-poisson" class="level3" data-number="18.5.6">
 <h3 data-number="18.5.6" class="anchored" data-anchor-id="control-function-and-gmm-are-not-equivalent-in-poisson"><span class="header-section-number">18.5.6</span> Control function and GMM are not equivalent in Poisson</h3>
 <p>In a linear model, using <span class="math inline">\(\hat{y}_2\)</span> as an instrument (2SLS) is numerically identical to adding <span class="math inline">\(\hat{v}_2 = y_2 - \hat{y}_2\)</span> as a regressor, by Frisch–Waugh–Lovell. <strong>In Poisson this equivalence breaks</strong>, because the control function puts <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> while the GMM route uses <span class="math inline">\(\hat{y}_2\)</span> in the moment conditions without modifying the exponential mean.</p>
-<div id="740982cc" class="cell" data-execution_count="12">
+<div id="dde3d1f7" class="cell" data-execution_count="12">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (GMM route, linear first stage)</span></span>
@@ -1362,7 +1372,7 @@ True α₁ = 0.8</code></pre>
 </section>
 <section id="bootstrap-for-the-binary-case" class="level3" data-number="18.5.7">
 <h3 data-number="18.5.7" class="anchored" data-anchor-id="bootstrap-for-the-binary-case"><span class="header-section-number">18.5.7</span> Bootstrap for the binary case</h3>
-<div id="e8863994" class="cell" data-execution_count="13">
+<div id="0ed97e44" class="cell" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
@@ -1401,7 +1411,7 @@ True α₁ = 0.8</code></pre>
 </section>
 <section id="all-methods-side-by-side" class="level3" data-number="18.5.8">
 <h3 data-number="18.5.8" class="anchored" data-anchor-id="all-methods-side-by-side"><span class="header-section-number">18.5.8</span> All methods side by side</h3>
-<div id="8e67a5dc" class="cell" data-execution_count="14">
+<div id="75de5569" class="cell" data-execution_count="14">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
