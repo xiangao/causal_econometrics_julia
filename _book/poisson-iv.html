@@ -492,7 +492,7 @@ window.Quarto = {
 
 
 <p>Poisson regression specifies the conditional mean as an exponential function. As a quasi-MLE it needs that mean to be correct, not the full count distribution. If a regressor is endogenous, the IV strategy has to respect the nonlinear mean — and this is where intuition carried over from 2SLS starts to mislead. This chapter works through what goes wrong, what to do instead, and how much the choice costs.</p>
-<div id="7f85fc6b" class="cell" data-execution_count="2">
+<div id="cc78aee1" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
@@ -778,7 +778,7 @@ window.Quarto = {
 <section id="data-generating-process" class="level3" data-number="18.4.1">
 <h3 data-number="18.4.1" class="anchored" data-anchor-id="data-generating-process"><span class="header-section-number">18.4.1</span> Data generating process</h3>
 <p>We simulate a panel where <code>time</code> (continuous, e.g.&nbsp;minutes on site) is endogenous: it is correlated with an unobserved factor <code>e</code> that also affects <code>visits</code>. The excluded instrument is <code>phone</code> (binary, e.g.&nbsp;phone-access indicator). Fixed effects are <code>ad</code> (20 groups) and <code>female</code>.</p>
-<div id="916e68bc" class="cell" data-execution_count="3">
+<div id="6aac847b" class="cell" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
@@ -815,7 +815,7 @@ window.Quarto = {
 <section id="naive-poisson-the-endogeneity-bias" class="level3" data-number="18.4.2">
 <h3 data-number="18.4.2" class="anchored" data-anchor-id="naive-poisson-the-endogeneity-bias"><span class="header-section-number">18.4.2</span> Naive Poisson — the endogeneity bias</h3>
 <p>Ignoring the endogeneity of <code>time</code> gives a biased estimate of <code>α₁</code>:</p>
-<div id="0a79ee59" class="cell" data-execution_count="4">
+<div id="8aa4a901" class="cell" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>naive1 <span class="op">=</span> <span class="fu">fepois</span>(df1, <span class="pp">@formula</span>(visits <span class="op">~</span> time <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
@@ -876,7 +876,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <li><strong>Second stage</strong> — Poisson QMLE with <span class="math inline">\(\hat{v}_2\)</span> added as a regressor inside the exponential mean. <a href="#eq-poisson-iv-2" class="quarto-xref">Equation&nbsp;<span>18.2</span></a> holds exactly here because the DGP specifies <span class="math inline">\(0.5\,e\)</span> linearly inside <span class="math inline">\(\exp(\cdot)\)</span>.</li>
 </ol>
 <p>Note that unlike 2SLS in a linear model, <span class="math inline">\(\hat{v}_2\)</span> does <em>not</em> replace <span class="math inline">\(y_2\)</span> — both enter together. This is what makes the control function different from IV/GMM Poisson, confirmed numerically in Simulation 2.</p>
-<div id="e33fcf0a" class="cell" data-execution_count="5">
+<div id="6b38525c" class="cell" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection</span></span>
@@ -945,7 +945,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="bootstrap-standard-errors" class="level3" data-number="18.4.4">
 <h3 data-number="18.4.4" class="anchored" data-anchor-id="bootstrap-standard-errors"><span class="header-section-number">18.4.4</span> Bootstrap standard errors</h3>
 <p>The second-stage standard errors are incorrect because the first-stage estimation error propagates. Julia’s <code>Threads.@threads</code> parallelises the cluster bootstrap across all CPU cores:</p>
-<div id="34b8274d" class="cell" data-execution_count="6">
+<div id="cd06ca38" class="cell" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">bootstrap_resample</span>(df<span class="op">::</span><span class="dt">DataFrame</span>, B<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>)</span>
@@ -1006,7 +1006,7 @@ Bootstrap 95% CI: [0.7868, 0.8312]</code></pre>
 <section id="data-generating-process-1" class="level3" data-number="18.5.1">
 <h3 data-number="18.5.1" class="anchored" data-anchor-id="data-generating-process-1"><span class="header-section-number">18.5.1</span> Data generating process</h3>
 <p>A clean probit DGP, with a fresh structural error <code>e2</code> independent of Simulation 1. The endogeneity coefficient <code>ρ = 0.2</code> is kept small so the first-order approximation stays tight and the estimators can be compared without that error dominating.</p>
-<div id="012d196e" class="cell" data-execution_count="7">
+<div id="786ffe62" class="cell" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
@@ -1042,7 +1042,7 @@ visits mean:       4.78</code></pre>
 <section id="linear-residual-cf" class="level3" data-number="18.5.2">
 <h3 data-number="18.5.2" class="anchored" data-anchor-id="linear-residual-cf"><span class="header-section-number">18.5.2</span> Linear-residual CF</h3>
 <p>The estimator with no valid reduced-form assumption here, included to see how far wrong it goes.</p>
-<div id="2fb7f1a9" class="cell" data-execution_count="8">
+<div id="b0e19f81" class="cell" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: linear projection of binary time_hi</span></span>
@@ -1109,7 +1109,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </section>
 <section id="generalized-residual-cf" class="level3" data-number="18.5.3">
 <h3 data-number="18.5.3" class="anchored" data-anchor-id="generalized-residual-cf"><span class="header-section-number">18.5.3</span> Generalized-residual CF</h3>
-<div id="f1eb2586" class="cell" data-execution_count="9">
+<div id="b8bc832b" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: probit first stage</span></span>
@@ -1184,7 +1184,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="probit-or-logit" class="level3" data-number="18.5.4">
 <h3 data-number="18.5.4" class="anchored" data-anchor-id="probit-or-logit"><span class="header-section-number">18.5.4</span> Probit or logit</h3>
 <p>Confirming <a href="#eq-poisson-iv-11" class="quarto-xref">Equation&nbsp;<span>18.12</span></a> numerically — the logit generalized residual is <code>time_hi .- phat</code>:</p>
-<div id="ea716e50" class="cell" data-execution_count="10">
+<div id="5f1bd997" class="cell" data-execution_count="10">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fs_b_logit <span class="op">=</span> <span class="fu">felogit</span>(df2, <span class="pp">@formula</span>(time_hi <span class="op">~</span> phone <span class="op">+</span> frfam <span class="op">+</span> <span class="fu">fe</span>(ad) <span class="op">+</span> <span class="fu">fe</span>(female)))</span>
@@ -1257,10 +1257,16 @@ Logit  first stage: alpha1 = 0.8000</code></pre>
 </div>
 </div>
 </section>
-<section id="multiplicative-moment-gmm" class="level3" data-number="18.5.5">
-<h3 data-number="18.5.5" class="anchored" data-anchor-id="multiplicative-moment-gmm"><span class="header-section-number">18.5.5</span> Multiplicative-moment GMM</h3>
+<section id="the-dummies-in-the-first-stage-need-a-long-panel" class="level3" data-number="18.5.5">
+<h3 data-number="18.5.5" class="anchored" data-anchor-id="the-dummies-in-the-first-stage-need-a-long-panel"><span class="header-section-number">18.5.5</span> The dummies in the first stage need a long panel</h3>
+<p>Both first stages above put the group dummies inside the probit or logit, which is safe here because each group has 250 observations. Applied panel work usually has the opposite shape: many units, a handful of periods each. A logit with unit dummies is badly biased in that case, and the size of the bias depends on observations per unit, not on how many units there are. Against a true slope of 1 it returns about 2.0 at two observations per unit, 1.37 at four, 1.15 at six, 1.04 at twenty-five, and essentially the truth by a hundred. A panel of a few thousand units with four or five observations each sits in the worst part of that range.</p>
+<p>The problem is specific to the nonlinear first stage. Poisson with unit dummies is consistent with the number of periods fixed, and so is a linear first stage.</p>
+<p>The fix is the Mundlak device: drop the unit dummies from the first stage and add unit means of the instrument and the time-varying controls instead. The instrument’s own mean has to be among them, since the unit effect is being modelled as a function of those means and the instrument is one of the regressors it must be purged of. Conditional logit is also consistent with the number of periods fixed, but it eliminates the unit effects rather than estimating them, so it leaves no fitted index from which to build the generalized residual; the Mundlak version keeps the index. The construction is worked through in <a href="https://xiangao.github.io/blog_book/poisson-iv-fe.html">IV Poisson with many fixed effects</a>.</p>
+</section>
+<section id="multiplicative-moment-gmm" class="level3" data-number="18.5.6">
+<h3 data-number="18.5.6" class="anchored" data-anchor-id="multiplicative-moment-gmm"><span class="header-section-number">18.5.6</span> Multiplicative-moment GMM</h3>
 <p>We implement IV/GMM Poisson directly, keeping <code>time_hi</code> as the regressor and using probit fitted probabilities as the instrument. <strong>Both moment forms</strong> are coded: the additive moments are what “IV Poisson” often means in practice (e.g. Stata’s <code>ivpoisson gmm</code> default), but because this chapter’s DGP puts the unobservable inside <span class="math inline">\(\exp(\cdot)\)</span>, only the multiplicative moments of <span class="citation" data-cites="mullahy-1997">Mullahy (<a href="references.html#ref-mullahy-1997" role="doc-biblioref">1997</a>)</span> are consistent here.</p>
-<div id="a7e22e49" class="cell" data-execution_count="11">
+<div id="3602c799" class="cell" data-execution_count="11">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
@@ -1340,10 +1346,10 @@ Multiplicative-moment GMM (no FE, for illustration)
 </div>
 <p>The additive-moment estimate is visibly biased — the DGP’s unobservable <span class="math inline">\(\rho\,e_2\)</span> sits inside <span class="math inline">\(\exp(\cdot)\)</span>, so the additive moments are misspecified (a 30-replication check gives an additive-moment mean of about <span class="math inline">\(0.61\)</span> against a multiplicative-moment mean of about <span class="math inline">\(0.79\)</span>, with true value <span class="math inline">\(0.8\)</span>). The multiplicative moments repair it.</p>
 </section>
-<section id="control-function-and-gmm-are-not-equivalent-in-poisson" class="level3" data-number="18.5.6">
-<h3 data-number="18.5.6" class="anchored" data-anchor-id="control-function-and-gmm-are-not-equivalent-in-poisson"><span class="header-section-number">18.5.6</span> Control function and GMM are not equivalent in Poisson</h3>
+<section id="control-function-and-gmm-are-not-equivalent-in-poisson" class="level3" data-number="18.5.7">
+<h3 data-number="18.5.7" class="anchored" data-anchor-id="control-function-and-gmm-are-not-equivalent-in-poisson"><span class="header-section-number">18.5.7</span> Control function and GMM are not equivalent in Poisson</h3>
 <p>In a linear model, using <span class="math inline">\(\hat{y}_2\)</span> as an instrument (2SLS) is numerically identical to adding <span class="math inline">\(\hat{v}_2 = y_2 - \hat{y}_2\)</span> as a regressor, by Frisch–Waugh–Lovell. <strong>In Poisson this equivalence breaks</strong>, because the control function puts <span class="math inline">\(\hat{v}_2\)</span> inside <span class="math inline">\(\exp(\cdot)\)</span> while the GMM route uses <span class="math inline">\(\hat{y}_2\)</span> in the moment conditions without modifying the exponential mean.</p>
-<div id="dde3d1f7" class="cell" data-execution_count="12">
+<div id="640dedf2" class="cell" data-execution_count="12">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use linear fitted values as instruments (GMM route, linear first stage)</span></span>
@@ -1370,9 +1376,9 @@ True α₁ = 0.8</code></pre>
 </div>
 <p>The estimates differ despite using the same first-stage linear projection, confirming that 2SLS <span class="math inline">\(\neq\)</span> CF for Poisson — and, within the GMM route, that the moment form matters as much as the instrument.</p>
 </section>
-<section id="bootstrap-for-the-binary-case" class="level3" data-number="18.5.7">
-<h3 data-number="18.5.7" class="anchored" data-anchor-id="bootstrap-for-the-binary-case"><span class="header-section-number">18.5.7</span> Bootstrap for the binary case</h3>
-<div id="0ed97e44" class="cell" data-execution_count="13">
+<section id="bootstrap-for-the-binary-case" class="level3" data-number="18.5.8">
+<h3 data-number="18.5.8" class="anchored" data-anchor-id="bootstrap-for-the-binary-case"><span class="header-section-number">18.5.8</span> Bootstrap for the binary case</h3>
+<div id="e27c9c5f" class="cell" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Part 2 bootstrap: binary time_hi</span></span>
@@ -1409,9 +1415,9 @@ True α₁ = 0.8</code></pre>
 </div>
 </div>
 </section>
-<section id="all-methods-side-by-side" class="level3" data-number="18.5.8">
-<h3 data-number="18.5.8" class="anchored" data-anchor-id="all-methods-side-by-side"><span class="header-section-number">18.5.8</span> All methods side by side</h3>
-<div id="75de5569" class="cell" data-execution_count="14">
+<section id="all-methods-side-by-side" class="level3" data-number="18.5.9">
+<h3 data-number="18.5.9" class="anchored" data-anchor-id="all-methods-side-by-side"><span class="header-section-number">18.5.9</span> All methods side by side</h3>
+<div id="bac4c033" class="cell" data-execution_count="14">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>coef_naive2 <span class="op">=</span> <span class="fu">coef</span>(</span>
@@ -1450,7 +1456,7 @@ True α₁ = 0.8</code></pre>
 <section id="practical-guidance" class="level2" data-number="18.6">
 <h2 data-number="18.6" class="anchored" data-anchor-id="practical-guidance"><span class="header-section-number">18.6</span> Practical guidance</h2>
 <ul>
-<li><p><strong>With fixed effects and a binary <span class="math inline">\(y_2\)</span>, use the generalized-residual CF.</strong> Among the estimators that drop into FE-Poisson unmodified it is the theoretically motivated choice, and its error is <em>derived</em>, not assumed: <span class="math inline">\(O(\rho^2)\)</span>, shrinking as the endogeneity shrinks.</p></li>
+<li><p><strong>With fixed effects and a binary <span class="math inline">\(y_2\)</span>, use the generalized-residual CF.</strong> Among the estimators that drop into FE-Poisson unmodified it is the theoretically motivated choice, and its error is <em>derived</em>, not assumed: <span class="math inline">\(O(\rho^2)\)</span>, shrinking as the endogeneity shrinks. Put the unit dummies in its first stage only when each unit has many observations; with the short panels usual in applied work, use the Mundlak means instead (§ above).</p></li>
 <li><p><strong>Multiplicative-moment GMM trades bias for variance — decide which binds.</strong> Mullahy’s moments are <em>consistent</em> here, not merely accurate to first order, whenever the multiplicative heterogeneity is independent of <span class="math inline">\(\mathbf{z}\)</span>. But consistency is not accuracy at a given sample size: over 10 seeds at <span class="math inline">\(n=5000\)</span> it is nearly unbiased (mean <span class="math inline">\(0.7985\)</span>) and yet almost three times as noisy (sd <span class="math inline">\(0.068\)</span> against <span class="math inline">\(0.026\)</span>), giving it the worst RMSE of the three. Prefer it once <span class="math inline">\(n\)</span> is large enough that variance is not the binding constraint — and note that it does not accommodate high-dimensional fixed effects either way.</p></li>
 <li><p><strong>Use the multiplicative moments, not the additive ones.</strong> When the unobservable sits inside <span class="math inline">\(\exp(\cdot)\)</span> — the natural case for counts — the additive moments are misspecified, and the simulation above shows the damage.</p></li>
 <li><p><strong>The linear-residual CF is a fallback, not a first choice.</strong> It lands close to the truth at <span class="math inline">\(\rho = 0.2\)</span> here, but for binary <span class="math inline">\(y_2\)</span> it has no valid reduced-form assumption behind it. <strong>Do not lean on it when <span class="math inline">\(\rho\)</span> is not known to be small</strong> — and note that <span class="math inline">\(\rho\)</span> is estimated by the coefficient on the control function, so this is checkable rather than a matter of faith.</p></li>
