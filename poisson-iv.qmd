@@ -342,6 +342,44 @@ is $0.2$. Reading $\rho$ as a correlation is also what $h(\cdot)$ forbids — it
 $\rho$ in the coefficient sense that makes $\exp(\rho^2/2)$ the lognormal
 correction and puts $\rho$ on the same scale as the probit index.
 
+#### Terza's FIML, and Stata's `etpoisson`
+
+@terza-1998 offers three estimators for this model, and it is worth knowing which is which. The
+first is full-information maximum likelihood: write the Poisson density for $y_1$ and the probit
+for $y_2$, let the two errors be jointly normal, and integrate the unobservable out. This is what
+Stata's `etpoisson` fits, by Gauss--Hermite quadrature. The second is the two-step above --- probit,
+then the exact mean by QMLE --- which Terza calls a two-stage method of moments and describes as
+the *relatively robust partially parametric* option, since it needs the conditional mean and
+nothing else. The third sits between them, a nonlinear weighted least squares for the fully
+parametric case.
+
+The distinction matters more in a panel than in a cross-section, for two reasons.
+
+The first is what FIML assumes. Plain Poisson QMLE is consistent for the mean under *any*
+conditional distribution, because its first-order condition is the mean moment condition
+$\sum \mathbf{x}(y - \exp(\mathbf{x}\boldsymbol\beta)) = 0$. That robustness is the reason
+`fepois` and `ppmlhdfe` are safe on count data that is nothing like Poisson. FIML's score instead
+carries the Poisson density inside the integral, so getting the mean right is not enough, and
+`vce(robust)` repairs inference rather than the estimator.
+
+The second is the fixed effects. `etpoisson` has no `absorb()` option and no panel version, so unit
+effects must enter as dummies --- and here the Poisson rescue does not apply. The closed-form
+concentration $\exp(\hat\alpha_i) = \sum_i y / \sum_i \exp(\mathbf{x}\boldsymbol\beta)$
+works because the unit effect factors out of the Poisson likelihood; integrating over a normal
+unobservable destroys that separability, so the unit effects become ordinary nonlinear parameters
+and the incidental-parameter problem returns in full. With a few observations per unit that is
+fatal, and non-convergence is the usual symptom.
+
+Replacing the dummies with unit means makes it estimable again, and in simulation it behaves
+reasonably: close to unbiased when its own distributional assumption holds, and off by a few
+percent when the count is overdispersed or zero-inflated. But it then rests on the Mundlak
+projection *and* joint normality *and* the Poisson shape, where the control function needs only
+the first two, and it converges unreliably --- in our own runs it failed on five to twelve percent
+of samples, and the failures were the samples with the most dispersion, so discarding them is a
+selection. It also identifies the treatment effect from within- *and* between-unit variation,
+where absorbing the dummies uses within-unit variation only. The efficiency it buys is not worth
+that stack.
+
 ### The generalized-residual CF as a first-order approximation
 
 Taylor-expand $h$ in $\rho$ around $\rho = 0$. Since
@@ -370,20 +408,64 @@ half the former, matching the theoretical ranking, and neither exact.
 
 #### Why use the approximation rather than the exact correction?
 
-Because $h(\cdot)$ does not reduce to $\exp(\text{linear index})$. The
-$\Phi$-ratios and the $\exp(\rho^2/2)$ term make the second stage genuinely
-nonlinear in $\rho$, so it needs custom optimisation code, and combining that
-with the within-group demeaning that makes FE-Poisson tractable is not
-straightforward. The cost scales badly precisely where FE-Poisson is most needed.
+Not because the exact correction is infeasible. It is worth being clear about
+this, because $h(\cdot)$ looks forbidding: the $\Phi$-ratios and the
+$\exp(\rho^2/2)$ term make @eq-poisson-iv-7 genuinely nonlinear in $\rho$, which
+suggests custom optimisation and no obvious way to combine it with the absorption
+that makes FE-Poisson tractable.
 
-The approximation's second stage, by contrast, has the same functional form as
-ordinary Poisson with one extra regressor in the index, so it drops into standard
-Poisson machinery unmodified. Joint nonlinear estimation would be more efficient,
-but Wooldridge notes for the closely analogous binary-$y_1$ case that the
-iterations can be hard to converge, with $\hat\rho_1$ drifting toward $\pm 1$
-[@wooldridge-2010-crosssection, sec. 15.7.3]. At small $\rho$ the approximation
-error is minor next to sampling noise, and the coefficient on $\hat r_2$ doubles
-as a Hausman-type $t$-test sitting next to the coefficient of interest.
+That reading is wrong, for a simple reason. Hold $\rho$ fixed. Then
+$\log h(y_2, \mathbf{z}\hat{\boldsymbol\pi}_2, \rho)$ is a *variable* --- a
+known function of the data and the first-stage index --- so the mean becomes
+
+$$E(y_1 \mid \mathbf{z}, y_2, \alpha_i) = \exp\bigl(\mathbf{z}_1\boldsymbol\delta_1 + \alpha_1 y_2 + \alpha_i + \log h\bigr),$$
+
+which is an ordinary Poisson mean with an **offset**. Any Poisson routine that
+takes one will fit it with the fixed effects absorbed exactly as usual ---
+`ppmlhdfe ..., absorb(id) offset(lnh)` in Stata, `fepois(..., offset = ~lnh)` in
+R. Because $h$ enters multiplicatively, the concentration that rescues FE-Poisson
+still goes through --- $\exp(\hat\alpha_i) = \sum_i y_1 / \sum_i \exp(\mathbf{x}\boldsymbol\beta)h$ ---
+so there is no incidental-parameter problem. Only $\rho$ itself is nonlinear, and
+it is one scalar: profile it on a grid and keep the value maximising the Poisson
+quasi-likelihood. This is Terza's two-step, and it is what
+@wooldridge-2010-crosssection (sec. 18.5) prescribes for the cross-section --- "we
+can use NLS or a quasi-MLE, such as the Poisson or gamma QMLE" --- with the fixed
+effects added.
+
+So the honest reasons for the approximation are convenience and the test, not
+feasibility. It runs as one command with no profile and no bootstrap; the
+coefficient on $\hat r_2$ doubles as a Hausman-type $t$-test sitting next to the
+coefficient of interest, which is in fact how Wooldridge introduces it --- as a
+variable-addition test of $\rho_1 = 0$, noting that its $\hat\rho_1$ "is not the
+estimate we obtain from Terza's two-step method." Joint nonlinear estimation is
+also not free of trouble: for the closely analogous binary-$y_1$ case Wooldridge
+notes the iterations can be hard to converge, with $\hat\rho_1$ drifting toward
+$\pm 1$ [@wooldridge-2010-crosssection, sec. 15.7.3], though a bounded profile
+grid makes that visible rather than fatal.
+
+What matters is how large $\rho$ is, and @eq-poisson-iv-10 gives the rule: the
+error is $O(\rho^2)$. In a Monte Carlo at 2,000 units with four observations
+each, the approximation is indistinguishable from the exact fit at
+$|\rho| = 0.2$ --- the value this chapter's binary DGP uses --- and the exact
+version is unbiased throughout.
+
+The size of the error is not symmetric in $\rho$, which is worth knowing before
+worrying about it. At $\rho = +0.5$ the approximation overstates the effect by
+about nine percent and at $\rho = +0.8$ by about thirty; at $\rho = -0.5$ the
+bias is invisible and at $\rho = -0.8$ it is about six percent *downward*. The
+asymmetry comes from $h$ itself: a positive $\rho$ scales the treated mean by a
+factor bounded by $1/\Phi(\mathbf{z}\boldsymbol\pi_2)$, which grows without
+bound in the tail, while a negative $\rho$ shrinks it smoothly toward zero. The
+$O(\rho^2)$ rate describes the behaviour near zero; it does not put the same
+coefficient on both sides.
+
+So: report the approximation when $\hat\rho_1$ comes back small or negative, and
+fit the exact version alongside it when it is large and positive. Two cautions on
+the exact version. It is exact only under the joint normality of
+@eq-poisson-iv-5 --- when the unobservable depends on $v_2$ nonlinearly, fitting
+$h$ can do worse than truncating it, because the profile absorbs curvature $h$
+cannot represent. And its standard errors need a cluster bootstrap, since the
+first stage is plugged in and $\rho$ is profiled.
 
 #### Probit or logit — and why logit is simpler than it looks
 
@@ -712,6 +794,19 @@ generalized residual; the Mundlak version keeps the index. The construction is
 worked through in
 [IV Poisson with many fixed effects](https://xiangao.github.io/blog_book/poisson-iv-fe.html).
 
+@lin-wooldridge-2019 treat this case directly for the exponential model with unobserved effects,
+and land in the same place. Their Procedure 3 adds a first-stage residual to FE Poisson and tests
+$\rho_1 = 0$; for a binary endogenous variable they write that one can "use as a control function
+the generalized residuals ... where $\mathbf{w}_{it} = (1, \mathbf{z}_{it}, \bar{\mathbf{z}}_i)$"
+--- the time-varying exogenous variables *and their unit means*, the instrument's mean included.
+They add the caveat in the same breath: the Mundlak device "might work reasonably well, but
+neither might be flexible enough," and they "leave investigations into the quality of CF
+approximations in discrete cases to future research." So the recommendation below is theirs as
+well as ours, and the open question they name is the one worth remembering: how good the
+approximation is when $y_2$ is discrete has not been settled, and @eq-poisson-iv-10 says the error
+grows with $\rho$.
+
+
 ### Multiplicative-moment GMM
 
 We implement IV/GMM Poisson directly, keeping `time_hi` as the regressor and
@@ -912,6 +1007,11 @@ a verdict.
   $O(\rho^2)$, shrinking as the endogeneity shrinks. Put the unit dummies in its
   first stage only when each unit has many observations; with the short panels
   usual in applied work, use the Mundlak means instead (§ above).
+
+- **Don't reach for `etpoisson` in a panel.** It fits Terza's FIML, which is the
+  exact model, but it needs the Poisson distribution rather than just the mean, it
+  has no `absorb()`, and unit dummies inside its quadrature likelihood bring back
+  the incidental-parameter problem that FE-Poisson is normally free of (§ above).
 
 - **Multiplicative-moment GMM trades bias for variance — decide which binds.**
   Mullahy's moments are *consistent* here, not merely accurate to first order,
