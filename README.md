@@ -199,3 +199,11 @@ Julia 1.12+ and Quarto. See `Project.toml` for the full package list.
 > the reason: this book has no partial-identification section, its sensitivity
 > contour is a hand-rolled plot without the label-overprinting problem, and two
 > items were specific to R packages.
+
+> **2026-08-29:** Mirrored two theory additions from the R companion's
+> `poisson-iv.qmd`: the Lin & Wooldridge result that the FE and Mundlak residuals
+> give numerically identical estimates (verified at 3e-15), and a warning against
+> using the exogeneity test to select between the naive and control-function
+> models, which the existing "valid as an exogeneity test" bullet had invited.
+> The third addition there is a Stata/R software note and was not carried over.
+

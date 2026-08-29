@@ -365,3 +365,27 @@ replacement gives 1.287, ~29% high, and it is the only route that discards data
 0/1 weights reproduces the chapter's own 1.287 exactly.
 
 Rendered clean to HTML and PDF (284 pages, was 282). Not committed.
+
+## 2026-08-29 — Mirrored two theory additions from the R guide
+
+The R guide's `poisson-iv.qmd` absorbed the theory from the blog book's
+FE-Poisson chapter this session (see that book's CLAUDE.md). Two of the three
+additions are language-independent and are mirrored here, in this chapter's
+voice; the third (a `ppmlhdfe`/`fixest` software note) is Stata/R-specific and
+was not carried over.
+
+- **`#### Absorb or average in the first stage: the answer is the same`**, placed
+  at the end of the continuous-y₂ section. Lin & Wooldridge (2019, app. A.1–A.2):
+  FE residual and Mundlak residual give numerically identical α̂₁ and ρ̂₁, because
+  they differ by a unit constant that the second stage's free unit effect absorbs.
+  Verified numerically in R at 3e-15.
+
+- **A pretest bullet in `## Practical guidance`**, following the existing "it
+  remains fully valid as an exogeneity test" bullet, which invited exactly the
+  misuse it now warns against. Guggenberger (2010): a Hausman pretest followed by
+  OLS-or-2SLS has asymptotic size one. Flagged as an analogy — the result is for
+  linear models.
+
+New bib entry: `guggenberger-2010`.
+
+Rendered clean to HTML and PDF (292 pages, was 290).

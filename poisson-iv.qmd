@@ -208,6 +208,32 @@ Poisson," seen from the assumption side rather than the algebra side.**
 $\exp(\cdot)$ is what turns a moment condition into a distributional one, and
 everything difficult in this chapter follows from it.
 
+#### Absorb or average in the first stage: the answer is the same
+
+In a panel the linear first stage can handle the unit effects two ways, and it
+makes no difference which. Regress $y_{it2}$ on $\mathbf{z}_{it}$ and unit
+dummies and you get the fixed-effects residual $\hat{v}_{it2}^{FE}$. Regress it
+on $\mathbf{z}_{it}$ and the unit means $\bar{\mathbf{z}}_i$ — the Mundlak
+device — and you get $\hat{v}_{it2}^{M}$. Put either into the second-stage
+FE-Poisson and $\hat{\alpha}_1$ and $\hat{\rho}_1$ come out **numerically
+identical** [@lin-wooldridge-2019, app. A.1–A.2].
+
+The reason is that Mundlak's regression reproduces the within slope, so the two
+residuals differ only by a unit-specific constant,
+$\hat{v}_{it2}^{FE} = \hat{v}_{it2}^{M} + g_i$. In the second-stage index that
+constant is absorbed:
+
+$$\alpha_1 y_{it2} + \rho_1 \hat{v}_{it2}^{FE} + c_i = \alpha_1 y_{it2} + \rho_1 \hat{v}_{it2}^{M} + (c_i + \rho_1 g_i),$$
+
+and $c_i$ is a free parameter, so shifting it costs nothing. The model is
+reparameterised, not changed.
+
+Two conditions on this. The averaging dimension in the first stage has to be the
+dimension the second stage absorbs. And it is a fact about *linear* first stages:
+once $y_2$ is binary the first stage is nonlinear, the residual no longer shifts
+by a constant, and choosing between dummies and Mundlak means becomes a real
+decision — which is the subject of the next section.
+
 ### A binary $y_2$: why the linear reduced form fails
 
 OLS always produces a residual uncorrelated with $\mathbf{z}$. That is a
@@ -1036,6 +1062,20 @@ a verdict.
   the reduced-form assumptions are needed
   [@wooldridge-2010-crosssection, p. 744]. Use it to test; do not use it to
   correct.
+
+- **Test, but do not let the test pick the model.** The obvious move is to run
+  the $t$-test on the control function and, if it comes back insignificant, drop
+  the residual and report the plain FE-Poisson. That is a pretest estimator and
+  it is worse than either model it selects between. @guggenberger-2010 shows for
+  the linear case that a Hausman pretest followed by OLS-or-2SLS, with the
+  second-stage $t$-test read at its nominal level, has **asymptotic size one**.
+  The mechanism is local endogeneity: let $\rho$ drift to zero at rate
+  $n^{-1/2}$ and the pretest usually fails to reject, while the bias of the
+  estimator it falls back on is the same order as that estimator's standard
+  error. No such theorem exists for the Poisson CF, but the mechanism needs only
+  a low-powered pretest and a fallback whose bias does not vanish faster than its
+  standard error, and both are here. Report the naive and the control-function
+  columns side by side.
 
 - **Probit or logit both work for the generalized-residual CF.** Only Terza's
   exact correction needs normality.
