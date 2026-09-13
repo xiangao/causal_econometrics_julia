@@ -468,7 +468,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2712be23" class="cell" data-execution_count="2">
+<div id="9942b2fc" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -654,7 +654,7 @@ True ACE:                                 0.453</code></pre>
 <section id="end-to-end-discover-identify-estimate" class="level2" data-number="24.4">
 <h2 data-number="24.4" class="anchored" data-anchor-id="end-to-end-discover-identify-estimate"><span class="header-section-number">24.4</span> End-to-end: discover, identify, estimate</h2>
 <p>The previous chapters’ discovery algorithms (PC, FCI, RSL-D, L-MARVEL) return graphs that can be passed directly to <code>identify()</code> and <code>estimate_causal()</code>. The full pipeline is:</p>
-<div id="c9becea8" class="cell" data-execution_count="9">
+<div id="ebfc2c2f" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalInference</span>   <span class="co"># for PC algorithm</span></span>
@@ -686,14 +686,10 @@ True ACE:                                 0.453</code></pre>
 </ol>
 <p>If the estimate changes a lot across plausible graphs, the data alone is not settling the question.</p>
 </section>
-<section id="why-this-matters" class="level2" data-number="24.5">
-<h2 data-number="24.5" class="anchored" data-anchor-id="why-this-matters"><span class="header-section-number">24.5</span> Why this matters</h2>
-<p>The graph-identification-estimation sequence matters because:</p>
-<ul>
-<li><strong>Backdoor adjustment is not always available.</strong> Many real DAGs have hidden confounders. Front-door, nested, and general ID algorithms are the recourse, but they are too complex to derive by hand for non-trivial graphs.</li>
-<li><strong>The right estimator depends on the identification strategy.</strong> TMLE-for-backdoor is different from TMLE-for-front-door. Automating the routing avoids the common mistake of plugging a graph into the wrong estimator.</li>
-<li><strong>Reporting becomes more disciplined.</strong> Once the workflow forces you to specify a graph, it becomes harder to wave hands about “unconfoundedness” — you have to say exactly which variables are doing the unconfounding work.</li>
-</ul>
+<section id="what-changes-after-identification" class="level2" data-number="24.5">
+<h2 data-number="24.5" class="anchored" data-anchor-id="what-changes-after-identification"><span class="header-section-number">24.5</span> What changes after identification</h2>
+<p>Backdoor adjustment is not always available because many realistic DAGs have hidden confounders. Front-door, nested, and general ID algorithms may still identify the effect, although their formulas quickly become difficult to derive by hand.</p>
+<p>The identification result also determines the estimator. TMLE for a backdoor adjustment is different from TMLE for a front-door formula. Automating this choice helps us avoid applying an estimator that does not match the graph. It also forces us to state which variables support an unconfoundedness claim instead of leaving the claim implicit.</p>
 </section>
 <section id="summary" class="level2" data-number="24.6">
 <h2 data-number="24.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">24.6</span> Summary</h2>
