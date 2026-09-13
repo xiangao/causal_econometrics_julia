@@ -54,6 +54,15 @@ a references page.
 ### Appendix
 25. **Package Ecosystem** — Overview of all custom Julia packages
 
+## Writing style
+
+Chapters are written in a direct, conversational voice: state the question, show the
+equation or example, then say what the result means. Headings are sentence case and
+descriptive — the canned "The Problem" / "The Solution" / "Key Takeaways" template is
+not used, and an ordinary explanation is written as prose rather than a list of bold
+labels. Tightening prose must not make a claim stronger or more general than the
+algebra, code or evidence supports. The full convention is in `CLAUDE.md`.
+
 ## Rendering
 
 ```bash
