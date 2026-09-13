@@ -249,22 +249,11 @@ reasonable workflow is:
 If the estimate changes a lot across plausible graphs, the data alone is not
 settling the question.
 
-## Why this matters
+## What changes after identification
 
-The graph-identification-estimation sequence matters because:
+Backdoor adjustment is not always available because many realistic DAGs have hidden confounders. Front-door, nested, and general ID algorithms may still identify the effect, although their formulas quickly become difficult to derive by hand.
 
-- **Backdoor adjustment is not always available.** Many real DAGs have
-  hidden confounders. Front-door, nested, and general ID algorithms are
-  the recourse, but they are too complex to derive by hand for non-trivial
-  graphs.
-- **The right estimator depends on the identification strategy.**
-  TMLE-for-backdoor is different from TMLE-for-front-door. Automating the
-  routing avoids the common mistake of plugging a graph into the wrong
-  estimator.
-- **Reporting becomes more disciplined.** Once the workflow forces you to
-  specify a graph, it becomes harder to wave hands about "unconfoundedness"
-  — you have to say exactly which variables are doing the unconfounding
-  work.
+The identification result also determines the estimator. TMLE for a backdoor adjustment is different from TMLE for a front-door formula. Automating this choice helps us avoid applying an estimator that does not match the graph. It also forces us to state which variables support an unconfoundedness claim instead of leaving the claim implicit.
 
 ## Summary
 
