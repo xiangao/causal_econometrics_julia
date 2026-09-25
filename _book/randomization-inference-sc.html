@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -471,7 +491,7 @@ window.Quarto = {
 </header>
 
 
-<div id="b44731a6" class="cell" data-execution_count="2">
+<div id="51f15a2d" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -492,7 +512,7 @@ window.Quarto = {
 <p>Here I use both on the Proposition 99 panel.</p>
 <section id="the-placebo-test" class="level2" data-number="15.1">
 <h2 data-number="15.1" class="anchored" data-anchor-id="the-placebo-test"><span class="header-section-number">15.1</span> The placebo test</h2>
-<p>The placebo idea is simple. Take each control unit in turn, pretend it was treated, and re-run synthetic control. This produces a placebo gap for each donor. The collection of placebo gaps is the empirical null distribution under no effect.</p>
+<p>The placebo idea is simple. Take each control unit in turn, pretend it was treated, and re-run synthetic control. This produces a placebo gap for each donor. The collection of placebo gaps is a <em>reference</em> distribution: it shows how large a gap this estimator returns for a unit we are prepared to treat as exchangeable with California. It becomes an empirical null distribution only if that exchangeability can be defended. In an observational setting that is an assumption, not something the data supply.</p>
 <p>If California’s gap is large relative to the placebo gaps, that is evidence against the no-effect null.</p>
 <div id="setup-prop99" class="cell" data-cache="true" data-execution_count="3">
 <details open="" class="code-fold">
@@ -570,7 +590,8 @@ Placebo distribution sd:   10.76</code></pre>
 <pre><code>Two-sided p-value: 0.077</code></pre>
 </div>
 </div>
-<p>With 38 donor states, the smallest possible <span class="math inline">\(p\)</span>-value is <span class="math inline">\(1/39 \approx 0.026\)</span> (California plus 38 placebos). A <span class="math inline">\(p\)</span>-value at this floor means the observed effect is more extreme than every placebo — strong evidence against the sharp null.</p>
+<p>With 38 donor states, the smallest possible <span class="math inline">\(p\)</span>-value is <span class="math inline">\(1/39 \approx 0.026\)</span> (California plus 38 placebos). A <span class="math inline">\(p\)</span>-value at this floor means the observed effect is more extreme than every placebo.</p>
+<p>Call it an <em>exact</em> randomization <span class="math inline">\(p\)</span>-value only when an assignment mechanism earns the word. Exactness needs the treated label to be exchangeable across the 39 units under the null, and it needs the estimator reapplied symmetrically to each of them. Proposition 99 was not randomly assigned to California. Nothing in the design delivers that exchangeability, California differs from most donors in size, and its assignment probability was not <span class="math inline">\(1/39\)</span>. <span class="citation" data-cites="abadie-2021-sc-review">Abadie (<a href="references.html#ref-abadie-2021-sc-review" role="doc-biblioref">2021</a>)</span> makes the point directly: the procedure reduces to classical randomization inference when treatment is randomly assigned, which is an unusual situation in aggregate observational applications. Absent that argument, read the number as an in-space placebo diagnostic, a measure of how unusual California looks among the donors. <span class="citation" data-cites="ferman-pinto-2017">Ferman and Pinto (<a href="references.html#ref-ferman-pinto-2017" role="doc-biblioref">2017</a>)</span> show separately that placebo tests can be distorted in size when pre-treatment fit varies across units and the weights are estimated.</p>
 </section>
 <section id="the-placebo-plot" class="level3" data-number="15.1.2">
 <h3 data-number="15.1.2" class="anchored" data-anchor-id="the-placebo-plot"><span class="header-section-number">15.1.2</span> The placebo plot</h3>
@@ -763,7 +784,7 @@ Real effect (treatment in 1989):               -19.62</code></pre>
 </tr>
 <tr class="odd">
 <td><strong>Validity requires</strong></td>
-<td>Donor pool comparable to treated</td>
+<td>An assignment or exchangeability argument for the treated label, plus symmetric reapplication of the estimator</td>
 <td>SSM correctly specified</td>
 </tr>
 <tr class="even">
@@ -779,7 +800,7 @@ Real effect (treatment in 1989):               -19.62</code></pre>
 <tr class="even">
 <td><strong>Sensitivity to donor pool</strong></td>
 <td>High (small N0 → coarse p)</td>
-<td>Low (band reflects modelling)</td>
+<td>Not priced: the band is conditional on the chosen donors and model</td>
 </tr>
 </tbody>
 </table>
@@ -789,13 +810,21 @@ Real effect (treatment in 1989):               -19.62</code></pre>
 <h2 data-number="15.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">15.6</span> Summary</h2>
 <ul>
 <li>With one treated unit, randomization inference is more useful than asymptotic standard errors.</li>
-<li>Unit placebos give the empirical null distribution.</li>
+<li>Unit placebos give a reference distribution. It is design-based randomization inference only under an explicit assignment or exchangeability assumption; otherwise it is a placebo diagnostic.</li>
 <li>MSPE ratios account for pre-treatment fit.</li>
 <li>Time placebos check whether the method finds effects before treatment.</li>
-<li>TASC posterior bands give model-based uncertainty for the counterfactual path.</li>
+<li>TASC posterior bands give model-based uncertainty for the counterfactual path, conditional on the donor pool and the state-space model. They do not price donor selection or misspecification.</li>
 </ul>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-abadie-2021-sc-review" class="csl-entry" role="listitem">
+Abadie, Alberto. 2021. <span>“Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects.”</span> <em>Journal of Economic Literature</em> 59 (2): 391–425.
+</div>
+<div id="ref-ferman-pinto-2017" class="csl-entry" role="listitem">
+Ferman, Bruno, and Cristine Pinto. 2017. <span>“Placebo Tests for Synthetic Controls.”</span> MPRA Paper 78079. Munich Personal RePEc Archive. <a href="https://mpra.ub.uni-muenchen.de/78079/1/MPRA_paper_78079.pdf">https://mpra.ub.uni-muenchen.de/78079/1/MPRA_paper_78079.pdf</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

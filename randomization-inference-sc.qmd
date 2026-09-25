@@ -40,8 +40,11 @@ Here I use both on the Proposition 99 panel.
 
 The placebo idea is simple. Take each control unit in turn, pretend it was
 treated, and re-run synthetic control. This produces a placebo gap for each
-donor. The collection of placebo gaps is the empirical null distribution
-under no effect.
+donor. The collection of placebo gaps is a *reference* distribution: it shows how
+large a gap this estimator returns for a unit we are prepared to treat as
+exchangeable with California. It becomes an empirical null distribution only if
+that exchangeability can be defended. In an observational setting that is an
+assumption, not something the data supply.
 
 If California's gap is large relative to the placebo gaps, that is evidence
 against the no-effect null.
@@ -119,8 +122,20 @@ p_value = (1 + sum(abs.(placebo_effects) .>= abs(ca_effect))) / (length(placebo_
 
 With 38 donor states, the smallest possible $p$-value is $1/39 \approx 0.026$
 (California plus 38 placebos). A $p$-value at this floor means the observed
-effect is more extreme than every placebo — strong evidence against the
-sharp null.
+effect is more extreme than every placebo.
+
+Call it an *exact* randomization $p$-value only when an assignment mechanism
+earns the word. Exactness needs the treated label to be exchangeable across the
+39 units under the null, and it needs the estimator reapplied symmetrically to
+each of them. Proposition 99 was not randomly assigned to California. Nothing in
+the design delivers that exchangeability, California differs from most donors in
+size, and its assignment probability was not $1/39$. @abadie-2021-sc-review makes
+the point directly: the procedure reduces to classical randomization inference
+when treatment is randomly assigned, which is an unusual situation in aggregate
+observational applications. Absent that argument, read the number as an in-space
+placebo diagnostic, a measure of how unusual California looks among the donors.
+@ferman-pinto-2017 show separately that placebo tests can be distorted in size
+when pre-treatment fit varies across units and the weights are estimated.
 
 ### The placebo plot
 
@@ -290,10 +305,10 @@ fig
 |---|---|---|
 | **What is uncertain?** | Which unit was treated | Latent factor path |
 | **Null hypothesis** | Sharp null: no effect anywhere | None — direct uncertainty |
-| **Validity requires** | Donor pool comparable to treated | SSM correctly specified |
+| **Validity requires** | An assignment or exchangeability argument for the treated label, plus symmetric reapplication of the estimator | SSM correctly specified |
 | **Output** | Permutation p-value | Posterior band |
 | **Smallest p possible** | $1/(N_0 + 1)$ (here ~0.026) | N/A — continuous |
-| **Sensitivity to donor pool** | High (small N0 → coarse p) | Low (band reflects modelling) |
+| **Sensitivity to donor pool** | High (small N0 → coarse p) | Not priced: the band is conditional on the chosen donors and model |
 
 The two strategies answer different questions. Randomization inference asks
 whether California is unusual relative to donor-state placebos. TASC asks
@@ -304,8 +319,11 @@ report both when using TASC.
 
 - With one treated unit, randomization inference is more useful than
   asymptotic standard errors.
-- Unit placebos give the empirical null distribution.
+- Unit placebos give a reference distribution. It is design-based randomization
+  inference only under an explicit assignment or exchangeability assumption;
+  otherwise it is a placebo diagnostic.
 - MSPE ratios account for pre-treatment fit.
 - Time placebos check whether the method finds effects before treatment.
 - TASC posterior bands give model-based uncertainty for the counterfactual
-  path.
+  path, conditional on the donor pool and the state-space model. They do not
+  price donor selection or misspecification.

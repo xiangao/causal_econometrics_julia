@@ -258,8 +258,17 @@ result
 
 The curve below is a difference-in-quantiles: it subtracts quantile-by-quantile
 the treated change from the control change. This is a descriptive device, not an
-identified QTE. The difference of quantiles is not the quantile of the difference,
-so it equals the true QTE only under rank invariance.
+identified QTE. Reading it as a QTE takes two separate assumptions, and rank
+invariance supplies only one of them. The first identifies the counterfactual: we
+need a restriction that pins down the untreated post-treatment *distribution* for
+treated units, such as distributional parallel trends, changes-in-changes, or a
+copula assumption. Parallel trends in means does not deliver it. The second
+supplies the individual-effect reading: the difference of quantiles is not the
+quantile of the difference, so a rank condition such as rank invariance or rank
+similarity is what ties the marginal quantiles to the distribution of individual
+effects. Without the first assumption the curve identifies nothing; with the
+first but not the second it identifies a contrast of marginal quantiles, which is
+not the same object.
 
 Its *average*, though, is not a separate quantity: because
 $\int_0^1 F^{-1}(\tau)\,d\tau = E[Y]$, averaging this curve over the whole unit
@@ -267,14 +276,15 @@ interval returns exactly the ordinary difference-in-means DiD. On the nine-point
 grid used here the average is 0.531 against a difference-in-means DiD of 0.538, and
 the gap closes as the grid is refined (0.534 on a 199-point grid, 0.536 on a
 999-point grid) --- it is discretization, not a difference in estimand. So the
-honest summary is that the quantile-DiD curve tells you nothing new about the
-*level* of the effect and everything about its *shape*: here, larger differences at
-the top of the outcome distribution.
+honest summary is that the quantile-DiD curve adds nothing to what we already know
+about the *mean* contrast, which its own average reproduces, while it does add
+descriptive information about the *shape* of the change: here, larger differences
+at the top of the outcome distribution.
 
 ```{julia}
 #| label: qte-plot
 #| cache: true
-#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: the difference of quantiles equals the quantile of the difference, and so identifies the QTE, only under rank invariance. Its average, by contrast, *is* the ordinary difference-in-means DiD -- averaging a quantile function returns a mean -- so the information the curve adds is its shape, not its level."
+#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: reading it as one needs both an assumption identifying the untreated post-treatment distribution for treated units and a rank condition such as rank invariance. Its average, by contrast, *is* the ordinary difference-in-means DiD -- averaging a quantile function returns a mean -- so the information the curve adds is its shape, not its level."
 
 fig = Figure(size = (640, 360), fontsize = 13)
 ax  = Axis(fig[1, 1], xlabel = "Quantile τ", ylabel = "Difference-in-quantiles",

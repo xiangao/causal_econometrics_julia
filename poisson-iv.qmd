@@ -188,7 +188,7 @@ The distinction is invisible for continuous $y_2$ — a linear model with a norm
 additive error satisfies both — which is exactly why it is easy to carry the
 procedure across to a binary $y_2$ without noticing that it has stopped holding.
 
-#### Why independence, when the linear model needs only uncorrelatedness?
+#### Why a distributional condition, when the linear model needs only uncorrelatedness?
 
 Because of the exponential. Substituting @eq-poisson-iv-3 into
 @eq-poisson-iv-1 gives
@@ -198,8 +198,12 @@ $$E(y_1 \mid \mathbf{z}, y_2, v_2) = \exp(\mathbf{z}_1\boldsymbol{\delta}_1 + \a
 and @eq-poisson-iv-2 follows only if that final factor is a **constant** — which
 is why Wooldridge normalises $E[\exp(e_1)] = 1$ rather than $E(e_1) = 0$.
 
-That is a condition on the *moment generating function* of $e_1$, that is, on
-every moment at once, which is essentially full independence. Compare the linear
+That is a condition on the conditional *moment generating function* of $e_1$,
+evaluated at a single point, so every moment of $e_1$ enters it. Full
+independence of $e_1$ from $(\mathbf{z}, y_2, v_2)$ is a sufficient assumption
+that delivers it, and it is the one we maintain here; the condition itself is
+only that $E[\exp(e_1) \mid \mathbf{z}, y_2, v_2]$ not vary with what it
+conditions on. Compare the linear
 model, where the requirement is $E[\mathbf{z}'\varepsilon_1] = 0$ — a statement
 about one moment, delivered free by the OLS projection.
 
@@ -479,14 +483,23 @@ The size of the error is not symmetric in $\rho$, which is worth knowing before
 worrying about it. At $\rho = +0.5$ the approximation overstates the effect by
 about nine percent and at $\rho = +0.8$ by about thirty; at $\rho = -0.5$ the
 bias is invisible and at $\rho = -0.8$ it is about six percent *downward*. The
-asymmetry comes from $h$ itself: a positive $\rho$ scales the treated mean by a
-factor bounded by $1/\Phi(\mathbf{z}\boldsymbol\pi_2)$, which grows without
-bound in the tail, while a negative $\rho$ shrinks it smoothly toward zero. The
-$O(\rho^2)$ rate describes the behaviour near zero; it does not put the same
-coefficient on both sides.
+asymmetry comes from $h$, but the mechanism is specific to the treatment state
+and it does not favour one sign. For a treated observation $h$ scales the mean by
+$\Phi(\mathbf{z}\boldsymbol\pi_2 + \rho)/\Phi(\mathbf{z}\boldsymbol\pi_2)$,
+bounded by $1/\Phi(\mathbf{z}\boldsymbol\pi_2)$, which grows without bound in
+the lower tail of the index when $\rho > 0$. For an untreated observation the
+factor is
+$[1-\Phi(\mathbf{z}\boldsymbol\pi_2+\rho)]/[1-\Phi(\mathbf{z}\boldsymbol\pi_2)]$,
+which grows without bound in the upper tail when $\rho < 0$. The two are mirror
+images. What settles the net bias in a given design is how the index is
+distributed within each treatment arm, so the figures above belong to this DGP
+rather than to the method. The $O(\rho^2)$ rate describes the behaviour near
+zero; it does not put the same coefficient on both sides.
 
-So: report the approximation when $\hat\rho_1$ comes back small or negative, and
-fit the exact version alongside it when it is large and positive. Two cautions on
+So: report the approximation when $|\hat\rho_1|$ comes back small, and fit the
+exact version alongside it when $|\hat\rho_1|$ is large, whichever its sign, or
+when the probit index reaches far into either tail. The comparison of the two
+fits is the diagnostic; the sign of $\hat\rho_1$ alone is not. Two cautions on
 the exact version. It is exact only under the joint normality of
 @eq-poisson-iv-5 --- when the unobservable depends on $v_2$ nonlinearly, fitting
 $h$ can do worse than truncating it, because the profile absorbs curvature $h$
@@ -1055,8 +1068,11 @@ a verdict.
 - **The linear-residual CF is a fallback, not a first choice.** It lands close to
   the truth at $\rho = 0.2$ here, but for binary $y_2$ it has no valid
   reduced-form assumption behind it. **Do not lean on it when $\rho$ is not known
-  to be small** — and note that $\rho$ is estimated by the coefficient on the
-  control function, so this is checkable rather than a matter of faith.
+  to be small.** The control-function coefficient gives you something to look at,
+  but read it for what it is: a first-order variable-addition coefficient and not
+  Terza's structural $\rho$, exactly as the discussion above insists. Its
+  magnitude signals the scale of the problem; it does not stand in for fitting
+  the exact correction.
 
 - **It remains fully valid as an exogeneity test.** Under $H_0: \rho = 0$ none of
   the reduced-form assumptions are needed
@@ -1065,8 +1081,10 @@ a verdict.
 
 - **Test, but do not let the test pick the model.** The obvious move is to run
   the $t$-test on the control function and, if it comes back insignificant, drop
-  the residual and report the plain FE-Poisson. That is a pretest estimator and
-  it is worse than either model it selects between. @guggenberger-2010 shows for
+  the residual and report the plain FE-Poisson. That is a pretest estimator. The
+  objection is not that it is uniformly worse than either model it selects
+  between; it is that the inference reported afterwards is not valid at its
+  nominal level. @guggenberger-2010 shows for
   the linear case that a Hausman pretest followed by OLS-or-2SLS, with the
   second-stage $t$-test read at its nominal level, has **asymptotic size one**.
   The mechanism is local endogeneity: let $\rho$ drift to zero at rate
@@ -1080,8 +1098,13 @@ a verdict.
 - **Probit or logit both work for the generalized-residual CF.** Only Terza's
   exact correction needs normality.
 
-- **Always bootstrap.** In every control-function specification above the
-  second-stage standard errors are wrong, because the residual is generated.
+- **Correct the standard errors for the generated regressor.** In every
+  control-function specification above the second-stage standard errors are wrong
+  whenever $\rho \neq 0$, because the residual is estimated. In this panel
+  setting a bootstrap over units is the natural fix, and it needs enough units to
+  behave; in a cross-section, resample observations or apply an analytic two-step
+  correction. The exception is the exogeneity test itself, which is valid under
+  $H_0: \rho = 0$ without any correction.
 
 ## Why Julia is faster
 

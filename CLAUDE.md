@@ -398,3 +398,32 @@ was not carried over.
 New bib entry: `guggenberger-2010`.
 
 Rendered clean to HTML and PDF (292 pages, was 290).
+
+
+## 2026-09-25 — Codex review pass: Poisson IV, quantile DiD, synthetic-control inference
+
+Source: `../BOOK_REVIEW_20260925.md`. Prose-only (one `fig-cap` aside).
+
+`poisson-iv.qmd` mirrors the R book's corrections: "essentially full independence"
+became the conditional exponential-moment restriction with independence as the
+sufficient assumption; the tail asymmetry is treatment-state specific and the
+reported Monte Carlo figures are now labelled as belonging to this DGP rather than
+to the method; the summary bullet no longer reads the control-function coefficient
+as Terza's `rho`, which contradicted the careful passage earlier in the chapter;
+the pretest bullet narrowed to invalid nominal inference; "Always bootstrap"
+scoped.
+
+`distributional-effects.qmd`: rank invariance alone does not turn the
+difference-in-quantiles curve into a QTE. Two layers are now stated — an
+assumption identifying the untreated post-treatment *distribution* for treated
+units, and a rank condition for the individual-effect reading. "Nothing new about
+the level" softened to "nothing about the mean contrast".
+
+`randomization-inference-sc.qmd`: donor placebo gaps are a reference distribution,
+not an empirical null. Exactness needs an assignment or exchangeability argument,
+which Proposition 99 does not supply, so the number is an in-space placebo
+diagnostic. Added @abadie-2021-sc-review on that point and a new
+`ferman-pinto-2017` entry on placebo-test size distortion. The table's claim that
+TASC has low donor-pool sensitivity was unsupported and is gone.
+
+Rendered clean to HTML and PDF.
