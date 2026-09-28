@@ -491,7 +491,7 @@ window.Quarto = {
 </header>
 
 
-<div id="02bf94cc" class="cell" data-execution_count="2">
+<div id="1d120212" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -1208,29 +1208,29 @@ IDE + IIE = E[Y(1,M^*_1)] - E[Y(0,M^*_0)],
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
 <td style="text-align: left;">ride</td>
-<td style="text-align: right;">-0.0535489</td>
-<td style="text-align: right;">0.0931504</td>
-<td style="text-align: right;">-0.236124</td>
-<td style="text-align: right;">0.129026</td>
-<td style="text-align: right;">0.565382</td>
+<td style="text-align: right;">0.0165558</td>
+<td style="text-align: right;">0.124993</td>
+<td style="text-align: right;">-0.22843</td>
+<td style="text-align: right;">0.261541</td>
+<td style="text-align: right;">0.894625</td>
 </tr>
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
 <td style="text-align: left;">riie</td>
-<td style="text-align: right;">0.0181263</td>
-<td style="text-align: right;">0.0885511</td>
-<td style="text-align: right;">-0.155434</td>
-<td style="text-align: right;">0.191686</td>
-<td style="text-align: right;">0.837808</td>
+<td style="text-align: right;">-9.7107e-6</td>
+<td style="text-align: right;">0.0967316</td>
+<td style="text-align: right;">-0.189604</td>
+<td style="text-align: right;">0.189584</td>
+<td style="text-align: right;">0.99992</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<p>The one-step estimator gives an interventional direct effect of <span class="math inline">\(-0.054\)</span> with a 95% interval of <span class="math inline">\([-0.236, 0.129]\)</span>, against a true <span class="math inline">\(-0.074\)</span>, and an indirect effect of <span class="math inline">\(0.018\)</span> with an interval of <span class="math inline">\([-0.155, 0.192]\)</span>, against a true <span class="math inline">\(-0.025\)</span>. Both intervals include zero and both truths.</p>
-<p><code>Crumble.jl</code> fits the Riesz representers — the weights in the one-step correction — with a neural network, and this design is hard on them. The true weight for the direct-effect functional reaches 45 in a covariate cell that holds about two observations per cross-fitting fold. When a fold misses that cell, the Riesz loss has no minimiser there and an unbounded fit drifts into the thousands, which in simulations of this design ruined about half of the samples of <span class="math inline">\(n = 1000\)</span>. The call above bounds the weights at 100, well above the true maximum. Over 200 simulated samples of this size the bounded estimator has a bias of 0.007 and a standard deviation of 0.088 for the direct effect, and its intervals cover the truth 92% of the time.</p>
-<p>The flexible weights cost precision. The interval here is nearly twice as wide as the one from <code>medoutcon</code> in the <a href="https://xiangao.github.io/causal_econometrics_guide/mediation.html">R companion chapter</a>, which also compares the one-step estimator with TMLE; <code>Crumble.jl</code> implements only the one-step estimator.</p>
+<p>The one-step estimator gives an interventional direct effect of <span class="math inline">\(0.017\)</span> with a 95% interval of <span class="math inline">\([-0.228, 0.262]\)</span>, against a true <span class="math inline">\(-0.074\)</span>, and an indirect effect of <span class="math inline">\(0.000\)</span> with an interval of <span class="math inline">\([-0.190, 0.190]\)</span>, against a true <span class="math inline">\(-0.025\)</span>. Both intervals include zero and both truths.</p>
+<p><code>Crumble.jl</code> fits the Riesz representers — the weights in the one-step correction — with a neural network, and this design is hard on them. The true weight for the direct-effect functional reaches 45 in a covariate cell that holds about two observations per cross-fitting fold. When a fold misses that cell, the Riesz loss has no minimiser there and an unbounded fit can drift into the thousands. The call above bounds the weights at 100, well above the true maximum.</p>
+<p>The flexible weights cost precision. The interval here is more than twice as wide as the one from <code>medoutcon</code> in the <a href="https://xiangao.github.io/causal_econometrics_guide/mediation.html">R companion chapter</a>, which also compares the one-step estimator with TMLE; <code>Crumble.jl</code> implements only the one-step estimator.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
