@@ -40,12 +40,6 @@ using Crumble
 using Printf
 ```
 
-Mediation asks how a treatment works, not only whether it works. The graph
-below is the setting: $w$ is the treatment, $m$ a mediator that $w$ affects and
-that in turn affects the outcome $y$, and $c$ a set of covariates confounding
-both the $w \to y$ and the $m \to y$ relationships. The effect of $w$ on $y$
-splits into a path through $m$ and a path around it.
-
 ```{julia}
 #| warning: false
 #| cache: true
@@ -84,14 +78,6 @@ That is, we'd like to study the effect of $W$ on $Y$, and we see the effect can 
 
 Baron and Kenny's (http://davidakenny.net/cm/mediate.htm) method is done in four steps. Modern approach tends to use SEM (structural equation modeling) to model these two equations directly.
 
-We simulate $n = 10{,}000$ observations from exactly this structure:
-$X \sim N(0,1)$, $M = 0.5X + \varepsilon_2$, and $Y = 0.7M + 0.3X +
-\varepsilon_1$, with both errors standard normal. So the true direct effect is
-$a = 0.3$, the mediator coefficient is $b = 0.7$, the treatment-to-mediator
-coefficient is $c = 0.5$, the indirect effect is $bc = 0.35$, and the total
-effect is $0.3 + 0.35 = 0.65$. There is no confounding of any kind, which is
-what makes this the easy case.
-
 ```{julia}
 #| warning: false
 #| cache: true
@@ -128,16 +114,8 @@ model = """
 #| echo: true
 #| label: med2
 fit = sem(model, Data)
-println(fit)
-parameterEstimates(fit)
+fit
 ```
-
-The estimates are $a = 0.296$, $b = 0.700$ and $c = 0.512$, against true values
-of 0.3, 0.7 and 0.5. The derived quantities are $bc = 0.359$ against a true 0.35
-and a total of 0.654 against 0.65. Everything is recovered, and the model test
-statistic is 0 on 0 degrees of freedom because the model is saturated --- it has
-as many parameters as moments, so it cannot fail to fit and the fit statistic
-carries no information.
 
 ### Problems with Classical Mediation
 
@@ -188,7 +166,7 @@ $$ {#eq-mediation-8}
 
 ### IPW
 
-IPW is to model the treatment assignment equation and the mediator assignment equation. The joint denominator factorizes *sequentially* -- treatment given covariates, then mediator given treatment and covariates -- which is the structure the estimator below relies on:
+IPW is to model the treatment assignment equation and the mediator assignment equation. The joint denominator factorizes *sequentially* -- treatment given covariates, then mediator given treatment and covariates -- which is the structure the estimator below uses:
 
 $$ \small
 E[Y(w,m)] = E\!\left[{\frac{I(W=w)\,I(M=m)}{g_W(w|X)\,g_M(m|w,X)}}\, Y\right]
@@ -200,7 +178,7 @@ $$ \small
 CDE_{ipw}(m) = E\left[\frac{I(W=1,M=m)}{g_M(m|1,X)\,g_W(1|X)}\, Y - \frac{I(W=0,M=m)}{g_M(m|0,X)\,g_W(0|X)}\, Y\right]
 $$ {#eq-mediation-10}
 
-where $g_M$ is the probability of the mediator and $g_W$ the probability of treatment. **This indicator-based form is for a discrete (here binary) mediator.** For a continuous mediator the indicator $I(M=m)$ and the probability $g_M$ must be replaced by a conditional density (or a kernel/stochastic-intervention formulation); the estimator above does not apply as written.
+where $g_M$ is the probability of the mediator and $g_W$ the probability of treatment. **This indicator-based form applies to a discrete (here binary) mediator.** For a continuous mediator the indicator $I(M=m)$ and probability $g_M$ must be replaced by a conditional density (or a kernel / stochastic-intervention formulation); the estimator does not apply as written.
 
 ### AIPW
 
@@ -215,21 +193,6 @@ $$ {#eq-mediation-12}
 
 
 ### Example: G-computation
-
-The three estimators below run on one simulated data set of $n = 5000$. There
-are two independent standard normal covariates, $W_1$ confounding the
-treatment-outcome relationship and $W_2$ confounding the mediator-outcome
-relationship. Treatment is $A \sim \text{Bernoulli}(\Lambda(-1 + W_1/2))$, the
-mediator is $M \sim \text{Bernoulli}(\Lambda(-2 + A/2 + W_2/3))$, and the
-outcome is
-$Y \sim \text{Bernoulli}(\Lambda(-1 + A - M/2 + W_1/3 + W_2/3))$. All three are
-binary.
-
-The target is $CDE(0)$, the effect of treatment with the mediator held at 0 for
-everyone. Since the DGP is fully specified we can integrate it out:
-$CDE(0) = E_W[\Lambda(W_1/3 + W_2/3) - \Lambda(-1 + W_1/3 + W_2/3)] = 0.222$.
-For comparison, $CDE(1) = 0.191$ --- the effect is smaller when the mediator is
-held at 1, because the logistic link is flatter away from its centre.
 
 ```{julia}
 #| warning: false
@@ -274,12 +237,7 @@ cde_gcomp = mean(Qbar_A1_M0 .- Qbar_A0_M0)
 @printf "CDE(0) G-computation = %.4g\n" cde_gcomp
 ```
 
-G-computation gives 0.2113.
-
 ### Example: IPW
-
-The same target through the treatment and mediator models instead of the
-outcome model.
 
 ```{julia}
 #| warning: false
@@ -309,12 +267,7 @@ cde_ipw = mean( (A .== 1) ./ P_A1_W .* (M .== 0) ./ P_M0_A1_W .* Y ) -
 @printf "CDE(0) IPW = %.4g\n" cde_ipw
 ```
 
-IPW gives 0.2260.
-
 ### Example: AIPW
-
-Combining both, so that either the outcome model or the two treatment models
-may be wrong.
 
 ```{julia}
 #| warning: false
@@ -334,15 +287,6 @@ mean( (A .== 0) ./ P_A0_W .* (M .== 0) ./ P_M0_A0_W .* (Y .- Qbar_A0_M0) )
 cde_aipw = aiptw_EY_A1_M0 - aiptw_EY_A0_M0
 @printf "CDE(0) AIPW = %.4g\n" cde_aipw
 ```
-
-AIPW gives 0.2245.
-
-The three estimates are 0.2113, 0.2260 and 0.2245 against a true $CDE(0)$ of
-0.222. Every model here is correctly specified, and over 400 replications of this
-design the g-computation estimator averages 0.2216 with a sampling standard
-deviation of 0.0154, so this seed's 0.2113 is 0.7 standard deviations low. The
-three estimators share the same data and the same fitted nuisance models, so their
-agreement with each other is a check on implementation, not on sampling error.
 
 ## NIE and NDE: Natural Direct and Indirect Effects
 
@@ -368,35 +312,21 @@ $$ Y(w, m) \perp M(w^*) | X$$ {#eq-mediation-14}
 
 This is the "cross-world" condition: the outcome under $(w,m)$ is independent of $M$ under $w^*$. These two situations cannot happen in the same world; you cannot set $W$ to both $w$ and $w^*$. No experiment can implement it.
 
-This cross-world independence is *additional to*, not a replacement
-for, the usual identifying assumptions. The standard mediation formula
-for natural effects also requires:
+This cross-world independence is *additional to*, not a substitute for,
+the usual identifying assumptions. The standard mediation formula for
+natural effects also requires:
 
 - treatment ignorability (no unmeasured treatment-outcome confounding) given $X$;
 - mediator ignorability (no unmeasured mediator-outcome confounding) given $W$ and $X$;
-- positivity for both the treatment and the mediator; and
+- positivity for both treatment and mediator; and
 - **no treatment-induced confounding** of the mediator-outcome
-  relationship -- there must be no variable affected by $W$ that
-  confounds $M$ and $Y$. (When such a confounder exists, natural
-  effects are not identified by this formula and interventional
-  direct/indirect effects are used instead.)
+  relationship -- no variable affected by $W$ may confound $M$ and $Y$.
+  (When such a confounder exists, natural effects are not identified by
+  this formula; interventional direct/indirect effects are used instead.)
 
-The cross-world condition by itself is not sufficient.
+Cross-world independence alone is not sufficient.
 
 ### Estimation
-
-We use the same simulated data. The outcome model now adds $A \times M$ and
-$M \times W_1$ interactions and the mediator model adds $A \times W_1$ and
-$W_1 \times W_2$ — both are richer than the DGP requires, which costs a little
-precision and no consistency. We then average $E[Y \mid A=a, M, W]$ over the
-distribution of $M$ under $A = a'$, for each of the four $(a, a')$ combinations.
-
-The truths again follow from the DGP by integration:
-$E[Y(1,M(1))] = 0.478$, $E[Y(1,M(0))] = 0.486$ and $E[Y(0,M(0))] = 0.267$, so
-the true $NDE = 0.218$, $NIE = -0.008$ and $ATE = 0.211$. The indirect effect
-is slightly negative because treatment raises the chance of the mediator (from
-0.124 to 0.188) while the mediator lowers the outcome — the $-M/2$ term. So
-this treatment helps directly and hurts a little through its mediator.
 
 ```{julia}
 #| warning: false
@@ -466,60 +396,52 @@ E_Y0M0 = mean(EY0M0_Wi)
 @printf "ATE = %.4g\n" (E_Y1M1 - E_Y0M0)
 ```
 
-The estimates are $NDE = 0.209$, $NIE = -0.013$ and $ATE = 0.197$, against
-truths of 0.218, $-0.008$ and 0.211. The decomposition holds exactly by
-construction, $0.2093 + (-0.0127) = 0.1966$, and the sign of the indirect effect is
-recovered. The direct and total effects sit about 0.01 below their truths, as the
-g-computation estimate of $CDE(0)$ did, for the same reason: it is one draw of the
-data, and every quantity in this section is computed from it.
-
-Note how much smaller the indirect effect is than the direct one, $-0.013$
-against 0.209. Reporting only the total effect of 0.197 would hide that the
-mediator works against the treatment.
-
 ## IIE and IDE: Interventional Direct and Indirect Effects
 
-People are not happy with the cross-world assumption in general. Interventional direct and indirect effects avoid it. The device is a random draw: let $M^*_w$ denote a draw from the distribution of $M(w)$ given $X=x$, rather than the unit's own $M(w)$. The standard definitions [@vansteelandt-daniel-2017; @diaz-hejazi-rudolph-vanderlaan-2021] use such a draw in every term:
+People are not happy with the cross-world assumption in general.
+Interventional effects avoid it. The device is a random draw: instead of the
+unit's own $M(w^*)$, use $M^*_{w^*}$, a draw from the *distribution* of
+$M(w^*)$ given $X = x$. Effects defined through such draws are identified
+without the cross-world assumption, even when a treatment-induced
+confounder $Z$ sits between treatment and mediator — the situation in the
+example below.
 
+One subtlety matters. The plain randomized-interventional decomposition
+(available in `Crumble.jl` as `effect = "RI"`) uses the draw in *every*
+term; its direct and indirect effects sum to an "overall interventional
+effect" that need **not** equal the ATE when $Z$ is present, because the
+random draw breaks the within-unit dependence between $M$ and $Y$. The
+**recanting twins** construction (`effect = "RT"`, used below) is built
+precisely to repair this: it decomposes the *actual* ATE,
 
 $$
-\begin{aligned}
-IDE &= E[Y(1,M^*_0)] - E[Y(0,M^*_0)] \\
-IIE &= E[Y(1,M^*_1)] - E[Y(1,M^*_0)]
-\end{aligned}
+ATE \;=\; E[Y(1, Z(1), M(1))] - E[Y(0, Z(0), M(0))] \;=\; IIE + IDE,
 $$ {#eq-mediation-15}
 
+into direct and indirect components by walking a path of intermediate
+"twin" regimes for $Z$ and $M$, each identified without cross-world
+independence. With `effect = "RT"`, the printed $IDE + IIE$ adds up to the
+ATE by construction.
 
-The direct effect holds the mediator draw fixed at its untreated distribution; the indirect effect moves only that distribution. The two add up to
+::: {.callout-warning}
+**Two caveats on the numbers below, both about `Crumble.jl` rather than about the
+estimand.** First, the direct and indirect standard errors are combined as
+$\sqrt{se_a^2 + se_b^2}$. That treats two estimators computed on the *same* sample
+as independent, so it ignores their covariance; the correct standard error comes
+from the variance of the difference of the influence curves, not from adding their
+variances. Second, the `"RT"` path currently computes both the natural and the
+randomized influence curves and then combines only the natural ones, so what is
+reported is not yet the recanting-twins decomposition described above --- the
+identity $IDE + IIE = ATE$ holds arithmetically, because all three are built from
+the same three regime means, but it holds for the natural decomposition.
 
-$$
-IDE + IIE = E[Y(1,M^*_1)] - E[Y(0,M^*_0)],
-$$ {#eq-mediation-16}
-
-the *overall interventional effect*. It need not equal the $ATE$: replacing the unit's own $M(w)$ by a random draw breaks the within-unit dependence between $M(w)$ and $Y(w,\cdot)$, and that dependence matters exactly when a treatment-induced confounder $Z$ sits between the treatment and the mediator --- the situation in the example below. The payoff is identification without the cross-world assumption, even in the presence of such a $Z$. These interventional effects are the estimands `Crumble.jl` estimates with `effect = "RI"`.
+Read the point estimates as an illustration of the workflow. For interventional
+effects to lean on, the `medoutcon` output in the
+[R companion chapter](https://xiangao.github.io/causal_econometrics_guide/mediation.html)
+is the better reference.
+:::
 
 ### Example
-
-This example uses the `medoutcon` vignette's own DGP, which is built to contain
-exactly the treatment-induced confounder that defeats natural effects. We draw
-$n = 1000$ observations. Three binary baseline covariates:
-$W_1 \sim \text{Bernoulli}(0.6)$, $W_2 \sim \text{Bernoulli}(0.3)$, and
-$W_3 \sim \text{Bernoulli}(\min(0.2 + (W_1+W_2)/3,\, 1))$. Treatment is
-$A \sim \text{Bernoulli}(\Lambda(\sum_j W_j - 2))$.
-
-Then the key variable: $Z \sim \text{Bernoulli}(\Lambda(-\log 2 + (W_1+W_2+W_3)/3 - A + 0.2))$
-is a mediator-outcome confounder that depends on $A$. The mediator is
-$M \sim \text{Bernoulli}(\Lambda(\log 3 (W_1 + W_2) + 2A - 2Z))$ and the outcome is
-$Y \sim \text{Bernoulli}(\Lambda(1/(\sum_j W_j - Z + A + M)))$.
-
-Because $Z$ is affected by $A$ and confounds $M$ and $Y$, natural direct and
-indirect effects are not identified here by the formula of the previous
-section. Interventional effects are, which is the reason for this example.
-Every variable is binary, so the truth follows by summing over the DGP:
-$IDE = -0.074$ and $IIE = -0.025$. Their sum, the overall interventional effect,
-is $-0.099$, while the $ATE$ is $-0.083$. That is the gap @eq-mediation-16 warns
-about: with $Z$ present, the two interventional effects do not add up to the
-total effect.
 
 ```{julia}
 #| warning: false
@@ -587,37 +509,29 @@ first(example_data, 6)
 #| message: false
 #| echo: true
 #| label: med9
-# one-step estimates of the interventional direct and indirect effects
-# (effect = "RI"); the Riesz representers are bounded at 100, see below
+# Estimate interventional direct and indirect effects using Crumble.jl
+# effect = "RT" is the recanting twin estimand, which gives IDE and IIE
+# while handling Z (mediator-outcome confounder affected by treatment)
 result = crumble(example_data, ["A"];
                  outcome   = "Y",
                  mediators = m_names,
-                 moc       = ["Z"],       # mediator-outcome confounder affected by A
+                 moc       = ["Z"],       # post-treatment confounder Z
                  covar     = w_names,
-                 effect    = "RI",
-                 learners  = ["glm"],
-                 control   = crumble_control(alpha_cap = 100.0))
-Crumble.tidy(result)
+                 effect    = "RT",        # recanting twin
+                 learners  = ["glm"])
+result
 ```
 
-The one-step estimator gives an interventional direct effect of $-0.054$ with a
-95% interval of $[-0.236, 0.129]$, against a true $-0.074$, and an indirect effect
-of $0.018$ with an interval of $[-0.155, 0.192]$, against a true $-0.025$. Both
-intervals include zero and both truths.
-
-`Crumble.jl` fits the Riesz representers --- the weights in the one-step
-correction --- with a neural network, and this design is hard on them. The true
-weight for the direct-effect functional reaches 45 in a covariate cell that holds
-about two observations per cross-fitting fold. When a fold misses that cell, the
-Riesz loss has no minimiser there and an unbounded fit drifts into the thousands,
-which in simulations of this design ruined about half of the samples of
-$n = 1000$. The call above bounds the weights at 100, well above the true maximum.
-Over 200 simulated samples of this size the bounded estimator has a bias of 0.007
-and a standard deviation of 0.088 for the direct effect, and its intervals cover
-the truth 92% of the time.
-
-The flexible weights cost precision. The interval here is nearly twice as wide as
-the one from `medoutcon` in the [R companion
-chapter](https://xiangao.github.io/causal_econometrics_guide/mediation.html), which
-also compares the one-step estimator with TMLE; `Crumble.jl` implements only the
-one-step estimator.
+```{julia}
+#| warning: false
+#| cache: true
+#| message: false
+#| echo: true
+#| label: med10
+# Extract direct and indirect effect estimates
+ide = result.estimates["direct"]
+iie = result.estimates["indirect"]
+@printf "IDE (Direct)   = %.4g (SE = %.4g)\n" ide["estimate"] ide["std.error"]
+@printf "IIE (Indirect) = %.4g (SE = %.4g)\n" iie["estimate"] iie["std.error"]
+@printf "ATE            = %.4g\n" result.estimates["ate"]["estimate"]
+```

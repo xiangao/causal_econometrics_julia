@@ -246,12 +246,15 @@ The public API includes `lavaan`, `cfa`, `sem`, `growth`, `sam`, `parameterEstim
 
 ## Crumble.jl
 
-`Crumble.jl` is the causal mediation package used for interventional and recanting-twin estimands. Its entry point is `crumble()`:
+`Crumble.jl` is a port of the R package `crumble`. It estimates natural (`"N"`),
+organic (`"O"`), randomized interventional (`"RI"`) and recanting-twin (`"RT"`)
+effects by cross-fitted one-step estimation, combining sequential outcome regressions
+with sequentially fitted Riesz representers. The mediation chapter uses `"RI"`, the
+interventional effects that remain identified when a mediator-outcome confounder is
+affected by treatment:
 
 ```julia
 using Crumble
-
-control = crumble_control(crossfit_folds = 5, epochs = 50)
 
 result = crumble(
     df,
@@ -260,14 +263,18 @@ result = crumble(
     mediators = ["M"],
     moc = ["Z"],
     covar = ["W1", "W2"],
-    effect = "RT",
-    control = control,
+    effect = "RI",
+    control = crumble_control(alpha_cap = 100.0),
 )
 
-result.estimates
+Crumble.tidy(result)
 ```
 
-The package exports `crumble`, `crumble_control`, `sequential_module`, and `CrumbleResult`. The supported effect families are natural (`"N"`), organic (`"O"`), randomized interventional (`"RI"`), and recanting twin (`"RT"`). In the mediation chapter, `"RT"` is used because it handles a mediator-outcome confounder affected by treatment.
+Versions before 2026-09-28 did not implement the estimator, and their output should
+not be used. The current version is validated against the exact truth of the
+mediation chapter's DGP. `alpha_cap` bounds the fitted representers: under weak
+overlap a cross-fitting fold can miss a covariate pattern the shift needs, and an
+unbounded fit then drifts far above the true weight.
 
 ## Practical Advice
 

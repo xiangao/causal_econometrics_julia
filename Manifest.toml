@@ -339,6 +339,12 @@ path = "/home/xao/projects/software/CausalGraphs.jl"
 uuid = "68db26a2-7c2b-457b-8f5d-f446513faf50"
 version = "0.1.2"
 
+    [deps.CausalGraphs.extensions]
+    CausalGraphsNPCausalExt = "NPCausal"
+
+    [deps.CausalGraphs.weakdeps]
+    NPCausal = "cd612eeb-661c-4b56-8bb8-fdd3887649b5"
+
 [[deps.CausalInference]]
 deps = ["CliqueTrees", "Combinatorics", "Distances", "Distributions", "Graphs", "LRUCache", "LinearAlgebra", "LogarithmicNumbers", "Memoization", "MetaGraphs", "NearestNeighbors", "OffsetArrays", "PrecompileTools", "ProgressMeter", "Random", "Requires", "SpecialFunctions", "Statistics", "Tables", "TabularDisplay", "ThreadsX"]
 path = "/home/xao/projects/repo_cloned/CausalInference.jl"
@@ -421,12 +427,6 @@ version = "1.19.2"
     Metis = "2679e427-3c69-5b7f-982b-ece356f1e94b"
     Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
     TreeWidthSolver = "7d267fc5-9ace-409f-a54c-cd2374872a55"
-
-[[deps.CodecBzip2]]
-deps = ["Bzip2_jll", "TranscodingStreams"]
-git-tree-sha1 = "84990fa864b7f2b4901901ca12736e45ee79068c"
-uuid = "523fee87-0ab8-5b00-afb7-3ecf72e48cfd"
-version = "0.8.5"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -574,10 +574,10 @@ uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
 
 [[deps.Crumble]]
-deps = ["CategoricalArrays", "DataFrames", "Distances", "Distributions", "Flux", "HiGHS", "JuMP", "LinearAlgebra", "MLJ", "MLJBase", "MLJLinearModels", "MLJModels", "NNlib", "OneHotArrays", "Optimisers", "Printf", "ProgressMeter", "Random", "Statistics", "StatsBase", "Tables"]
+deps = ["DataFrames", "Distances", "Distributions", "Flux", "LinearAlgebra", "Optimisers", "Printf", "Random", "Statistics"]
 path = "/home/xao/projects/software/Crumble.jl"
 uuid = "350be39a-c33b-48c1-bb73-6df1d36ce439"
-version = "0.1.1"
+version = "0.2.0"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
@@ -1136,18 +1136,6 @@ git-tree-sha1 = "2eaa69a7cab70a52b9687c8bf950a5a93ec895ae"
 uuid = "076d061b-32b6-4027-95e0-9a2c6f6d7e74"
 version = "0.2.0"
 
-[[deps.HiGHS]]
-deps = ["HiGHS_jll", "LinearAlgebra", "MathOptIIS", "MathOptInterface", "OpenBLAS32_jll", "PrecompileTools", "SparseArrays"]
-git-tree-sha1 = "bf5e946f72ebd1b4620249a6be7ff34832ba9ca0"
-uuid = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
-version = "1.23.0"
-
-[[deps.HiGHS_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Zlib_jll", "libblastrampoline_jll"]
-git-tree-sha1 = "50ed12dc8c37ebb8d2b759f21755259d8512f2bd"
-uuid = "8fd58aa0-07eb-5a78-9b36-339c94fd15ea"
-version = "1.14.0+0"
-
 [[deps.HypergeometricFunctions]]
 deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
 git-tree-sha1 = "68c173f4f449de5b438ee67ed0c9c748dc31a2ec"
@@ -1374,18 +1362,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "c0c9b76f3520863909825cbecdef58cd63de705a"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.1.5+0"
-
-[[deps.JuMP]]
-deps = ["LinearAlgebra", "MacroTools", "MathOptInterface", "MutableArithmetics", "OrderedCollections", "PrecompileTools", "Printf", "SparseArrays"]
-git-tree-sha1 = "6941586d9cf3c0af718bc6e6250dcf24057d412e"
-uuid = "4076af6c-e467-56ae-b986-b466b2749572"
-version = "1.30.1"
-
-    [deps.JuMP.extensions]
-    JuMPDimensionalDataExt = "DimensionalData"
-
-    [deps.JuMP.weakdeps]
-    DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -1792,26 +1768,6 @@ deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
 
-[[deps.MathOptIIS]]
-deps = ["MathOptInterface"]
-git-tree-sha1 = "3b3d69130d8ab8c39d5fa4d30e20a8e6428c9d37"
-uuid = "8c4f8055-bd93-4160-a86b-a0c04941dbff"
-version = "0.2.0"
-
-[[deps.MathOptInterface]]
-deps = ["CodecBzip2", "CodecZlib", "ForwardDiff", "JSON", "LinearAlgebra", "MutableArithmetics", "NaNMath", "OrderedCollections", "PrecompileTools", "Printf", "SparseArrays", "SpecialFunctions", "Test"]
-git-tree-sha1 = "73939c06e863f8d68322106fdc2464f3443b5e1a"
-uuid = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-version = "1.51.0"
-
-    [deps.MathOptInterface.extensions]
-    MathOptInterfaceBenchmarkToolsExt = "BenchmarkTools"
-    MathOptInterfaceCliqueTreesExt = "CliqueTrees"
-
-    [deps.MathOptInterface.weakdeps]
-    BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-    CliqueTrees = "60701a23-6482-424a-84db-faee86b9b1f8"
-
 [[deps.MathTeXEngine]]
 deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "GeometryBasics", "LaTeXStrings", "REPL", "RelocatableFolders", "UnicodeFun"]
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
@@ -1894,12 +1850,6 @@ version = "2025.11.4"
 git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.4"
-
-[[deps.MutableArithmetics]]
-deps = ["LinearAlgebra", "SparseArrays", "Test"]
-git-tree-sha1 = "7c25249fc13a070f5ba433c50e21e22bb33c6fb0"
-uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
-version = "1.7.1"
 
 [[deps.NLSolversBase]]
 deps = ["ADTypes", "DifferentiationInterface", "Distributed", "FiniteDiff", "ForwardDiff"]
@@ -1997,12 +1947,6 @@ git-tree-sha1 = "9510d7008275fc5b33fc72a73f8fddef0b5430c6"
 uuid = "0b1bfda6-eb8a-41d2-88d8-f5af5cad476f"
 version = "0.2.11"
 
-[[deps.OpenBLAS32_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "libblastrampoline_jll"]
-git-tree-sha1 = "dd0d9979377e43918a80486a562ddedcc6d9bdf3"
-uuid = "656ef2d0-ae68-5445-9ca0-591084a874a2"
-version = "0.3.33+0"
-
 [[deps.OpenBLASConsistentFPCSR_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "3287ec88df50429a934ebc6cf14606215e27b987"
@@ -2059,10 +2003,12 @@ deps = ["Compat", "EnumX", "FillArrays", "ForwardDiff", "LineSearches", "LinearA
 git-tree-sha1 = "48968edaf014f67e58fe4c8a4ce72d392aed3294"
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
 version = "1.13.3"
-weakdeps = ["MathOptInterface"]
 
     [deps.Optim.extensions]
     OptimMOIExt = "MathOptInterface"
+
+    [deps.Optim.weakdeps]
+    MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [[deps.Optimisers]]
 deps = ["ChainRulesCore", "ConstructionBase", "Functors", "LinearAlgebra", "Random", "Statistics"]

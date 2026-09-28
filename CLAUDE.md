@@ -442,3 +442,13 @@ Old chapter: `archive/pre_port_20260928/poisson-iv.qmd`.
 Still drifted: `mediation.qmd` (Julia prose ~half the R length), and its Crumble RT
 output is from the never-implemented estimator (see Crumble.jl `4e9b9bb`). Both wait on
 the Crumble.jl rebuild.
+
+## 2026-09-28 — `mediation.qmd` re-ported; its packages were broken
+
+Prose is now the R chapter's (it had drifted to half the length); numbers come from
+the Julia run. Two packages behind it were broken and are fixed: Lavaan.jl returned
+starting values for every observed-variable path model (the live chapter showed
+chi-square 1e24), and Crumble.jl had no estimator (the RT output was noise). The
+interventional section now uses Crumble RI with `alpha_cap = 100`; Crumble has no
+TMLE, so the R chapter's TMLE comparison is referred to, not repeated. Old chapter in
+`archive/pre_port_20260928/`.

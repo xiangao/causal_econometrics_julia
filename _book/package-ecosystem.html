@@ -759,24 +759,22 @@ try {
 </section>
 <section id="crumble.jl" class="level2" data-number="25.11">
 <h2 data-number="25.11" class="anchored" data-anchor-id="crumble.jl"><span class="header-section-number">25.11</span> Crumble.jl</h2>
-<p><code>Crumble.jl</code> is the causal mediation package used for interventional and recanting-twin estimands. Its entry point is <code>crumble()</code>:</p>
+<p><code>Crumble.jl</code> is a port of the R package <code>crumble</code>. It estimates natural (<code>"N"</code>), organic (<code>"O"</code>), randomized interventional (<code>"RI"</code>) and recanting-twin (<code>"RT"</code>) effects by cross-fitted one-step estimation, combining sequential outcome regressions with sequentially fitted Riesz representers. The mediation chapter uses <code>"RI"</code>, the interventional effects that remain identified when a mediator-outcome confounder is affected by treatment:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Crumble</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>control <span class="op">=</span> <span class="fu">crumble_control</span>(crossfit_folds <span class="op">=</span> <span class="fl">5</span>, epochs <span class="op">=</span> <span class="fl">50</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">crumble</span>(</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    df,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"A"</span>];</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="st">"Y"</span>,</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    mediators <span class="op">=</span> [<span class="st">"M"</span>],</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    moc <span class="op">=</span> [<span class="st">"Z"</span>],</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    covar <span class="op">=</span> [<span class="st">"W1"</span>, <span class="st">"W2"</span>],</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    effect <span class="op">=</span> <span class="st">"RT"</span>,</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    control <span class="op">=</span> control,</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>result.estimates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The package exports <code>crumble</code>, <code>crumble_control</code>, <code>sequential_module</code>, and <code>CrumbleResult</code>. The supported effect families are natural (<code>"N"</code>), organic (<code>"O"</code>), randomized interventional (<code>"RI"</code>), and recanting twin (<code>"RT"</code>). In the mediation chapter, <code>"RT"</code> is used because it handles a mediator-outcome confounder affected by treatment.</p>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> <span class="fu">crumble</span>(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    df,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"A"</span>];</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> <span class="st">"Y"</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    mediators <span class="op">=</span> [<span class="st">"M"</span>],</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    moc <span class="op">=</span> [<span class="st">"Z"</span>],</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    covar <span class="op">=</span> [<span class="st">"W1"</span>, <span class="st">"W2"</span>],</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    effect <span class="op">=</span> <span class="st">"RI"</span>,</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    control <span class="op">=</span> <span class="fu">crumble_control</span>(alpha_cap <span class="op">=</span> <span class="fl">100.0</span>),</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>Crumble.<span class="fu">tidy</span>(result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Versions before 2026-09-28 did not implement the estimator, and their output should not be used. The current version is validated against the exact truth of the mediation chapter’s DGP. <code>alpha_cap</code> bounds the fitted representers: under weak overlap a cross-fitting fold can miss a covariate pattern the shift needs, and an unbounded fit then drifts far above the true weight.</p>
 </section>
 <section id="practical-advice" class="level2" data-number="25.12">
 <h2 data-number="25.12" class="anchored" data-anchor-id="practical-advice"><span class="header-section-number">25.12</span> Practical Advice</h2>
