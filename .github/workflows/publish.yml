@@ -1,6 +1,9 @@
 on:
   push:
     branches: [master]
+  # Re-running a failed job inside a run uploads a second github-pages artifact,
+  # which deploy-pages rejects; a manual dispatch starts a clean run instead.
+  workflow_dispatch:
 
 name: Quarto Publish
 
