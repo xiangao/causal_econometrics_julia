@@ -427,3 +427,18 @@ diagnostic. Added @abadie-2021-sc-review on that point and a new
 TASC has low donor-pool sensitivity was unsupported and is gone.
 
 Rendered clean to HTML and PDF.
+
+## 2026-09-28 — `poisson-iv.qmd` re-ported from the R guide
+
+The R chapter was rebuilt on agy's structure on 2026-08-28 (`27eaa7e`) and this one
+never followed, so it kept the older two-simulation layout (14 chunks, 44% more prose).
+Rule from xao: this book has the same content as the R guide, except the code. The
+chapter is now the R prose verbatim; only the four sentences naming R/`fixest` differ,
+and the demo is a `Panelest.jl` translation (same DGP; prints naive 1.249, CF 0.896,
+SE 0.204 — the R prose "this single draw cannot separate the two estimators" still
+holds). "Why Julia is faster" went with the bootstrap it described. Five bib keys added.
+Old chapter: `archive/pre_port_20260928/poisson-iv.qmd`.
+
+Still drifted: `mediation.qmd` (Julia prose ~half the R length), and its Crumble RT
+output is from the never-implemented estimator (see Crumble.jl `4e9b9bb`). Both wait on
+the Crumble.jl rebuild.
