@@ -38,6 +38,7 @@
 | Estimation | `bayesian-causal.qmd` | Bayesian g-computation (inline conjugate Bayesian linreg) |
 | Estimation | `distributional-effects.qmd` | QTE, Engression-based distributional DiD |
 | Designs | `did.qmd` | ETWFE, staggered adoption |
+| Designs | `did-continuous.qmd` | Dose-response DiD: CGBS two-period, Wooldridge (2026) heterogeneous slopes, Walmart Table 7.1 (Panelest feols) |
 | Designs | `synthetic-control-did-tasc.qmd` | SC, SynthDiD, TASC |
 | Designs | `randomization-inference-sc.qmd` | Placebo tests, MSPE ratio, TASC posterior |
 | Designs | `shift-share-iv.qmd` | Bartik IV, Rotemberg weights, BHJ collapse (ShiftShareIV.jl) |
@@ -148,6 +149,7 @@ For p-fixable / front-door / nested-fixable effects, use `CausalGraphs.estimate_
 Results are validated to match `causal_econometrics_guide` within 1% (real data) or 5% (simulated).
 
 ### Shared datasets (generated in R, loaded by both books)
+- `did-continuous.qmd` → `data/did_dose_sim.csv` and `data/walmart_lw.csv` (both generated in the R guide; copies here)
 - `survival-causal.qmd` → `data/survival_sim.csv` (n=1500 Weibull; propensity intercept=-4 for ~30% treatment)
 - `shift-share-iv.qmd` → `data/shift_share_sim.csv`, `shift_share_shares.csv`, `shift_share_shocks.csv`, `shift_share_bad_v.csv`, `shift_share_bad_noise.csv`
 
@@ -452,3 +454,7 @@ chi-square 1e24), and Crumble.jl had no estimator (the RT output was noise). The
 interventional section now uses Crumble RI with `alpha_cap = 100`; Crumble has no
 TMLE, so the R chapter's TMLE comparison is referred to, not repeated. Old chapter in
 `archive/pre_port_20260928/`.
+
+## DiD with continuous treatment + Panelest SE fixes (2026-10-01)
+
+New `did-continuous.qmd` (port of the R guide chapter; prose identical except the R-only `contdid` paragraph). Its numbers match the R chapter exactly only after the Panelest fixes on branch `fix-vcov-dof` (simple vcov now includes sigma^2; robust/clustered K follows fixest; one-FE threading race removed). Re-executed `did`, `iv-rdd`, `shift-share-iv`, `poisson-iv` with the fix: `did` SEs moved in the 4th digit; `iv-rdd` simple-vcov SEs changed (e.g. biased OLS 0.010 -> 0.014, manual 2SLS 0.016 -> 0.028, DWH se 0.0203 -> 0.0270); `shift-share-iv` OLS/IV SEs 0.079/0.120 -> 0.075/0.131; `poisson-iv` unchanged. No prose quotes the changed numbers. Known drift from the R guide (not fixed): `iv-rdd.qmd` still says "These two results are very different", corrected in R on 2026-08-15.
