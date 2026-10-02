@@ -618,7 +618,7 @@ window.Quarto = {
 <section id="walmart-and-county-retail-employment" class="level2" data-number="14.4">
 <h2 data-number="14.4" class="anchored" data-anchor-id="walmart-and-county-retail-employment"><span class="header-section-number">14.4</span> Walmart and county retail employment</h2>
 <p><span class="citation" data-cites="wooldridge-2026-nonbinary">Wooldridge (<a href="references.html#ref-wooldridge-2026-nonbinary" role="doc-biblioref">2026</a>)</span> applies the method to the county panel of <span class="citation" data-cites="brown-butts-2025">Brown and Butts (<a href="references.html#ref-brown-butts-2025" role="doc-biblioref">2025</a>)</span>. It covers 1,288 counties from 1977 to 1999. No county had a Walmart before 1986. Stores then opened in 14 cohorts, from 1986 to 1999, and 395 counties never got one. The treatment is a single dose, so <span class="math inline">\(J = 1\)</span> and we write it without bold: <span class="math inline">\(W_{it}\)</span> is the number of Walmarts open in county <span class="math inline">\(i\)</span> in year <span class="math inline">\(t\)</span>. The outcome is log retail employment.</p>
-<div id="10dd3301" class="cell" data-cache="true" data-execution_count="2">
+<div id="3af4bd46" class="cell" data-cache="true" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract of walmart_lw.dta from Wooldridge's replication files (data/gen_walmart_lw.R)</span></span>
@@ -826,7 +826,7 @@ window.Quarto = {
 </div>
 <p>Most treated counties have a single store. One store accounts for 80% of treated county-years, two for 13%, and the largest count is 13. Within a cohort and year, the slope is fit from the change relative to untreated counties and from the differences in store counts. With so many single-store counties, it mostly measures the effect of the first store.</p>
 <p>A single-coefficient TWFE regression is the natural starting point.</p>
-<div id="a0c26f7b" class="cell" data-cache="true" data-execution_count="3">
+<div id="371b92bb" class="cell" data-cache="true" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftable</span>(<span class="fu">feols</span>(wm, <span class="pp">@formula</span>(log_retail_emp <span class="op">~</span> n_open <span class="op">+</span> <span class="fu">fe</span>(fips) <span class="op">+</span> <span class="fu">fe</span>(year)),</span>
@@ -856,7 +856,7 @@ window.Quarto = {
 </div>
 </div>
 <p>One more Walmart raises retail employment by 3.4%, with a standard error of 0.57 percentage points. In the binary case this regression makes forbidden comparisons, which use already-treated units as controls, when effects vary by cohort and time. The same holds with a dose. So we build the regressors of <a href="#eq-dc-reg" class="quarto-xref">Equation&nbsp;<span>14.12</span></a>, one for each cohort and year from entry on: <span class="math inline">\(W_{it}\)</span> times the cohort dummy times the year dummy.</p>
-<div id="5318e43f" class="cell" data-cache="true" data-execution_count="4">
+<div id="7374e76f" class="cell" data-cache="true" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cohorts <span class="op">=</span> <span class="fl">1986</span><span class="op">:</span><span class="fl">1999</span></span>
@@ -879,7 +879,7 @@ window.Quarto = {
 </div>
 </div>
 <p>That gives 105 slopes. We aggregate them with <a href="#eq-dc-agg" class="quarto-xref">Equation&nbsp;<span>14.13</span></a>. Each aggregate is a linear combination of the slopes with fixed weights, so its standard error comes from the clustered covariance matrix. This matches Stata’s <code>margins</code> in Wooldridge’s code.</p>
-<div id="935da4fb" class="cell" data-cache="true" data-execution_count="5">
+<div id="999a0bd7" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Ng <span class="op">=</span> <span class="fu">Dict</span>(g <span class="op">=&gt;</span> <span class="fu">sum</span>((wm.year <span class="op">.==</span> <span class="fl">1999</span>) <span class="op">.&amp;</span> (wm.cohort <span class="op">.==</span> g)) <span class="cf">for</span> g <span class="kw">in</span> cohorts)</span>
@@ -906,7 +906,7 @@ window.Quarto = {
 </details>
 </div>
 <p>Before reading the effects, we check pre-trends. Following the first test above, we fit TWFE on the untreated county-years with a lead for each cohort and each year at least two years before entry. We then average the leads by years until entry, with the cohort weights of <a href="#eq-dc-agg" class="quarto-xref">Equation&nbsp;<span>14.13</span></a>.</p>
-<div id="3576c95d" class="cell" data-cache="true" data-execution_count="6">
+<div id="a7040049" class="cell" data-cache="true" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>un <span class="op">=</span> wm[wm.n_open <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>fips, <span class="op">:</span>year, <span class="op">:</span>cohort, <span class="op">:</span>log_retail_emp]]</span>
@@ -942,7 +942,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The leads fall almost linearly as we go back in time. Twenty years before entry, counties that later got a Walmart had retail employment about 19 log points lower, relative to the year before entry, than the never-treated counties. Retail employment was growing faster in these counties long before any store opened. Parallel trends fails, so Wooldridge also reports estimates with the cohort-specific linear trends.</p>
-<div id="fd2487c9" class="cell" data-cache="true" data-execution_count="7">
+<div id="0761c854" class="cell" data-cache="true" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fit_trend <span class="op">=</span> <span class="fu">feols</span>(wm, <span class="fu">term</span>(<span class="op">:</span>log_retail_emp) <span class="op">~</span> <span class="fu">sum</span>(<span class="fu">term</span>.(<span class="fu">vcat</span>(wcols, trcols))) <span class="op">+</span></span>
@@ -1071,7 +1071,7 @@ window.Quarto = {
 <p>Without trends, one more store raises retail employment by about 3% to 4% in the first years. The effect climbs to 9% by year 13. The overall effect is 0.0386 (0.0051). It is close to the single-coefficient TWFE estimate of 0.0344, and a little more precise.</p>
 <p>The cohort trends change the estimates a lot. The effect in the entry year is 0.0049 (0.0033), indistinguishable from zero. From the entry year to year 6, the effects are between a sixth and a half of their values without trends. They then rise steadily, and by year 13 the two columns agree at about 0.09. The overall effect falls to 0.0156 (0.0046), less than half the estimate without trends. The trends also make the estimates more precise up to about year 8. The long exposures rest on the earliest cohorts only, so their standard errors grow. Year 13 comes from the 1986 cohort alone.</p>
 <p>For comparison, we add the same 14 cohort trends to the single-coefficient regression. One slope on the store count is then shared by every cohort and year.</p>
-<div id="e7551ab4" class="cell" data-cache="true" data-execution_count="8">
+<div id="8f04067b" class="cell" data-cache="true" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>s1 <span class="op">=</span> <span class="fu">feols</span>(wm, <span class="fu">term</span>(<span class="op">:</span>log_retail_emp) <span class="op">~</span> <span class="fu">term</span>(<span class="op">:</span>n_open) <span class="op">+</span> <span class="fu">sum</span>(<span class="fu">term</span>.(trcols)) <span class="op">+</span></span>
@@ -1086,7 +1086,7 @@ window.Quarto = {
 </div>
 <p>With the same trends, the single-coefficient regression gives 0.0100 (0.0045). The flexible model costs almost nothing in precision.</p>
 <p>The table averages over cohorts. To see the path of a single cohort, we take the 1990 cohort, the largest, with 118 counties and ten years after entry. Under <a href="#eq-dc-po" class="quarto-xref">Equation&nbsp;<span>14.8</span></a>, with <span class="math inline">\(J = 1\)</span>, the effect of <span class="math inline">\(w\)</span> stores on cohort <span class="math inline">\(g\)</span> in year <span class="math inline">\(s\)</span> is <span class="math inline">\(w\,\delta_{gs}\)</span>. The figure plots the estimated effect of one store, <span class="math inline">\(\hat\delta_{1990,s}\)</span>, for each year after entry, with and without cohort trends. The effect of two stores is twice as large in every year, because the model is linear in the dose.</p>
-<div id="03c9aac2" class="cell" data-cache="true" data-execution_count="9">
+<div id="c2f8a640" class="cell" data-cache="true" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>g0 <span class="op">=</span> <span class="fl">1990</span></span>
@@ -1112,13 +1112,12 @@ window.Quarto = {
 <p>Effect of one Walmart on log retail employment in the 1990 cohort, by year since entry, with 95% intervals.</p>
 </div>
 </div>
-<p>Without trends, one store raises retail employment in the 1990 cohort by 1.7% in the entry year and by 4.0% a year later, and the effect then settles near 2.7%. From year 1 on, the estimates are about twice their standard errors or more. With cohort trends the path is lower, and the gap grows from 0.6 percentage points in the entry year to 1.6 by year 9. Only the year-1 estimate, 3.1%, is more than twice its standard error. The growing gap is what we would see if the trend absorbs part of an effect that grows with exposure, a point we return to below. The plot holds the dose at one store. The cohort’s average number of stores rises from 1.08 in 1990 to 1.75 in 1999, so the effect it actually experienced grows faster than the plotted per-store effect.</p>
+<p>Without trends, one store raises retail employment in the 1990 cohort by 1.7% in the entry year and by 4.0% a year later, and the effect then settles near 2.7%. From year 1 on, the estimates are about twice their standard errors or more. With cohort trends the path is lower, and the gap grows from 0.6 percentage points in the entry year to 1.6 by year 9. Only the year-1 estimate, 3.1%, is more than twice its standard error. The growing gap is what we would see if the cohort trend, which is also fit on post-entry years, absorbs part of an effect that grows with exposure. The plot holds the dose at one store. The cohort’s average number of stores rises from 1.08 in 1990 to 1.75 in 1999, so the effect it actually experienced grows faster than the plotted per-store effect.</p>
 </section>
-<section id="where-it-can-go-wrong" class="level2" data-number="14.5">
-<h2 data-number="14.5" class="anchored" data-anchor-id="where-it-can-go-wrong"><span class="header-section-number">14.5</span> Where it can go wrong</h2>
-<p>The Walmart estimates rest on the two assumptions. The pre-trend figure checks parallel trends, and it fails, which is why we add cohort trends. Nothing in the data checks limited selection. In the Walmart data the dose changes after entry, so <a href="#eq-dc-ls" class="quarto-xref">Equation&nbsp;<span>14.11</span></a> requires that the number of stores a county ends up with says nothing about its gain from them. A county where the first store did well is a likely site for a second and a third. If so, high-count counties have larger slopes, and the estimates mix the causal response with selection on gains, the second term of <a href="#eq-dc-decomp" class="quarto-xref">Equation&nbsp;<span>14.5</span></a>. Store openings that respond to past retail growth also violate strict exogeneity. The model is also linear in the count, so the second store has the same effect as the first. Adding <span class="math inline">\(W_{it}^2\)</span>, or the indicator <span class="math inline">\(1[W_{it} \ge 2]\)</span> that equals 1 when the county has two or more stores, to <span class="math inline">\(\mathbf W_{it}\)</span> checks this.</p>
-<p>The trend-adjusted estimates extrapolate a straight line for up to 13 years after entry. The pre-period leads support a straight line before entry. Nothing in the data can check whether it continues after entry. There is a second issue. <a href="#eq-dc-reg" class="quarto-xref">Equation&nbsp;<span>14.12</span></a> has no separate intercept for each cohort and year after entry, and every treated county has at least one store. So the trend <span class="math inline">\(D_{ig} \cdot t\)</span> is fit from post-entry years as well as from the years before. If the effect grows with exposure, part of that growth can load onto the trend. <span class="citation" data-cites="wolfers-2006">Wolfers (<a href="references.html#ref-wolfers-2006" role="doc-biblioref">2006</a>)</span> showed this with unit-specific trends for divorce laws. It is one reason the trend estimates are so much smaller in the middle years.</p>
-<p>A sensitivity analysis in the style of <span class="citation" data-cites="rambachan-roth-2023">Rambachan and Roth (<a href="references.html#ref-rambachan-roth-2023" role="doc-biblioref">2023</a>)</span> suits this case. It bounds how far the post-entry path may depart from the extrapolated trend, and reports the effect as a function of that bound.</p>
+<section id="summary" class="level2" data-number="14.5">
+<h2 data-number="14.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">14.5</span> Summary</h2>
+<p>Wooldridge’s method is ETWFE with the treatment indicator replaced by the dose. The regression in <a href="#eq-dc-reg" class="quarto-xref">Equation&nbsp;<span>14.12</span></a> interacts cohort, year and dose. Each interaction has its own slope <span class="math inline">\(\boldsymbol\delta_{gs}\)</span>, the average effect of one more unit of dose for cohort <span class="math inline">\(g\)</span> in year <span class="math inline">\(s\)</span>, and the slopes are averaged by exposure time. Covariates, cohort trends, exit and unbalanced panels enter as extra terms in the same regression.</p>
+<p>Two assumptions identify the slopes. Parallel trends lets us compare each cohort’s change with the change of the untreated units, and the pre-trend tests check it. Strong parallel trends, which Wooldridge’s limited selection extends to staggered adoption, says the dose a unit ends up with tells us nothing about its average gain. It makes comparisons across doses causal, and no test in the data checks it. In the Walmart data parallel trends fails, so we add cohort trends, and the overall effect of one more store falls from 3.9% to 1.6%.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
@@ -1133,12 +1132,6 @@ Callaway, Brantly, Andrew Goodman-Bacon, and Pedro H. C. Sant’Anna. 2024. <spa
 </div>
 <div id="ref-callaway-santanna-2021" class="csl-entry" role="listitem">
 Callaway, Brantly, and Pedro H. C. Sant’Anna. 2021. <span>“Difference-in-Differences with Multiple Time Periods.”</span> <em>Journal of Econometrics</em> 225 (2): 200–230.
-</div>
-<div id="ref-rambachan-roth-2023" class="csl-entry" role="listitem">
-Rambachan, Ashesh, and Jonathan Roth. 2023. <span>“A More Credible Approach to Parallel Trends.”</span> <em>Review of Economic Studies</em> 90 (5): 2555–91.
-</div>
-<div id="ref-wolfers-2006" class="csl-entry" role="listitem">
-Wolfers, Justin. 2006. <span>“Did Unilateral Divorce Laws Raise Divorce Rates? <span>A</span> Reconciliation and New Results.”</span> <em>American Economic Review</em> 96 (5): 1802–20.
 </div>
 <div id="ref-wooldridge-2026-nonbinary" class="csl-entry" role="listitem">
 Wooldridge, Jeffrey M. 2026. <span>“A Heterogeneous Slopes Approach to Difference-in-Differences with Non-Binary Treatments.”</span> SSRN Working Paper 7530698.
