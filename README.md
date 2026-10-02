@@ -31,7 +31,7 @@ a references page.
 
 ### Designs
 13. **Difference-in-Differences** — ETWFE, staggered adoption, `DiD.jl`
-14. **DiD with Continuous Treatment** — two-period dose response (parallel vs strong parallel trends), simulation with known truth, Wooldridge heterogeneous-slopes ETWFE, Walmart replication
+14. **DiD with Continuous Treatment** — two-period dose response (parallel vs strong parallel trends), Wooldridge heterogeneous-slopes ETWFE, Walmart replication
 15. **Synthetic Control, SDiD, and TASC** — SC, SynthDiD, time-aware SC with Kalman smoother
 16. **Randomization Inference for SC** — Placebo unit tests, MSPE ratio, Fisher p-values, TASC posterior
 17. **IV and Regression Discontinuity** — LATE, weak-IV, RD designs with `RDRobust.jl`
