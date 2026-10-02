@@ -138,7 +138,9 @@ There are a lot of ways to deal with staggered DiD situation. Wooldridge (2021) 
 
 $$ y_{it} = \alpha_i + \phi_t + \sum_{g=g_0}^G \sum_{t=g}^T \lambda_{g,t} \times 1(g,t) + \epsilon_{i,t} $$ {#eq-did-11}
 
-Here $g$ is a cohort indicator, a cohort is determined by the time of getting treatment. ETWFE is allowing each cohort to have different effect at each different time point after being treated. The baseline group is the never treated group. If there is no never treated group, it can easily changed to comparing to the last treated group.
+Here $g$ is a cohort indicator, a cohort is determined by the time of getting treatment. ETWFE is allowing each cohort to have different effect at each different time point after being treated. The baseline group is the never treated group. If there is no never treated group, it can easily be changed to comparing to the last treated group.
+
+When the treatment comes in amounts, such as a dose or a count, the same regression extends to it. The chapter [DiD with Continuous Treatment](did-continuous.qmd) covers that case.
 
 ## Example 1: US Teen Employment
 

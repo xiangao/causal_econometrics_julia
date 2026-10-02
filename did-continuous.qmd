@@ -1,0 +1,302 @@
+# DiD with Continuous Treatment
+
+```{julia}
+#| include: false
+using DataFrames
+using CSV
+using Panelest
+using Vcov
+using StatsModels
+import StatsAPI: coef, vcov, coefnames, coeftable
+using Statistics
+using LinearAlgebra
+using Printf
+using CairoMakie
+CairoMakie.activate!(type = "png")
+```
+
+The DiD chapter treats the treatment as on or off. Many treatments come in amounts. A county gets one Walmart or five. A state raises the minimum wage by fifty cents or by three dollars. A hospital receives a small grant or a large one. With a dose we want more than the effect of being treated. We want to know how the effect changes with the dose.
+
+We first look at two periods, where @callaway-goodman-bacon-santanna-2024, CGBS from here on, show what parallel trends identifies with a dose and what it leaves out. Two assumptions carry everything that follows: parallel trends and strong parallel trends. We then move to staggered adoption, using the heterogeneous-slopes extension of extended two-way fixed effects (ETWFE) in @wooldridge-2026-nonbinary, and replicate his study of Walmart and county retail employment.
+
+## Two periods
+
+We observe units $i = 1, \dots, n$ in two periods, $t = 1, 2$. Nobody is treated in period 1. Before period 2, each unit receives a dose $D_i \ge 0$, and units with $D_i = 0$ stay untreated. For each dose $d$, unit $i$ has a potential outcome $Y_{it}(d)$, and we observe $Y_{it} = Y_{it}(D_i)$. No anticipation means $Y_{i1}(d) = Y_{i1}(0)$ for every $d$. Let $\Delta Y_i = Y_{i2} - Y_{i1}$.
+
+There are two natural estimands. Take two doses $d$ and $d'$. The first estimand, $ATT(d \mid d')$, is the average effect of dose $d$, relative to no treatment, among the units that actually received dose $d'$:
+
+$$ATT(d \mid d') = E[Y_{i2}(d) - Y_{i2}(0) \mid D_i = d'].$$ {#eq-dc-att}
+
+The leading case is $ATT(d \mid d)$, the effect of each group's own dose. The second estimand, $ATE(d)$, is the effect of dose $d$ averaged over all treated units, whatever dose they received:
+
+$$ATE(d) = E[Y_{i2}(d) - Y_{i2}(0) \mid D_i > 0].$$ {#eq-dc-ate}
+
+Its derivative $ATE'(d)$ is the average causal response at $d$: the average effect of a small increase in the dose.
+
+### Parallel trends
+
+The first assumption is parallel trends. With a dose it says that, without treatment, every dose group would have followed the trend of the untreated:
+
+$$E[Y_{i2}(0) - Y_{i1}(0) \mid D_i = d] = E[Y_{i2}(0) - Y_{i1}(0) \mid D_i = 0] \quad \text{for all } d.$$ {#eq-dc-pt}
+
+In words, the change in the untreated potential outcome between periods 1 and 2 is the same at every dose, including zero. The assumption restricts untreated outcomes only. Under @eq-dc-pt and no anticipation,
+
+$$E[\Delta Y_i \mid D_i = d] - E[\Delta Y_i \mid D_i = 0] = ATT(d \mid d).$$ {#eq-dc-id}
+
+This is the binary DiD done separately at each dose. Parallel trends identifies the whole curve $ATT(d \mid d)$, each dose group's effect of its own dose. With more periods before treatment we can check it in the usual way: the dose groups should have moved together before anyone was treated.
+
+Parallel trends does not identify comparisons across doses. For the two doses $d$ and $d'$,
+
+$$ATT(d \mid d) - ATT(d' \mid d') = \underbrace{ATT(d \mid d) - ATT(d' \mid d)}_{\text{causal response}} + \underbrace{ATT(d' \mid d) - ATT(d' \mid d')}_{\text{selection on gains}}.$$ {#eq-dc-decomp}
+
+The first term is causal. It is what moving the dose from $d'$ to $d$ does for the units that chose $d$. The second term compares two groups at the same dose $d'$. It is non-zero when the units that chose $d$ would gain differently from dose $d'$ than the units that chose $d'$. Parallel trends says nothing about this term, and pre-treatment data cannot reveal it, because it involves treated outcomes. So the slope of the curve in @eq-dc-id mixes the causal response with selection on gains.
+
+### Strong parallel trends
+
+The second assumption removes the selection term. CGBS call it strong parallel trends:
+
+$$E[Y_{i2}(d) - Y_{i1}(0) \mid D_i = d] = E[Y_{i2}(d) - Y_{i1}(0) \mid D_i > 0] \quad \text{for all } d > 0.$$ {#eq-dc-spt}
+
+In words, the average path from untreated in period 1 to dose $d$ in period 2 is the same for the units that chose $d$ as for all treated units. Together with @eq-dc-pt it gives $ATT(d \mid d) = ATE(d)$ for every $d$: the average effect of a dose is the same in every dose group, whatever dose the group chose. The selection term in @eq-dc-decomp is then zero. Comparisons across doses are causal, and the slope of the identified curve is the average causal response.
+
+Strong parallel trends is a stronger assumption than parallel trends, and of a different kind. It restricts treated potential outcomes, so no pre-treatment data can check it, and passing a pre-trend test says nothing about it. It restricts how units choose their dose. It is plausible when the dose is set for reasons unrelated to the gain, for example by a formula or a lottery. It is hard to defend when units choose their dose knowing what they will gain.
+
+@wooldridge-2026-nonbinary reaches the same point from a regression. Let $B_i$ be the gain of unit $i$ from one unit of dose, so that the effect is linear in the dose with a slope that varies across units: $Y_{i2}(d) = Y_{i2}(0) + d B_i$. Let $\gamma = E[Y_{i2}(0) - Y_{i1}(0)]$ be the untreated trend, and let $\delta = E(B_i \mid D_i > 0)$ be the average slope among the treated. Under @eq-dc-pt,
+
+$$E(\Delta Y_i \mid D_i) = \gamma + \delta D_i$$ {#eq-dc-linear}
+
+holds when $E(B_i \mid D_i = d) = \delta$ for every $d > 0$. That condition is strong parallel trends for the linear model. Adding powers of $D_i$ to the regression relaxes the linearity.
+
+## Staggered adoption
+
+Now units enter treatment at different times, as in the ETWFE section of the DiD chapter. Periods run $t = 1, \dots, T$, and the first period in which any unit is treated is $q$. A cohort $g \in \{q, \dots, T\}$ is the set of units first treated in period $g$. Let $D_{ig} = 1$ if unit $i$ is in cohort $g$, and $D_{ig} = 0$ otherwise. Never-treated units have $D_{ig} = 0$ for every $g$. The vector $\mathbf D_i = (D_{iq}, \dots, D_{iT})$ collects unit $i$'s cohort dummies. For each period $s$, the time dummy $fs_t$ equals 1 if $t = s$ and 0 otherwise.
+
+The treatment $\mathbf W_{it}$ is a $1 \times J$ row vector, where $J$ is the number of treatment variables. A single dose has $J = 1$. A dose and its square has $J = 2$. A set of mutually exclusive treatment levels has $J$ equal to the number of levels. Every unit has $\mathbf W_{it} = \mathbf 0$ before its entry period, and $\mathbf W_i$ stacks unit $i$'s rows over all $T$ periods. We write $\mathbf w$ for a possible value of $\mathbf W_{it}$. The dose may change after entry. In the Walmart data it is the number of stores open.
+
+@wooldridge-2026-nonbinary writes potential outcomes as linear in the treatment, with slopes that vary by unit and period. Let $\mathbf B_{it}$ be a $J \times 1$ vector of random slopes, whose $j$-th element is unit $i$'s gain in period $t$ from one unit of treatment variable $j$. Let $\gamma_t$ be a time effect, $C_i$ an unobserved unit effect, and $U_{it}$ an idiosyncratic error. The potential outcome at treatment value $\mathbf w$ is
+
+$$Y_{it}(\mathbf w) = \mathbf w\, \mathbf B_{it} + \gamma_t + C_i + U_{it}.$$ {#eq-dc-po}
+
+For a single dose, $J = 1$, write the scalar dose as $w$. Subtracting the untreated potential outcome cancels the time effect, the unit effect and the error:
+
+$$Y_{it}(w) - Y_{it}(0) = w\, B_{it}.$$ {#eq-dc-diff}
+
+So $B_{it}$ is the difference in potential outcomes per unit of dose. With several treatment variables, the $j$-th element of $\mathbf B_{it}$ is the change in the potential outcome from one more unit of treatment variable $j$, holding the others fixed. The additive $\gamma_t + C_i$ is parallel trends. Nothing restricts $\mathbf B_{it}$. The estimand is its mean for each cohort and period:
+
+$$\boldsymbol\delta_{gs} = E(\mathbf B_{is} \mid D_{ig} = 1), \qquad s \ge g.$$ {#eq-dc-delta}
+
+In words, $\boldsymbol\delta_{gs}$ is the average effect per unit of each treatment variable for cohort $g$ in period $s$. Because the potential outcome is linear in the dose, it is also the effect of one more unit at any dose: going from 0 to 1 has the same effect as going from 1 to 2. Adding powers of the dose, or dummies for dose levels, to $\mathbf W_{it}$ relaxes this. With a binary treatment, $\boldsymbol\delta_{gs}$ is the cohort-period ATT of ETWFE.
+
+Wooldridge assumes no anticipation and strict exogeneity. Strict exogeneity says the error $U_{it}$ has mean zero given the whole treatment path $\mathbf W_i$, the unit effect $C_i$ and the slopes $\mathbf B_{it}$. He needs one more assumption, which has no counterpart in the binary case. He calls it limited selection:
+
+$$E(\mathbf B_{it} \mid \mathbf W_i) = E(\mathbf B_{it} \mid \mathbf D_i).$$ {#eq-dc-ls}
+
+Once we know when a unit entered, its dose path carries no information about its average gain. With a binary treatment the entry date fixes the whole treatment path, so @eq-dc-ls holds automatically. With two periods and a scalar dose it is the strong parallel trends of @eq-dc-spt in its linear form. Parallel trends enters through the additive $\gamma_t + C_i$ in @eq-dc-po. So the staggered estimates rest on the same two assumptions as the two-period ones.
+
+Let $A_i = E(C_i \mid \mathbf W_i)$ be the mean of the unit effect given the treatment path. Under these assumptions,
+
+$$E(Y_{it} \mid \mathbf W_i) = \sum_{g=q}^{T} \sum_{s=g}^{T} (D_{ig}\, fs_t\, \mathbf W_{it})\, \boldsymbol\delta_{gs} + \gamma_t + A_i.$$ {#eq-dc-reg}
+
+$A_i$ is a unit effect. So a two-way fixed effects (TWFE) regression of $Y_{it}$ on the interactions $D_{ig}\, fs_t\, \mathbf W_{it}$, with unit and time effects, estimates every $\boldsymbol\delta_{gs}$. This is ETWFE with the treatment indicator replaced by the dose. Standard errors are clustered by unit.
+
+There are many cohort-period slopes, so we aggregate them. Let $e$ be the exposure time, the number of periods since entry, and let $N_g$ be the number of units in cohort $g$. Let $\hat{\boldsymbol\delta}_{gs}$ be the TWFE estimate of $\boldsymbol\delta_{gs}$. The estimated effect at exposure $e$, written $\hat{\boldsymbol\tau}_{e}$, averages over the cohorts observed that long, with weights proportional to cohort size:
+
+$$\hat{\boldsymbol\tau}_{e} = \sum_{g=q}^{T-e} \frac{N_g}{N_q + \dots + N_{T-e}}\, \hat{\boldsymbol\delta}_{g,g+e}.$$ {#eq-dc-agg}
+
+The overall effect weights every cohort-period slope by $N_g$. In a balanced panel it is the average slope over all treated unit-periods.
+
+Pre-trends can be tested in two ways. A lead is a dummy $D_{ig}\, fs_t$ for a period $s$ before cohort $g$ enters. The first test fits TWFE on the untreated observations only, the unit-periods with $\mathbf W_{it} = \mathbf 0$, with leads for $s \le g - 2$, so that the period just before entry is the base. It then tests whether the leads are zero. The second test adds the same leads to @eq-dc-reg. With a binary treatment the two give identical estimates. With a dose they differ. Both tests check parallel trends. Neither checks limited selection. When the leads show a trend, Wooldridge adds cohort-specific linear trends to @eq-dc-reg. For each cohort $g$, the regressor $D_{ig} \cdot t$ is a linear time trend for that cohort only. The assumption then becomes that each cohort's gap from the never-treated units would have kept growing along the same line after entry.
+
+## Wooldridge's regression and the CGBS estimator
+
+The two approaches target the same objects. Under parallel trends and strong parallel trends, each identifies the average effect of the dose for every cohort and period. They differ in how they estimate it and in what they can handle.
+
+The first difference is the comparison group. Wooldridge runs one TWFE regression in levels on all periods, @eq-dc-reg. Every untreated observation serves as a control: the never-treated units, the not-yet-treated units, and the pre-entry periods of every cohort. In the binary case this regression is the imputation estimator of @borusyak-jaravel-spiess-2024. @callaway-goodman-bacon-santanna-2024 build on @callaway-santanna-2021 instead. For each cohort and period they compare the cohort with the never-treated or the not-yet-treated units, using the long difference from the period just before entry, and fit the dose response in that comparison. The regression uses more data, and it is more efficient when the errors are homoskedastic and serially uncorrelated. In exchange it needs parallel trends in every pre-entry period. The differencing approach needs it only from the base period on.
+
+The second difference is the shape of the dose response. In Wooldridge's regression, the shape comes from the functions of the dose placed in $\mathbf W_{it}$: the dose itself, its powers, or dummies for dose levels. The estimand is the average slope $\boldsymbol\delta_{gs}$. CGBS fit a B-spline in the dose within each cohort and period, or a nonparametric curve whose complexity is chosen from the data. They report the curve $ATT(d \mid d)$ and its derivative. The two also treat a dose near zero differently. With two periods, Wooldridge's regression has no separate intercept for the treated units, so its fitted effect goes to zero as the dose goes to zero. The CGBS fit gives the treated units their own intercept, so the effect can jump at any positive dose. The two coincide once a dummy for a positive dose is added to $\mathbf W_{it}$.
+
+The third difference is scope. The table compares Wooldridge's regression with the R package `contdid`, version 0.1.1, which implements CGBS.
+
+| | Wooldridge (2026) | `contdid` 0.1.1 |
+|---|---|---|
+| Dose changes after entry | Yes | No |
+| Covariates | Yes, in the trends and in the slopes | No |
+| Cohort-specific trends | Yes | No |
+| Unbalanced panel | Yes | No |
+| Multi-level or vector treatment | Yes, through $\mathbf W_{it}$ | No |
+| Exit from treatment | Yes | No |
+| Standard errors | Analytic, clustered by unit | Multiplier bootstrap |
+| Reported effects | Average slopes by cohort and period, aggregated by exposure | $ATT(d \mid d)$ and its derivative, aggregated by dose or by exposure |
+
+The first row decides the Walmart application. The number of stores changes after entry, so the CGBS estimator, as implemented, does not apply. The other rows show what the single regression buys: covariates, trends, exit and missing years enter as extra terms. In the other direction, CGBS trace out the whole dose-response curve within each cohort and period. Wooldridge reports average slopes and needs powers of the dose to show curvature.
+
+## Walmart and county retail employment
+
+@wooldridge-2026-nonbinary applies the method to the county panel of @brown-butts-2025. It covers 1,288 counties from 1977 to 1999. No county had a Walmart before 1986. Stores then opened in 14 cohorts, from 1986 to 1999, and 395 counties never got one. The treatment is a single dose, so $J = 1$ and we write it without bold: $W_{it}$ is the number of Walmarts open in county $i$ in year $t$. The outcome is log retail employment.
+
+```{julia dc_wm_load}
+#| cache: true
+# extract of walmart_lw.dta from Wooldridge's replication files (data/gen_walmart_lw.R)
+wm = CSV.read("data/walmart_lw.csv", DataFrame)
+display(sort(combine(groupby(wm[wm.year .== 1999, :], :cohort), nrow => :N), :cohort))
+counts = sort(combine(groupby(wm[wm.n_open .> 0, :], :n_open), nrow => :N), :n_open)
+counts.share = round.(counts.N ./ sum(counts.N), digits = 3)
+counts
+```
+
+Most treated counties have a single store. One store accounts for 80% of treated county-years, two for 13%, and the largest count is 13. Within a cohort and year, the slope is fit from the change relative to untreated counties and from the differences in store counts. With so many single-store counties, it mostly measures the effect of the first store.
+
+A single-coefficient TWFE regression is the natural starting point.
+
+```{julia dc_wm_twfe}
+#| cache: true
+coeftable(feols(wm, @formula(log_retail_emp ~ n_open + fe(fips) + fe(year)),
+                vcov = Vcov.cluster(:fips)))
+```
+
+One more Walmart raises retail employment by 3.4%, with a standard error of 0.57 percentage points. In the binary case this regression makes forbidden comparisons, which use already-treated units as controls, when effects vary by cohort and time. The same holds with a dose. So we build the regressors of @eq-dc-reg, one for each cohort and year from entry on: $W_{it}$ times the cohort dummy times the year dummy.
+
+```{julia dc_wm_cells}
+#| cache: true
+cohorts = 1986:1999
+cells = [(g, s) for g in cohorts for s in cohorts if s >= g]
+wcols = [Symbol("w_$(g)_$(s)") for (g, s) in cells]
+for ((g, s), c) in zip(cells, wcols)
+    wm[!, c] = (wm.cohort .== g) .* (wm.year .== s) .* wm.n_open
+end
+trcols = [Symbol("tr_$g") for g in cohorts]
+for (g, c) in zip(cohorts, trcols)
+    wm[!, c] = (wm.cohort .== g) .* wm.year
+end
+
+fit_het = feols(wm, term(:log_retail_emp) ~ sum(term.(wcols)) + fe(:fips) + fe(:year),
+                vcov = Vcov.cluster(:fips))
+length(coef(fit_het))
+```
+
+That gives 105 slopes. We aggregate them with @eq-dc-agg. Each aggregate is a linear combination of the slopes with fixed weights, so its standard error comes from the clustered covariance matrix. This matches Stata's `margins` in Wooldridge's code.
+
+```{julia dc_wm_agg}
+#| cache: true
+Ng = Dict(g => sum((wm.year .== 1999) .& (wm.cohort .== g)) for g in cohorts)
+
+function aggregate_slopes(fit)
+    pos = Dict(n => i for (i, n) in enumerate(coefnames(fit)))
+    b = coef(fit); V = vcov(fit)
+    lincomb(a) = (dot(a, b), sqrt(a' * V * a))
+    out = map(0:13) do e
+        gs = [g for g in cohorts if g + e <= 1999]
+        a = zeros(length(b))
+        for g in gs
+            a[pos["w_$(g)_$(g + e)"]] = Ng[g] / sum(Ng[h] for h in gs)
+        end
+        lincomb(a)
+    end
+    a = zeros(length(b))
+    for (g, s) in cells
+        a[pos["w_$(g)_$(s)"]] = Ng[g]
+    end
+    push!(out, lincomb(a ./ sum(a)))
+end
+agg_het = aggregate_slopes(fit_het);
+```
+
+Before reading the effects, we check pre-trends. Following the first test above, we fit TWFE on the untreated county-years with a lead for each cohort and each year at least two years before entry. We then average the leads by years until entry, with the cohort weights of @eq-dc-agg.
+
+```{julia dc_wm_pre}
+#| cache: true
+#| fig-cap: "Weighted pre-treatment estimates from the untreated observations, with 95% intervals. The year before entry is the base."
+un = wm[wm.n_open .== 0, [:fips, :year, :cohort, :log_retail_emp]]
+leads = [(g, s) for g in cohorts for s in 1977:1999 if s <= g - 2]
+lcols = [Symbol("l_$(g)_$(s)") for (g, s) in leads]
+for ((g, s), c) in zip(leads, lcols)
+    un[!, c] = Float64.((un.cohort .== g) .& (un.year .== s))
+end
+fit_pre = feols(un, term(:log_retail_emp) ~ sum(term.(lcols)) + fe(:fips) + fe(:year),
+                vcov = Vcov.cluster(:fips))
+pos = Dict(n => i for (i, n) in enumerate(coefnames(fit_pre)))
+b = coef(fit_pre); V = vcov(fit_pre)
+pre = DataFrame(map(2:22) do k
+    gs = [g for g in cohorts if g - k >= 1977]
+    a = zeros(length(b))
+    for g in gs
+        a[pos["l_$(g)_$(g - k)"]] = Ng[g] / sum(Ng[h] for h in gs)
+    end
+    (time = -k, estimate = dot(a, b), se = sqrt(a' * V * a))
+end)
+
+fig = Figure(size = (700, 360))
+ax = Axis(fig[1, 1], xlabel = "Years until first Walmart", ylabel = "Log retail employment")
+hlines!(ax, 0, color = :black)
+rangebars!(ax, pre.time, pre.estimate .- 1.96 .* pre.se, pre.estimate .+ 1.96 .* pre.se,
+           color = :darkcyan)
+scatter!(ax, pre.time, pre.estimate, color = :darkcyan)
+fig
+```
+
+The leads fall almost linearly as we go back in time. Twenty years before entry, counties that later got a Walmart had retail employment about 19 log points lower, relative to the year before entry, than the never-treated counties. Retail employment was growing faster in these counties long before any store opened. Parallel trends fails, so Wooldridge also reports estimates with the cohort-specific linear trends.
+
+```{julia dc_wm_trend}
+#| cache: true
+fit_trend = feols(wm, term(:log_retail_emp) ~ sum(term.(vcat(wcols, trcols))) +
+                      fe(:fips) + fe(:year),
+                  vcov = Vcov.cluster(:fips))
+agg_trend = aggregate_slopes(fit_trend)
+
+fmt(x) = @sprintf("%.4f (%.4f)", x[1], x[2])
+DataFrame(Exposure = vcat(string.(0:13), "overall"),
+          var"No trends" = fmt.(agg_het), var"Cohort trends" = fmt.(agg_trend))
+```
+
+The table reproduces Table 7.1 of @wooldridge-2026-nonbinary, estimates and standard errors, to all four decimals.
+
+Without trends, one more store raises retail employment by about 3% to 4% in the first years. The effect climbs to 9% by year 13. The overall effect is 0.0386 (0.0051). It is close to the single-coefficient TWFE estimate of 0.0344, and a little more precise.
+
+The cohort trends change the estimates a lot. The effect in the entry year is 0.0049 (0.0033), indistinguishable from zero. From the entry year to year 6, the effects are between a sixth and a half of their values without trends. They then rise steadily, and by year 13 the two columns agree at about 0.09. The overall effect falls to 0.0156 (0.0046), less than half the estimate without trends. The trends also make the estimates more precise up to about year 8. The long exposures rest on the earliest cohorts only, so their standard errors grow. Year 13 comes from the 1986 cohort alone.
+
+For comparison, we add the same 14 cohort trends to the single-coefficient regression. One slope on the store count is then shared by every cohort and year.
+
+```{julia dc_wm_twfe_trend}
+#| cache: true
+s1 = feols(wm, term(:log_retail_emp) ~ term(:n_open) + sum(term.(trcols)) +
+               fe(:fips) + fe(:year),
+           vcov = Vcov.cluster(:fips))
+k = findfirst(==("n_open"), coefnames(s1))
+(estimate = coef(s1)[k], se = sqrt(vcov(s1)[k, k]))
+```
+
+With the same trends, the single-coefficient regression gives 0.0100 (0.0045). The flexible model costs almost nothing in precision.
+
+The table averages over cohorts. To see the path of a single cohort, we take the 1990 cohort, the largest, with 118 counties and ten years after entry. Under @eq-dc-po, with $J = 1$, the effect of $w$ stores on cohort $g$ in year $s$ is $w\,\delta_{gs}$. The figure plots the estimated effect of one store, $\hat\delta_{1990,s}$, for each year after entry, with and without cohort trends. The effect of two stores is twice as large in every year, because the model is linear in the dose.
+
+```{julia dc_wm_cohort}
+#| cache: true
+#| fig-cap: "Effect of one Walmart on log retail employment in the 1990 cohort, by year since entry, with 95% intervals."
+g0 = 1990
+nm = ["w_$(g0)_$(s)" for s in g0:1999]
+fig = Figure(size = (700, 360))
+ax = Axis(fig[1, 1], xlabel = "Years since the first Walmart opened",
+          ylabel = "Effect of one store", xticks = 0:9)
+hlines!(ax, 0, color = :black)
+for (fit, label, shift, col) in [(fit_het, "No trends", -0.12, :darkcyan),
+                                 (fit_trend, "Cohort trends", 0.12, :darkorange)]
+    pos = Dict(n => i for (i, n) in enumerate(coefnames(fit)))
+    idx = [pos[n] for n in nm]
+    est = coef(fit)[idx]; se = sqrt.(diag(vcov(fit))[idx])
+    x = (0:9) .+ shift
+    rangebars!(ax, x, est .- 1.96 .* se, est .+ 1.96 .* se, color = col)
+    scatter!(ax, x, est, color = col, label = label)
+end
+Legend(fig[2, 1], ax, orientation = :horizontal, framevisible = false)
+fig
+```
+
+Without trends, one store raises retail employment in the 1990 cohort by 1.7% in the entry year and by 4.0% a year later, and the effect then settles near 2.7%. From year 1 on, the estimates are about twice their standard errors or more. With cohort trends the path is lower, and the gap grows from 0.6 percentage points in the entry year to 1.6 by year 9. Only the year-1 estimate, 3.1%, is more than twice its standard error. The growing gap is what we would see if the trend absorbs part of an effect that grows with exposure, a point we return to below. The plot holds the dose at one store. The cohort's average number of stores rises from 1.08 in 1990 to 1.75 in 1999, so the effect it actually experienced grows faster than the plotted per-store effect.
+
+## Where it can go wrong
+
+The Walmart estimates rest on the two assumptions. The pre-trend figure checks parallel trends, and it fails, which is why we add cohort trends. Nothing in the data checks limited selection. In the Walmart data the dose changes after entry, so @eq-dc-ls requires that the number of stores a county ends up with says nothing about its gain from them. A county where the first store did well is a likely site for a second and a third. If so, high-count counties have larger slopes, and the estimates mix the causal response with selection on gains, the second term of @eq-dc-decomp. Store openings that respond to past retail growth also violate strict exogeneity. The model is also linear in the count, so the second store has the same effect as the first. Adding $W_{it}^2$, or the indicator $1[W_{it} \ge 2]$ that equals 1 when the county has two or more stores, to $\mathbf W_{it}$ checks this.
+
+The trend-adjusted estimates extrapolate a straight line for up to 13 years after entry. The pre-period leads support a straight line before entry. Nothing in the data can check whether it continues after entry. There is a second issue. @eq-dc-reg has no separate intercept for each cohort and year after entry, and every treated county has at least one store. So the trend $D_{ig} \cdot t$ is fit from post-entry years as well as from the years before. If the effect grows with exposure, part of that growth can load onto the trend. @wolfers-2006 showed this with unit-specific trends for divorce laws. It is one reason the trend estimates are so much smaller in the middle years.
+
+A sensitivity analysis in the style of @rambachan-roth-2023 suits this case. It bounds how far the post-entry path may depart from the extrapolated trend, and reports the effect as a function of that bound.

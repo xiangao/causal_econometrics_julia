@@ -9,7 +9,7 @@ Live site: **https://xiangao.github.io/causal_econometrics_julia/**
 
 ## Chapters
 
-The chapter list below mirrors `_quarto.yml`. There are 25 content
+The chapter list below mirrors `_quarto.yml`. There are 26 content
 chapters organized into eight parts, plus the preface (`index.qmd`) and
 a references page.
 
@@ -31,28 +31,29 @@ a references page.
 
 ### Designs
 13. **Difference-in-Differences** — ETWFE, staggered adoption, `DiD.jl`
-14. **Synthetic Control, SDiD, and TASC** — SC, SynthDiD, time-aware SC with Kalman smoother
-15. **Randomization Inference for SC** — Placebo unit tests, MSPE ratio, Fisher p-values, TASC posterior
-16. **IV and Regression Discontinuity** — LATE, weak-IV, RD designs with `RDRobust.jl`
-17. **Shift-Share IV** — Bartik instruments, Rotemberg weights
-18. **IV in Poisson with Fixed Effects** — Control-function and GMM approaches
+14. **DiD with Continuous Treatment** — two-period dose response (parallel vs strong parallel trends), Wooldridge heterogeneous-slopes ETWFE, Walmart replication
+15. **Synthetic Control, SDiD, and TASC** — SC, SynthDiD, time-aware SC with Kalman smoother
+16. **Randomization Inference for SC** — Placebo unit tests, MSPE ratio, Fisher p-values, TASC posterior
+17. **IV and Regression Discontinuity** — LATE, weak-IV, RD designs with `RDRobust.jl`
+18. **Shift-Share IV** — Bartik instruments, Rotemberg weights
+19. **IV in Poisson with Fixed Effects** — Control-function and GMM approaches
 
 ### Longitudinal Causal Inference
-19. **G-Methods** — G-computation, IPW, marginal structural models
+20. **G-Methods** — G-computation, IPW, marginal structural models
 
 ### Survival & Time-to-Event
-20. **Survival Causal Inference** — RMST, IPW-adjusted survival curves
+21. **Survival Causal Inference** — RMST, IPW-adjusted survival curves
 
 ### Mediation
-21. **Causal Mediation** — CDE, NDE, NIE with `Crumble.jl`
+22. **Causal Mediation** — CDE, NDE, NIE with `Crumble.jl`
 
 ### Causal Discovery
-22. **Discovery: Observed Variables** — PC, RSL-D algorithms via `CausalInference.jl`; a survey-weighted real-data example on PISA 2022 (background-knowledge tier orientation, bootstrap edge stability)
-23. **Discovery: Latent Variables** — FCI, L-MARVEL, PAGs
-24. **From Graph to Estimate** — Identification routing (a-fix/p-fix/nested) and TMLE/AIPW estimation with `CausalGraphs.jl`
+23. **Discovery: Observed Variables** — PC, RSL-D algorithms via `CausalInference.jl`; a survey-weighted real-data example on PISA 2022 (background-knowledge tier orientation, bootstrap edge stability)
+24. **Discovery: Latent Variables** — FCI, L-MARVEL, PAGs
+25. **From Graph to Estimate** — Identification routing (a-fix/p-fix/nested) and TMLE/AIPW estimation with `CausalGraphs.jl`
 
 ### Appendix
-25. **Package Ecosystem** — Overview of all custom Julia packages
+26. **Package Ecosystem** — Overview of all custom Julia packages
 
 ## Writing style
 
