@@ -13,6 +13,8 @@ using DataFrames
 using StatsModels, DataFramesMeta
 import StatsAPI: coeftable
 using Printf
+using CSV
+using Statistics
 using RegressionTables
 include("regtable_helpers.jl")
 ```
@@ -30,6 +32,8 @@ using DataFrames
 using StatsModels, DataFramesMeta
 import StatsAPI: coeftable
 using Printf
+using CSV
+using Statistics
 using RegressionTables
 ```
 
@@ -39,7 +43,11 @@ With an unobserved confounder, unconfoundedness fails. Even a randomized experim
 
 ### Uncontrolled Confounder
 
-```{julia}
+The graph below is the problem: $c$ is an unobserved common cause of the
+treatment $w$ and the outcome $y$. There is no adjustment set, because $c$ is
+not measured.
+
+```{julia dag2}
 #| warning: false
 #| message: false
 #| echo: false
@@ -60,7 +68,12 @@ fig
 
 ### Why Does IV Work?
 
-```{julia}
+Adding $z$ gives a variable that moves $w$ and reaches $y$ only through $w$.
+The arrow $z \to w$ is the relevance condition, and the *absence* of any arrow
+from $z$ to $y$ or to $c$ is the exclusion restriction and the exogeneity
+condition. The missing arrows carry the assumptions.
+
+```{julia dag3}
 #| warning: false
 #| message: false
 #| echo: false
@@ -87,14 +100,12 @@ fig2
 
 Intention to Treat (ITT) is the average treatment effect of the treatment assignment Z. It is the difference between the average potential outcome under treatment and the average potential outcome under control. It is the average treatment effect of the treatment assignment Z, regardless of whether the subject complies with the assignment.
 
-There are four possible groups of subjects in the case of binary treatment and binary instrument. The compliance type is defined by the latent pair of potential treatments $(W(0), W(1))$, not by an observed $(Z, W)$ cell:
+There are four possible groups of subjects in the case of binary treatment and binary instrument. The groups are defined by the *potential* treatment status $(W(0), W(1))$ — how the subject would take treatment under each value of the instrument — not by the observed $(Z, W)$:
 
--   complier: $W(0)=0, W(1)=1$
--   always-taker: $W(0)=1, W(1)=1$
--   never-taker: $W(0)=0, W(1)=0$
--   defier: $W(0)=1, W(1)=0$
-
-A given observed $(Z, W)$ cell does not pin down the type (see the table below).
+-   $W(0)=0, W(1)=0$: never-taker
+-   $W(0)=0, W(1)=1$: complier
+-   $W(0)=1, W(1)=0$: defier
+-   $W(0)=1, W(1)=1$: always-taker
 
 |        | W(1)=0 | W(1)=1 |
 |:-------|:-------|:-------|
@@ -103,7 +114,7 @@ A given observed $(Z, W)$ cell does not pin down the type (see the table below).
 
 : compliance groups
 
-These four groups (stratum) have different causal mechanisms. For example, the compliers are the only group that is affected by the treatment assignment Z in the same direction. The defiers are the only group that is affected by the treatment assignment Z in the opposite direction. The always-takers and never-takers are not affected by the treatment assignment Z.
+These four groups (strata) have different causal mechanisms. The compliers and defiers are the groups whose *treatment status* responds to the assignment $Z$ — compliers in the same direction as the assignment, defiers in the opposite direction. The always-takers and never-takers take the same treatment regardless of $Z$.
 
 Unfortunately we cannot identify the compliance group by looking at the data.
 
@@ -116,7 +127,7 @@ Unfortunately we cannot identify the compliance group by looking at the data.
 
 ### Assumptions
 
--   Exclusion restriction: writing the potential outcome as a function of both treatment $w$ and instrument $z$, $Y(w,z)$, the instrument has no direct effect on the outcome: $Y(w, 1) = Y(w,0)$
+-   Exclusion restriction: $Y(w, 1) = Y(w,0)$
 -   Exogeneity of instrument: $Z \perp [W(0),W(1), Y(0), Y(1)]$
 -   Monotonicity (no defiers): $W(0) \leq W(1)$
 
@@ -124,11 +135,13 @@ Unfortunately we cannot identify the compliance group by looking at the data.
 
 Since we excluded defiers, and the other two groups (always-takers and never-takers) are not affected by the treatment assignment Z. The only effect we can identify is the treatment effect on the compliers. This is called the Local Average Treatment Effect (LATE).
 
+Below we write potential outcomes indexed by the instrument, $Y(Z=z)$, rather than by treatment status, $Y(d)$. The exclusion restriction is exactly what licenses this: since $Y(w,1)=Y(w,0)$, $Y$ depends on $Z$ only through $W$, so $Y(Z=z) = Y(W(z), z) = Y(W(z))$ in the usual treatment-indexed notation. For a complier ($W(1)=1, W(0)=0$), this means $Y(Z=1) = Y(1)$ and $Y(Z=0) = Y(0)$, so $E[Y(Z=1)-Y(Z=0) \mid G=C]$ below is exactly $E[Y(1)-Y(0) \mid G=C]$, the LATE in treatment-indexed notation.
+
 $$ \small
 \begin{aligned}
 & E[Y(Z=1) - Y(Z=0) | G = C] \\
 &= \frac{E[Y(Z=1) - Y(Z=0)]}{P(W(1)=1, W(0)=0)} \\
-&= \frac{E[Y|Z=1] - E[Y|Z=0]}{1-P(W=0|Z=1)-P(W=1|Z=0)} \text{ (rule out groups A and N) } \\
+&= \frac{E[Y|Z=1] - E[Y|Z=0]}{1-P(W=0|Z=1)-P(W=1|Z=0)} \text{ (monotonicity rules out D; the A and N shares subtract) } \\
 &= \frac{E[Y|Z=1] - E[Y|Z=0]}{P(W=1|Z=1)-P(W=1|Z=0)} \\
 &= \frac{E[Y|Z=1] - E[Y|Z=0]}{E[W|Z=1]-E[W|Z=0]}
 \end{aligned}
@@ -136,7 +149,7 @@ $$ {#eq-iv-rdd-1}
 
 ### Parametric Models
 
-If we assume linearity, then this becomes the ratio of two OLS coefficients, sometimes called the Wald estimator.
+With a binary instrument this is exactly the ratio of two OLS coefficients — no linearity assumption is needed, since a regression on a binary regressor just computes the two group means. This is sometimes called the Wald estimator.
 
 $$
 \begin{aligned}
@@ -145,131 +158,130 @@ $$
 \end{aligned}
 $$ {#eq-iv-rdd-2}
 
-Why do covariates help? It is worth separating two distinct
-assumptions. Conditioning on covariates $X$ can make the
-*as-if-random* (conditional independence) assumption more credible: the
-instrument may be unconfounded only within levels of $X$. The
-*exclusion restriction* -- no direct effect of the instrument on the
-outcome -- is a separate, substantive assumption that covariates do not
-generally repair. Adding $X$ removes a direct $Z \to Y$ path only if
-that path runs through $X$, or if exclusion is conditional by design.
-So covariates help with conditional instrument independence, not with
-exclusion itself.
+Why do covariates help? It is important to separate two assumptions
+here. Conditioning on covariates $X$ can make the *as-if-random*
+(conditional independence) assumption more credible: the instrument
+may be unconfounded only within levels of $X$. But the *exclusion
+restriction* -- that the instrument has no direct effect on the
+outcome -- is a substantive structural assumption that covariates do
+not generally repair. Adding $X$ removes a direct $Z \to Y$ path only
+if that path runs entirely through $X$, or if exclusion is conditional
+by design. So covariates help with conditional independence, not with
+exclusion per se.
 
 ### Example
 
-```{julia}
+We simulate $n = 10{,}000$ observations. Three variables $(w, m, z)$ are drawn
+jointly normal with mean zero and unit variances, so their covariances are also
+their correlations: $\text{corr}(w,m) = 0.36$, $\text{corr}(w,z) = 0.64$, and
+$\text{corr}(m,z) = 0$. A fourth variable $u \sim N(0,1)$ is independent of
+everything. The outcome is $y = w + m + u$.
+
+So $m$ is the omitted confounder, correlated with the treatment $w$ but not
+with the instrument $z$, and the true coefficient on $w$ is 1. Because all
+variances are 1, we can predict the omitted-variable bias exactly: regressing
+$y$ on $w$ alone gives $1 + \text{Cov}(m,w) = 1.36$.
+
+We fit three models: OLS of $y$ on $w$, OLS of $y$ on $w$ and $m$, and 2SLS
+using $z$ as the instrument for $w$.
+
+```{julia iv1}
 #| warning: false
 #| message: false
 #| echo: true
+## DGP: data.y = data.w + data.m + data.u
 Random.seed!(66)
 nobs = 10000
-
-# Here we have three variables w, m, z.
-# m is the omitted variable, w and m are correlated.
-# z is the instrument, which is correlated with w, but not m.
-# u is independent of everything else.
-covarMat = [
-    1.0   0.36  0.64;
-    0.36  1.0   0.0;
-    0.64  0.0   1.0
-]
-
-mvn = MvNormal(zeros(3), covarMat)
-mat = rand(mvn, nobs)'
-
+## here we have three variables w, m, z.
+## m is the omitted variable; w and m are correlated; z is the instrument,
+## which is correlated with w, but not m. u is independent of everything else.
+## with unit variances, the covariances below ARE the correlations
+crwm = 0.36; crmz = 0.0; crwz = 0.64
+covarMat = [1.0  crwm crwz;
+            crwm 1.0  crmz;
+            crwz crmz 1.0]
+mat  = rand(MvNormal(zeros(3), covarMat), nobs)'
 data = DataFrame(w = mat[:, 1], m = mat[:, 2], z = mat[:, 3])
 data.u = rand(Normal(0, 1), nobs)
-
-# DGP
+# dgp
 data.y = data.w .+ data.m .+ data.u
-
-lm_biased = feols(data, @formula(y ~ w))
-lm_full = feols(data, @formula(y ~ w + m))
-
-# Manual 2SLS explicitly (educational)
-# Stage 1: Predict endogenous variable w using instrument z
-stage1 = feols(data, @formula(w ~ z))
-data.w_hat = data.w .- stage1.residuals # Obtain fitted values
-
-# Stage 2: Regress outcome y on predicted w_hat
-tsls_manual = feols(data, @formula(y ~ w_hat));
+lm_biased  = feols(data, @formula(y ~ w))
+lm_full    = feols(data, @formula(y ~ w + m))
+tsls_model = feiv(data, @formula(y ~ 1); endo = :w, inst = :z);
 ```
 
-```{julia}
+```{julia iv2}
 #| warning: false
 #| message: false
 #| echo: true
-# Biased OLS
-println("── Biased OLS (w only) ──────────────────────")
-show_regression_html(lm_biased)
-
-# Full OLS is good
-println("\n── Full OLS (w + m) ─────────────────────────")
-show_regression_html(lm_full)
-
-# Manual 2SLS is good
-# Note: the coefficients from manual 2SLS are correct, but standard
-# errors are slightly incorrect because they use residuals from w_hat,
-# not the true w.
-println("\n── Manual 2SLS ──────────────────────────────")
-show_regression_html(tsls_manual)
+# lm is biased
+display(coeftable(lm_biased))
+# lm_full is good
+display(coeftable(lm_full))
+# tsls is good.
+display(coeftable(tsls_model))
 ```
+
+OLS on $w$ alone gives 1.3571, matching the predicted 1.36 to two decimals.
+OLS controlling for $m$ gives 0.9976 on $w$ and 0.9984 on $m$, both close to
+the true 1, which is what we would do if the confounder were observed. 2SLS
+gives 0.9999 with a standard error of 0.0219, recovering the truth without ever
+using $m$.
+
+Note the cost of instrumenting: the 2SLS standard error is 0.0219 against
+0.0107 for the OLS that controls for $m$, twice as large. The instrument uses
+only the part of $w$ that $z$ explains, and here that is 41% of its variance.
 
 ### Control Function Approach
 
-The manual 2SLS above *implicitly* implements the **control function (CF)** approach.
-Understanding why makes the extension to nonlinear models (next chapter) transparent.
+Two-stage least squares can be implemented equivalently via the **control function (CF) approach**. Understanding why makes the extension to nonlinear models (next chapter) transparent.
 
 **Algebraic motivation.** Because `w` is endogenous, decompose the structural error:
 
-$$\varepsilon = \rho v + \eta, \qquad v \equiv w - E[w \mid z], \qquad E(z\eta)=0,\; E(zv)=0.$$ {#eq-iv-rdd-3}
+$$\varepsilon = \rho v + \eta, \qquad v \equiv w - E[w \mid z], \qquad E(z\eta) = 0,\; E(zv) = 0.$$ {#eq-iv-rdd-3}
 
-If we *knew* $v$, controlling for it directly would eliminate the confounding channel.
-We don't know $v$, but the first-stage residual $\hat{v} = w - \hat{w}$ is a consistent estimate.
-Substituting into the structural equation:
+If we *knew* $v$, controlling for it directly would eliminate the confounding channel. We don't know $v$, but the first-stage residual $\hat v = w - \hat w$ is a consistent estimate. Substituting into the structural equation:
 
-$$y = \alpha + \beta w + \rho\,\hat{v} + \text{error}.$$ {#eq-iv-rdd-4}
+$$y = \alpha + \beta w + \rho\,\hat v + \text{error}.$$ {#eq-iv-rdd-4}
 
-OLS on this **augmented** second stage gives a consistent $\hat\beta$ — identical to 2SLS by the
-Frisch–Waugh–Lovell (FWL) theorem.  The coefficient $\hat\rho$ on $\hat{v}$ doubles as a
-**Durbin–Wu–Hausman (DWH) endogeneity test**: under $H_0$ (w is exogenous), $\rho = 0$.
+OLS on this **augmented** second stage gives a consistent $\hat\beta$ — identical to 2SLS by the Frisch–Waugh–Lovell (FWL) theorem. The coefficient $\hat\rho$ on $\hat v$ doubles as a **Durbin–Wu–Hausman (DWH) endogeneity test**: under $H_0$ (w is exogenous), $\rho = 0$.
 
-```{julia}
+```{julia iv_cf}
 #| warning: false
 #| message: false
 #| echo: true
 import StatsBase: coef, stderror, coefnames
+pick(m, v, name) = v[findfirst(==(name), coefnames(m))]
 
-# Control function: add first-stage residual v̂ to the second stage OLS
+# Manual 2SLS, explicitly
+stage1      = feols(data, @formula(w ~ z))
+data.w_hat  = data.w .- stage1.residuals
+tsls_manual = feols(data, @formula(y ~ w_hat))
+
+# Control function: first-stage residual v_hat in the augmented regression
 data.v_hat = stage1.residuals
+lm_cf      = feols(data, @formula(y ~ w + v_hat))
 
-lm_cf = feols(data, @formula(y ~ w + v_hat))
+# Compare β̂_w from manual 2SLS and CF — should be identical by FWL
+@printf("Manual 2SLS   beta_w = %.8f\n", pick(tsls_manual, coef(tsls_manual), "w_hat"))
+@printf("Control funct beta_w = %.8f\n", pick(lm_cf, coef(lm_cf), "w"))
 
-# Compare point estimates from manual 2SLS and CF — should be identical by FWL
-coef_tsls = coef(tsls_manual)[findfirst(==("w_hat"), coefnames(tsls_manual))]
-coef_cf   = coef(lm_cf)[findfirst(==("w"),     coefnames(lm_cf))]
-
-@printf("Manual 2SLS   β̂_w = %.8f\n", coef_tsls)
-@printf("Control funct β̂_w = %.8f\n", coef_cf)
-
-# DWH test: t-statistic on v̂
-rho_hat = coef(lm_cf)[findfirst(==("v_hat"), coefnames(lm_cf))]
-rho_se  = stderror(lm_cf)[findfirst(==("v_hat"), coefnames(lm_cf))]
-@printf("\nDWH endogeneity test (ρ̂ on v̂): coef = %.4f  se = %.4f  t = %.3f\n",
-        rho_hat, rho_se, rho_hat / rho_se)
+# DWH endogeneity test: t-stat on v_hat
+rho, rho_se = pick(lm_cf, coef(lm_cf), "v_hat"), pick(lm_cf, stderror(lm_cf), "v_hat")
+@printf("DWH test on v_hat: coef = %.4f  se = %.4f  t = %.3f  p = %.4g\n",
+        rho, rho_se, rho / rho_se, 2 * ccdf(Normal(), abs(rho / rho_se)))
 ```
 
-The two $\hat\beta_w$ values agree to machine precision, confirming FWL.
-The large $|t|$ on $\hat{v}$ rejects $H_0 : \rho = 0$, confirming that `w` is endogenous.
+Both routes give $\hat\beta_w = 0.99987086$, agreeing to all eight printed
+digits, which confirms FWL. The coefficient on $\hat v$ is 0.6100 with a
+standard error of 0.0270, so $t = 22.6$ and $H_0\!:\rho = 0$ is rejected: `w`
+is endogenous. That coefficient also has a value we can derive. With
+$\varepsilon = m + u$ and $v = w - 0.64z$, we have
+$\text{Cov}(\varepsilon, v) = \text{Cov}(m,w) = 0.36$ and
+$\text{Var}(v) = 1 - 0.64^2 = 0.5904$, so $\rho = 0.36/0.5904 = 0.610$. The
+estimate matches it to three decimals. One caveat: the OLS standard errors from the augmented regression are not valid for $\hat\beta$ ($\hat v$ is a generated regressor; the DWH test is fine because under $H_0$ the first-stage estimation error does not matter). Use 2SLS standard errors, or bootstrap the two stages jointly as we do in the Poisson IV chapter.
 
-::: {.callout-note}
-**Why FWL fails in nonlinear models.**  FWL relies on the residual-maker matrix being idempotent
-and the second stage being linear — both fail once we replace OLS with Poisson or Probit.
-In a nonlinear second stage, $\hat{v}$ must enter *inside* the link function
-(e.g. $\exp(\mathbf{x}\boldsymbol\beta + \rho\hat{v})$), which requires a structural assumption
-beyond instrument exogeneity.  This is the subject of the next chapter.
-:::
+**Why FWL fails in nonlinear models.** FWL is a property of linear projections; once we replace OLS with Poisson or Probit, the estimator is no longer a linear projection and the partialling-out logic does not apply. In a nonlinear second stage, $\hat v$ must enter *inside* the link function (e.g. $\exp(\mathbf{x}\boldsymbol\beta + \rho \hat v)$), which requires a structural assumption beyond instrument exogeneity. This is the subject of the next chapter.
 
 ## When 2SLS with Covariates Is *Actually* LATE
 
@@ -299,15 +311,31 @@ $$ {#eq-iv-rdd-7}
 
 This is a parametric assumption about $E[Z \mid X]$. It is implicit in the linear-in-$X$ specification, and it is rarely defended. When it fails, $\beta_{iv}$ picks up treatment effects for always-takers as well as compliers, and some always-taker terms enter with negative weight.
 
-::: {.callout-warning}
 "2SLS with covariates estimates LATE" is true only if $X$ enters saturated (one dummy per cell), or the true $E[Z \mid X]$ happens to be linear in $X$.
-:::
 
 ### A Simulation
 
-We build a DGP where $E[Z \mid X]$ is wildly nonlinear in $X$, so the linear-in-$X$ specification has to fail. Then we compare four estimators against the true LATE.
+We build a DGP where $E[Z \mid X]$ is strongly nonlinear in $X$, so the
+linear-in-$X$ specification has to fail, and then compare four estimators
+against the true LATE.
 
-```{julia}
+We draw $n = 8000$ observations with a single covariate $X \sim U(-1,1)$. The
+instrument is $Z \sim \text{Bernoulli}(p_Z(X))$ with
+$p_Z(X) = \Lambda(0.3 + X + 2\sin(2.5\pi X))$ --- the sine term is what a linear
+projection cannot reproduce. Potential treatments come from one uniform draw
+$U$ compared against two thresholds, $T_0 = \mathbb{1}\{U < \Lambda(-1.6+X)\}$
+and $T_1 = \mathbb{1}\{U < \min(\Lambda(-0.4+X)+0.2,\, 0.95)\}$, so
+$T_1 \ge T_0$ and monotonicity holds by construction. Observed treatment is
+$W = ZT_1 + (1-Z)T_0$. The effect is heterogeneous in $X$, $\tau(X) = 0.5+1.5X$,
+and the potential outcomes are $Y(0) = 1 + 2X + 0.8X^2 + \varepsilon$ with
+$\varepsilon \sim N(0,1)$ and $Y(1) = Y(0) + \tau(X)$.
+
+Two features matter. $X$ enters both the instrument propensity and the
+treatment thresholds, so $Z$ is exogenous only conditional on $X$. And
+$\tau$ depends on $X$, so which units the instrument moves determines the
+answer.
+
+```{julia tsls-late-dgp}
 #| warning: false
 #| message: false
 #| cache: true
@@ -349,26 +377,34 @@ Y1 = Y0 .+ τ
 Y  = ifelse.(W .== 1, Y1, Y0)
 
 true_LATE = mean(τ[G .== :CP])
-@printf("Compliance shares  AT=%.2f  CP=%.2f  NT=%.2f\n",
+@printf("Compliance shares  AT=%.3f  CP=%.3f  NT=%.3f\n",
         mean(G .== :AT), mean(G .== :CP), mean(G .== :NT))
 @printf("True unconditional LATE = %.3f\n", true_LATE)
 ```
 
-Now we compare four estimators. Julia has no equivalent of R's `DoubleML` package, so we implement DDML PLIV manually with 5-fold cross-fitting using random-forest nuisance estimates. This is the same pattern the `nonparametric.qmd` chapter uses for DDML PLR.
+The compliance shares are 18.8% always-takers, 42.5% compliers and 38.8%
+never-takers, and the true LATE, the mean of $\tau$ over compliers, is 0.617.
 
-```{julia}
+We now compare four estimators against it: the unconditional Wald ratio, 2SLS
+with $X$ entered linearly, 2SLS with a degree-7 polynomial in $X$, and DDML
+PLIV with random-forest nuisance learners. Julia has no counterpart of R's
+`DoubleML` package, so we write the PLIV cross-fitting out.
+
+```{julia tsls-late-estimators}
 #| warning: false
 #| message: false
+#| echo: true
 #| cache: true
-
-# Helper: TSLS via the matrix expression (X is the exogenous matrix incl. constant).
+# Helper: TSLS via the matrix expression (Xmat is the exogenous matrix incl.
+# constant). Returns the coefficient on W and its conventional standard error.
 function tsls_matrix(Y, W, Z, Xmat)
     Wmat = hcat(W, Xmat)
     Zmat = hcat(Z, Xmat)
-    P    = Zmat * ((Zmat' * Zmat) \ Zmat')
-    What = P * Wmat
+    What = Zmat * ((Zmat' * Zmat) \ (Zmat' * Wmat))
     β    = (What' * Wmat) \ (What' * Y)
-    return β[1]
+    e    = Y .- Wmat * β
+    σ2   = sum(abs2, e) / (length(Y) - size(Wmat, 2))
+    return β[1], sqrt(σ2 * inv(What' * What)[1, 1])
 end
 
 # (a) Wald — biased: Z is not unconditionally exogenous because X confounds.
@@ -376,16 +412,15 @@ wald = (mean(Y[Z .== 1]) - mean(Y[Z .== 0])) /
        (mean(W[Z .== 1]) - mean(W[Z .== 0]))
 
 # (b) TSLS with X entered linearly — the textbook spec.
-b_lin  = tsls_matrix(Float64.(Y), Float64.(W), Float64.(Z),
-                     hcat(ones(n), X))
+b_lin, se_lin = tsls_matrix(Float64.(Y), Float64.(W), Float64.(Z), hcat(ones(n), X))
 
-# (c) TSLS with a rich polynomial basis — closer to saturation.
-b_poly = tsls_matrix(Float64.(Y), Float64.(W), Float64.(Z),
-                     hcat([X .^ k for k in 0:7]...))
+# (c) TSLS with a rich basis (polynomial up to degree 7) — closer to saturation.
+b_poly, se_poly = tsls_matrix(Float64.(Y), Float64.(W), Float64.(Z),
+                              hcat([X .^ k for k in 0:7]...))
 
-# (d) DDML PLIV with random-forest nuisance estimates and 5-fold cross-fitting.
+# (d) DDML PLIV with random-forest nuisance learners and 5-fold cross-fitting.
 RandomForestRegressor = @load RandomForestRegressor pkg=DecisionTree verbosity=0
-learner = RandomForestRegressor(n_trees=500, max_depth=5)
+learner = RandomForestRegressor(n_trees = 500, max_depth = 5)
 
 nsplits = 5
 s       = shuffle(1:n)
@@ -394,7 +429,6 @@ folds   = [s[1 + floor(Int, (k-1)*n/nsplits) : floor(Int, k*n/nsplits)]
 
 mY = zeros(n); mW = zeros(n); mZ = zeros(n)
 Xtab = DataFrame(X = X)
-
 for fold_idx in 1:nsplits
     test  = folds[fold_idx]
     train = setdiff(1:n, test)
@@ -406,47 +440,52 @@ for fold_idx in 1:nsplits
 end
 
 rY = Y .- mY; rW = W .- mW; rZ = Z .- mZ
-b_pliv = sum(rZ .* rY) / sum(rZ .* rW)
+b_pliv  = sum(rZ .* rY) / sum(rZ .* rW)
+ψ       = (rY .- b_pliv .* rW) .* rZ              # PLIV score
+se_pliv = sqrt(mean(ψ .^ 2) / mean(rW .* rZ)^2 / n)
 
 results = DataFrame(
     Estimator = ["True LATE",
                  "Wald (no covariates)",
                  "TSLS, X linear",
                  "TSLS, poly(X, 7)",
-                 "DDML PLIV (manual, RF)"],
-    Estimate  = [true_LATE, wald, b_lin, b_poly, b_pliv]
+                 "DDML PLIV (cross-fit, random forest)"],
+    Estimate  = round.([true_LATE, wald, b_lin, b_poly, b_pliv], digits = 3),
+    SE        = [missing, missing, round(se_lin, digits = 3), round(se_poly, digits = 3),
+                 round(se_pliv, digits = 3)]
 )
-results
 ```
 
-The linear-in-$X$ 2SLS does not recover the true LATE. The polynomial 2SLS is closer, and DDML PLIV is close to the polynomial estimate. The Wald estimator is far off because $Z$ is not unconditionally exogenous, and Wald has no way to use $X$.
+The linear-in-$X$ 2SLS does not recover the true LATE — and neither do the more flexible versions. Two things are going on, and the standard errors in the table help separate them. First, the estimands differ: for this DGP the linear-projection 2SLS converges to 0.55, and the polynomial 2SLS and DDML PLIV converge to approximately $\beta_{rich} = 0.58$ (computable by integrating the weight formula below), all below the LATE of 0.617 — a real but modest gap that persists at any sample size. Second, sampling noise: the SEs are 0.06 to 0.07, and in this draw each estimate lands within 0.01 of its own estimand, at 0.552, 0.585 and 0.582, so here the whole gap to the LATE is the difference in estimands. The Wald estimator is far off for a different reason entirely, at 1.910 against a truth of 0.617: $Z$ is not unconditionally exogenous, and Wald has no way to use $X$.
 
-What are the polynomial 2SLS and DDML PLIV estimating, if not LATE? Both target $\beta_{rich}$, a weighted average of conditional LATEs with weights proportional to $\text{Var}(Z \mid X) \cdot P(\text{complier} \mid X)$. It is non-negatively weighted, so it is weakly causal. But it is not the unconditional LATE we usually want.
+What are the polynomial 2SLS and DDML PLIV estimating, if not LATE? PLIV targets $\beta_{rich}$, a weighted average of conditional LATEs with weights proportional to $\text{Var}(Z \mid X) \cdot P(\text{complier} \mid X)$; the polynomial 2SLS targets nearly the same quantity (a degree-7 polynomial cannot fully reproduce this $E[Z \mid X]$, so its estimand is a misspecified-projection variant sitting just below $\beta_{rich}$). These are non-negatively weighted, so weakly causal. But they are not the unconditional LATE we usually want.
 
 ### Diagnostic: RESET on Z ~ X
 
-Rich covariates says $E[Z \mid X]$ is linear in $X$. That is exactly the null of Ramsey's RESET test [@ramsey-1969]. Julia has no direct equivalent of R's `lmtest::resettest()`, but the test is just an F-test of joint significance of higher powers of $X$.
+Rich covariates says $E[Z \mid X]$ is linear in $X$. That is exactly the null of Ramsey's RESET test [@ramsey-1969]. We can apply it to a regression of $Z$ on $X$ and see whether higher-order terms of $X$ are jointly significant.
 
-```{julia}
+```{julia tsls-late-reset}
 #| warning: false
 #| message: false
+#| echo: true
 #| cache: true
 using GLM
-
+# RESET with type = "regressor", power = 2:3: F-test of X^2 and X^3 added to Z ~ X
 df_reset       = DataFrame(Z = Float64.(Z), X = X, X2 = X .^ 2, X3 = X .^ 3)
-m_restricted   = lm(@formula(Z ~ X),                df_reset)
-m_unrestricted = lm(@formula(Z ~ X + X2 + X3),      df_reset)
-rss_r          = sum(residuals(m_restricted) .^ 2)
-rss_u          = sum(residuals(m_unrestricted) .^ 2)
-q              = 2          # restrictions
-k_u            = 4          # parameters in unrestricted
+m_restricted   = lm(@formula(Z ~ X), df_reset)
+m_unrestricted = lm(@formula(Z ~ X + X2 + X3), df_reset)
+rss_r, rss_u   = sum(abs2, residuals(m_restricted)), sum(abs2, residuals(m_unrestricted))
+q, k_u         = 2, 4
 F_stat         = ((rss_r - rss_u) / q) / (rss_u / (n - k_u))
-pval           = 1 - cdf(FDist(q, n - k_u), F_stat)
-@printf("RESET-style F on Z ~ X (joint test of X^2, X^3): F = %.2f, p = %.4g\n",
-        F_stat, pval)
+@printf("RESET = %.2f, df1 = %d, df2 = %d, p-value = %.3g\n",
+        F_stat, q, n - k_u, ccdf(FDist(q, n - k_u), F_stat))
 ```
 
-In our DGP it rejects strongly. The same test on real data is cheap, and it tells us whether the LATE interpretation is defensible before we report a 2SLS coefficient.
+It rejects strongly here, $\text{RESET} = 131.6$ on 2 and 7,996 degrees of
+freedom with $p < 10^{-56}$, which is the right answer given that we
+put a sine wave in $E[Z \mid X]$. The same test on real data is cheap, and it
+tells us whether the LATE interpretation is defensible before we report a 2SLS
+coefficient.
 
 ### What to Do Instead
 
@@ -454,18 +493,18 @@ In our DGP it rejects strongly. The same test on real data is cheap, and it tell
 
 1. **Reconsider the covariates.** If $Z$ is unconditionally exogenous, drop them. A kitchen-sink set of controls makes rich covariates *less* likely.
 2. **Run RESET on `Z ~ X`.** If it does not reject, the linear-IV-as-LATE interpretation is defensible.
-3. **If RESET rejects, report DDML PLIV alongside 2SLS.** Julia has no first-class PLIV package, so the manual cross-fitting above is the recommended route. In R the package is `DoubleML`; in Stata it is `ddml`. DDML PLIV targets $\beta_{rich}$, a non-negatively weighted average of conditional LATEs.
+3. **If RESET rejects, report DDML PLIV alongside 2SLS.** That is what the cross-fitting chunk above does. DDML PLIV targets $\beta_{rich}$, a non-negatively weighted average of conditional LATEs.
 4. **For a binary instrument, also estimate the unconditional LATE.** With instrument propensity score weighting [@sloczynski-2024],
 
    $$
    \hat\beta_{late} = \frac{\sum_i Y_i [Z_i/\hat p(X_i) - (1-Z_i)/(1-\hat p(X_i))]}{\sum_i W_i [Z_i/\hat p(X_i) - (1-Z_i)/(1-\hat p(X_i))]},
    $$ {#eq-iv-rdd-8}
 
-   where $\hat p(X) = P(Z = 1 \mid X)$ is estimated nonparametrically. Stata has `kappalate` (Słoczyński, Uysal, and Wooldridge). In Julia or R it is straightforward to build once $\hat p(X)$ is in hand.
+   where $\hat p(X) = P(Z = 1 \mid X)$ is estimated nonparametrically. Stata has `kappalate` (Słoczyński, Uysal and Wooldridge), which implements this and related weighting estimators of the LATE. In Julia it is straightforward to build once $\hat p(X)$ is in hand.
 
 ### A Note on the FRDD Example
 
-The fuzzy-RDD example at the end of this chapter is 2SLS with race, state of birth, and quarter-of-birth fixed effects entered as covariates. The 2SLS estimate and the local `RDRobust` estimate differ. We called that "sensitivity to model selection" earlier. The rich-covariates story is at least as plausible an explanation, and the RESET test is the right first thing to run.
+The fuzzy-RDD example at the end of this chapter is 2SLS with race, state of birth, and quarter-of-birth fixed effects entered as covariates. That section traces the gap between the 2SLS and the local `rdrobust` estimates to the first stage, which is close to zero near the cutoff. Rich covariates is a separate question about the 2SLS estimate itself, and the RESET test on the above-cutoff instrument against those covariates is the right first thing to run.
 
 ### Bottom Line
 
@@ -483,11 +522,13 @@ $$ W=\mathbb{1}(X>c)$$ {#eq-iv-rdd-9}
 
 Lee (2008) studies the effect of incumbency advantage in elections. His identification strategy is based on the discontinuity generated by the rule that the party with a majority vote share wins. The forcing variable $X_i$ is the difference in vote share between the Democratic and Republican parties in one election, with the threshold $c = 0$. The outcome variable $Y_i$ is vote share at the second election.
 
-```{julia}
+`rdplot` bins the running variable and returns bin means and a polynomial fit on
+each side of the cutoff, which we plot. A visible jump at zero is the design working.
+
+```{julia rdd1}
 #| warning: false
 #| message: false
 #| echo: true
-using CSV
 senate = CSV.read("data/rdrobust_senate.csv", DataFrame)
 
 # Calculate RD plot data
@@ -510,6 +551,11 @@ vlines!(ax, [0.0], color=:black, linestyle=:dash)
 fig
 ```
 
+The `rdrobust_RDsenate` data are 1,297 US Senate races. The running variable
+`margin` is the Democratic margin of victory in an election and `vote` is the
+Democratic vote share in the next election for the same seat. The bin means
+step up discontinuously at a margin of zero.
+
 ### Identification of SRDD
 
 $$ \tau_{RD} = \lim_{x \to c^+} E[Y|X=x] - \lim_{x \to c^-} E[Y|X=x] $$ {#eq-iv-rdd-10}
@@ -518,52 +564,78 @@ In words, the treatment effect is the difference in the outcome from the right s
 
 ### Estimation of SRDD
 
-```{julia}
+Before the real data, a simulation where we know the answer. We draw $n = 1000$
+students with $\text{GPA} \sim U(0,4)$ and outcome
+$Y = 10 + 1.5\,\text{GPA} + 2 \cdot \mathbb{1}\{\text{GPA} > 3\} + \varepsilon$
+with $\varepsilon \sim N(0,1)$. The cutoff is 3 and the true jump is 2. The
+running variable also has a direct effect on the outcome, with slope 1.5, which
+is what the local regression on each side has to absorb.
+
+```{julia rdd2}
 #| warning: false
 #| message: false
 #| echo: true
+Random.seed!(2024)
 GPA = rand(Uniform(0, 4), 1000)
 # Treatment is W = 1(GPA > 3), so the +2 jump must sit on the right
 # (above-cutoff) side to match the right-minus-left estimand above.
 future_success = 10 .+ 1.5 .* GPA .+ 2 .* (GPA .> 3) .+ rand(Normal(0, 1), 1000)
 
-plot_data_gpa = rdplot(future_success, GPA, c=3.0)
+plot_data_gpa = rdplot(future_success, GPA, c = 3.0)
 
 fig2 = Figure()
-ax2 = Axis(fig2[1, 1], xlabel="GPA", ylabel="Future Success")
-scatter!(ax2, plot_data_gpa.vars_bins.rdplot_mean_x, plot_data_gpa.vars_bins.rdplot_mean_y, 
-         color=:gray, markersize=6)
-
+ax2 = Axis(fig2[1, 1], xlabel = "GPA", ylabel = "Future Success")
+scatter!(ax2, plot_data_gpa.vars_bins.rdplot_mean_x, plot_data_gpa.vars_bins.rdplot_mean_y,
+         color = :gray, markersize = 6)
 poly_gpa_l = filter(r -> r.rdplot_x < 3.0, plot_data_gpa.vars_poly)
-lines!(ax2, poly_gpa_l.rdplot_x, poly_gpa_l.rdplot_y, color=:blue, linewidth=2)
-
+lines!(ax2, poly_gpa_l.rdplot_x, poly_gpa_l.rdplot_y, color = :blue, linewidth = 2)
 poly_gpa_r = filter(r -> r.rdplot_x >= 3.0, plot_data_gpa.vars_poly)
-lines!(ax2, poly_gpa_r.rdplot_x, poly_gpa_r.rdplot_y, color=:blue, linewidth=2)
-
-vlines!(ax2, [3.0], color=:black, linestyle=:dash)
+lines!(ax2, poly_gpa_r.rdplot_x, poly_gpa_r.rdplot_y, color = :blue, linewidth = 2)
+vlines!(ax2, [3.0], color = :black, linestyle = :dash)
 fig2
 ```
 
-```{julia}
+```{julia rdd3}
 #| warning: false
 #| message: false
 #| echo: true
-# Estimate the sharp RDD model
-rdd_gpa = rdrobust(future_success, GPA, c=3.0)
-@printf "Tau (conventional)   = %.4g\n" rdd_gpa.Estimate.tau_us[1]
-@printf "P-value (robust)     = %.4f\n" rdd_gpa.pv.PValue[3]
+# a compact summary, like R's summary() of an rdrobust fit
+function rd_summary(r)
+    @printf("Bandwidth h = %.3f, b = %.3f; N = %d left, %d right; effective N = %d left, %d right\n",
+            r.bws.h_left[1], r.bws.b_left[1], r.N[1], r.N[2], r.N_h[1], r.N_h[2])
+    DataFrame(Method = r.coef.Method, Coef = round.(r.coef.Coeff, digits = 4),
+              SE = round.(r.se.StdErr, digits = 4), p = round.(r.pv.PValue, sigdigits = 3),
+              CI_low = round.(r.ci.CILower, digits = 3), CI_high = round.(r.ci.CIUpper, digits = 3))
+end
+
+# estimate the sharp RDD model
+rdd_gpa = rdrobust(future_success, GPA, c = 3.0)
+rd_summary(rdd_gpa)
 ```
+
+The estimated jump is 2.078 with a robust 95% interval of $[1.276, 2.815]$,
+covering the true 2. Note how little data the estimate uses: the MSE-optimal
+bandwidth is 0.373, so of the 1,000 observations only 94 on the left and 98 on
+the right are effective. A local estimator pays for its weak assumptions with
+a small effective sample, which is why the interval is 1.5 wide for a jump of 2.
 
 ### Nonparametric Estimation
 
-```{julia}
+Now the same estimator on the Senate data, with the cutoff at a margin of zero.
+
+```{julia rdd4}
 #| warning: false
 #| message: false
 #| echo: true
-rdd_house = rdrobust(senate.vote, senate.margin, c=0.0)
-@printf "Tau (conventional)   = %.4g\n" rdd_house.Estimate.tau_us[1]
-@printf "P-value (robust)     = %.4f\n" rdd_house.pv.PValue[3]
+rdd_house = rdrobust(senate.vote, senate.margin, c = 0.0)
+rd_summary(rdd_house)
 ```
+
+The incumbency effect is 7.414 percentage points with a robust 95% interval of
+$[4.094, 10.919]$. Barely winning a Senate seat raises the party's vote share
+in the next election for that seat by about 7 points. The bandwidth is 17.75
+margin points, leaving 360 observations on the left and 323 on the right out of
+1,297.
 
 ### Fuzzy RDD
 
@@ -581,62 +653,100 @@ Fetter (2013)'s main question of interest is how much of the increase in the hom
 
 We're using the running variable quarter of birth (qob), which has been centered on the quarter of birth you'd need to be to be eligible for a mortgage subsidy for fighting in the Korean War (qob_minus_kw). This determines whether you were a veteran of either the Korean War or World War II (vet_wwko).
 
-```{julia}
+```{julia rdd5}
 #| warning: false
 #| message: false
 #| echo: true
 #| cache: true
-using CSV
-
-# Load the real mortgages dataset (Fetter 2013) from causaldata R package
-vet = CSV.read("data/mortgages.csv", DataFrame)
-
+vet = CSV.read("data/mortgages.csv", DataFrame)   # causaldata::mortgages
 # Create an "above-cutoff" variable as the instrument
-vet.above = vet.qob_minus_kw .> 0
-
+vet.above = Float64.(vet.qob_minus_kw .> 0)
 # Impose a bandwidth of 12 quarters on either side
 vet = vet[abs.(vet.qob_minus_kw) .< 12, :]
-
-# Manual 2SLS explicitly (educational)
-# We have Fixed Effects for state (bpl) and quarter of birth (qob).
-# Endogenous variable: vet_wwko and qob_minus_kw * vet_wwko
-# Instruments: above and qob_minus_kw * above
-vet.vet_inter = vet.qob_minus_kw .* vet.vet_wwko
+# The running variable qob_minus_kw is exogenous, so it goes with the controls.
+# The endogenous regressors are veteran status and its interaction with the
+# running variable, instrumented by being above the cutoff and that interaction.
+vet.vet_inter   = vet.qob_minus_kw .* vet.vet_wwko
 vet.above_inter = vet.qob_minus_kw .* vet.above
-
-# Stage 1a: Predict vet_wwko
-stage1a = feols(vet, @formula(vet_wwko ~ nonwhite + qob_minus_kw + above + above_inter + fe(bpl) + fe(qob)))
-vet.vet_wwko_hat = vet.vet_wwko .- stage1a.residuals
-
-# Stage 1b: Predict vet_inter
-stage1b = feols(vet, @formula(vet_inter ~ nonwhite + qob_minus_kw + above + above_inter + fe(bpl) + fe(qob)))
-vet.vet_inter_hat = vet.vet_inter .- stage1b.residuals
-
-# Stage 2: Regress home_ownership on fitted endogenous variables
-# Note: we use RobustVcov for heteroskedasticity-robust SEs
-m_iv = feols(vet, @formula(home_ownership ~ nonwhite + qob_minus_kw + vet_wwko_hat + vet_inter_hat + fe(bpl) + fe(qob)), vcov=Vcov.robust())
-show_regression_html(m_iv)
+m = feiv(vet, @formula(home_ownership ~ nonwhite + qob_minus_kw + fe(bpl) + fe(qob));
+         endo = [:vet_wwko, :vet_inter], inst = [:above, :above_inter],
+         vcov_type = Vcov.robust())   # heteroskedasticity-robust SEs
 ```
 
-```{julia}
+The 2SLS estimate is 0.1702 with a heteroskedasticity-robust standard error of
+0.0459: veteran status raises home ownership by 17 percentage points. The
+sample is 56,901 people within 12 quarters of the cutoff, with birthplace and
+quarter-of-birth fixed effects. The first-stage $F$ statistics are 316 and
+1,861, so the instruments are strong, and the Wu-Hausman test rejects
+exogeneity of veteran status at $p = 0.001$. The interaction of veteran status
+with the running variable is not significant, so there is little evidence that
+the slope differs across the cutoff.
+
+Now the same design estimated locally with `rdrobust`. We pass race and state
+of birth as covariates, but not quarter of birth. Quarter of birth is a
+function of the running variable, and the local window holds only three
+quarters on each side of the cutoff. There the quarter-of-birth dummies
+duplicate the local linear fits, and the jump is not identified with them in.
+`rdrobust` still returns a number, but the number is arbitrary: with the
+dummies included, R's `rdrobust` gives 0.096 or 0.838, depending only on
+whether the covariate matrix carries an intercept column. `RDRobust.jl` gives a
+third value and warns that the estimate is not identified.
+
+```{julia rdd6}
 #| warning: false
 #| message: false
 #| echo: true
 #| cache: true
-# Fuzzy RDD using rdrobust (local polynomial, MSE-optimal bandwidth)
-# Note: rdrobust uses a data-driven bandwidth — no global FE needed
+# race and state of birth; quarter of birth is left out (see text)
+states    = sort(unique(vet.bpl))
+conmatrix = hcat(Float64.(vet.nonwhite), [Float64.(vet.bpl .== s) for s in states[2:end]]...)
 m_rdd = rdrobust(vet.home_ownership,
                  vet.qob_minus_kw,
                  fuzzy = vet.vet_wwko,
-                 c = 0.0)
-@printf "Manual 2SLS     tau = %.4g\n" m_iv.beta[3]
-@printf "RDRobust (FRDD) tau = %.4g\n" m_rdd.Estimate.tau_us[1]
+                 c = 0.0,
+                 covs = conmatrix)
+rd_summary(m_rdd)
 ```
 
-These two results are very different, which is one of RDD's problems. It can be sensitive to model selection. For example, in the case of 2SLS, it's a linear model. In the case of `rdrobust`, it's a local regression, which can be sensitive to bandwidth selection.
+`rdrobust` returns a conventional estimate of 2.37 with a standard error of
+4.97, and a bias-corrected estimate of 6.51 with a robust standard error of
+5.76. The robust 95% interval runs from $-4.78$ to 17.80. For an effect on a
+probability, that says nothing.
+
+The reason is the first stage. A fuzzy RD divides the jump in the outcome by
+the jump in treatment at the cutoff. Here we estimate the second jump directly,
+with the same covariates and bandwidth.
+
+```{julia rdd7}
+#| warning: false
+#| message: false
+#| echo: true
+#| cache: true
+# first stage: the jump in veteran status at the cutoff
+fs = rdrobust(Float64.(vet.vet_wwko), vet.qob_minus_kw, c = 0.0,
+              covs = conmatrix, h = m_rdd.bws.h_left[1])
+display(rd_summary(fs))
+# veteran share by quarter near the cutoff
+combine(groupby(filter(:qob_minus_kw => q -> abs(q) < 4, vet), :qob_minus_kw, sort = true),
+        :vet_wwko => mean => :vet_share)
+```
+
+Within 2.6 quarters of the cutoff, veteran status does not jump: the estimate
+is $-0.010$ with a standard error of 0.021. The veteran share falls from 0.56
+two and a half quarters before the cutoff to 0.29 two and a half quarters after,
+but it falls steadily across those quarters, with no break at zero. The fuzzy
+estimate divides a noisy jump in home ownership by a jump in treatment that is
+indistinguishable from zero.
+
+2SLS finds a strong first stage because it fits one line on each side over 12
+quarters and reads the jump off where the two lines meet. The steep decline near
+the cutoff then registers as a large jump. Its 0.17 rests on that linear
+specification. The local estimator drops the assumption, and the data near the
+cutoff then have nothing to say. The two estimates do not contradict each other.
+The local one is uninformative here.
 
 ## Summary
 
 An instrument recovers an effect when the confounder is unobserved. It must move the treatment (relevance), reach the outcome only through the treatment (exclusion) and be as good as random. With heterogeneous effects and no defiers, the Wald ratio identifies the LATE, the effect on compliers. Adding covariates linearly keeps that interpretation only under the rich-covariates condition, that the instrument's conditional mean is linear in the covariates. A RESET test on the instrument checks it. Regression discontinuity replaces the instrument with a cutoff in a running variable and assumes continuity at the cutoff. Fuzzy RDD is IV at the cutoff.
 
-In the simulation, OLS gives 1.357, and 2SLS gives 1.000 against a true 1. With a nonlinear instrument propensity, the true LATE is 0.617 and the linear 2SLS gives 0.552. The Senate incumbency effect is 7.4 percentage points. In the Korean War example, 2SLS puts the effect of veteran status on home ownership at 17 percentage points.
+In the simulation, OLS gives 1.3571, and 2SLS gives 0.9999 against a true 1. With a nonlinear instrument propensity, the true LATE is 0.617 and the linear 2SLS converges to 0.55. The Senate incumbency effect is 7.4 percentage points. In the Korean War example, 2SLS gives 0.1702 (0.0459). The local `rdrobust` estimate, 2.37 (4.97), is uninformative, because veteran status does not jump at the cutoff within the local window. The 2SLS first stage comes from linear fits over 12 quarters.

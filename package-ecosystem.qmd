@@ -23,7 +23,7 @@ The standard `julia-1.12` Jupyter kernel uses `--project=@.`, so Quarto picks up
 
 | Package | Used For | Main Book Chapters |
 |---|---|---|
-| `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, IV/2SLS (`feiv`), and ETWFE post-processing (`emfx()`, `dataset()`) | Estimation, DiD, IV/RDD |
+| `Panelest.jl` | Fixed-effects OLS, GLM-style panel models, clustered covariance, IV/2SLS (`feiv`), and Wooldridge's ETWFE (`etwfe()`, `emfx()`) | Estimation, DiD, IV/RDD |
 | `CausalGraphs.jl` | DAG/ADMG construction, graph-based identification, Pearl-Shpitser ID, and estimator routing | Identification, DAGs/ADMGs, Smoking cessation |
 | `CausalEstimate.jl` | Unified TMLE and AIPW estimation: `estimate(ATE/ATT(...), TMLE/AIPW(...), df)` and graph-implied backdoor via `GraphID` | Estimation, Nonparametric, Smoking cessation |
 | `CausalInference.jl` (local clone) | PC and FCI algorithms, Fisher-Z CI tests | Causal Discovery (both chapters) |
@@ -166,19 +166,21 @@ res[:TMLE].ACE         # front-door NPS TMLE
 res[:IDPlugin].ACE     # finite-support ID plug-in
 ```
 
-## ETWFE helpers in Panelest
+## ETWFE in Panelest
 
-`Panelest` also exports `emfx()` and `dataset()` for ETWFE post-processing:
+`Panelest` fits Wooldridge's extended TWFE and aggregates its cell effects:
 
 ```julia
-using Panelest
+using Panelest, Vcov
 
-att = emfx(model)
+model = etwfe(df, @formula(y ~ x); gvar = :first_treat, tvar = :year,
+              vcov = Vcov.cluster(:id))
+att         = emfx(model)
 event_study = emfx(model, type = "event")
 calendar    = emfx(model, type = "calendar")
 ```
 
-`emfx()` reads the cohort-by-time interaction coefficients from a `feols` model and aggregates them into an overall ATT, event-time effects, or calendar-time effects. `dataset("mpdta")` returns a synthetic balanced panel with string cohort and year columns ready for StatsModels ETWFE interactions.
+`etwfe()` has the same specification as R's `etwfe`: cohort and year effects, one dummy per treatment cell, and Wooldridge's interactions for each control. It takes `family = "poisson"` and `cgroup = "never"`. `emfx()` averages the cell effects over treated observations into an overall ATT, event-time effects or calendar-time effects, on the count scale for Poisson. `dataset("mpdta")` returns a synthetic balanced panel for examples.
 
 ## SynthDiD.jl
 
