@@ -497,7 +497,7 @@ window.Quarto = {
 </header>
 
 
-<div id="f41fcb8f" class="cell" data-execution_count="2">
+<div id="6faebdf3" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
@@ -567,7 +567,7 @@ E[Y(1)-Y(0)] &amp;= E[Y(1)] - E[Y(0)] \\
 <h2 data-number="6.4" class="anchored" data-anchor-id="linear-ra"><span class="header-section-number">6.4</span> Linear RA</h2>
 <p>Regression Adjustment is basically an imputation estimator. While we observe <span class="math inline">\(E[Y|W=1,X]\)</span>, we model <span class="math inline">\(E[Y(0)|W=1]\)</span>, based on unconfoundedness and a functional form (say linear form). We estimate <span class="math inline">\(\beta_0\)</span> on the control sample, then get the expected values for the treated sample, for each value of <span class="math inline">\(X\)</span>.</p>
 <p>Implementation of linear RA is easy. We regress <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> and <span class="math inline">\(W\)</span> and their interaction. It’s shown that we need to de-mean <span class="math inline">\(X\)</span> to get the effect correct.</p>
-<div id="9e2c74f3" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="3e4c55c8" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">Statistics</span>, <span class="bu">GLM</span></span>
@@ -718,7 +718,7 @@ E[Y(w)] &amp;= E[E[Y|W=w,X]] \\
 <p><span id="eq-estimation-11"><span class="math display">\[ \mu_1^{AIPW} = E[\frac{W(Y-\mu_1(X))}{\pi(X)} + \mu_1(X)]  \tag{6.11}\]</span></span></p>
 <p>For the ATT, control units are weighted by the odds <span class="math inline">\(\hat\pi(X_i)/(1-\hat\pi(X_i))\)</span> rather than <span class="math inline">\(1/(1-\hat\pi(X_i))\)</span>: this reweights the controls to the covariate distribution of the treated (one can check <span class="math inline">\({\rm E}[\frac{\pi(X)}{1-\pi(X)}(1-W)Y] = P(W=1)\, {\rm E}[Y(0)|W=1]\)</span>).</p>
 <p><span id="eq-estimation-12"><span class="math display">\[ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)]  \tag{6.12}\]</span></span></p>
-<div id="4fffa082" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="7a5c2878" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
@@ -776,7 +776,7 @@ E[Y(w)] &amp;= E[E[Y|W=w,X]] \\
 <li>Get predicted values for setting everyone treated. Get predicted values for setting everyone control. These are the two potential outcomes.</li>
 <li>Take difference. The average is the ATE.</li>
 </ul>
-<div id="03e4704a" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<div id="1da21807" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CSV</span>, <span class="bu">DataFrames</span>, <span class="bu">GLM</span>, <span class="bu">Statistics</span></span>
@@ -823,6 +823,12 @@ E[Y(w)] &amp;= E[E[Y|W=w,X]] \\
 <pre><code>ATE (IPWRA) = -233.2</code></pre>
 </div>
 </div>
+</section>
+</section>
+<section id="summary" class="level2" data-number="6.7">
+<h2 data-number="6.7" class="anchored" data-anchor-id="summary"><span class="header-section-number">6.7</span> Summary</h2>
+<p>Under unconfoundedness and overlap, the adjustment formula turns the causal effect into an average of observed conditional means. There are four ways to estimate it. Regression adjustment models the outcome and imputes the missing potential outcome. IPW models treatment and reweights the sample so that the covariates no longer predict treatment. AIPW and IPWRA use both models, and they are consistent if either one is correctly specified.</p>
+<p>In the 401(k) data, linear RA with covariates de-meaned at the treated means gives an ATT of $14,160 (1,397). The interactions matter because the effect grows with income and age. In the birth-weight data, AIPW gives <span class="math inline">\(-234\)</span> g and IPWRA <span class="math inline">\(-233\)</span> g. The two use the same nuisance models, so they differ only in how the models are combined.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
@@ -830,7 +836,6 @@ E[Y(w)] &amp;= E[E[Y|W=w,X]] \\
 Słoczyński, Tymon. 2022. <span>“Interpreting <span>OLS</span> Estimands When Treatment Effects Are Heterogeneous: Smaller Groups Get Larger Weights.”</span> <em>The Review of Economics and Statistics</em> 104 (3): 501–9.
 </div>
 </div>
-</section>
 </section>
 
 </main> <!-- /main -->

@@ -497,7 +497,7 @@ window.Quarto = {
 </header>
 
 
-<div id="f138244f" class="cell" data-execution_count="2">
+<div id="86158a3b" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -575,7 +575,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <section id="example-california-proposition-99" class="level2" data-number="15.4">
 <h2 data-number="15.4" class="anchored" data-anchor-id="example-california-proposition-99"><span class="header-section-number">15.4</span> Example: California Proposition 99</h2>
 <p>California’s Proposition 99 raised cigarette taxes and funded anti-smoking programs. The usual synthetic-control exercise compares California’s cigarette sales after 1988 to a donor pool of other states. The outcome is per-capita cigarette sales in packs.</p>
-<div id="caafb5e1" class="cell" data-cache="true" data-execution_count="3">
+<div id="c56f3d5f" class="cell" data-cache="true" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>california <span class="op">=</span> <span class="fu">california_prop99</span>()</span>
@@ -588,7 +588,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 </details>
 </div>
 <p><code>SynthDiD.jl</code> orders the donor states first and treated states last. <code>TASC.jl</code> expects the treated unit to be first, so we explicitly reorder the matrix before fitting the state-space model. The paper’s Proposition 99 example uses a low latent dimension; here we set <code>d = 2</code>.</p>
-<div id="e806003a" class="cell" data-cache="true" data-execution_count="4">
+<div id="4d51938c" class="cell" data-cache="true" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Y_tasc <span class="op">=</span> <span class="fu">vcat</span>(setup.Y[(setup.N0 <span class="op">+</span> <span class="fl">1</span>)<span class="op">:</span><span class="kw">end</span>, <span class="op">:</span>], setup.Y[<span class="fl">1</span><span class="op">:</span>setup.N0, <span class="op">:</span>])</span>
@@ -606,7 +606,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="ae852cad" class="cell" data-cache="true" data-execution_count="5">
+<div id="ec2c5b59" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>estimates <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
@@ -664,7 +664,7 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 </div>
 </div>
 <p>The estimates are all negative: California’s observed cigarette sales fell below the estimated no-Proposition-99 counterfactual. The methods differ because they impose different restrictions on the untreated path. DiD compares average changes. Synthetic control chooses donor weights. Synthetic DiD adds time weights. TASC uses a low-rank state-space model and updates the latent state with post-treatment donor observations.</p>
-<div id="42065c12" class="cell" data-cache="true" data-execution_count="6">
+<div id="736280bd" class="cell" data-cache="true" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>years <span class="op">=</span> <span class="fu">Int</span>.(setup.times)</span>
@@ -705,6 +705,11 @@ y_t = Hx_t + r_t,\qquad r_t \sim N(0,R).
 </div>
 </div>
 <p>The figure emphasizes where the counterfactual enters. After 1988, the black line is observed California. The colored lines are estimates of California’s untreated path. The treatment-effect path is the vertical gap between the black line and each counterfactual.</p>
+</section>
+<section id="summary" class="level2" data-number="15.5">
+<h2 data-number="15.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">15.5</span> Summary</h2>
+<p>All three designs compare a treated unit with a donor pool over time. They differ in the structure they put on the untreated path. Synthetic control replaces parallel trends with a weighted average of donors chosen to match the treated unit before treatment. Synthetic DiD adds time weights that favour the pre-treatment periods most like the post-treatment ones. TASC models outcomes through a low-rank latent state that evolves over time, so it uses the order of time that synthetic control ignores. That is a stronger modelling assumption, and it helps when trends are stable and outcomes are noisy.</p>
+<p>For Proposition 99 all four estimates are negative: <span class="math inline">\(-27.35\)</span> for DiD, <span class="math inline">\(-19.62\)</span> for synthetic control, <span class="math inline">\(-15.60\)</span> for synthetic DiD and <span class="math inline">\(-17.11\)</span> for TASC. Each says California’s cigarette sales fell below its estimated counterfactual. The spread across methods reflects their different restrictions on the untreated path.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">

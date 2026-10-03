@@ -236,3 +236,9 @@ flowchart LR
   P --> | Yes | Q(IV or RDD)
   P --> | No | R(You are stuck!)
 ```
+
+## Summary
+
+A causal effect compares two potential outcomes, $Y(1)$ and $Y(0)$, and we only ever see one of them. So we target averages, the ATE, ATT and ATU, and identification means writing them in terms of observed data. Under unconfoundedness given the covariates $X$ and overlap, the ATT equals the treated mean minus the control mean adjusted to the covariate distribution of the treated. Two more conditions, no interference and consistency, make the observed outcome equal to the right potential outcome.
+
+When unconfoundedness is not credible, other designs replace it with their own assumptions: parallel trends for DiD, a factor structure for synthetic control, continuity at a cutoff for regression discontinuity, and a relevant and excludable instrument for IV. The flowchart maps these choices, and the rest of the book develops each one.

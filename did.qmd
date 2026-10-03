@@ -527,3 +527,9 @@ deployed docs at <https://xiangao.github.io/TVHTE.jl/> and
 <https://xiangao.github.io/tvhte/>.
 
 Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.
+
+## Summary
+
+DiD replaces unconfoundedness with parallel trends and no anticipation. The untreated trend of the treated group is taken from the control group. With staggered timing, a single TWFE coefficient averages over comparisons that can use already-treated units as controls. ETWFE fixes this by giving each cohort its own effect in each period and then aggregating. A count outcome calls for the Poisson version, which assumes parallel trends on the log scale. Spillovers and persistent outcomes each need their own tools: interference-robust DiD and dynamic panels.
+
+In the count example, Poisson ETWFE gives a log-scale effect of 0.429 (0.030) against a true 0.4. When parallel trends fails, synthetic control and synthetic DiD replace it with weighted comparisons. The chapter on synthetic control, synthetic DiD and TASC takes them up.

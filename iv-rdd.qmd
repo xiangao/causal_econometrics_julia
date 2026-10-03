@@ -634,3 +634,9 @@ m_rdd = rdrobust(vet.home_ownership,
 ```
 
 These two results are very different, which is one of RDD's problems. It can be sensitive to model selection. For example, in the case of 2SLS, it's a linear model. In the case of `rdrobust`, it's a local regression, which can be sensitive to bandwidth selection.
+
+## Summary
+
+An instrument recovers an effect when the confounder is unobserved. It must move the treatment (relevance), reach the outcome only through the treatment (exclusion) and be as good as random. With heterogeneous effects and no defiers, the Wald ratio identifies the LATE, the effect on compliers. Adding covariates linearly keeps that interpretation only under the rich-covariates condition, that the instrument's conditional mean is linear in the covariates. A RESET test on the instrument checks it. Regression discontinuity replaces the instrument with a cutoff in a running variable and assumes continuity at the cutoff. Fuzzy RDD is IV at the cutoff.
+
+In the simulation, OLS gives 1.357, and 2SLS gives 1.000 against a true 1. With a nonlinear instrument propensity, the true LATE is 0.617 and the linear 2SLS gives 0.552. The Senate incumbency effect is 7.4 percentage points. In the Korean War example, 2SLS puts the effect of veteran status on home ownership at 17 percentage points.

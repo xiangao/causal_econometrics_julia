@@ -380,3 +380,9 @@ For applied work, a useful workflow is:
 4. if identified and a-fixable, call `estimate(ATE(...), GraphID(graph=...), AIPW(...), df)`;
    for p-fixable or nested-fixable effects, call `CausalGraphs.estimate_causal(...)`;
 5. report the graph and the identification route along with the estimate.
+
+## Summary
+
+A graph states the identifying assumptions before any estimation. A DAG says which variables may cause which. An ADMG adds bidirected edges for unobserved common causes. Identification then becomes a question about the graph. Backdoor adjustment works when an observed set blocks every confounding path. The front-door formula works when a mediator carries the whole effect and is free of the hidden confounder. The Pearl-Shpitser ID algorithm decides the general case and says when no route exists, as in the bow graph.
+
+The order is graph first, identified functional second, estimator third. In the backdoor example, AIPW on the adjustment set returns 1.465 (0.102) against a true effect of 1.5. In the front-door example, the naive contrast is 0.1014. The front-door estimate is 0.0524, and its interval covers the true 0.0547.

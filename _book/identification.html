@@ -500,7 +500,7 @@ window.Quarto = {
 </header>
 
 
-<div id="5969e659" class="cell" data-execution_count="2">
+<div id="3ffe6a05" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -619,6 +619,11 @@ flowchart LR
 </div>
 </div>
 </div>
+</section>
+<section id="summary" class="level2" data-number="1.9">
+<h2 data-number="1.9" class="anchored" data-anchor-id="summary"><span class="header-section-number">1.9</span> Summary</h2>
+<p>A causal effect compares two potential outcomes, <span class="math inline">\(Y(1)\)</span> and <span class="math inline">\(Y(0)\)</span>, and we only ever see one of them. So we target averages, the ATE, ATT and ATU, and identification means writing them in terms of observed data. Under unconfoundedness given the covariates <span class="math inline">\(X\)</span> and overlap, the ATT equals the treated mean minus the control mean adjusted to the covariate distribution of the treated. Two more conditions, no interference and consistency, make the observed outcome equal to the right potential outcome.</p>
+<p>When unconfoundedness is not credible, other designs replace it with their own assumptions: parallel trends for DiD, a factor structure for synthetic control, continuity at a cutoff for regression discontinuity, and a relevant and excludable instrument for IV. The flowchart maps these choices, and the rest of the book develops each one.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
