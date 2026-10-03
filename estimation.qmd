@@ -305,3 +305,9 @@ data.tau = data.m1 .- data.m0
 tau_ipwra = mean(data.tau)
 @printf "ATE (IPWRA) = %.4g\n" tau_ipwra
 ```
+
+## Summary
+
+Under unconfoundedness and overlap, the adjustment formula turns the causal effect into an average of observed conditional means. There are four ways to estimate it. Regression adjustment models the outcome and imputes the missing potential outcome. IPW models treatment and reweights the sample so that the covariates no longer predict treatment. AIPW and IPWRA use both models, and they are consistent if either one is correctly specified.
+
+In the 401(k) data, linear RA with covariates de-meaned at the treated means gives an ATT of \$14,160 (1,397). The interactions matter because the effect grows with income and age. In the birth-weight data, AIPW gives $-234$ g and IPWRA $-233$ g. The two use the same nuisance models, so they differ only in how the models are combined.

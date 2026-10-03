@@ -1091,6 +1091,12 @@ generalized CF alpha1 = 0.8962 (SE 0.2037), rho1 = 0.2492</code></pre>
 <span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="kw">bootstrap</span> <span class="fu">r</span>(alpha1) <span class="fu">r</span>(rho1), reps(500) <span class="kw">cluster</span>(id) idcluster(new_id): boot_poisson_cf</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="summary" class="level2" data-number="19.8">
+<h2 data-number="19.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">19.8</span> Summary</h2>
+<p>In an exponential model the unobserved confounder enters multiplicatively, so the linear 2SLS logic does not carry over. A control function still works. The first-stage residual goes inside the exponential, and fixed-effects Poisson absorbs unit effects without an incidental-parameters problem. The price is a stronger assumption: the confounder’s exponential moment must be constant given the instruments and the first-stage residual, which is more than zero correlation.</p>
+<p>For a continuous endogenous regressor, the OLS residual is the control function. For a binary one, Terza’s correction is exact under joint normality. The generalized residual is its first-order approximation, and for a logit first stage it is just the response residual. In short panels the Mundlak device handles the first stage. Multiplicative-moment GMM is an alternative that needs no first-stage model. Standard errors need a cluster bootstrap. We report the naive and the control-function estimates side by side, because choosing between them by an exogeneity pretest distorts inference.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
@@ -1134,7 +1140,6 @@ Wooldridge, Jeffrey M. 1999. <span>“Distribution-Free Estimation of Some Nonli
 ———. 2014. <span>“Quasi-Maximum Likelihood Estimation and Testing for Nonlinear Models with Endogenous Explanatory Variables.”</span> <em>Journal of Econometrics</em> 182 (1): 226–34.
 </div>
 </div>
-</section>
 </section>
 
 </main> <!-- /main -->

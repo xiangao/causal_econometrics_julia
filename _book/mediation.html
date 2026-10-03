@@ -497,7 +497,7 @@ window.Quarto = {
 </header>
 
 
-<div id="1d120212" class="cell" data-execution_count="2">
+<div id="0a9fd5de" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -1237,6 +1237,12 @@ IDE + IIE = E[Y(1,M^*_1)] - E[Y(0,M^*_0)],
 <p>The one-step estimator gives an interventional direct effect of <span class="math inline">\(0.017\)</span> with a 95% interval of <span class="math inline">\([-0.228, 0.262]\)</span>, against a true <span class="math inline">\(-0.074\)</span>, and an indirect effect of <span class="math inline">\(0.000\)</span> with an interval of <span class="math inline">\([-0.190, 0.190]\)</span>, against a true <span class="math inline">\(-0.025\)</span>. Both intervals include zero and both truths.</p>
 <p><code>Crumble.jl</code> fits the Riesz representers — the weights in the one-step correction — with a neural network, and this design is hard on them. The true weight for the direct-effect functional reaches 45 in a covariate cell that holds about two observations per cross-fitting fold. When a fold misses that cell, the Riesz loss has no minimiser there and an unbounded fit can drift into the thousands. The call above bounds the weights at 100, well above the true maximum.</p>
 <p>The flexible weights cost precision. The interval here is more than twice as wide as the one from <code>medoutcon</code> in the <a href="https://xiangao.github.io/causal_econometrics_guide/mediation.html">R companion chapter</a>, which also compares the one-step estimator with TMLE; <code>Crumble.jl</code> implements only the one-step estimator.</p>
+</section>
+</section>
+<section id="summary" class="level2" data-number="22.5">
+<h2 data-number="22.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">22.5</span> Summary</h2>
+<p>Mediation splits the effect of a treatment into a part through a mediator and a part around it. The classical regression decomposition is causal only if nothing unmeasured confounds the mediator and the outcome. The controlled direct effect fixes the mediator at a level. It needs treatment and mediator randomization given covariates, and it can be estimated by g-computation, IPW or AIPW. Natural direct and indirect effects add up to the ATE. They need a cross-world independence that no experiment can implement, and no confounder of the mediator and outcome that is itself affected by treatment. Interventional effects drop the cross-world condition by using a random draw from the mediator’s distribution. Their sum then need not equal the ATE.</p>
+<p>In the simulated binary example, the three CDE estimators give 0.2113, 0.2260 and 0.2245 against a true 0.222. The natural effects show a small negative indirect effect beside a direct effect of 0.209. With a treatment-induced confounder, the one-step interventional direct effect is 0.017, with an interval from <span class="math inline">\(-0.228\)</span> to 0.262 that covers the true <span class="math inline">\(-0.074\)</span>. The flexible Riesz-representer weights make it too imprecise at <span class="math inline">\(n = 1000\)</span> to be told apart from zero.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
@@ -1247,7 +1253,6 @@ Díaz, Iván, Nima S. Hejazi, Kara E. Rudolph, and Mark J. van der Laan. 2021. <
 Vansteelandt, Stijn, and Rhian M. Daniel. 2017. <span>“Interventional Effects for Mediation Analysis with Multiple Mediators.”</span> <em>Epidemiology</em> 28 (2): 258–65.
 </div>
 </div>
-</section>
 </section>
 
 </main> <!-- /main -->

@@ -617,3 +617,9 @@ as the one from `medoutcon` in the [R companion
 chapter](https://xiangao.github.io/causal_econometrics_guide/mediation.html), which
 also compares the one-step estimator with TMLE; `Crumble.jl` implements only the
 one-step estimator.
+
+## Summary
+
+Mediation splits the effect of a treatment into a part through a mediator and a part around it. The classical regression decomposition is causal only if nothing unmeasured confounds the mediator and the outcome. The controlled direct effect fixes the mediator at a level. It needs treatment and mediator randomization given covariates, and it can be estimated by g-computation, IPW or AIPW. Natural direct and indirect effects add up to the ATE. They need a cross-world independence that no experiment can implement, and no confounder of the mediator and outcome that is itself affected by treatment. Interventional effects drop the cross-world condition by using a random draw from the mediator's distribution. Their sum then need not equal the ATE.
+
+In the simulated binary example, the three CDE estimators give 0.2113, 0.2260 and 0.2245 against a true 0.222. The natural effects show a small negative indirect effect beside a direct effect of 0.209. With a treatment-induced confounder, the one-step interventional direct effect is 0.017, with an interval from $-0.228$ to 0.262 that covers the true $-0.074$. The flexible Riesz-representer weights make it too imprecise at $n = 1000$ to be told apart from zero.

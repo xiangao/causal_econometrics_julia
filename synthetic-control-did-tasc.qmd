@@ -213,3 +213,9 @@ fig
 ```
 
 The figure emphasizes where the counterfactual enters. After 1988, the black line is observed California. The colored lines are estimates of California's untreated path. The treatment-effect path is the vertical gap between the black line and each counterfactual.
+
+## Summary
+
+All three designs compare a treated unit with a donor pool over time. They differ in the structure they put on the untreated path. Synthetic control replaces parallel trends with a weighted average of donors chosen to match the treated unit before treatment. Synthetic DiD adds time weights that favour the pre-treatment periods most like the post-treatment ones. TASC models outcomes through a low-rank latent state that evolves over time, so it uses the order of time that synthetic control ignores. That is a stronger modelling assumption, and it helps when trends are stable and outcomes are noisy.
+
+For Proposition 99 all four estimates are negative: $-27.35$ for DiD, $-19.62$ for synthetic control, $-15.60$ for synthetic DiD and $-17.11$ for TASC. Each says California's cigarette sales fell below its estimated counterfactual. The spread across methods reflects their different restrictions on the untreated path.

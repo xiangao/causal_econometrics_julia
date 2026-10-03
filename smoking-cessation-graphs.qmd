@@ -315,3 +315,9 @@ baseline ordering, which a reader may want to see. But each arrow is a causal
 assumption that can be wrong, and here none of them buys anything for this
 estimand. The grouped adjustment graph asserts less and identifies the same
 thing.
+
+## Summary
+
+We apply the graph-first workflow to the NHEFS question of how quitting smoking affects weight change from 1971 to 1982. The adjustment DAG lets the nine baseline covariates affect both quitting and weight change, and allows no unmeasured common cause beyond them. `dagitty` returns the full baseline as the adjustment set. AIPW with cross-fitted nuisance models on that set gives an effect of 3.45 kg, with a standard error of 0.75.
+
+The causal reading rests on the graph. Adding one bidirected edge between quitting and weight change leaves no valid adjustment set. The number can still be computed, but nothing then justifies reading it as an effect. A more detailed ordering among the baseline variables changes nothing here, because every backdoor path ends at a baseline variable we condition on.

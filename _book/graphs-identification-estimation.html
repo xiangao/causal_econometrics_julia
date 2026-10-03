@@ -480,7 +480,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2800e3b6" class="cell" data-execution_count="2">
+<div id="7704b1b2" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -509,7 +509,7 @@ window.Quarto = {
 <section id="a-dag-backdoor-adjustment" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="a-dag-backdoor-adjustment"><span class="header-section-number">3.2</span> A DAG: Backdoor Adjustment</h2>
 <p>Start with a simple observational study. <code>A</code> is treatment, <code>Y</code> is the outcome, and <code>X</code> is an observed confounder:</p>
-<div id="982c023a" class="cell" data-execution_count="4">
+<div id="5864e3ed" class="cell" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>g_dag <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -550,7 +550,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The graph says <code>X</code> affects both treatment and outcome. It also says there is no unobserved common cause between <code>A</code> and <code>Y</code> after we condition on <code>X</code>. In this case the treatment is a-fixable, which corresponds to backdoor-style identification.</p>
-<div id="e9dbeee9" class="cell" data-execution_count="6">
+<div id="e557ec2a" class="cell" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>id_dag <span class="op">=</span> <span class="fu">identify</span>(g_dag, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
@@ -570,7 +570,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="estimating-the-dag-effect-with-causalestimate" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="estimating-the-dag-effect-with-causalestimate"><span class="header-section-number">3.3</span> Estimating the DAG Effect with CausalEstimate</h2>
 <p>Here is a small simulated data set where <code>X</code> confounds the treatment-outcome association.</p>
-<div id="bf2f9db8" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<div id="e9696ff6" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
@@ -638,7 +638,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>Because the graph is a-fixable, <code>GraphID</code> routes to AIPW backdoor adjustment. The call below estimates the average contrast <span class="math inline">\(E[Y(1)-Y(0)]\)</span>.</p>
-<div id="21e8b209" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<div id="8bcfec90" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dag_res <span class="op">=</span> <span class="fu">estimate</span>(</span>
@@ -691,7 +691,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="an-admg-front-door-identification" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="an-admg-front-door-identification"><span class="header-section-number">3.4</span> An ADMG: Front-Door Identification</h2>
 <p>Now suppose treatment and outcome share an unobserved common cause. A simple adjustment argument no longer works. The front-door ADMG has a mediator <code>M</code> that transmits the effect of <code>A</code> to <code>Y</code>, while <code>A</code> and <code>Y</code> are hidden-confounded:</p>
-<div id="c7c9ed64" class="cell" data-execution_count="9">
+<div id="3460968b" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>g_fd <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -733,7 +733,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>The bidirected edge <code>A &lt;-&gt; Y</code> means that ordinary backdoor adjustment is not available. But the graph is p-fixable, the ADMG generalization that includes front-door identification.</p>
-<div id="40930ce7" class="cell" data-execution_count="11">
+<div id="0d129298" class="cell" data-execution_count="11">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>id_fd <span class="op">=</span> <span class="fu">identify</span>(g_fd, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
@@ -750,7 +750,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="estimating-the-admg-effect-with-causalgraphs" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="estimating-the-admg-effect-with-causalgraphs"><span class="header-section-number">3.5</span> Estimating the ADMG Effect with CausalGraphs</h2>
 <p>Simulate a front-door setting. The latent <code>U</code> is not included in the observed data; it is represented in the graph by <code>A &lt;-&gt; Y</code>.</p>
-<div id="cf86f33f" class="cell" data-cache="true" data-message="false" data-execution_count="12">
+<div id="f8ed836f" class="cell" data-cache="true" data-message="false" data-execution_count="12">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2027</span>)</span>
@@ -824,7 +824,7 @@ g(c) = E_U\big[\Lambda(c + 0.7U)\big],
 \tag{3.2}\]</span></span></p>
 <p>which evaluates to <span class="math inline">\(0.2887 \times 0.1894 = 0.0547\)</span>. The naive contrast <span class="math inline">\(E[Y\mid A=1]-E[Y\mid A=0]\)</span> equals <span class="math inline">\(0.158\)</span> in the population this DGP defines — almost three times the causal effect, because <span class="math inline">\(U\)</span> raises both the chance of treatment and the outcome. That gap is what the front-door step removes. The table below reports the sample version of the naive contrast alongside the front-door estimate.</p>
 <p>Since <code>identify()</code> returns <code>:p_fixable</code>, this is a front-door effect. <code>CausalEstimate.jl</code> currently handles backdoor (a-fixable) graphs; for p-fixable effects we call <code>CausalGraphs.estimate_causal</code> directly, which routes to NPS TMLE.</p>
-<div id="4650d126" class="cell" data-cache="true" data-message="false" data-execution_count="13">
+<div id="86089bd2" class="cell" data-cache="true" data-message="false" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fd_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
@@ -918,7 +918,7 @@ g(c) = E_U\big[\Lambda(c + 0.7U)\big],
 <li>return a hedge witness when no such reduction is possible.</li>
 </ol>
 <p>For the front-door graph, the general ID algorithm also succeeds:</p>
-<div id="0f212870" class="cell" data-execution_count="14">
+<div id="baacf302" class="cell" data-execution_count="14">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>id_alg_fd <span class="op">=</span> <span class="fu">ID_algorithm</span>(g_fd, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
@@ -930,7 +930,7 @@ g(c) = E_U\big[\Lambda(c + 0.7U)\big],
 </div>
 </div>
 <p>The printed expression reuses <code>A</code> as the inner summation index; read it as <span class="math inline">\(\sum_M P(M\mid A)\sum_{A'} P(Y\mid A', M)P(A')\)</span>, where the inner <span class="math inline">\(A'\)</span> ranges over the marginal distribution of treatment and is distinct from the <span class="math inline">\(A\)</span> being intervened on. The expression is symbolic. It is not yet an estimate. For finite-support variables, <code>CausalGraphs.estimate_causal</code> evaluates the symbolic functional by empirical probabilities and attaches a finite-support EIF standard error via the <code>:IDPlugin</code> key.</p>
-<div id="2ecec429" class="cell" data-cache="true" data-message="false" data-execution_count="15">
+<div id="a2616c2c" class="cell" data-cache="true" data-message="false" data-execution_count="15">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>id_res <span class="op">=</span> <span class="fu">with_logger</span>(<span class="fu">NullLogger</span>()) <span class="cf">do</span></span>
@@ -986,7 +986,7 @@ g(c) = E_U\big[\Lambda(c + 0.7U)\big],
 <section id="when-the-graph-says-no" class="level2" data-number="3.7">
 <h2 data-number="3.7" class="anchored" data-anchor-id="when-the-graph-says-no"><span class="header-section-number">3.7</span> When the Graph Says No</h2>
 <p>The bow graph has both a direct causal edge and unobserved confounding between the same two variables:</p>
-<div id="8035e89f" class="cell" data-execution_count="16">
+<div id="31596363" class="cell" data-execution_count="16">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>g_bow <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -1025,7 +1025,7 @@ g(c) = E_U\big[\Lambda(c + 0.7U)\big],
 </div>
 </div>
 <p>The effect of <code>A</code> on <code>Y</code> is not identified in this ADMG. The observed association mixes the direct causal effect with the latent common cause.</p>
-<div id="2f0f215b" class="cell" data-execution_count="18">
+<div id="4a698953" class="cell" data-execution_count="18">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>id_bow <span class="op">=</span> <span class="fu">identify</span>(g_bow, <span class="op">:</span>A, <span class="op">:</span>Y)</span>
@@ -1050,6 +1050,11 @@ g(c) = E_U\big[\Lambda(c + 0.7U)\big],
 <li>if identified and a-fixable, call <code>estimate(ATE(...), GraphID(graph=...), AIPW(...), df)</code>; for p-fixable or nested-fixable effects, call <code>CausalGraphs.estimate_causal(...)</code>;</li>
 <li>report the graph and the identification route along with the estimate.</li>
 </ol>
+</section>
+<section id="summary" class="level2" data-number="3.9">
+<h2 data-number="3.9" class="anchored" data-anchor-id="summary"><span class="header-section-number">3.9</span> Summary</h2>
+<p>A graph states the identifying assumptions before any estimation. A DAG says which variables may cause which. An ADMG adds bidirected edges for unobserved common causes. Identification then becomes a question about the graph. Backdoor adjustment works when an observed set blocks every confounding path. The front-door formula works when a mediator carries the whole effect and is free of the hidden confounder. The Pearl-Shpitser ID algorithm decides the general case and says when no route exists, as in the bow graph.</p>
+<p>The order is graph first, identified functional second, estimator third. In the backdoor example, AIPW on the adjustment set returns 1.465 (0.102) against a true effect of 1.5. In the front-door example, the naive contrast is 0.1014. The front-door estimate is 0.0524, and its interval covers the true 0.0547.</p>
 
 
 </section>

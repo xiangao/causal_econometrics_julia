@@ -474,7 +474,7 @@ window.Quarto = {
 </header>
 
 
-<div id="bac558b6" class="cell" data-execution_count="2">
+<div id="e5ad356b" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -541,7 +541,7 @@ P\Bigl[\frac{A}{\hat\pi(X)}\bigl\{Y - \hat\mu_1(X)\bigr\} + \hat\mu_1(X)\Bigr]
 </section>
 <section id="simulation-setup" class="level3" data-number="8.2.2">
 <h3 data-number="8.2.2" class="anchored" data-anchor-id="simulation-setup"><span class="header-section-number">8.2.2</span> Simulation Setup</h3>
-<div id="6fa429c5" class="cell" data-cache="true" data-message="false" data-execution_count="3">
+<div id="0573886b" class="cell" data-cache="true" data-message="false" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
@@ -575,7 +575,7 @@ P\Bigl[\frac{A}{\hat\pi(X)}\bigl\{Y - \hat\mu_1(X)\bigr\} + \hat\mu_1(X)\Bigr]
 </div>
 <p>The line above reports <code>mean(Y.1 - Y.0)</code> for this particular draw. That is a legitimate quantity — the <em>sample</em> average treatment effect — but it is not a fixed benchmark, and it is easy to mistake for one. The potential outcomes are binary, so at <span class="math inline">\(n = 1000\)</span> this realized average has a sampling standard deviation of about 0.020: two runs of the same DGP under different seeds can differ by 0.04 without anything being wrong. (The R and Julia editions of this chapter print 0.21 and 0.184 for exactly this reason.) Estimator standard errors in this chapter are around 0.03, so a noisy target of that size would swamp the comparison we are trying to make.</p>
 <p>The <em>population</em> ATE is a definite number, and since the DGP is fully specified we can integrate it out rather than simulate it:</p>
-<div id="2e688429" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="ee54d352" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># w1, w2 ~ Bernoulli(0.5); w3 ~ U(0,4); w4 ~ U(0,5). Average the true individual</span></span>
@@ -607,7 +607,7 @@ Exact population ATE:           0.2028</code></pre>
 </div>
 </div>
 <p>Compare the estimators below against 0.2028, not against the realized draw.</p>
-<div id="9321597c" class="cell" data-cache="true" data-message="false" data-execution_count="5">
+<div id="1cc5e101" class="cell" data-cache="true" data-message="false" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load MLJ models to form our equivalent of SuperLearner</span></span>
@@ -682,7 +682,7 @@ Exact population ATE:           0.2028</code></pre>
 </section>
 <section id="plug-in-estimator-from-outcome-regression" class="level3" data-number="8.2.3">
 <h3 data-number="8.2.3" class="anchored" data-anchor-id="plug-in-estimator-from-outcome-regression"><span class="header-section-number">8.2.3</span> Plug-in Estimator from Outcome Regression</h3>
-<div id="30572ebb" class="cell" data-cache="true" data-message="false" data-execution_count="6">
+<div id="e5eda646" class="cell" data-cache="true" data-message="false" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
@@ -708,7 +708,7 @@ Exact population ATE:           0.2028</code></pre>
 </section>
 <section id="aipw-ate" class="level3" data-number="8.2.4">
 <h3 data-number="8.2.4" class="anchored" data-anchor-id="aipw-ate"><span class="header-section-number">8.2.4</span> AIPW ATE</h3>
-<div id="0bdfa85e" class="cell" data-cache="true" data-message="false" data-execution_count="7">
+<div id="e4034289" class="cell" data-cache="true" data-message="false" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
@@ -747,7 +747,7 @@ Exact population ATE:           0.2028</code></pre>
 </section>
 <section id="aipw-ate-using-causalestimate.jl" class="level3" data-number="8.2.5">
 <h3 data-number="8.2.5" class="anchored" data-anchor-id="aipw-ate-using-causalestimate.jl"><span class="header-section-number">8.2.5</span> AIPW ATE Using CausalEstimate.jl</h3>
-<div id="d30f7994" class="cell" data-cache="true" data-message="false" data-execution_count="8">
+<div id="20b260be" class="cell" data-cache="true" data-message="false" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalEstimate</span></span>
@@ -771,7 +771,7 @@ Exact population ATE:           0.2028</code></pre>
 <section id="regression-imputation-att-manual" class="level3" data-number="8.2.6">
 <h3 data-number="8.2.6" class="anchored" data-anchor-id="regression-imputation-att-manual"><span class="header-section-number">8.2.6</span> Regression-imputation ATT (manual)</h3>
 <p>Note that the manual estimator below is evaluated on the <strong>treated subset</strong> <code>df1</code>, where <code>(1 .- df1.A)</code> is identically zero. The augmentation term <code>((1-A)/π₀)(Y-μ₀)</code> therefore vanishes and the estimator collapses to the regression-imputation ATT, <code>mean(Y_treated − μ̂₀(X_treated))</code>. That is consistent if the control outcome model is correct, but it is <strong>not</strong> the doubly-robust / augmented ATT, and the influence-function SE understates uncertainty because it ignores estimation of <code>μ₀</code> and <code>π</code>. The proper ATT efficient influence function (Hahn 1998) is <code>(1/p)[A(Y−μ₀) − (1−A)·π/(1−π)·(Y−μ₀)]</code> evaluated over the <strong>full</strong> sample; the <code>CausalEstimate.jl</code> call in the next subsection computes the cross-fit, doubly-robust version.</p>
-<div id="32dc1557" class="cell" data-cache="true" data-message="false" data-execution_count="9">
+<div id="2a54b569" class="cell" data-cache="true" data-message="false" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">1</span>)</span>
@@ -810,7 +810,7 @@ Exact population ATE:           0.2028</code></pre>
 </section>
 <section id="aipw-att-using-causalestimate.jl" class="level3" data-number="8.2.7">
 <h3 data-number="8.2.7" class="anchored" data-anchor-id="aipw-att-using-causalestimate.jl"><span class="header-section-number">8.2.7</span> AIPW ATT Using CausalEstimate.jl</h3>
-<div id="aa0f8d8e" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div id="24d50a3b" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>psi_att <span class="op">=</span> <span class="fu">ATT</span>(outcome<span class="op">=:</span>Y, treatment<span class="op">=:</span>A, confounders<span class="op">=</span>[<span class="op">:</span>w1, <span class="op">:</span>w2, <span class="op">:</span>w3, <span class="op">:</span>w4])</span>
@@ -832,7 +832,7 @@ Exact population ATE:           0.2028</code></pre>
 <h2 data-number="8.3" class="anchored" data-anchor-id="tmle"><span class="header-section-number">8.3</span> TMLE</h2>
 <p>TMLE is a variant of IF based estimator. It is also a doubly robust estimator. See Mark van der Laan and his coauthors for the recent development of TMLE.</p>
 <p>We should expect AIPW and TMLE to give similar answers.</p>
-<div id="d7d5fc2e" class="cell" data-cache="true" data-message="false" data-execution_count="11">
+<div id="aa4ee7e3" class="cell" data-cache="true" data-message="false" data-execution_count="11">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
@@ -848,7 +848,7 @@ Exact population ATE:           0.2028</code></pre>
 <pre><code>(TMLE = 0.1775, CI = (0.08638, 0.2687), pvalue = 0.0001349)</code></pre>
 </div>
 </div>
-<div id="774e6402" class="cell" data-execution_count="12">
+<div id="b62332f1" class="cell" data-execution_count="12">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@printf</span> <span class="st">"Population ATE (exact):    %.4f</span><span class="sc">\n</span><span class="st">"</span> pop_ate</span>
@@ -873,7 +873,7 @@ Realized-sample ATE:       0.1840</code></pre>
 <p><span id="eq-nonparametric-6"><span class="math display">\[\psi (W; \theta, \eta) = \big(Y - l(X) - \theta\,(D-m(X))\big)\,(D-m(X)), \tag{8.8}\]</span></span></p>
 <p>with <span class="math inline">\(l(X)=E[Y\mid X]\)</span> and <span class="math inline">\(m(X)=E[D\mid X]\)</span>. The estimator <span class="math inline">\(\hat \theta\)</span> solves the equation that the sample mean of this score function is 0.</p>
 <p>The estimator’s variance is the sandwich <span class="math inline">\(J^{-1}\,E[\psi^2]\,J^{-1}\)</span> with Jacobian <span class="math inline">\(J = E[\partial\psi/\partial\theta] = -E[(D-m(X))^2]\)</span> — this is what the code computes by dividing the score variance by <span class="math inline">\(\big(\tfrac1n\sum \hat V_i^2\big)^2\)</span>.</p>
-<div id="c00df398" class="cell" data-cache="true" data-message="false" data-execution_count="13">
+<div id="0f0fbaff" class="cell" data-cache="true" data-message="false" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MLJ</span></span>
@@ -911,7 +911,7 @@ Realized-sample ATE:       0.1840</code></pre>
 <span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="e30db817" class="cell" data-cache="true" data-message="false" data-execution_count="14">
+<div id="61a2eb9e" class="cell" data-cache="true" data-message="false" data-execution_count="14">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FWL theorem: regress residual W_res on residual V_res</span></span>
@@ -932,6 +932,11 @@ Realized-sample ATE:       0.1840</code></pre>
 95% CI           = [0.1292, 0.2549]</code></pre>
 </div>
 </div>
+</section>
+<section id="summary" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">8.5</span> Summary</h2>
+<p>Flexible machine-learning nuisance models avoid having to guess a functional form, but a plug-in estimator built on them carries their regularisation bias into the average. Estimators based on the efficient influence function remove that bias to first order. AIPW, TMLE and DoubleML all do this. What remains is a product of the outcome-model error and the propensity-score error, so each nuisance needs to converge only faster than <span class="math inline">\(n^{-1/4}\)</span>. Cross-fitting keeps the remaining empirical-process term small.</p>
+<p>In the simulation the population ATE is 0.2028. The plug-in gives 0.1759, with no standard error. Cross-fitted AIPW from <code>CausalEstimate.jl</code> gives 0.2072, TMLE 0.1775 and DoubleML 0.192 (0.032). The last targets a variance-weighted average of conditional effects, which equals the ATE only when the effect is constant.</p>
 
 
 </section>

@@ -453,3 +453,9 @@ end
 
 bootstrap r(alpha1) r(rho1), reps(500) cluster(id) idcluster(new_id): boot_poisson_cf
 ```
+
+## Summary
+
+In an exponential model the unobserved confounder enters multiplicatively, so the linear 2SLS logic does not carry over. A control function still works. The first-stage residual goes inside the exponential, and fixed-effects Poisson absorbs unit effects without an incidental-parameters problem. The price is a stronger assumption: the confounder's exponential moment must be constant given the instruments and the first-stage residual, which is more than zero correlation.
+
+For a continuous endogenous regressor, the OLS residual is the control function. For a binary one, Terza's correction is exact under joint normality. The generalized residual is its first-order approximation, and for a logit first stage it is just the response residual. In short panels the Mundlak device handles the first stage. Multiplicative-moment GMM is an alternative that needs no first-stage model. Standard errors need a cluster bootstrap. We report the naive and the control-function estimates side by side, because choosing between them by an exogeneity pretest distorts inference.

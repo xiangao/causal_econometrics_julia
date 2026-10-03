@@ -465,3 +465,9 @@ ci_ub = theta_hat + 1.96 * se_theta
 @printf "DML PLR Estimate = %.4g (SE = %.4g)\n" theta_hat se_theta
 @printf "95%% CI           = [%.4g, %.4g]\n" ci_lb ci_ub
 ```
+
+## Summary
+
+Flexible machine-learning nuisance models avoid having to guess a functional form, but a plug-in estimator built on them carries their regularisation bias into the average. Estimators based on the efficient influence function remove that bias to first order. AIPW, TMLE and DoubleML all do this. What remains is a product of the outcome-model error and the propensity-score error, so each nuisance needs to converge only faster than $n^{-1/4}$. Cross-fitting keeps the remaining empirical-process term small.
+
+In the simulation the population ATE is 0.2028. The plug-in gives 0.1759, with no standard error. Cross-fitted AIPW from `CausalEstimate.jl` gives 0.2072, TMLE 0.1775 and DoubleML 0.192 (0.032). The last targets a variance-weighted average of conditional effects, which equals the ATE only when the effect is constant.
