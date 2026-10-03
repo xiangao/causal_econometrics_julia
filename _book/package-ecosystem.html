@@ -475,7 +475,7 @@ try {
 <tbody>
 <tr class="odd">
 <td><code>Panelest.jl</code></td>
-<td>Fixed-effects OLS, GLM-style panel models, clustered covariance, IV/2SLS (<code>feiv</code>), and ETWFE post-processing (<code>emfx()</code>, <code>dataset()</code>)</td>
+<td>Fixed-effects OLS, GLM-style panel models, clustered covariance, IV/2SLS (<code>feiv</code>), and Wooldridge’s ETWFE (<code>etwfe()</code>, <code>emfx()</code>)</td>
 <td>Estimation, DiD, IV/RDD</td>
 </tr>
 <tr class="even">
@@ -705,15 +705,17 @@ try {
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>res[<span class="op">:</span>TMLE].ACE         <span class="co"># front-door NPS TMLE</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>res[<span class="op">:</span>IDPlugin].ACE     <span class="co"># finite-support ID plug-in</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="etwfe-helpers-in-panelest" class="level2" data-number="26.6">
-<h2 data-number="26.6" class="anchored" data-anchor-id="etwfe-helpers-in-panelest"><span class="header-section-number">26.6</span> ETWFE helpers in Panelest</h2>
-<p><code>Panelest</code> also exports <code>emfx()</code> and <code>dataset()</code> for ETWFE post-processing:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span></span>
+<section id="etwfe-in-panelest" class="level2" data-number="26.6">
+<h2 data-number="26.6" class="anchored" data-anchor-id="etwfe-in-panelest"><span class="header-section-number">26.6</span> ETWFE in Panelest</h2>
+<p><code>Panelest</code> fits Wooldridge’s extended TWFE and aggregates its cell effects:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Panelest</span>, <span class="bu">Vcov</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> <span class="fu">emfx</span>(model)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>event_study <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>calendar    <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>emfx()</code> reads the cohort-by-time interaction coefficients from a <code>feols</code> model and aggregates them into an overall ATT, event-time effects, or calendar-time effects. <code>dataset("mpdta")</code> returns a synthetic balanced panel with string cohort and year columns ready for StatsModels ETWFE interactions.</p>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> <span class="fu">etwfe</span>(df, <span class="pp">@formula</span>(y <span class="op">~</span> x); gvar <span class="op">=</span> <span class="op">:</span>first_treat, tvar <span class="op">=</span> <span class="op">:</span>year,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>              vcov <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>id))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>att         <span class="op">=</span> <span class="fu">emfx</span>(model)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>event_study <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>calendar    <span class="op">=</span> <span class="fu">emfx</span>(model, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>etwfe()</code> has the same specification as R’s <code>etwfe</code>: cohort and year effects, one dummy per treatment cell, and Wooldridge’s interactions for each control. It takes <code>family = "poisson"</code> and <code>cgroup = "never"</code>. <code>emfx()</code> averages the cell effects over treated observations into an overall ATT, event-time effects or calendar-time effects, on the count scale for Poisson. <code>dataset("mpdta")</code> returns a synthetic balanced panel for examples.</p>
 </section>
 <section id="synthdid.jl" class="level2" data-number="26.7">
 <h2 data-number="26.7" class="anchored" data-anchor-id="synthdid.jl"><span class="header-section-number">26.7</span> SynthDiD.jl</h2>

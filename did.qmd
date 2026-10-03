@@ -44,11 +44,11 @@ using Distributions
 
 When unconfoundedness fails, we need weaker assumptions. The parallel trends assumption leads to the difference-in-differences estimator.
 
-> **Related reading**: For a side-by-side comparison of DiD, synthetic
-> control, synthetic DiD, and multivariate SC on a *single* panel — and
-> how the choice of estimator changes the answer — see the
-> [Same data, different estimators](https://xiangao.github.io/blog_book/same-data-different-estimators.html)
-> chapter of *Topics on Econometrics and Causal Inference*.
+> **Related reading**: For a side-by-side comparison of DiD, synthetic DiD,
+> synthetic control, and TASC on a *single* panel — the Proposition 99
+> California smoking data, where the four estimators do not agree — see the
+> [Same data, different estimators](https://xiangao.github.io/blog_book/tasc-time-aware-synthetic-control.html)
+> chapter in *Topics on Econometrics and Causal Inference*.
 
 ## $T=2$ Panel Data
 
@@ -91,11 +91,13 @@ $$ {#eq-did-7}
 
 $$\small  \tau_{2,att} = E[Y_2 - Y_1 | D=1] - E[Y_2-Y_1 | D=0] $$ {#eq-did-8}
 
+Parallel trends and no anticipation are the two assumptions we name, but they are not the whole set the derivation uses. It also maintains consistency and a well-defined treatment, so that $Y = DY(1) + (1-D)Y(0)$ and the treatment has no hidden versions with different effects. It maintains no interference for the stated estimand: one unit's outcome does not move with another unit's treatment. @sec-spatial-interference returns to this and shows what the estimand becomes when it fails. It maintains overlap, so both groups are observed in both periods and, once covariates enter, comparable units exist in each. And it maintains stable composition, so the same population is sampled in both periods. Differential attrition or entry breaks the comparison even when trends are parallel.
+
 ## Advantages and Disadvantages of DiD
 
 Advantages:
 
--   No need to assume unconfoundedness. We "only" need PT and NA. Or say we don't need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This is importantly weaker in a lot of situations. There can be selection bias. If the selection bias does not change over time, then DiD can handle it.
+-   No need to assume unconfoundedness. PT and NA take its place, alongside the maintained conditions listed above. Or say we don't need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This is importantly weaker in a lot of situations. There can be selection bias. If the selection bias does not change over time, then DiD can handle it.
 
 Disadvantages:
 
@@ -150,39 +152,52 @@ We'll use the mpdta dataset on US teen employment from the did package. "Treatme
 #| warning: false
 #| cache: true
 #| echo: true
-# Load mpdta dataset from the did R package (Callaway & Sant'Anna 2021)
-# US teen employment data; treatment = minimum wage increase
+# mpdta from the did R package (Callaway & Sant'Anna 2021)
 mpdta = CSV.read("data/mpdta.csv", DataFrame)
 rename!(mpdta, "first.treat" => "first_treat")
 first(mpdta, 6)
 ```
 
+The three tables below give the panel shape: observations per year, the
+ever-treated indicator, and the treatment cohorts.
+
 ```{julia did2}
 #| warning: false
 #| cache: true
 #| echo: true
-combine(groupby(mpdta, :year), nrow)
-combine(groupby(mpdta, :treat), nrow)
-combine(groupby(mpdta, :first_treat), nrow)
+display(combine(groupby(mpdta, :year), nrow))
+display(combine(groupby(mpdta, :treat), nrow))
+display(combine(groupby(mpdta, :first_treat), nrow))
 ```
+
+The panel is balanced: 500 counties observed in each of 2003 through 2007,
+2,500 observations. 955 observations belong to ever-treated counties and 1,545
+to never-treated ones. The cohorts are 2004 (100 observations, so 20 counties),
+2006 (200, or 40 counties) and 2007 (655, or 131 counties), with 309 counties
+never treated. Treatment timing is staggered, which is exactly the case where
+plain TWFE misbehaves.
+
+We fit ETWFE with log population as a control, clustering on county.
 
 ```{julia did3}
 #| warning: false
 #| cache: true
 #| echo: true
-# String columns enable StatsModels to generate cohort×time dummies (ETWFE)
-mpdta.first_treat_str = string.(mpdta.first_treat)
-mpdta.year_str = string.(mpdta.year)
-
-mod = feols(mpdta, @formula(lemp ~ lpop + first_treat_str & year_str + fe(countyreal) + fe(year)), vcov = Vcov.cluster(:countyreal));
+mod = etwfe(mpdta, @formula(lemp ~ lpop);   # outcome ~ controls
+            tvar = :year,                   # time variable
+            gvar = :first_treat,            # group variable
+            vcov = Vcov.cluster(:countyreal));  # clustered by county
 ```
 
 ```{julia did4}
 #| warning: false
 #| cache: true
 #| echo: true
-show_regression_html(mod)
+show_regression_html(mod.model)
 ```
+
+The raw model has one coefficient per cohort-year cell plus the control
+interactions, 22 in all. That is not something to read directly. `emfx()` aggregates the cells into the ATT.
 
 ```{julia did5}
 #| warning: false
@@ -190,6 +205,12 @@ show_regression_html(mod)
 #| echo: true
 emfx(mod)
 ```
+
+The ATT is $-0.0506$ with a standard error of 0.0125 and a 95% interval of
+$[-0.0751, -0.0261]$. Raising the minimum wage lowered teen employment by about
+5% on average across treated county-years.
+
+The same cells can be aggregated by time since treatment instead.
 
 ```{julia did6}
 #| warning: false
@@ -199,6 +220,15 @@ mod_es = emfx(mod, type = "event")
 mod_es
 ```
 
+The effect grows with exposure: $-0.033$ in the treatment year, $-0.057$ after
+one year, $-0.138$ after two, $-0.110$ after three. All four are significant.
+The standard errors widen with event time, from 0.013 to 0.032, because the
+later horizons rest on fewer cohorts: event time 0 uses all three cohorts (191
+counties), event time 1 uses the 2004 and 2006 cohorts (60 counties), and event
+times 2 and 3 rest on the 2004 cohort alone (20 counties).
+
+Adding `post_only = FALSE` keeps the pre-treatment periods in the plot.
+
 ```{julia did7}
 #| warning: false
 #| cache: true
@@ -206,38 +236,48 @@ mod_es
 mod_es2 = emfx(mod, type = "event", post_only = false)
 
 fig = Figure()
-ax = Axis(fig[1, 1], 
-    xlabel = "Years post treatment", 
+ax = Axis(fig[1, 1],
+    xlabel = "Years post treatment",
     ylabel = "Effect on log teen employment",
+    xticks = -4:3,
     title = "Note: Zero pre-treatment effects for illustrative purposes only.")
-
 hlines!(ax, 0, color = :black)
 vlines!(ax, -1, color = :black, linestyle = :dash)
-
-rangebars!(ax, mod_es2.event, mod_es2.conf_low, mod_es2.conf_high, color = :darkcyan)
+ok = .!isnan.(mod_es2.std_error)
+rangebars!(ax, mod_es2.event[ok], mod_es2.conf_low[ok], mod_es2.conf_high[ok], color = :darkcyan)
 scatter!(ax, mod_es2.event, mod_es2.estimate, color = :darkcyan)
-
 fig
 ```
 
+Read the pre-treatment points with care, and note the caption on the figure.
+With `etwfe`'s default comparison group the pre-treatment estimates are forced
+to zero by construction, so their sitting on the line is arithmetic, not
+evidence for parallel trends. The Poisson example below uses
+`cgroup = "never"`, which frees them and makes the pre-period a real check.
+
 ## Example 2: Staggered DiD
+
+To see whether ETWFE recovers what it should, we switch to simulated data where
+the answer is recorded in the file.
+
+`data/did_staggered_6.dta` is Wooldridge's simulated staggered panel: 500 units
+observed annually from 2001 to 2006, 3,000 observations. Units are treated in
+2004 (119 units), 2005 (83) or 2006 (36), and 262 are never treated. The
+outcome is `y`, `x` is a covariate, `d4`, `d5` and `d6` are cohort dummies, and
+`f04`, `f05`, `f06` are year dummies. What makes the file useful is `te4`,
+`te5` and `te6`: the true unit-level treatment effect each unit would
+experience under each cohort's treatment date. The effects are heterogeneous
+across units and grow with time since treatment, which is precisely the
+configuration that breaks plain TWFE.
 
 ```{julia did8}
 #| warning: false
 #| cache: true
 #| echo: true
+# now we do staggered did.
 did_data = DataFrame(readstat("data/did_staggered_6.dta"))
-@rtransform! did_data :first_treat = begin
-    if :d4 == 1
-        2004
-    elseif :d5 == 1
-        2005
-    elseif :d6 == 1
-        2006
-    else
-        0
-    end
-end
+did_data.first_treat = [r.d4 == 1 ? 2004 : r.d5 == 1 ? 2005 : r.d6 == 1 ? 2006 : 0
+                        for r in eachrow(did_data)]
 
 first(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :first_treat), 6)
 ```
@@ -249,39 +289,24 @@ first(select(did_data, :id, :year, :y, :x, :d4, :d5, :d6, :te4, :te5, :te6, :fir
 combine(groupby(did_data, :first_treat), nrow)
 ```
 
+The counts are observations, six per unit: 1,572 never-treated, 714 in the 2004
+cohort, 498 in 2005, 216 in 2006.
+
+Because the true effects are in the data, we can compute the target before
+estimating it. Grouping the true effects by cohort and year gives the true ATT
+in each cohort-year cell.
+
 ```{julia did9}
 #| warning: false
 #| cache: true
 #| echo: true
-@rtransform! did_data :treated_cohort1 = begin
-    if :d4 == 1 && :f04 == 1
-        "d4f04"
-    elseif :d4 == 1 && :f05 == 1
-        "d4f05"
-    elseif :d4 == 1 && :f06 == 1
-        "d4f06"
-    else
-        missing
-    end
-end
-
-@rtransform! did_data :treated_cohort2 = begin
-    if :d5 == 1 && :f05 == 1
-        "d5f05"
-    elseif :d5 == 1 && :f06 == 1
-        "d5f06"
-    else
-        missing
-    end
-end
-
-@rtransform! did_data :treated_cohort3 = begin
-    if :d6 == 1 && :f06 == 1
-        "d6f06"
-    else
-        missing
-    end
-end
+cohort_cell(d, f, lab) = ifelse.((d .== 1) .& (f .== 1), lab, missing)
+did_data.treated_cohort1 = coalesce.(cohort_cell(did_data.d4, did_data.f04, "d4f04"),
+                                     cohort_cell(did_data.d4, did_data.f05, "d4f05"),
+                                     cohort_cell(did_data.d4, did_data.f06, "d4f06"))
+did_data.treated_cohort2 = coalesce.(cohort_cell(did_data.d5, did_data.f05, "d5f05"),
+                                     cohort_cell(did_data.d5, did_data.f06, "d5f06"))
+did_data.treated_cohort3 = cohort_cell(did_data.d6, did_data.f06, "d6f06")
 
 combine(groupby(dropmissing(did_data, :treated_cohort1), :treated_cohort1), :te4 => mean => :mean4)
 ```
@@ -290,21 +315,29 @@ combine(groupby(dropmissing(did_data, :treated_cohort1), :treated_cohort1), :te4
 #| warning: false
 #| cache: true
 #| echo: true
-combine(groupby(dropmissing(did_data, :treated_cohort2), :treated_cohort2), :te5 => mean => :mean5)
-combine(groupby(dropmissing(did_data, :treated_cohort3), :treated_cohort3), :te6 => mean => :mean6)
+display(combine(groupby(dropmissing(did_data, :treated_cohort2), :treated_cohort2), :te5 => mean => :mean5))
+display(combine(groupby(dropmissing(did_data, :treated_cohort3), :treated_cohort3), :te6 => mean => :mean6))
 ```
+
+So the true cohort-year ATTs are: the 2004 cohort gains 3.76, 4.02 and 4.58 in
+2004, 2005 and 2006; the 2005 cohort gains 2.74 and 3.52 in 2005 and 2006; the
+2006 cohort gains 1.85 in 2006. Effects grow with time since treatment
+and shrink across later cohorts --- heterogeneity in both directions.
+
+Averaging those cells over the 559 treated observations gives a true overall
+ATT of **3.677**. That is the number ETWFE has to reproduce.
 
 ```{julia did11}
 #| warning: false
 #| cache: true
 #| echo: true
-# String columns needed for cohort×time ETWFE dummies
-did_data.first_treat_str = string.(did_data.first_treat)
-did_data.year_str = string.(did_data.year)
-
 # this replicates Jeff's results with pooled ols or xtreg, with covariate x.
-mod = feols(did_data, @formula(y ~ x + first_treat_str & year_str + fe(id) + fe(year)), vcov = Vcov.cluster(:id))
-show_regression_html(mod)
+mod = etwfe(did_data, @formula(y ~ x);   # outcome ~ controls
+            tvar = :year,                # time variable
+            gvar = :first_treat,         # group variable
+            vcov = Vcov.cluster(:id))
+
+show_regression_html(mod.model)
 ```
 
 ```{julia did12}
@@ -314,6 +347,11 @@ show_regression_html(mod)
 emfx(mod)
 ```
 
+ETWFE gives 3.67 with a standard error of 0.172 and a 95% interval of
+$[3.33, 4.01]$, against a true 3.677. It recovers the ATT to three decimals.
+
+The same holds for the disaggregations. By time since treatment:
+
 ```{julia did20}
 #| warning: false
 #| cache: true
@@ -321,6 +359,12 @@ emfx(mod)
 mod_es = emfx(mod, type = "event")
 mod_es
 ```
+
+Estimated 3.11, 4.02 and 4.21 at event times 0, 1 and 2, against true values of
+3.11, 3.81 and 4.58. Every interval covers its truth, and the estimates
+reproduce the growth in the effect with exposure.
+
+And by calendar year:
 
 ```{julia did21}
 #| warning: false
@@ -330,110 +374,173 @@ mod_es2 = emfx(mod, type = "calendar")
 mod_es2
 ```
 
+Estimated 3.51, 3.73 and 3.70 in 2004, 2005 and 2006, against true values of
+3.76, 3.49 and 3.80. Again all three intervals cover.
+
+Note that the calendar profile is nearly flat while the event-time profile
+rises. There is no contradiction: later calendar years mix an older cohort with
+large accumulated effects and a newly treated cohort with small ones, and the
+two movements offset. This is why the aggregation has to be chosen to match the
+question being asked.
+
 ## Nonlinear ETWFE: Count and Binary Outcomes
 
-ETWFE is not limited to linear outcomes. When $Y$ is a count or binary variable, the key identifying assumption shifts to **Conditional Parallel Trends on the linear index**: parallel trends on $\log E[Y_{it}(\infty)]$ for Poisson, or on $\text{logit}\, E[Y_{it}(\infty)]$ for logit. This is Wooldridge's (2023, 2026) CPT assumption stated on $G^{-1}(E[Y])$.
+> **Related reading**: The theory behind nonlinear ETWFE --- Wooldridge's
+> conditional parallel-trends assumption on the linear index, the incidental
+> parameters argument for cohort rather than unit intercepts, and the average
+> partial effects that follow --- is developed at length in
+> [Extended two-way fixed effects](https://xiangao.github.io/blog_book/extended-twfe.html)
+> in *Topics on Econometrics and Causal Inference*, with
+> [count data](https://xiangao.github.io/blog_book/count-data.html) and
+> [Poisson with exposure](https://xiangao.github.io/blog_book/poisson-exposure.html)
+> covering the count case in more detail.
 
-The correct Wooldridge ETWFE specification for a nonlinear model uses:
-- **Cohort FE** (one intercept per treatment cohort, including never-treated): captures selection into treatment
-- **Year FE** (common time trend): identified from never-treated units
-- **Post-treatment cohort×year dummies** (one per treated cohort per post-treatment year): capture the ATTs on the log scale
+ETWFE is not limited to linear (continuous) outcomes. When the dependent variable is a count or a binary indicator, linear TWFE can give nonsensical results — negative predicted probabilities, additive effects that ignore the bounded or non-negative nature of $Y$. `etwfe()` supports the Poisson family via the `family` argument, which fits the model with `fepois()`.
 
-Critically, this is a **pooled model**, not a within-estimator. In the *linear* Gaussian examples above, unit FE and cohort FE give numerically identical ATTs (Wooldridge 2021). In nonlinear models, however, unit fixed effects raise the incidental-parameters problem and make average partial effects uncomputable — the unit intercepts cannot be averaged out of the nonlinear link. Wooldridge (2023) instead uses cohort intercepts (a Mundlak device), which is what `etwfe` implements; that is why the cohort-FE requirement matters only for Poisson/logit ETWFE.
+The key identifying assumption shifts slightly. Instead of parallel trends on $E[Y_{it}(\infty)]$, we assume parallel trends on the **linear index** — that is, on $\log E[Y_{it}(\infty)]$ for Poisson, or on $\text{logit}\, E[Y_{it}(\infty)]$ for logit. This is Wooldridge's (2023) Conditional Parallel Trends assumption stated on $G^{-1}(E[Y])$. When the true treatment effect is multiplicative (e.g., a policy raises counts by 50% regardless of baseline), this assumption is more natural than additive PT on $Y$ itself.
+
+One implementation detail matters: the nonlinear ETWFE specification uses **cohort fixed effects** (one intercept per treatment cohort) plus year fixed effects — not individual unit fixed effects. `etwfe()` handles this automatically. In the linear case the two are numerically equivalent (Wooldridge 2021), but in nonlinear models unit fixed effects raise the incidental-parameters problem and make average partial effects uncomputable — the unit intercepts cannot be averaged out of the nonlinear link. Wooldridge (2023) instead uses cohort intercepts (a Mundlak device), which is what `etwfe` implements.
 
 ### Simulated example: staggered count data
 
-We simulate panel data with three treatment cohorts (treated in years 3, 4, 5) and a never-treated group. The true treatment effect is multiplicative: $\exp(0.4) - 1 \approx 49\%$ increase in counts. Parallel trends holds on the log scale.
+We simulate $N = 400$ units over $T = 6$ periods, 2,400 observations. Units are
+split into four groups of 100 by id: the first is treated from period 3, the
+second from period 4, the third from period 5, and the fourth never. Each unit
+draws a fixed effect $\alpha_i \sim N(0, 0.3^2)$. The log mean is
+$\log \mu_{it} = 1 + 0.2t + \alpha_i + 0.4 D_{it}$, and the outcome is
+$Y_{it} \sim \text{Poisson}(\mu_{it})$.
+
+The treatment effect is multiplicative and homogeneous on the log scale: every
+treated unit's expected count rises by a factor of $\exp(0.4)$, that is by
+$\exp(0.4) - 1 = 0.492$, or 49%. Parallel trends holds on the log scale by
+construction, and fails on the level scale, since a constant proportional
+effect is a larger absolute effect for units with higher baselines.
+
+On the count scale the ATT is not 0.492. It is
+$E[\mu_{it}(0) \mid \text{treated}] \times (\exp(0.4)-1)$, and the mean
+untreated count among treated observations is 7.518, so the true ATT is
+$7.518 \times 0.4918 = 3.698$ counts.
+
+The table below reports mean counts by cohort and treatment status.
 
 ```{julia did_pois0}
 #| warning: false
 #| cache: true
 #| echo: true
 Random.seed!(42)
-N_pois = 600; Tmax_pois = 6
-unit_fe_vals = randn(N_pois) .* 0.3
-rows_p = [(id=i, year=t) for i in 1:N_pois for t in 1:Tmax_pois]
-df_count = DataFrame(rows_p)
-sort!(df_count, [:id, :year])
+N = 400; Tmax = 6
 
-cohort_grp = ((df_count.id .- 1) .÷ 150) .+ 1
+unit_fe_vals = randn(N) .* 0.3
+
+df_count = DataFrame([(id = i, year = t) for i in 1:N for t in 1:Tmax])
+cohort_grp = ((df_count.id .- 1) .÷ 100) .+ 1
 df_count.first_treat = [3, 4, 5, 0][cohort_grp]   # 0 = never treated
 df_count.treated = (df_count.first_treat .> 0) .& (df_count.year .>= df_count.first_treat)
 df_count.unit_fe = unit_fe_vals[df_count.id]
-df_count.log_mu = 1.0 .+ 0.2 .* df_count.year .+ df_count.unit_fe .+ 0.4 .* df_count.treated
+df_count.log_mu = 1 .+ 0.2 .* df_count.year .+ df_count.unit_fe .+ 0.4 .* df_count.treated
 df_count.count = rand.(Poisson.(exp.(df_count.log_mu)))
+
+# true count-scale ATT: mean untreated mean among treated observations times exp(0.4) - 1
+mu0 = exp.(df_count.log_mu .- 0.4 .* df_count.treated)
+@printf("mean untreated count among treated = %.3f, true ATT = %.3f\n",
+        mean(mu0[df_count.treated]), mean(mu0[df_count.treated]) * (exp(0.4) - 1))
 
 combine(groupby(df_count, [:first_treat, :treated]), :count => mean => :mean_count)
 ```
 
+The never-treated group averages 5.75 counts. Treated cohorts average 3.75,
+4.32 and 4.50 before treatment and 10.6, 11.8 and 12.1 after. The pre-treatment
+means look low only because they are drawn from earlier periods, and the time
+trend adds 0.2 to the log mean each period. This is exactly the comparison that
+a raw before-after difference would get wrong.
+
 ### Poisson ETWFE
 
-`etwfe()` handles formula construction, cohort FE + year FE, and post-treatment dummy creation automatically. Pass `family = "poisson"` for count outcomes.
+Pass `family = "poisson"` to `etwfe()`. Everything else — cohort dummies, `emfx()`, event study — works identically to the linear case. We use `cgroup = "never"` so that pre-treatment estimates are not mechanistically forced to zero.
 
 ```{julia did_pois1}
 #| warning: false
 #| cache: true
 #| echo: true
 mod_pois = etwfe(df_count, @formula(count ~ 1);
-                 gvar = :first_treat, tvar = :year,
-                 family = "poisson", vcov = Vcov.cluster(:id))
-
-# Show the coefficient table explicitly. Letting the returned struct be the
-# cell's display value prints a raw
-# `ETWFEResult(Panelest Model: ... CoefTable(Any[[...]]))` dump, because neither
-# ETWFEResult nor CoefTable defines a text/plain show method that Jupyter picks
-# up in that position.
-show_regression_html(mod_pois.model)
+                 tvar   = :year,
+                 gvar   = :first_treat,
+                 family = "poisson",
+                 cgroup = "never",
+                 vcov   = Vcov.cluster(:id));
 ```
 
 ```{julia did_pois2}
 #| warning: false
 #| cache: true
 #| echo: true
-att = emfx(mod_pois)
-@printf("ATT (log scale):  %.4f  (SE = %.4f)\n", att.estimate[1], att.std_error[1])
-@printf("IRR - 1:          %.4f  (true ≈ 0.492)\n", exp(att.estimate[1]) - 1)
+emfx(mod_pois)
 ```
 
-The ATT is on the **log scale** (log incidence rate ratio). Exponentiate and subtract 1 for the proportional increase in counts.
+The estimate is 3.62 counts with a standard error of 0.34 and a 95% interval of
+$[2.95, 4.30]$, against the true 3.698 derived above. The interval covers it.
+
+`emfx()` returns average marginal effects — the average difference $E[Y(1)] - E[Y(0)]$ in **count units** across treated observations. This is the ATT on the count scale. The underlying model imposes PT on the log scale, so each cohort-time treatment coefficient in the raw model can be exponentiated to get the incidence rate ratio for that cell (here they share a common value because the simulated effect is homogeneous).
 
 ### Event study
 
-```{julia did_pois3}
+Because we passed `cgroup = "never"`, the pre-treatment estimates are free
+parameters rather than zeros by construction, so the pre-period is an actual
+test here. On the count scale the post-treatment effect should also grow with
+event time even though the log-scale effect is constant, because the baseline
+count grows with the time trend: the true values are 3.06, 3.74, 4.18 and 4.55
+at event times 0 through 3.
+
+```{julia did_pois4}
 #| warning: false
 #| cache: true
 #| echo: true
-mod_pois_es = emfx(mod_pois, type = "event")
+mod_pois_es = emfx(mod_pois, type = "event", post_only = false)
+display(mod_pois_es)
 
 fig_p = Figure()
 ax_p  = Axis(fig_p[1, 1],
     xlabel = "Years post treatment",
-    ylabel = "ATT (log scale)",
-    title  = "Poisson ETWFE event study")
-hlines!(ax_p, 0, color = :black, linewidth = 1)
-rangebars!(ax_p, mod_pois_es.event,
-           mod_pois_es.conf_low, mod_pois_es.conf_high, color = :darkcyan)
+    ylabel = "ATT (count units)",
+    xticks = -4:3,
+    title  = "Nonlinear ETWFE event study (Poisson)")
+hlines!(ax_p, 0, color = :black)
+vlines!(ax_p, -1, color = :black, linestyle = :dash)
+ok = .!isnan.(mod_pois_es.std_error)
+rangebars!(ax_p, mod_pois_es.event[ok], mod_pois_es.conf_low[ok], mod_pois_es.conf_high[ok],
+           color = :darkcyan)
 scatter!(ax_p, mod_pois_es.event, mod_pois_es.estimate, color = :darkcyan)
 fig_p
 ```
 
+The pre-treatment estimates at event times $-3$ and $-2$ are close to zero. The one at $-4$ is 0.67 with a standard error of 0.28, and its interval excludes zero. It rests on a single cohort-period, the period-5 cohort in period 1. Parallel trends holds by construction in this simulation, so this is one rejection in three pre-period tests at the 5% level, which chance produces often enough. With real data it would call for a closer look. The post-treatment estimates are 3.10, 3.75, 3.84 and 4.39, each with an interval that covers its true value. They rise with event time, which is the count-scale consequence of a constant log-scale effect applied to a growing baseline, not evidence of a growing treatment effect.
+
 ### Comparison: linear ETWFE on log(count + 1)
 
-```{julia did_pois4}
+A common alternative is to log-transform the count and run linear ETWFE. This is biased when zeros are present (the $+1$ shift distorts the linear index) and misinterprets the scale of the effect. For comparison:
+
+```{julia did_pois5}
 #| warning: false
 #| cache: true
 #| echo: true
 df_count.log_count = log.(df_count.count .+ 1)
 
 mod_lin = etwfe(df_count, @formula(log_count ~ 1);
-                gvar = :first_treat, tvar = :year,
+                tvar = :year,
+                gvar = :first_treat,
                 vcov = Vcov.cluster(:id))
 emfx(mod_lin)
 ```
 
-The linear model estimates the ATT on the $\log(Y+1)$ scale — a different and less interpretable quantity than the Poisson log IRR.
+The linear model returns 0.40 with a 95% interval of $[0.336, 0.463]$. That
+number is neither the count-scale ATT of 3.62 nor the log-scale parameter 0.4,
+though it happens to sit near the latter because the counts here are large
+enough that $\log(Y+1) \approx \log Y$. With many zeros the approximation
+breaks and the estimate drifts.
 
-## Spatial Interference
+The linear model estimates the ATT on the $\log(Y+1)$ scale — not the same quantity as the Poisson ATT and harder to interpret. When treatment effects are multiplicative, Poisson ETWFE is the more appropriate model.
+
+## Spatial Interference {#sec-spatial-interference}
 
 Everything in this chapter so far assumes SUTVA: one unit's outcome does not depend on another unit's treatment. That is not always plausible. A treated municipality may affect deforestation in nearby untreated municipalities. A vaccinated household may reduce transmission to nearby households. A labor-market policy in one commuting zone may change flows to its neighbors. With this kind of spatial spillover, the usual DiD estimand no longer has the interpretation we want. Xu [-@xu2023] shows that ignoring interference can produce an estimand that is neither a direct effect nor a spillover effect.
 
@@ -443,25 +550,26 @@ $$ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{
 
 where $C_i$ is unit $i$'s first treatment period (so $\{C_i > t\}$ is the not-yet-directly-treated comparison group), $S_M = \{C_i = c\} \cup \{C_i > t\}$, and $g$ is a chosen exposure level. The DR plug-in averages three pieces over $S_M$: an IPW term from the treated cohort, an IPW term from the not-yet-treated, and a regression-imputation term, with three propensity models ($\eta_{tc}$ for cohort, $\eta_{tcg}$ and $\eta_{t\infty g}$ for exposure) and two outcome-change regressions. It is consistent if either all three propensities or both outcome models are correctly specified.
 
-The companion package [`DidInterference.jl`](https://github.com/xiangao/DidInterference.jl) implements this. The 2×2 base case (Xu 2023):
+The companion package [`DidInterference.jl`](https://github.com/xiangao/DidInterference.jl) implements this. The 2x2 base case (Xu 2023):
 
 ```{julia did_int_2x2_demo}
 #| eval: false
 using DidInterference, DataFrames
 
+# Wide-format two-period data with a binary exposure G.
 res = did_int_2x2(panel;
-    yname     = :Y_post,
-    yname_pre = :Y_pre,
-    treat     = :W,
-    exposure  = :G,
-    g         = 1,
+    yname      = :Y_post,
+    yname_pre  = :Y_pre,
+    treat      = :W,
+    exposure   = :G,
+    g          = 1,
     covariates = [:z1, :z2],
     trim       = 0.01)   # Xu (2026) uses 0.01 in the Brazil application
 
 println(res.estimate, "  ", res.ci)
 ```
 
-For staggered adoption (Xu 2026), `did_int_staggered()` loops over `(cohort, time)` cells with $t \geq c$, restricts to $S_M$ in each cell, fits the DR estimator, and aggregates across cells using joint-IF stacking (per-cell IFs share the never-treated comparison group, so independence-style SEs underestimate uncertainty noticeably). An R port with the same interface is available as [`didint`](https://github.com/xiangao/didint); its Brazil Amazon `Lista de Municípios Prioritários` vignette replicates Section III of Xu (2026) using the public Assunção-McMillan-Murphy-Souza-Rodrigues replication archive on Zenodo.
+For staggered adoption (Xu 2026), `did_int_staggered()` loops over `(cohort, time)` cells with $t \geq c$, restricts to $S_M$ in each cell, fits the DR estimator, and aggregates across cells using joint-IF stacking (per-cell IFs share the never-treated comparison group, so independence-style SEs underestimate uncertainty noticeably). The R port [`didint`](https://github.com/xiangao/didint) has identical estimators; its `vignettes/brazil_amazon.Rmd` vignette replicates Section III of Xu (2026), the *Lista de Municípios Prioritários* policy on Amazon deforestation, using the public Assunção-McMillan-Murphy-Souza-Rodrigues replication archive on Zenodo.
 
 ## Persistent Outcomes and Heterogeneous Dynamics
 
@@ -469,14 +577,28 @@ Standard event-study TWFE regressions like
 
 $$ Y_{it} = \alpha_i + \gamma_t + \sum_{j} D_{it}^j \delta_j + X_{it}'\beta + U_{it} $$ {#eq-did-13}
 
-implicitly assume the residual has no serial dependence once unit and
-time fixed effects are absorbed. When outcomes are genuinely
-persistent — earnings, employment, consumption, anything with habits
-or adjustment costs — that assumption fails. The event-time dummies
-absorb persistence on top of the true causal effect, producing
-spurious pre-trends and biased post-treatment estimates whose bias
-grows geometrically with the event-time horizon
-(Botosaru and Liu 2025, Figure 1).
+leave the dynamics of $Y$ unmodelled. Three things get run together here and
+are worth separating.
+
+The first is serial correlation in $U_{it}$. That is an inference problem rather
+than an identification one: with exogenous treatment timing the event-time
+coefficients remain consistent, but conventional standard errors are wrong,
+which is why DiD is routinely clustered by unit.
+
+The second is dynamic selection. If units are treated *because* of their recent
+outcomes, then treatment timing is related to lagged $Y$ and the parallel-trends
+restriction the specification relies on no longer holds. That is an
+identification failure, and no amount of clustering repairs it.
+
+The third is what motivates the rest of this section. When the outcome is
+genuinely persistent — earnings, employment, consumption, anything with habits
+or adjustment costs — the *structural* process carries its own lag, and
+@eq-did-13 is a static equation fitted to dynamic data. The event-time dummies
+then absorb the propagation of earlier shocks along with the treatment response,
+and the bias on those coefficients grows with the event-time horizon (Botosaru
+and Liu, 2025, Figure 1). Note where the bias comes from: not from persistence
+in the residual, which on its own does no such thing, but from fitting a static
+specification to a dynamic process.
 
 Botosaru and Liu [-@botosaru-liu-2025] introduce a **dynamic panel
 with correlated random coefficients** that handles both persistence
@@ -484,30 +606,35 @@ and unit-level heterogeneity in dynamic responses:
 
 $$ Y_{it} = \rho_Y Y_{i,t-1} + \alpha_i + \sum_j D_{it}^j \delta_{ij} + X_{it}'\beta + U_{it}, $$ {#eq-did-14}
 
-with a parsimonious AR(1) on the event-time effects to keep
+with a parsimonious AR(1) structure on the event-time effects to keep
 dimensionality manageable:
 
 $$ \delta_{ij} = \rho_\delta \delta_{i,j-1} + \varepsilon_{ij}, \quad j \geq 1. $$ {#eq-did-15}
 
 The latent $\lambda_i = (\alpha_i, \delta_{i0})$ is a unit-specific
-correlated random coefficient. A two-step semiparametric estimator:
-step 1 is **quasi-maximum likelihood** for the common parameters
-under a Gaussian working assumption on $\lambda_i$ (consistent under
-misspecification); step 2 is **Tweedie / Gaussian-conjugate empirical
-Bayes** for the unit-level posterior trajectories
-$\{\delta_{i,j}\}_{j=0}^J$.
+correlated random coefficient. A two-step semiparametric estimator: step 1
+is **quasi-maximum likelihood** for the common parameters
+$(\rho_Y, \rho_\delta, \sigma_U^2, \sigma_\varepsilon^2, \beta)$ under
+a Gaussian working assumption on $\lambda_i$ (consistent under
+misspecification of that working assumption); step 2 is
+**Tweedie / Gaussian-conjugate empirical Bayes** for the unit-level
+posterior trajectories $\{\delta_{i,j}\}_{j=0}^J$, achieving asymptotic
+ratio optimality.
 
-A companion note [@botosaru-liu-2026] adds a **homogeneous-feedback
+A companion paper [@botosaru-liu-2026] adds a **homogeneous-feedback
 extension**: covariates $X_{it}$ are allowed to adjust endogenously to
-past $Y$ and treatment. Under the assumption that the covariate
-adjustment rule does not depend on $\lambda_i$ given the observable
-history, the likelihood factors into a structural piece and a feedback
-piece, yielding a clean decomposition of dynamic treatment effects
-into **direct** (through $\delta_{i,j}$) and **indirect** (through
-covariate feedback) components.
+past $Y$ and treatment (the canonical example: minimum-wage policy
+affects wages directly and also indirectly through firms re-optimising
+input demand). Under the assumption that the covariate adjustment rule
+does not depend on $\lambda_i$ given the observable history, the
+likelihood factors into a structural piece (for $Y \mid X$, history)
+and a feedback piece (for $X$ given history), each separately
+identified. The factorisation yields a clean decomposition of dynamic
+treatment effects into **direct** (through $\delta_{i,j}$) and
+**indirect** (through covariate feedback) components.
 
-The package [`TVHTE.jl`](https://github.com/xiangao/TVHTE.jl)
-implements both papers:
+The package [`TVHTE.jl`](https://github.com/xiangao/TVHTE.jl) implements
+both papers:
 
 ```{julia tvhte_demo}
 #| eval: false
@@ -526,10 +653,12 @@ An R port with the same API is at
 deployed docs at <https://xiangao.github.io/TVHTE.jl/> and
 <https://xiangao.github.io/tvhte/>.
 
-Synthetic control, synthetic DiD, and TASC are closely related enough that we treat them together in the next design chapter.
+## Synthetic Control and Synthetic DiD
+
+The biggest problem with DiD is the PT assumption. Synthetic control and synthetic DiD replace it with weighted comparisons. The chapter [Synthetic Control, DiD, and TASC](synthetic-control-did-tasc.qmd) covers both, with the California Proposition 99 example.
 
 ## Summary
 
-DiD replaces unconfoundedness with parallel trends and no anticipation. The untreated trend of the treated group is taken from the control group. With staggered timing, a single TWFE coefficient averages over comparisons that can use already-treated units as controls. ETWFE fixes this by giving each cohort its own effect in each period and then aggregating. A count outcome calls for the Poisson version, which assumes parallel trends on the log scale. Spillovers and persistent outcomes each need their own tools: interference-robust DiD and dynamic panels.
+DiD replaces unconfoundedness with parallel trends and no anticipation. The untreated trend of the treated group is taken from the control group. With staggered timing, a single TWFE coefficient averages over comparisons that can use already-treated units as controls. ETWFE fixes this by giving each cohort its own effect in each period and then aggregating. A count outcome calls for the Poisson version, which assumes parallel trends on the log scale. Spillovers, persistent outcomes and a failure of parallel trends each need their own tools: interference-robust DiD, dynamic panels, and synthetic control or synthetic DiD, which the next chapter takes up.
 
-In the count example, Poisson ETWFE gives a log-scale effect of 0.429 (0.030) against a true 0.4. When parallel trends fails, synthetic control and synthetic DiD replace it with weighted comparisons. The chapter on synthetic control, synthetic DiD and TASC takes them up.
+On the minimum-wage data, ETWFE gives an ATT of $-0.0506$ (0.0125). On Wooldridge's simulated panel it returns 3.67 against a true 3.677. In the count simulation, Poisson ETWFE gives 3.62 (0.34) counts against a true 3.698, while linear ETWFE on $\log(Y+1)$ returns 0.40, a number on a different scale.
