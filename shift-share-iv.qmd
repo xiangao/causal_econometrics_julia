@@ -295,12 +295,11 @@ iv_bhj = feiv(df_collapsed, @formula(Y_agg ~ 1),
 
 @printf("Location-level shift-share IV: %.3f\n", coef(ivss)[1])
 @printf("BHJ shock-level IV:             %.3f\n", coef(iv_bhj)[1])
-@printf("(Should be close; equivalent in the no-controls case)\n")
+@printf("(Identical in the no-controls case)\n")
 ```
 
-The BHJ shock-level regression coincides with the location-level IV when
-there are no controls — up to implementation details of the weighting, so
-expect close rather than identical values in practice. Its value is interpretive: validity is now a statement
+The BHJ shock-level regression gives exactly the location-level IV estimate
+when there are no controls. Its value is interpretive: validity is now a statement
 about shocks (20 observations, one per industry) rather than locations (500
 observations), and testing shock-level exogeneity is more transparent.
 
