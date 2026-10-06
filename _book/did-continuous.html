@@ -619,12 +619,12 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>The first row decides the Walmart application. The number of stores changes after entry, so the CGBS estimator, as implemented, does not apply. The other rows show what the single regression buys: covariates, trends, exit and missing years enter as extra terms. In the other direction, CGBS trace out the whole dose-response curve within each cohort and period. Wooldridge reports average slopes and needs powers of the dose to show curvature.</p>
+<p>The first row decides the Walmart application. The number of stores changes after entry, so the CGBS estimator, as implemented, does not apply. The other rows show what the single regression adds: covariates, trends, exit and missing years enter as extra terms. In the other direction, CGBS trace out the whole dose-response curve within each cohort and period. Wooldridge reports average slopes and needs powers of the dose to show curvature.</p>
 </section>
 <section id="walmart-and-county-retail-employment" class="level2" data-number="14.4">
 <h2 data-number="14.4" class="anchored" data-anchor-id="walmart-and-county-retail-employment"><span class="header-section-number">14.4</span> Walmart and county retail employment</h2>
 <p><span class="citation" data-cites="wooldridge-2026-nonbinary">Wooldridge (<a href="references.html#ref-wooldridge-2026-nonbinary" role="doc-biblioref">2026</a>)</span> applies the method to the county panel of <span class="citation" data-cites="brown-butts-2025">Brown and Butts (<a href="references.html#ref-brown-butts-2025" role="doc-biblioref">2025</a>)</span>. It covers 1,288 counties from 1977 to 1999. No county had a Walmart before 1986. Stores then opened in 14 cohorts, from 1986 to 1999, and 395 counties never got one. The treatment is a single dose, so <span class="math inline">\(J = 1\)</span> and we write it without bold: <span class="math inline">\(W_{it}\)</span> is the number of Walmarts open in county <span class="math inline">\(i\)</span> in year <span class="math inline">\(t\)</span>. The outcome is log retail employment.</p>
-<div id="3af4bd46" class="cell" data-cache="true" data-execution_count="2">
+<div id="50fdd998" class="cell" data-cache="true" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract of walmart_lw.dta from Wooldridge's replication files (data/gen_walmart_lw.R)</span></span>
@@ -832,7 +832,7 @@ window.Quarto = {
 </div>
 <p>Most treated counties have a single store. One store accounts for 80% of treated county-years, two for 13%, and the largest count is 13. Within a cohort and year, the slope is fit from the change relative to untreated counties and from the differences in store counts. With so many single-store counties, it mostly measures the effect of the first store.</p>
 <p>A single-coefficient TWFE regression is the natural starting point.</p>
-<div id="371b92bb" class="cell" data-cache="true" data-execution_count="3">
+<div id="e5d86606" class="cell" data-cache="true" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftable</span>(<span class="fu">feols</span>(wm, <span class="pp">@formula</span>(log_retail_emp <span class="op">~</span> n_open <span class="op">+</span> <span class="fu">fe</span>(fips) <span class="op">+</span> <span class="fu">fe</span>(year)),</span>
@@ -862,7 +862,7 @@ window.Quarto = {
 </div>
 </div>
 <p>One more Walmart raises retail employment by 3.4%, with a standard error of 0.57 percentage points. In the binary case this regression makes forbidden comparisons, which use already-treated units as controls, when effects vary by cohort and time. The same holds with a dose. So we build the regressors of <a href="#eq-dc-reg" class="quarto-xref">Equation&nbsp;<span>14.12</span></a>, one for each cohort and year from entry on: <span class="math inline">\(W_{it}\)</span> times the cohort dummy times the year dummy.</p>
-<div id="7374e76f" class="cell" data-cache="true" data-execution_count="4">
+<div id="21083fff" class="cell" data-cache="true" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cohorts <span class="op">=</span> <span class="fl">1986</span><span class="op">:</span><span class="fl">1999</span></span>
@@ -885,7 +885,7 @@ window.Quarto = {
 </div>
 </div>
 <p>That gives 105 slopes. We aggregate them with <a href="#eq-dc-agg" class="quarto-xref">Equation&nbsp;<span>14.13</span></a>. Each aggregate is a linear combination of the slopes with fixed weights, so its standard error comes from the clustered covariance matrix. This matches Stata’s <code>margins</code> in Wooldridge’s code.</p>
-<div id="999a0bd7" class="cell" data-cache="true" data-execution_count="5">
+<div id="e3ddc2fa" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Ng <span class="op">=</span> <span class="fu">Dict</span>(g <span class="op">=&gt;</span> <span class="fu">sum</span>((wm.year <span class="op">.==</span> <span class="fl">1999</span>) <span class="op">.&amp;</span> (wm.cohort <span class="op">.==</span> g)) <span class="cf">for</span> g <span class="kw">in</span> cohorts)</span>
@@ -912,7 +912,7 @@ window.Quarto = {
 </details>
 </div>
 <p>Before reading the effects, we check pre-trends. Following the first test above, we fit TWFE on the untreated county-years with a lead for each cohort and each year at least two years before entry. We then average the leads by years until entry, with the cohort weights of <a href="#eq-dc-agg" class="quarto-xref">Equation&nbsp;<span>14.13</span></a>.</p>
-<div id="a7040049" class="cell" data-cache="true" data-execution_count="6">
+<div id="da1d5652" class="cell" data-cache="true" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>un <span class="op">=</span> wm[wm.n_open <span class="op">.==</span> <span class="fl">0</span>, [<span class="op">:</span>fips, <span class="op">:</span>year, <span class="op">:</span>cohort, <span class="op">:</span>log_retail_emp]]</span>
@@ -948,7 +948,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The leads fall almost linearly as we go back in time. Twenty years before entry, counties that later got a Walmart had retail employment about 19 log points lower, relative to the year before entry, than the never-treated counties. Retail employment was growing faster in these counties long before any store opened. Parallel trends fails, so Wooldridge also reports estimates with the cohort-specific linear trends.</p>
-<div id="0761c854" class="cell" data-cache="true" data-execution_count="7">
+<div id="4fadac3c" class="cell" data-cache="true" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fit_trend <span class="op">=</span> <span class="fu">feols</span>(wm, <span class="fu">term</span>(<span class="op">:</span>log_retail_emp) <span class="op">~</span> <span class="fu">sum</span>(<span class="fu">term</span>.(<span class="fu">vcat</span>(wcols, trcols))) <span class="op">+</span></span>
@@ -1077,7 +1077,7 @@ window.Quarto = {
 <p>Without trends, one more store raises retail employment by about 3% to 4% in the first years. The effect climbs to 9% by year 13. The overall effect is 0.0386 (0.0051). It is close to the single-coefficient TWFE estimate of 0.0344, and a little more precise.</p>
 <p>The cohort trends change the estimates a lot. The effect in the entry year is 0.0049 (0.0033), indistinguishable from zero. From the entry year to year 6, the effects are between a sixth and a half of their values without trends. They then rise steadily, and by year 13 the two columns agree at about 0.09. The overall effect falls to 0.0156 (0.0046), less than half the estimate without trends. The trends also make the estimates more precise up to about year 8. The long exposures rest on the earliest cohorts only, so their standard errors grow. Year 13 comes from the 1986 cohort alone.</p>
 <p>For comparison, we add the same 14 cohort trends to the single-coefficient regression. One slope on the store count is then shared by every cohort and year.</p>
-<div id="8f04067b" class="cell" data-cache="true" data-execution_count="8">
+<div id="1e41536a" class="cell" data-cache="true" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>s1 <span class="op">=</span> <span class="fu">feols</span>(wm, <span class="fu">term</span>(<span class="op">:</span>log_retail_emp) <span class="op">~</span> <span class="fu">term</span>(<span class="op">:</span>n_open) <span class="op">+</span> <span class="fu">sum</span>(<span class="fu">term</span>.(trcols)) <span class="op">+</span></span>
@@ -1087,12 +1087,12 @@ window.Quarto = {
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>(estimate <span class="op">=</span> <span class="fu">coef</span>(s1)[k], se <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fu">vcov</span>(s1)[k, k]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="9">
-<pre><code>(estimate = 0.009987276364962341, se = 0.004501561610753824)</code></pre>
+<pre><code>(estimate = 0.009987276364962341, se = 0.004501561610753822)</code></pre>
 </div>
 </div>
 <p>With the same trends, the single-coefficient regression gives 0.0100 (0.0045). The flexible model costs almost nothing in precision.</p>
 <p>The table averages over cohorts. To see the path of a single cohort, we take the 1990 cohort, the largest, with 118 counties and ten years after entry. Under <a href="#eq-dc-po" class="quarto-xref">Equation&nbsp;<span>14.8</span></a>, with <span class="math inline">\(J = 1\)</span>, the effect of <span class="math inline">\(w\)</span> stores on cohort <span class="math inline">\(g\)</span> in year <span class="math inline">\(s\)</span> is <span class="math inline">\(w\,\delta_{gs}\)</span>. The figure plots the estimated effect of one store, <span class="math inline">\(\hat\delta_{1990,s}\)</span>, for each year after entry, with and without cohort trends. The effect of two stores is twice as large in every year, because the model is linear in the dose.</p>
-<div id="c2f8a640" class="cell" data-cache="true" data-execution_count="9">
+<div id="8ce18b02" class="cell" data-cache="true" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>g0 <span class="op">=</span> <span class="fl">1990</span></span>

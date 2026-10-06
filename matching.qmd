@@ -382,8 +382,7 @@ Matching is weighting too, with the weights restricted to zero and one and
 chosen by a distance rule rather than by a model. The restriction is where the
 trade-off lives: matching sets some weights to zero, so it discards
 observations, while weighting keeps everyone and pays with extreme weights when
-overlap is poor. Matching buys stability with the estimand; weighting buys the
-estimand with variance.
+overlap is poor. Matching gives stable estimates for a changed estimand; weighting keeps the estimand and has higher variance.
 
 AIPW uses both columns: start from regression adjustment, then add the
 odds-weighted average of the control residuals $Y - \hat\mu_0(X)$. It is
