@@ -486,7 +486,7 @@ window.Quarto = {
 </header>
 
 
-<div id="fd9c27e3" class="cell" data-execution_count="2">
+<div id="4f64e47a" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CausalGraphs</span></span>
@@ -507,7 +507,7 @@ window.Quarto = {
 <section id="data" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="data"><span class="header-section-number">4.1</span> Data</h2>
 <p>For this example, keep the treatment, outcome, and baseline covariates that are commonly used in NHEFS smoking-cessation examples.</p>
-<div id="a4394d36" class="cell" data-cache="true" data-message="false" data-execution_count="4">
+<div id="764db54b" class="cell" data-cache="true" data-message="false" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">read_rdatasets_csv</span>(url, cols)</span>
@@ -533,7 +533,7 @@ window.Quarto = {
 <pre><code>(n = 1566, variables = 11)</code></pre>
 </div>
 </div>
-<div id="bbe0f785" class="cell" data-execution_count="5">
+<div id="65577ca7" class="cell" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">preview_table</span>(nhefs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -654,7 +654,7 @@ window.Quarto = {
 <pre class="text"><code>X -&gt; A -&gt; Y
 X -----&gt; Y</code></pre>
 <p>where <code>X</code> is the baseline covariate set, <code>A</code> is quitting smoking, and <code>Y</code> is later weight change. This graph says the baseline variables may affect both quitting and later weight change, and that there is no unmeasured common cause of quitting and later weight change after conditioning on those baseline variables.</p>
-<div id="4d7154f7" class="cell" data-execution_count="6">
+<div id="91279e0d" class="cell" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>conceptual_graph <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -692,7 +692,7 @@ X -----&gt; Y</code></pre>
 </div>
 </div>
 <p>For estimation, expand <code>X</code> into the observed NHEFS columns. The expanded graph is still an adjustment DAG: each baseline variable is allowed to point into quitting and into later weight change.</p>
-<div id="05c452a3" class="cell" data-execution_count="8">
+<div id="d89bc8de" class="cell" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>nhefs_vertices <span class="op">=</span> [</span>
@@ -722,7 +722,7 @@ X -----&gt; Y</code></pre>
 <section id="identification" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="identification"><span class="header-section-number">4.3</span> Identification</h2>
 <p><code>CausalGraphs.identify</code> checks the graph before estimation. In this adjustment DAG, the quitting node is a-fixable. The Markov pillow is the sufficient adjustment set:</p>
-<div id="861da015" class="cell" data-execution_count="9">
+<div id="b89e0595" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>nhefs_id <span class="op">=</span> <span class="fu">identify</span>(nhefs_graph, <span class="op">:</span>qsmk, <span class="op">:</span>wt82_71)</span>
@@ -767,7 +767,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="estimation-with-causalestimate" class="level2" data-number="4.4">
 <h2 data-number="4.4" class="anchored" data-anchor-id="estimation-with-causalestimate"><span class="header-section-number">4.4</span> Estimation with CausalEstimate</h2>
 <p>The book keeps identification and estimation as separate steps. Here <code>CausalGraphs</code> supplies the graph result and <code>CausalEstimate</code> estimates the identified functional. Because the graph is a-fixable, <code>GraphID</code> routes to the AIPW average treatment effect machinery.</p>
-<div id="384ba953" class="cell" data-cache="true" data-message="false" data-execution_count="10">
+<div id="460d8d75" class="cell" data-cache="true" data-message="false" data-execution_count="10">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">2026</span>)</span>
@@ -819,12 +819,12 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <p>Under the DAG, the estimate is the average effect of quitting smoking versus continuing smoking on weight change in the complete-case NHEFS population. The positive estimate is consistent with weight gain after quitting. The causal interpretation depends on the graph, especially the assumption that the measured baseline variables block the relevant backdoor paths.</p>
 <p>Two settings deserve comment, because both move the number.</p>
 <p><strong>Folds.</strong> <code>crossfit = 5</code> is the package default and this chapter’s seed makes the comparison reproducible. Dropping to <code>crossfit = 2</code> gives 3.866 with a standard error of 1.331 — a 95% interval of <span class="math inline">\([1.26, 6.48]\)</span>, more than five kilograms wide. Five folds gives 3.452 (0.748) and ten gives 3.312 (0.737). Two folds fits each nuisance on 783 observations, and the resulting noise in the out-of-fold predictions inflates the point estimate <em>and</em> the influence-function variance at the same time. Use the default, or more.</p>
-<p><strong>Nuisance estimation.</strong> The <a href="https://xiangao.github.io/causal_econometrics_guide/smoking-cessation-graphs.html">companion R chapter</a> fits the same adjustment set by full-sample parametric nuisances (a linear outcome model interacted with treatment, a logistic propensity) and reports 3.293 with a standard error of 0.498. The propensity scores in this data set stay inside <span class="math inline">\([0.05, 0.75]\)</span>, so there is no overlap problem to explain the gap: the wider interval here is the variance price of cross-fitting flexible learners rather than trusting a correctly specified parametric model. When the parametric model is right, it wins; the cross-fit estimator buys insurance against its being wrong.</p>
+<p><strong>Nuisance estimation.</strong> The <a href="https://xiangao.github.io/causal_econometrics_guide/smoking-cessation-graphs.html">companion R chapter</a> fits the same adjustment set by full-sample parametric nuisances (a linear outcome model interacted with treatment, a logistic propensity) and reports 3.293 with a standard error of 0.498. The propensity scores in this data set stay inside <span class="math inline">\([0.05, 0.75]\)</span>, so there is no overlap problem to explain the gap: the wider interval here is the variance price of cross-fitting flexible learners rather than trusting a correctly specified parametric model. When the parametric model is right, it wins; the cross-fit estimator protects against its being wrong.</p>
 </section>
 <section id="sensitivity-graph" class="level2" data-number="4.5">
 <h2 data-number="4.5" class="anchored" data-anchor-id="sensitivity-graph"><span class="header-section-number">4.5</span> Sensitivity Graph</h2>
 <p>Now encode a different assumption: quitting and later weight change share an unobserved common cause even after conditioning on the measured baseline variables. In an ADMG this is a bidirected edge, <code>qsmk &lt;-&gt; wt82_71</code>.</p>
-<div id="c9dc0e87" class="cell" data-execution_count="11">
+<div id="f29c9e13" class="cell" data-execution_count="11">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sensitivity_graph <span class="op">=</span> <span class="fu">make_graph</span>(</span>
@@ -906,7 +906,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 </div>
-<div id="d4145112" class="cell" data-execution_count="13">
+<div id="0602884f" class="cell" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(strategy <span class="op">=</span> [<span class="fu">string</span>(sensitivity_id.strategy)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -939,7 +939,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 <section id="structured-baseline-graph" class="level2" data-number="4.6">
 <h2 data-number="4.6" class="anchored" data-anchor-id="structured-baseline-graph"><span class="header-section-number">4.6</span> Structured Baseline Graph</h2>
 <p>The simple adjustment graph is often the clearest starting point. A more detailed DAG can record baseline ordering: demographics may precede education, smoking history, activity, and baseline weight; those variables may then affect quitting and later weight change.</p>
-<div id="d3e06875" class="cell" data-execution_count="14">
+<div id="9256862a" class="cell" data-execution_count="14">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>structured_edges <span class="op">=</span> [</span>
@@ -1001,7 +1001,7 @@ E[Y(a)] = E_X\{E(Y \mid A=a, X)\}.
 </div>
 </div>
 <p>The check returns <code>true</code>, and the reason is worth spelling out, because it is not an accident of this data set. Every arrow we added runs between baseline variables, and every baseline variable is pre-treatment and in the adjustment set. A back-door path from <code>qsmk</code> to <code>wt82_71</code> has to leave <code>qsmk</code> through an incoming arrow, travel among the baseline variables, and then enter <code>wt82_71</code> from one of them. That last baseline variable has an arrow pointing into the outcome, so on this path it is a non-collider, and we are conditioning on it. The path is blocked whatever the arrows upstream of it look like. The measured parents of <code>qsmk</code> are therefore still the full baseline, and the identifying functional is unchanged.</p>
-<p>That does not make the detail useless. It records what we believe about the baseline ordering, which a reader may want to see. But each arrow is a causal assumption that can be wrong, and here none of them buys anything for this estimand. The grouped adjustment graph asserts less and identifies the same thing.</p>
+<p>That does not make the detail useless. It records what we believe about the baseline ordering, which a reader may want to see. But each arrow is a causal assumption that can be wrong, and here none of them is needed to identify this estimand. The grouped adjustment graph asserts less and identifies the same thing.</p>
 </section>
 <section id="summary" class="level2" data-number="4.7">
 <h2 data-number="4.7" class="anchored" data-anchor-id="summary"><span class="header-section-number">4.7</span> Summary</h2>

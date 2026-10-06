@@ -117,10 +117,29 @@ exposure, transport networks, nonlinear indices.
 
 : Shift-share and recentered formula instruments. {#tbl-ri-compare}
 
-The formula instrument asks for more: the treatment's formula and an explicit
+The formula instrument needs more inputs: the treatment's formula and an explicit
 shock design. With heterogeneous effects, different instruments weight units
 differently, so a gain in precision is a gain for a different weighted
 average [@borusyak-hull-2026, Proposition D1].
+
+### Why recenter
+
+Bartik needs one of two assumptions. If the shares are as good as random given
+the controls [@goldsmith-pinkham-sorkin-swift-2020], Bartik is valid as it
+stands and recentering is not needed. If only the shocks are random
+[@borusyak-hull-jaravel-2022], the shares are not, and with incomplete shares
+and a positive mean shock a region with more exposure gets a larger instrument
+in every draw. That part of the instrument comes from the shares, not from the
+shocks, and it is what recentering removes. What remains is the variation from
+which industries happened to receive larger shocks than expected.
+
+This gives the formula instrument four advantages. Its validity rests only on the shocks, such as a policy choice or a foreign supply shock, which are often easier to defend than the shares. The
+design has to be written down, so the assumption is explicit and can be
+varied, as the two ADH designs below show. The instrument can use exposure to
+gain power, because the best predictor tracks the treatment more closely than
+a shock-only index. And it is not tied to a linear formula or to independent
+units: it covers eligibility rules, networks and nonlinear indices, with
+shocks shared by many units.
 
 ## Simulation
 
@@ -209,17 +228,33 @@ income lies between the lowest and highest thresholds, and its $R^2$ is 0.59.
 
 ## The China shock
 
-The ADH regression has incomplete shares: lagged employment shares of 397
-manufacturing industries in each of 722 commuting zones, over two periods.
-ADH control for the start-of-period manufacturing share with one coefficient
-for both periods. Under exchangeable shocks within period, @eq-ri-ss-mu says
-the right control is $S_\ell$ times the period's mean shock, which is 4.8 in
-the first period and 17.3 in the second. A stricter design treats shocks as
-exchangeable only within the 20 two-digit SIC sectors in each period, giving
+In ADH the shocks are at the industry-period level: the growth of Chinese
+imports into eight other high-income countries, per US worker, in 397
+manufacturing industries over 1990–2000 and 2000–2007. ADH argue they are
+exogenous because the growth came from China's side, through reform, rising
+productivity and WTO accession, and because imports into other countries do
+not respond to US demand. The argument is weaker for demand or technology
+shocks shared by all rich countries, and the identifying variation is
+concentrated in a few industries such as computers, toys and audio equipment
+[@goldsmith-pinkham-sorkin-swift-2020].
+
+The formula instrument follows the three steps of the algorithm. The
+treatment, US import exposure per worker, is shares times US import growth,
+and US imports also reflect US demand. Replacing them with the other-country
+shocks gives the prediction, which is the Bartik instrument itself, so the
+first step changes nothing. The second step does matter, because the shares,
+lagged employment shares in the 722 commuting zones, are incomplete. If the
+397 shocks are exchangeable within period, @eq-ri-ss-mu gives the expected
+instrument $S_\ell \bar g_t$, with a mean shock of 4.8 in the first period and
+17.3 in the second. A stricter design treats shocks as exchangeable only
+within the 20 two-digit SIC sectors in each period, giving
 $\mu_\ell = \sum_m S_{\ell m} \bar g_{mt}$, where $S_{\ell m}$ is the zone's
-share in sector $m$ and $\bar g_{mt}$ the sector's mean shock. All fits use
-ADH's controls, census-division effects, population weights and standard
-errors clustered by state, with the GPSS replication files.
+share in sector $m$ and $\bar g_{mt}$ the sector's mean shock. The third step
+controls for the expected instrument, which is equivalent to subtracting it.
+ADH themselves control for the start-of-period manufacturing share, with one
+coefficient for both periods. All fits use ADH's controls, census-division
+effects, population weights and standard errors clustered by state, with the
+GPSS replication files.
 
 ```{julia}
 #| label: ri-adh
@@ -270,9 +305,9 @@ than triples between periods. The sector design gives −0.144 (0.117), because
 it no longer uses the fact that electronics and toys received larger shocks
 than food or paper.
 
-Each row is right under its own design, and the data cannot tell us which
-design holds. Recentering forces the design to be stated, and here it matters
-a great deal.
+Each row is right under its own design, and the first row is also right if
+the shares themselves are exogenous given the controls. The data cannot tell
+us which assumption holds. Recentering requires the design to be stated, and here the design changes the estimate by more than half.
 
 ## The Medicaid application
 

@@ -483,7 +483,7 @@ window.Quarto = {
 </header>
 
 
-<div id="a71433ae" class="cell" data-execution_count="2">
+<div id="47dd9580" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -850,7 +850,7 @@ X2                    0.2395      -0.1541       0.2395</code></pre>
 </tbody>
 </table>
 <p>Weighting is IPW. That is the second row, and the odds are what the IPW section above computed. Entropy balancing does not change the estimator, only how the weights are found: IPW fits <span class="math inline">\(\pi\)</span> by maximum likelihood and transforms it, while entropy balancing skips the likelihood and solves for weights satisfying the balance constraints directly. Its solution has the form <span class="math inline">\(w_i \propto \exp(x_i'\lambda)\)</span>, which is the odds of a logistic propensity score — so entropy balancing is IPW for a logit model whose coefficients are set by exact mean balance rather than by likelihood.</p>
-<p>Matching is weighting too, with the weights restricted to zero and one and chosen by a distance rule rather than by a model. The restriction is where the trade-off lives: matching sets some weights to zero, so it discards observations, while weighting keeps everyone and pays with extreme weights when overlap is poor. Matching buys stability with the estimand; weighting buys the estimand with variance.</p>
+<p>Matching is weighting too, with the weights restricted to zero and one and chosen by a distance rule rather than by a model. The restriction is where the trade-off lives: matching sets some weights to zero, so it discards observations, while weighting keeps everyone and pays with extreme weights when overlap is poor. Matching gives stable estimates for a changed estimand; weighting keeps the estimand and has higher variance.</p>
 <p>AIPW uses both columns: start from regression adjustment, then add the odds-weighted average of the control residuals <span class="math inline">\(Y - \hat\mu_0(X)\)</span>. It is consistent if either model is right.</p>
 <p>Five routes, one data set. Each row is built by hand from the weight representation so the arithmetic is visible.</p>
 <div id="cell-compare-routes" class="cell" data-cache="true" data-execution_count="12">
