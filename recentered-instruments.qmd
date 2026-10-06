@@ -1,0 +1,301 @@
+# Recentered Formula Instruments
+
+```{julia}
+#| include: false
+using DataFrames
+using CSV
+using Statistics
+using Printf
+using Panelest
+using Vcov
+using StatsModels
+import StatsAPI: coef, stderror, coefnames
+```
+
+Many treatments are computed from a formula that combines a random shock with
+non-random exposure. Medicaid eligibility is a state's rules applied to a
+person's income. Import exposure is national industry shocks applied to a
+region's industry mix. The Bartik instrument of the previous chapter is one
+such formula. This chapter covers the general version of Borusyak and Hull
+[@borusyak-hull-2023], their result on which formula is best
+[@borusyak-hull-2026], and what both mean for shift-share.
+
+## Formula instruments
+
+Unit $i$ has outcome $y_i$ and treatment $x_i$, with a constant effect $\beta$:
+
+$$
+y_i = \beta x_i + \varepsilon_i .
+$$ {#eq-ri-model}
+
+The treatment is $x_i = h_i(g, w, u)$, where $h_i$ is a known function, $g$
+collects the random shocks, $w$ collects predetermined variables such as
+income or industry shares, and $u$ collects anything else. The identifying
+assumption puts all the randomness on the shocks [@borusyak-hull-2026,
+Assumption 1]:
+
+$$
+E[\varepsilon_i \mid g, w] = E[\varepsilon_i \mid w] .
+$$ {#eq-ri-exog}
+
+The error may depend on $w$ in any way. Poorer people may have worse
+outcomes, and regions with more manufacturing may have been declining anyway.
+
+A formula instrument is $z_i = f_i(g, w)$ for a fixed function $f_i$. Its
+expected value over the shock draws, holding $w$ fixed, is the expected
+instrument $\mu_i = E[z_i \mid w]$. The recentered instrument
+$\tilde z_i = z_i - \mu_i$ is valid, because by iterated expectations and
+@eq-ri-exog,
+
+$$
+E[\tilde z_i \varepsilon_i]
+= E\big[\tilde z_i\, E[\varepsilon_i \mid w]\big]
+= E\big[E[\tilde z_i \mid w]\, E[\varepsilon_i \mid w]\big] = 0 .
+$$
+
+Without recentering the same steps give $E[z_i \varepsilon_i] = E[\mu_i
+E[\varepsilon_i \mid w]]$, which is not zero when the expected instrument is
+correlated with the predictable part of the error. Subtracting $\mu_i$ and
+controlling for $\mu_i$ are equivalent by Frisch–Waugh–Lovell. Computing
+$\mu_i$ requires the design: how the shocks could have been drawn. We redraw
+them from that design, or permute them if they are exchangeable, and average
+the formula over the draws.
+
+Any recentered formula is valid, so we can pick the most precise.
+@borusyak-hull-2026 [Theorem 1] show it starts from the best prediction of the
+treatment, recentered:
+
+$$
+\tilde z = E[x \mid g, w] - E[x \mid w] .
+$$ {#eq-ri-optimal}
+
+The full optimal instrument adds two refinements, partly controlling for the
+predictable part of the error and GLS weighting, which need a model of the
+error. The authors drop them. Their algorithm predicts the treatment from its
+formula, recenters the prediction by redrawing the shocks, and uses the result
+as the instrument. When $x_i$ depends only on $(g, w)$, the prediction is
+$x_i$ itself.
+
+## Shift-share as a formula instrument
+
+The Bartik instrument $B_\ell = \sum_k s_{\ell k} g_k$ of @eq-shift-share-iv-1
+is the linear formula, shares times shocks. It differs from
+@eq-ri-optimal in two ways.
+
+The first is recentering. Suppose the industry shocks are exchangeable within
+period $t$, with mean $\bar g_t$, and let $S_\ell = \sum_k s_{\ell k}$ be
+region $\ell$'s sum of shares. Then
+
+$$
+\mu_\ell = S_\ell\, \bar g_t .
+$$ {#eq-ri-ss-mu}
+
+If the shares sum to one, $\mu_\ell = \bar g_t$ is common to all regions and
+period effects absorb it, so Bartik is already recentered. If they are
+incomplete, as with manufacturing shares, heavily manufacturing regions get a
+large instrument in every draw, and Bartik is biased unless we control for
+$S_\ell$ interacted with period [@borusyak-hull-jaravel-2022].
+
+The second is the formula. Take two regions with half their employment in
+electronics, and an import shock to electronics. Region A's plants compete
+with Chinese imports. Region B's make military components and do not. Bartik
+gives both half the shock, but only A's import competition rises, so the
+instrument varies where the treatment does not. The best predictor gives A
+half the shock and B nothing, then recenters each by its own expected value.
+Both instruments are valid, and the second has the stronger first stage. When
+the treatment really is shares times shocks, the best predictor is Bartik
+itself and the two differ only by recentering. The formula matters when the
+treatment has more structure than Bartik uses: eligibility rules, export
+exposure, transport networks, nonlinear indices.
+
+|                     | Shift-share (Bartik)      | Recentered formula instrument          |
+|---------------------|---------------------------|----------------------------------------|
+| Formula             | Shares times shocks       | Best prediction of the treatment       |
+| Expected instrument | Usually not subtracted    | Subtracted, or controlled for          |
+| Shock design        | Implicit                  | Written down to compute $\mu_\ell$     |
+| Inputs              | Shares and shocks         | Treatment formula and shock design     |
+
+: Shift-share and recentered formula instruments. {#tbl-ri-compare}
+
+The formula instrument asks for more: the treatment's formula and an explicit
+shock design. With heterogeneous effects, different instruments weight units
+differently, so a gain in precision is a gain for a different weighted
+average [@borusyak-hull-2026, Proposition D1].
+
+## Simulation
+
+The aim is to compare a shock-only instrument with the recentered treatment.
+There are 50 states and 10,000 people. Income $\text{inc}_i$, in multiples of
+the poverty line, is log-normal with median 1.4. Each state draws an
+eligibility threshold $T_k$ from $\{0.5, 1, 1.38, 2\}$ with equal
+probabilities, and
+
+$$
+x_i = 1[\text{inc}_i < T_{s(i)}], \qquad
+y_i = 0.3\, x_i + \varepsilon_i, \qquad
+\varepsilon_i = -0.5 \log \text{inc}_i + \alpha_{s(i)} + \nu_i ,
+$$ {#eq-ri-dgp}
+
+where $s(i)$ is $i$'s state, $\alpha_k \sim N(0, 0.3^2)$ is a state effect
+and $\nu_i \sim N(0, 1)$. Poorer people are more often eligible and have
+higher errors, so OLS is biased. Expected eligibility $\mu_i$ is the share of
+the four thresholds above $\text{inc}_i$.
+
+We compare OLS (the same as instrumenting $x_i$ with itself); the simulated
+instrument of @currie-gruber-1996, the share of all 10,000 people eligible
+under their state's threshold; the recentered treatment $x_i - \mu_i$; and
+OLS of $y$ on $x$ and $\mu$, which is the controlled form of the recentered
+treatment [@borusyak-hull-2026, footnote 8]. Holding the people fixed, we
+redraw the 50 thresholds 1,000 times, so only the shocks change. The people
+and draws are stored as CSVs so the Julia companion computes the same numbers.
+
+```{julia}
+#| label: ri-mc
+#| cache: true
+#| warning: false
+
+people = CSV.read("data/recenter_people.csv", DataFrame)
+draws  = Matrix(CSV.read("data/recenter_policy_draws.csv", DataFrame)[:, 2:end])
+pool = [0.5, 1.0, 1.38, 2.0]
+beta_true = 0.3
+mu    = [mean(v .< pool) for v in people.income]   # expected eligibility
+gener = [mean(people.income .< t) for t in pool]    # state generosity
+
+function coef_x(f)
+    i = findfirst(==("x"), coefnames(f))
+    return coef(f)[i], stderror(f)[i]
+end
+
+const CL = Vcov.cluster(:state)
+function one_draw(r)
+    thr = draws[r, people.state]
+    d = copy(people)
+    d.x     = Float64.(d.income .< thr)
+    d.y     = beta_true .* d.x .+ d.eps
+    d.z_sim = gener[[findfirst(==(t), pool) for t in thr]]
+    d.z_rc  = d.x .- mu
+    d.mu    = mu
+    fits = (feols(d, @formula(y ~ x), vcov = CL),
+            feiv(d, @formula(y ~ 1), endo = :x, inst = :z_sim, vcov_type = CL),
+            feiv(d, @formula(y ~ 1), endo = :x, inst = :z_rc, vcov_type = CL),
+            feols(d, @formula(y ~ x + mu), vcov = CL))
+    r2 = [NaN, cor(d.x, d.z_sim)^2, cor(d.x, d.z_rc)^2, NaN]
+    return [collect(coef_x(f)) for f in fits], r2
+end
+
+R = size(draws, 1)
+est = zeros(R, 4); se = zeros(R, 4); r2 = zeros(R, 4)
+Threads.@threads for r in 1:R               # one slot per draw, race-free
+    cs, r2[r, :] = one_draw(r)
+    for j in 1:4; est[r, j], se[r, j] = cs[j]; end
+end
+
+DataFrame(estimator = ["OLS", "Simulated instrument", "Recentered treatment",
+                       "OLS controlling for mu"],
+          mean     = round.(vec(mean(est, dims = 1)), digits = 3),
+          sd       = round.(vec(std(est, dims = 1)), digits = 3),
+          coverage = round.(vec(mean(abs.(est .- beta_true) .<= 1.96 .* se, dims = 1)),
+                            digits = 3),
+          first_stage_R2 = round.(vec(mean(r2, dims = 1)), digits = 3))
+```
+
+OLS averages 0.637 against a true 0.3. The three other estimators are centred
+on 0.3, with coverage of 92.7% to 93.7% for clustered 95% intervals with 50
+clusters. The simulated instrument has a standard deviation of 0.167 across
+draws, the recentered treatment 0.086, and its controlled form 0.080. The
+simulated instrument varies only across states, so its first-stage $R^2$ is
+0.26. The recentered treatment varies within states, among people whose
+income lies between the lowest and highest thresholds, and its $R^2$ is 0.59.
+
+## The China shock
+
+The ADH regression has incomplete shares: lagged employment shares of 397
+manufacturing industries in each of 722 commuting zones, over two periods.
+ADH control for the start-of-period manufacturing share with one coefficient
+for both periods. Under exchangeable shocks within period, @eq-ri-ss-mu says
+the right control is $S_\ell$ times the period's mean shock, which is 4.8 in
+the first period and 17.3 in the second. A stricter design treats shocks as
+exchangeable only within the 20 two-digit SIC sectors in each period, giving
+$\mu_\ell = \sum_m S_{\ell m} \bar g_{mt}$, where $S_{\ell m}$ is the zone's
+share in sector $m$ and $\bar g_{mt}$ the sector's mean shock. All fits use
+ADH's controls, census-division effects, population weights and standard
+errors clustered by state, with the GPSS replication files.
+
+```{julia}
+#| label: ri-adh
+#| cache: true
+#| warning: false
+
+adh = CSV.read("data/adh_master.csv", DataFrame)
+tr  = CSV.read("data/adh_shares_triplets.csv", DataFrame)
+shk = CSV.read("data/adh_shocks.csv", DataFrame)
+
+function by_row(v)                          # sum over industries, by zone
+    out = zeros(nrow(adh))
+    for (r, x) in zip(tr.row, v); out[r] += x; end
+    return out
+end
+sector  = string.(shk.sic87dd .÷ 100, " ", shk.year)
+g_bar_m = Dict(s => mean(shk.g[sector .== s]) for s in unique(sector))
+
+adh.B    = by_row(tr.share .* shk.g[tr.col])
+adh.S    = by_row(tr.share)
+adh.S_t2 = adh.S .* adh.t2
+adh.t2n  = Float64.(adh.t2)
+adh.mu2  = by_row(tr.share .* [g_bar_m[sector[c]] for c in tr.col])
+
+controls = term(:l_sh_popedu_c) + term(:l_sh_popfborn) + term(:l_sh_empl_f) +
+           term(:l_sh_routine33) + term(:l_task_outsource) + term(:t2n) +
+           fe(:division)
+function iv(extra)
+    rhs = isempty(extra) ? controls : sum(term.(extra)) + controls
+    feiv(adh, term(:d_sh_empl_mfg) ~ rhs, endo = :shock, inst = :B,
+         weights = :weights, vcov_type = Vcov.cluster(:statefip))
+end
+fits = ["ADH controls"                         => iv([:l_shind_manuf_cbp]),
+        "Without the manufacturing share"      => iv(Symbol[]),
+        "Design 1: S x period"                 => iv([:S, :S_t2]),
+        "Design 2: sector expected instrument" => iv([:mu2])]
+DataFrame(specification = first.(fits),
+          estimate = [round(coef(f)[1], digits = 3) for f in last.(fits)],
+          se       = [round(stderror(f)[1], digits = 3) for f in last.(fits)])
+```
+
+The first row reproduces ADH's −0.596: an increase in import exposure of
+$1,000 per worker over a decade lowers the manufacturing employment share by
+about 0.6 percentage points. Controlling for the expected instrument period by
+period gives −0.267 (0.087). ADH's control is close to $S_\ell$, with a
+correlation of 0.92, but one coefficient cannot absorb a term whose slope more
+than triples between periods. The sector design gives −0.144 (0.117), because
+it no longer uses the fact that electronics and toys received larger shocks
+than food or paper.
+
+Each row is right under its own design, and the data cannot tell us which
+design holds. Recentering forces the design to be stated, and here it matters
+a great deal.
+
+## The Medicaid application
+
+@borusyak-hull-2026 instrument Medicaid eligibility in the 2014 ACA expansion
+with actual minus expected eligibility, treating expansion as random within
+the governor's party. The first-stage partial $R^2$ rises from 0.01 to 0.80
+over the simulated instrument and the standard error on crowd-out falls by
+44%. Most of the gain comes from the 18% of the sample whose eligibility the
+expansion could change; outside it, the recentered instrument is zero, and in
+the full sample without an exposure control it is less precise than the
+simulated one [@borusyak-hull-2026, Table A4]. Their 2012–2013 placebo on
+private insurance is −0.011, half the main estimate of −0.023 (Table A2).
+
+## Summary
+
+Shift-share is one formula instrument, with the formula and the design fixed
+by convention. Any formula of shocks and exposure is valid once its expected
+value over the shock design is subtracted, and the most efficient formula is
+the recentered best prediction of the treatment. For Bartik this gives two
+checks: whether incomplete shares require controlling for the sum of shares
+times the mean shock, and whether the treatment depends on the shocks through
+more than shares times shocks. In the ADH data the first check alone moves the
+estimate from −0.60 to −0.27.
+
+For the shift-share construction, the share and shock views, and inference,
+see the previous chapter, [Shift-Share Instrumental Variables](shift-share-iv.qmd).
