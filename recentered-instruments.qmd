@@ -143,11 +143,13 @@ shocks shared by many units.
 
 ## Simulation
 
-The aim is to compare a shock-only instrument with the recentered treatment.
-There are 50 states and 10,000 people. Income $\text{inc}_i$, in multiples of
-the poverty line, is log-normal with median 1.4. Each state draws an
-eligibility threshold $T_k$ from $\{0.5, 1, 1.38, 2\}$ with equal
-probabilities, and
+The aim is to compare a shock-only instrument with the recentered treatment
+when we know the true effect. There are 50 states and 10,000 people. Person
+$i$ lives in state $s(i)$ and has income $\text{inc}_i$, in multiples of the
+poverty line, drawn from a log-normal distribution with median 1.4. The shock
+is the states' policy: each state $k$ draws an eligibility threshold $T_k$
+from $\{0.5, 1, 1.38, 2\}$, each value with probability 1/4, independently
+across states. Eligibility and the outcome are
 
 $$
 x_i = 1[\text{inc}_i < T_{s(i)}], \qquad
@@ -155,18 +157,53 @@ y_i = 0.3\, x_i + \varepsilon_i, \qquad
 \varepsilon_i = -0.5 \log \text{inc}_i + \alpha_{s(i)} + \nu_i ,
 $$ {#eq-ri-dgp}
 
-where $s(i)$ is $i$'s state, $\alpha_k \sim N(0, 0.3^2)$ is a state effect
-and $\nu_i \sim N(0, 1)$. Poorer people are more often eligible and have
-higher errors, so OLS is biased. Expected eligibility $\mu_i$ is the share of
-the four thresholds above $\text{inc}_i$.
+where $\alpha_k \sim N(0, 0.3^2)$ is a state effect and $\nu_i \sim N(0, 1)$.
+The true effect is 0.3. In the notation of @eq-ri-exog, the shocks $g$ are the
+50 thresholds and the predetermined variables $w$ are the incomes and states.
+Poorer people are more often eligible and have higher errors, so eligibility
+is correlated with the error through income and OLS is biased upward. The
+thresholds are drawn independently of incomes and errors, so @eq-ri-exog
+holds.
 
-We compare OLS (the same as instrumenting $x_i$ with itself); the simulated
-instrument of @currie-gruber-1996, the share of all 10,000 people eligible
-under their state's threshold; the recentered treatment $x_i - \mu_i$; and
-OLS of $y$ on $x$ and $\mu$, which is the controlled form of the recentered
-treatment [@borusyak-hull-2026, footnote 8]. Holding the people fixed, we
-redraw the 50 thresholds 1,000 times, so only the shocks change. The people
-and draws are stored as CSVs so the Julia companion computes the same numbers.
+Expected eligibility $\mu_i$ is the probability that person $i$ is eligible
+over the possible thresholds, holding income fixed. It is the share of the
+four thresholds above their income: 1 below 0.5, 0.75 between 0.5 and 1, 0.5
+between 1 and 1.38, 0.25 between 1.38 and 2, and 0 above 2. It depends on
+income only, because every state draws from the same four values. Given
+income, the recentered treatment $x_i - \mu_i$ moves only with the draw, which
+is why it is exogenous. A person with income 1.2 has $\mu_i = 0.5$. The
+instrument is 0.5 if their state drew 1.38 or 2 and −0.5 if it drew 0.5 or 1,
+with equal chance whatever their error. People below 0.5 or above 2 always
+have zero and carry no identifying variation.
+
+We compare four estimators, all with standard errors clustered by state.
+
+1. OLS of $y_i$ on $x_i$. This is the same as instrumenting $x_i$ with
+   itself, the best predictor without recentering. It is biased.
+2. The simulated instrument of @currie-gruber-1996. They apply each state's
+   rules to one fixed national sample and use the share of that sample who
+   would be eligible as the state's instrument. The same population is run
+   through every state's rules, so the instrument measures the generosity of
+   the rules and not the composition of the state's residents. Here the
+   national sample is all 10,000 people, and everyone in a state gets the
+   same value. It is valid.
+3. The recentered treatment, instrumenting $x_i$ with $x_i - \mu_i$. It
+   varies within states, among people whose income lies between the lowest
+   and highest thresholds. It is valid.
+4. OLS of $y_i$ on $x_i$ and $\mu_i$. Instrumenting $x_i$ with $x_i - \mu_i$
+   while controlling for $\mu_i$ reduces to this regression
+   [@borusyak-hull-2026, footnote 8], so it is the controlled form of 3. It
+   is valid.
+
+The Monte Carlo is design-based. We generate the people once: their incomes,
+states and errors are the same in every replication. In each of 1,000
+replications we draw new thresholds for the 50 states, recompute eligibility
+and outcomes, and fit the four estimators. The only randomness across
+replications is the policy draw, which is what the identifying assumption
+treats as random, so the spread of the estimates across replications measures
+each estimator's precision under that design. The people and the 1,000 × 50
+thresholds are stored as CSVs so the Julia companion computes the same
+numbers.
 
 ```{julia}
 #| label: ri-mc
@@ -218,13 +255,18 @@ DataFrame(estimator = ["OLS", "Simulated instrument", "Recentered treatment",
           first_stage_R2 = round.(vec(mean(r2, dims = 1)), digits = 3))
 ```
 
-OLS averages 0.637 against a true 0.3. The three other estimators are centred
-on 0.3, with coverage of 92.7% to 93.7% for clustered 95% intervals with 50
-clusters. The simulated instrument has a standard deviation of 0.167 across
-draws, the recentered treatment 0.086, and its controlled form 0.080. The
-simulated instrument varies only across states, so its first-stage $R^2$ is
-0.26. The recentered treatment varies within states, among people whose
-income lies between the lowest and highest thresholds, and its $R^2$ is 0.59.
+The table gives each estimator's mean and standard deviation over the 1,000
+replications, the share of clustered 95% intervals that contain 0.3, and the
+average first-stage $R^2$. OLS averages 0.637 against a true 0.3, and its
+intervals never contain 0.3. The three other estimators are centred on 0.3,
+with coverage of 92.7% to 93.7%, slightly below 95% with 50 clusters. They
+differ in precision. The simulated instrument has a standard deviation of
+0.167 and a first-stage $R^2$ of 0.26. It gives everyone in a state the same
+value, so it cannot separate people whose eligibility depends on the
+threshold from people who are eligible, or ineligible, under every threshold.
+The recentered treatment has a standard deviation of 0.086, half as large, and
+an $R^2$ of 0.59, because it uses that variation within states. Its controlled
+form has 0.080.
 
 ## The China shock
 
@@ -238,23 +280,34 @@ shocks shared by all rich countries, and the identifying variation is
 concentrated in a few industries such as computers, toys and audio equipment
 [@goldsmith-pinkham-sorkin-swift-2020].
 
-The formula instrument follows the three steps of the algorithm. The
-treatment, US import exposure per worker, is shares times US import growth,
-and US imports also reflect US demand. Replacing them with the other-country
-shocks gives the prediction, which is the Bartik instrument itself, so the
-first step changes nothing. The second step does matter, because the shares,
-lagged employment shares in the 722 commuting zones, are incomplete. If the
-397 shocks are exchangeable within period, @eq-ri-ss-mu gives the expected
-instrument $S_\ell \bar g_t$, with a mean shock of 4.8 in the first period and
-17.3 in the second. A stricter design treats shocks as exchangeable only
-within the 20 two-digit SIC sectors in each period, giving
-$\mu_\ell = \sum_m S_{\ell m} \bar g_{mt}$, where $S_{\ell m}$ is the zone's
-share in sector $m$ and $\bar g_{mt}$ the sector's mean shock. The third step
-controls for the expected instrument, which is equivalent to subtracting it.
-ADH themselves control for the start-of-period manufacturing share, with one
-coefficient for both periods. All fits use ADH's controls, census-division
-effects, population weights and standard errors clustered by state, with the
-GPSS replication files.
+All four regressions below use the same instrument and differ only in what
+they control for. The treatment, US import exposure per worker, is shares
+times US import growth, and US imports also reflect US demand. Replacing them
+with the other-country shocks gives the prediction, which is the Bartik
+instrument itself, so the formula-instrument approach does not change the
+instrument. It changes the control. The shares, lagged employment shares in
+the 722 commuting zones, are incomplete, so the expected instrument $\mu_\ell$
+varies across zones, and controlling for it is equivalent to subtracting it.
+Its form depends on the shock design.
+
+- Design 1: the 397 shocks are exchangeable within each period. Every
+  industry then has the same expected shock, the period mean $\bar g_t$, which
+  is 4.8 in the first period and 17.3 in the second, and @eq-ri-ss-mu gives
+  $\mu_\ell = S_\ell \bar g_t$. Only a zone's manufacturing intensity is
+  treated as predictable.
+- Design 2: the shocks are exchangeable only within each of the 20 two-digit
+  SIC sectors in each period. Each industry's expected shock is its sector's
+  mean $\bar g_{mt}$, and $\mu_\ell = \sum_m S_{\ell m} \bar g_{mt}$, where
+  $S_{\ell m}$ is the zone's share in sector $m$. A zone's sector mix is also
+  treated as predictable: a zone heavy in electronics is expected to receive a
+  large instrument.
+
+ADH control for the start-of-period manufacturing share with one coefficient
+for both periods, which approximates design 1's $\mu_\ell$. The second row
+drops that control, so nothing recenters the instrument, and it is valid only
+if the shares are exogenous. All fits use ADH's other controls,
+census-division effects, population weights and standard errors clustered by
+state, with the GPSS replication files.
 
 ```{julia}
 #| label: ri-adh
@@ -287,10 +340,10 @@ function iv(extra)
     feiv(adh, term(:d_sh_empl_mfg) ~ rhs, endo = :shock, inst = :B,
          weights = :weights, vcov_type = Vcov.cluster(:statefip))
 end
-fits = ["ADH controls"                         => iv([:l_shind_manuf_cbp]),
-        "Without the manufacturing share"      => iv(Symbol[]),
-        "Design 1: S x period"                 => iv([:S, :S_t2]),
-        "Design 2: sector expected instrument" => iv([:mu2])]
+fits = ["Bartik, ADH controls"               => iv([:l_shind_manuf_cbp]),
+        "Bartik, no manufacturing control"   => iv(Symbol[]),
+        "Bartik, design 1 mu (S x period)"   => iv([:S, :S_t2]),
+        "Bartik, design 2 mu (sector means)" => iv([:mu2])]
 DataFrame(specification = first.(fits),
           estimate = [round(coef(f)[1], digits = 3) for f in last.(fits)],
           se       = [round(stderror(f)[1], digits = 3) for f in last.(fits)])
@@ -298,16 +351,31 @@ DataFrame(specification = first.(fits),
 
 The first row reproduces ADH's −0.596: an increase in import exposure of
 $1,000 per worker over a decade lowers the manufacturing employment share by
-about 0.6 percentage points. Controlling for the expected instrument period by
-period gives −0.267 (0.087). ADH's control is close to $S_\ell$, with a
-correlation of 0.92, but one coefficient cannot absorb a term whose slope more
-than triples between periods. The sector design gives −0.144 (0.117), because
-it no longer uses the fact that electronics and toys received larger shocks
-than food or paper.
+about 0.6 percentage points. Without the manufacturing-share control the
+estimate is −0.712.
 
-Each row is right under its own design, and the first row is also right if
-the shares themselves are exogenous given the controls. The data cannot tell
-us which assumption holds. Recentering requires the design to be stated, and here the design changes the estimate by more than half.
+Each of the last two rows removes one source of variation. ADH's estimate
+partly compares zones with more and less manufacturing across the two periods:
+because the mean shock more than triples, a manufacturing-heavy zone gets a
+much larger instrument in the second period whichever industries China hit.
+Controlling for design 1's $\mu_\ell$ removes that comparison, and the estimate
+falls to −0.267 (0.087). ADH's control is close to $S_\ell$, with a
+correlation of 0.92, but one coefficient cannot absorb a term whose slope more
+than triples between periods. Design 2 also removes the comparison across
+sectors, such as electronics and toys against food and paper, and the estimate
+falls to −0.144 (0.117).
+
+Whether the removed comparisons are confounded is the substantive question.
+If manufacturing-heavy zones declined faster in the 2000s for other reasons,
+such as automation, the design 1 control is needed and ADH overstate the
+effect. But the average shock is itself part of the China shock, since
+Chinese imports rose across nearly all of manufacturing. Designs 1 and 2 treat
+that average as predictable and use only the variation in which industries
+China hit harder than average, so they cannot measure an effect that works
+through manufacturing as a whole. ADH's −0.596 does use it, and it is valid if
+the shares are exogenous given the controls. The data cannot tell us which
+assumption holds. Every estimate is negative, and recentering shows how much
+of the size depends on the assumption.
 
 ## The Medicaid application
 
@@ -326,11 +394,7 @@ private insurance is −0.011, half the main estimate of −0.023 (Table A2).
 Shift-share is one formula instrument, with the formula and the design fixed
 by convention. Any formula of shocks and exposure is valid once its expected
 value over the shock design is subtracted, and the most efficient formula is
-the recentered best prediction of the treatment. For Bartik this gives two
-checks: whether incomplete shares require controlling for the sum of shares
-times the mean shock, and whether the treatment depends on the shocks through
-more than shares times shocks. In the ADH data the first check alone moves the
-estimate from −0.60 to −0.27.
+the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period's mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment's own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27.
 
 For the shift-share construction, the share and shock views, and inference,
 see the previous chapter, [Shift-Share Instrumental Variables](shift-share-iv.qmd).
