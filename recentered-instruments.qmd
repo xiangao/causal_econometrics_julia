@@ -126,12 +126,23 @@ average [@borusyak-hull-2026, Proposition D1].
 
 Bartik needs one of two assumptions. If the shares are as good as random given
 the controls [@goldsmith-pinkham-sorkin-swift-2020], Bartik is valid as it
-stands and recentering is not needed. If only the shocks are random
-[@borusyak-hull-jaravel-2022], the shares are not, and with incomplete shares
-and a positive mean shock a region with more exposure gets a larger instrument
-in every draw. That part of the instrument comes from the shares, not from the
-shocks, and it is what recentering removes. What remains is the variation from
-which industries happened to receive larger shocks than expected.
+stands and recentering is not needed. If only the shocks are random [@borusyak-hull-jaravel-2022], the shares may be
+correlated with the error. Writing each shock as the mean shock plus a
+deviation splits the instrument in two:
+
+$$
+B_\ell = S_\ell\, \bar g_t + \sum_k s_{\ell k}\,(g_k - \bar g_t) .
+$$ {#eq-ri-bartik-split}
+
+The first part is the expected instrument of @eq-ri-ss-mu. It depends only on
+how much exposure the region has, so with incomplete shares a region with more
+exposure gets a larger value in every draw, and this part is correlated with
+the error whenever exposure is. The second part depends on whether the
+region's industries received larger or smaller shocks than average. If the
+shocks are independent of the shares and the errors, the deviations average to
+zero whatever the shares are, so this part is uncorrelated with the error.
+Recentering keeps only the second part. When the shares sum to one, the first
+part is $\bar g_t$ for every region and the period effects absorb it.
 
 This gives the formula instrument four advantages. Its validity rests only on the shocks, such as a policy choice or a foreign supply shock, which are often easier to defend than the shares. The
 design has to be written down, so the assumption is explicit and can be
