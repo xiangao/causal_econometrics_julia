@@ -400,12 +400,113 @@ the full sample without an exposure control it is less precise than the
 simulated one [@borusyak-hull-2026, Table A4]. Their 2012–2013 placebo on
 private insurance is −0.011, half the main estimate of −0.023 (Table A2).
 
+## Spillovers: deworming
+
+@miguel-kremer-2004 study a deworming programme in 75 primary schools in
+Busia, Kenya. The schools were listed alphabetically within strata and
+assigned in turn to three groups of 25, which started treatment in different
+years. Worms spread between children, so treating one school can lower
+infection at schools nearby. To measure this, they count the pupils at
+treated schools within 3 km of each school, and they control for the total
+number of pupils within 3 km.
+
+Let $D_j$ be 1 if school $j$ is treated, $n_j$ its number of pupils, $p_j$
+the probability that it is treated, and $j \sim i$ mean that $j$ is another
+school within 3 km of school $i$. The spillover exposure of school $i$ and its
+expected value are
+
+$$
+x_i = \sum_{j \sim i} n_j D_j, \qquad \mu_i = \sum_{j \sim i} n_j p_j .
+$$ {#eq-ri-spill}
+
+The shocks $g$ are the assignments, and the predetermined variables $w$ are the
+locations and pupil counts. Assignment is random, but a school in a dense area
+has more treated neighbours in every draw. If density also affects the
+outcome, through crowding or sanitation, the exposure is correlated with the
+error. In the first year one third of the schools were treated, so $p_j = 1/3$
+for every school and $\mu_i$ is one third of the total pupils within 3 km.
+Miguel and Kremer's total-pupils control is therefore the recentering. The
+exposure is the treatment itself, as eligibility was in the simulation, so
+the estimator is OLS controlling for $\mu_i$, estimator 4 above. If the
+treatment probability differed across schools, for example by stratum, the
+control would have to be $\mu_i$ and not the total pupils.
+
+A second simulation checks this in a district like Busia. We place 75 schools
+in a 30 km by 30 km district, half around a town and half spread over the
+rest, and give each about 400 pupils. In each draw exactly 25 schools are
+treated, so $p_j = 1/3$. Let $N_i$ be the total pupils at other schools within
+3 km and $\eta_i \sim N(0, 0.05^2)$ a school error. The outcome, school
+participation, is
+
+$$
+y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
+$$ {#eq-ri-spill-dgp}
+
+with $x_i$ and $N_i$ in thousands of pupils. Treatment raises participation by
+5 points at the school and by 3 points per thousand treated pupils nearby.
+Schools in dense areas have lower participation for other reasons. As before,
+the schools, their pupils and errors are fixed, and the 1,000 replications
+redraw which 25 schools are treated. We regress $y_i$ on $D_i$ and on (a)
+$x_i$, (b) $x_i - \mu_i$, or (c) $x_i$ and $N_i$, with
+heteroskedasticity-robust standard errors.
+
+```{julia}
+#| label: ri-deworm
+#| cache: true
+#| warning: false
+
+schools = CSV.read("data/deworm_schools.csv", DataFrame)
+treat   = Matrix(CSV.read("data/deworm_draws.csv", DataFrame)[:, 2:end])
+ns = nrow(schools)
+near = [i != j && hypot(schools.east[i] - schools.east[j],
+                        schools.north[i] - schools.north[j]) < 3
+        for i in 1:ns, j in 1:ns]                # within 3 km
+N  = near * schools.pupils ./ 1000             # total pupils nearby, thousands
+mu = N ./ 3                                    # expected treated pupils nearby
+
+function one_assign(r)
+    D = Float64.(treat[r, :])
+    x = near * (schools.pupils .* D) ./ 1000
+    d = DataFrame(D = D, x = x, N = N, x_rc = x .- mu,
+                  y = 0.05 .* D .+ 0.03 .* x .- 0.02 .* N .+ schools.eta)
+    fits = (feols(d, @formula(y ~ D + x), vcov = Vcov.robust()),
+            feols(d, @formula(y ~ D + x_rc), vcov = Vcov.robust()),
+            feols(d, @formula(y ~ D + x + N), vcov = Vcov.robust()))
+    return [(coef(f)[3], stderror(f)[3]) for f in fits]
+end
+
+R = size(treat, 1)
+dw_est = zeros(R, 3); dw_se = zeros(R, 3)
+Threads.@threads for r in 1:R               # one slot per draw, race-free
+    for (j, (b, s)) in enumerate(one_assign(r))
+        dw_est[r, j], dw_se[r, j] = b, s
+    end
+end
+
+DataFrame(estimator = ["(a) Exposure, no control", "(b) Recentered exposure",
+                       "(c) Exposure, control for nearby pupils"],
+          mean     = round.(vec(mean(dw_est, dims = 1)), digits = 3),
+          sd       = round.(vec(std(dw_est, dims = 1)), digits = 3),
+          coverage = round.(vec(mean(abs.(dw_est .- 0.03) .<= 1.96 .* dw_se, dims = 1)),
+                            digits = 3))
+```
+
+Without the control, the spillover estimate averages −0.024 against a true
+0.03, and its intervals never contain 0.03. Dense schools have more treated
+neighbours and lower participation, and the regression assigns that gap to the
+spillover. Both recentered versions are centred on 0.03. Regressing on
+$x_i - \mu_i$ alone leaves $-0.02 N_i$ in the error, so its standard deviation
+is 0.038, about twice the 0.020 of (c). Neighbouring schools share that error
+and the same treated schools, so the robust intervals of (b) contain 0.03 only
+43% of the time. With the control for nearby pupils the remaining error is
+independent across schools, and coverage is 92%.
+
 ## Summary
 
 Shift-share is one formula instrument, with the formula and the design fixed
 by convention. Any formula of shocks and exposure is valid once its expected
 value over the shock design is subtracted, and the most efficient formula is
-the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period's mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment's own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27.
+the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period's mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment's own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27. The same logic covers spillovers. A school's expected exposure to treated neighbours is the treatment probability times its nearby pupils, which is the control Miguel and Kremer used.
 
 For the shift-share construction, the share and shock views, and inference,
 see the previous chapter, [Shift-Share Instrumental Variables](shift-share-iv.qmd).

@@ -821,9 +821,108 @@ y_i = 0.3\, x_i + \varepsilon_i, \qquad
 <h2 data-number="19.5" class="anchored" data-anchor-id="the-medicaid-application"><span class="header-section-number">19.5</span> The Medicaid application</h2>
 <p><span class="citation" data-cites="borusyak-hull-2026">Borusyak and Hull (<a href="references.html#ref-borusyak-hull-2026" role="doc-biblioref">2026</a>)</span> instrument Medicaid eligibility in the 2014 ACA expansion with actual minus expected eligibility, treating expansion as random within the governor’s party. The first-stage partial <span class="math inline">\(R^2\)</span> rises from 0.01 to 0.80 over the simulated instrument and the standard error on crowd-out falls by 44%. Most of the gain comes from the 18% of the sample whose eligibility the expansion could change; outside it, the recentered instrument is zero, and in the full sample without an exposure control it is less precise than the simulated one <span class="citation" data-cites="borusyak-hull-2026">(<a href="references.html#ref-borusyak-hull-2026" role="doc-biblioref">Borusyak and Hull 2026</a>, Table A4)</span>. Their 2012–2013 placebo on private insurance is −0.011, half the main estimate of −0.023 (Table A2).</p>
 </section>
-<section id="summary" class="level2" data-number="19.6">
-<h2 data-number="19.6" class="anchored" data-anchor-id="summary"><span class="header-section-number">19.6</span> Summary</h2>
-<p>Shift-share is one formula instrument, with the formula and the design fixed by convention. Any formula of shocks and exposure is valid once its expected value over the shock design is subtracted, and the most efficient formula is the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period’s mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment’s own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27.</p>
+<section id="spillovers-deworming" class="level2" data-number="19.6">
+<h2 data-number="19.6" class="anchored" data-anchor-id="spillovers-deworming"><span class="header-section-number">19.6</span> Spillovers: deworming</h2>
+<p><span class="citation" data-cites="miguel-kremer-2004">Miguel and Kremer (<a href="references.html#ref-miguel-kremer-2004" role="doc-biblioref">2004</a>)</span> study a deworming programme in 75 primary schools in Busia, Kenya. The schools were listed alphabetically within strata and assigned in turn to three groups of 25, which started treatment in different years. Worms spread between children, so treating one school can lower infection at schools nearby. To measure this, they count the pupils at treated schools within 3 km of each school, and they control for the total number of pupils within 3 km.</p>
+<p>Let <span class="math inline">\(D_j\)</span> be 1 if school <span class="math inline">\(j\)</span> is treated, <span class="math inline">\(n_j\)</span> its number of pupils, <span class="math inline">\(p_j\)</span> the probability that it is treated, and <span class="math inline">\(j \sim i\)</span> mean that <span class="math inline">\(j\)</span> is another school within 3 km of school <span class="math inline">\(i\)</span>. The spillover exposure of school <span class="math inline">\(i\)</span> and its expected value are</p>
+<p><span id="eq-ri-spill"><span class="math display">\[
+x_i = \sum_{j \sim i} n_j D_j, \qquad \mu_i = \sum_{j \sim i} n_j p_j .
+\tag{19.7}\]</span></span></p>
+<p>The shocks <span class="math inline">\(g\)</span> are the assignments, and the predetermined variables <span class="math inline">\(w\)</span> are the locations and pupil counts. Assignment is random, but a school in a dense area has more treated neighbours in every draw. If density also affects the outcome, through crowding or sanitation, the exposure is correlated with the error. In the first year one third of the schools were treated, so <span class="math inline">\(p_j = 1/3\)</span> for every school and <span class="math inline">\(\mu_i\)</span> is one third of the total pupils within 3 km. Miguel and Kremer’s total-pupils control is therefore the recentering. The exposure is the treatment itself, as eligibility was in the simulation, so the estimator is OLS controlling for <span class="math inline">\(\mu_i\)</span>, estimator 4 above. If the treatment probability differed across schools, for example by stratum, the control would have to be <span class="math inline">\(\mu_i\)</span> and not the total pupils.</p>
+<p>A second simulation checks this in a district like Busia. We place 75 schools in a 30 km by 30 km district, half around a town and half spread over the rest, and give each about 400 pupils. In each draw exactly 25 schools are treated, so <span class="math inline">\(p_j = 1/3\)</span>. Let <span class="math inline">\(N_i\)</span> be the total pupils at other schools within 3 km and <span class="math inline">\(\eta_i \sim N(0, 0.05^2)\)</span> a school error. The outcome, school participation, is</p>
+<p><span id="eq-ri-spill-dgp"><span class="math display">\[
+y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
+\tag{19.8}\]</span></span></p>
+<p>with <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span> in thousands of pupils. Treatment raises participation by 5 points at the school and by 3 points per thousand treated pupils nearby. Schools in dense areas have lower participation for other reasons. As before, the schools, their pupils and errors are fixed, and the 1,000 replications redraw which 25 schools are treated. We regress <span class="math inline">\(y_i\)</span> on <span class="math inline">\(D_i\)</span> and on (a) <span class="math inline">\(x_i\)</span>, (b) <span class="math inline">\(x_i - \mu_i\)</span>, or (c) <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span>, with heteroskedasticity-robust standard errors.</p>
+<div id="cell-ri-deworm" class="cell" data-cache="true" data-execution_count="4">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>schools <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/deworm_schools.csv"</span>, DataFrame)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>treat   <span class="op">=</span> <span class="fu">Matrix</span>(CSV.<span class="fu">read</span>(<span class="st">"data/deworm_draws.csv"</span>, DataFrame)[<span class="op">:</span>, <span class="fl">2</span><span class="op">:</span><span class="kw">end</span>])</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ns <span class="op">=</span> <span class="fu">nrow</span>(schools)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>near <span class="op">=</span> [i <span class="op">!=</span> j <span class="op">&amp;&amp;</span> <span class="fu">hypot</span>(schools.east[i] <span class="op">-</span> schools.east[j],</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                        schools.north[i] <span class="op">-</span> schools.north[j]) <span class="op">&lt;</span> <span class="fl">3</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns, j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns]                <span class="co"># within 3 km</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>N  <span class="op">=</span> near <span class="op">*</span> schools.pupils <span class="op">./</span> <span class="fl">1000</span>             <span class="co"># total pupils nearby, thousands</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> N <span class="op">./</span> <span class="fl">3</span>                                    <span class="co"># expected treated pupils nearby</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">one_assign</span>(r)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    D <span class="op">=</span> <span class="fu">Float64</span>.(treat[r, <span class="op">:</span>])</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> near <span class="op">*</span> (schools.pupils <span class="op">.*</span> D) <span class="op">./</span> <span class="fl">1000</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">DataFrame</span>(D <span class="op">=</span> D, x <span class="op">=</span> x, N <span class="op">=</span> N, x_rc <span class="op">=</span> x <span class="op">.-</span> mu,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                  y <span class="op">=</span> <span class="fl">0.05</span> <span class="op">.*</span> D <span class="op">.+</span> <span class="fl">0.03</span> <span class="op">.*</span> x <span class="op">.-</span> <span class="fl">0.02</span> <span class="op">.*</span> N <span class="op">.+</span> schools.eta)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    fits <span class="op">=</span> (<span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x_rc), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x <span class="op">+</span> N), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()))</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [(<span class="fu">coef</span>(f)[<span class="fl">3</span>], <span class="fu">stderror</span>(f)[<span class="fl">3</span>]) for f <span class="kw">in</span> fits]</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>R <span class="op">=</span> <span class="fu">size</span>(treat, <span class="fl">1</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>dw_est <span class="op">=</span> <span class="fu">zeros</span>(R, <span class="fl">3</span>); dw_se <span class="op">=</span> <span class="fu">zeros</span>(R, <span class="fl">3</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> r <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>R               <span class="co"># one slot per draw, race-free</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j, (b, s)) <span class="kw">in</span> <span class="fu">enumerate</span>(<span class="fu">one_assign</span>(r))</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        dw_est[r, j], dw_se[r, j] <span class="op">=</span> b, s</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(estimator <span class="op">=</span> [<span class="st">"(a) Exposure, no control"</span>, <span class="st">"(b) Recentered exposure"</span>,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"(c) Exposure, control for nearby pupils"</span>],</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>          mean     <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(dw_est, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>          sd       <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">std</span>(dw_est, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>          coverage <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(<span class="fu">abs</span>.(dw_est <span class="op">.-</span> <span class="fl">0.03</span>) <span class="op">.&lt;=</span> <span class="fl">1.96</span> <span class="op">.*</span> dw_se, dims <span class="op">=</span> <span class="fl">1</span>)),</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>                            digits <span class="op">=</span> <span class="fl">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="ri-deworm" class="cell-output cell-output-display" data-execution_count="5">
+<div><div style="float: left;"><span>3×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">estimator</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">mean</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sd</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">coverage</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">(a) Exposure, no control</td>
+<td style="text-align: right;">-0.024</td>
+<td style="text-align: right;">0.012</td>
+<td style="text-align: right;">0.0</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: left;">(b) Recentered exposure</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.038</td>
+<td style="text-align: right;">0.43</td>
+</tr>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: left;">(c) Exposure, control for nearby pupils</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.92</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Without the control, the spillover estimate averages −0.024 against a true 0.03, and its intervals never contain 0.03. Dense schools have more treated neighbours and lower participation, and the regression assigns that gap to the spillover. Both recentered versions are centred on 0.03. Regressing on <span class="math inline">\(x_i - \mu_i\)</span> alone leaves <span class="math inline">\(-0.02 N_i\)</span> in the error, so its standard deviation is 0.038, about twice the 0.020 of (c). Neighbouring schools share that error and the same treated schools, so the robust intervals of (b) contain 0.03 only 43% of the time. With the control for nearby pupils the remaining error is independent across schools, and coverage is 92%.</p>
+</section>
+<section id="summary" class="level2" data-number="19.7">
+<h2 data-number="19.7" class="anchored" data-anchor-id="summary"><span class="header-section-number">19.7</span> Summary</h2>
+<p>Shift-share is one formula instrument, with the formula and the design fixed by convention. Any formula of shocks and exposure is valid once its expected value over the shock design is subtracted, and the most efficient formula is the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period’s mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment’s own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27. The same logic covers spillovers. A school’s expected exposure to treated neighbours is the treatment probability times its nearby pupils, which is the control Miguel and Kremer used.</p>
 <p>For the shift-share construction, the share and shock views, and inference, see the previous chapter, <a href="./shift-share-iv.html">Shift-Share Instrumental Variables</a>.</p>
 
 
@@ -842,6 +941,9 @@ Currie, Janet, and Jonathan Gruber. 1996. <span>“Health Insurance Eligibility,
 </div>
 <div id="ref-goldsmith-pinkham-sorkin-swift-2020" class="csl-entry" role="listitem">
 Goldsmith-Pinkham, Paul, Isaac Sorkin, and Henry Swift. 2020. <span>“Bartik Instruments: What, When, Why, and How.”</span> <em>American Economic Review</em> 110 (8): 2586–2624.
+</div>
+<div id="ref-miguel-kremer-2004" class="csl-entry" role="listitem">
+Miguel, Edward, and Michael Kremer. 2004. <span>“Worms: Identifying Impacts on Education and Health in the Presence of Treatment Externalities.”</span> <em>Econometrica</em> 72 (1): 159–217. <a href="https://doi.org/10.1111/j.1468-0262.2004.00481.x">https://doi.org/10.1111/j.1468-0262.2004.00481.x</a>.
 </div>
 </div>
 </section>
