@@ -816,6 +816,86 @@ y_i = 0.3\, x_i + \varepsilon_i, \qquad
 <p>The first row reproduces ADH’s −0.596: an increase in import exposure of $1,000 per worker over a decade lowers the manufacturing employment share by about 0.6 percentage points. Without the manufacturing-share control the estimate is −0.712.</p>
 <p>Each of the last two rows removes one source of variation. ADH’s estimate partly compares zones with more and less manufacturing across the two periods: because the mean shock more than triples, a manufacturing-heavy zone gets a much larger instrument in the second period whichever industries China hit. Controlling for design 1’s <span class="math inline">\(\mu_\ell\)</span> removes that comparison, and the estimate falls to −0.267 (0.087). ADH’s control is close to <span class="math inline">\(S_\ell\)</span>, with a correlation of 0.92, but one coefficient cannot absorb a term whose slope more than triples between periods. Design 2 also removes the comparison across sectors, such as electronics and toys against food and paper, and the estimate falls to −0.144 (0.117).</p>
 <p>Whether the removed comparisons are confounded is the substantive question. If manufacturing-heavy zones declined faster in the 2000s for other reasons, such as automation, the design 1 control is needed and ADH overstate the effect. But the average shock is itself part of the China shock, since Chinese imports rose across nearly all of manufacturing. Designs 1 and 2 treat that average as predictable and use only the variation in which industries China hit harder than average, so they cannot measure an effect that works through manufacturing as a whole. ADH’s −0.596 does use it, and it is valid if the shares are exogenous given the controls. The data cannot tell us which assumption holds. Every estimate is negative, and recentering shows how much of the size depends on the assumption.</p>
+<section id="a-two-zone-example" class="level3" data-number="19.4.1">
+<h3 data-number="19.4.1" class="anchored" data-anchor-id="a-two-zone-example"><span class="header-section-number">19.4.1</span> A two-zone example</h3>
+<p>To see what the manufacturing-share control does, take two zones and three manufacturing industries in one period. Each industry receives a China shock of 30, in thousands of dollars of imports per worker, with probability 1/3, independently, and 0 otherwise, so <span class="math inline">\(\bar g = 10\)</span>. Zone A has a share of 0.1 in each of the three industries, so <span class="math inline">\(S_A = 0.3\)</span>. Zone B has a share of 0.1 in one of them, so <span class="math inline">\(S_B = 0.1\)</span>. To keep the example short, suppose US import exposure equals the Bartik measure <span class="math inline">\(B_\ell\)</span>, so the first stage is one and the instrument for exposure is <span class="math inline">\(B_\ell - \mu_\ell\)</span>. The exposures take these values:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 28%">
+<col style="width: 18%">
+<col style="width: 14%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Zone</th>
+<th style="text-align: center;">Shocked industries</th>
+<th style="text-align: center;">Probability</th>
+<th style="text-align: center;"><span class="math inline">\(B_\ell\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(B_\ell - \mu_\ell\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">8/27</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">−3</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">12/27</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">6/27</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">1/27</td>
+<td style="text-align: center;">9</td>
+<td style="text-align: center;">6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">2/3</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">−1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1/3</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">2</td>
+</tr>
+</tbody>
+</table>
+<p>By <a href="#eq-ri-ss-mu" class="quarto-xref">Equation&nbsp;<span>19.4</span></a>, <span class="math inline">\(\mu_A = 0.3 \times 10 = 3\)</span> and <span class="math inline">\(\mu_B = 0.1 \times 10 = 1\)</span>, which are the probability-weighted averages of each zone’s exposures. Let the change in the manufacturing employment share, in percentage points, be</p>
+<p><span class="math display">\[
+y_\ell = -0.6 B_\ell - 10 S_\ell .
+\]</span></p>
+<p>Each $1,000 of exposure per worker lowers the share by 0.6 points, and manufacturing-heavy zones decline by a further 10 points per unit of manufacturing share for other reasons, such as automation. In the most likely draw A has one shocked industry and B has none:</p>
+<p><span class="math display">\[
+y_A - y_B = -0.6 (3 - 0) - 10 (0.3 - 0.1) = -1.8 - 2 = -3.8 .
+\]</span></p>
+<p>The raw slope is</p>
+<p><span class="math display">\[
+\frac{-3.8}{3} = -1.27 = -0.6 - \frac{2}{3} .
+\]</span></p>
+<p>A declines 2 points more than B in every draw because it has more manufacturing. A also has more exposure in most draws, so the raw comparison counts this gap as an effect of imports, and the effect looks larger than it is. Pooling all draws of the two zones with equal weight, the raw slope is −0.8. Each zone’s <span class="math inline">\(B_\ell - \mu_\ell\)</span> averages zero over the draws, so its covariance with <span class="math inline">\(S_\ell\)</span> is zero, and using it as the instrument gives exactly −0.6. Since <span class="math inline">\(\mu_\ell = 10 S_\ell\)</span>, controlling for <span class="math inline">\(S_\ell\)</span> does the same.</p>
+<p>With two periods the mean shock changes, and <span class="math inline">\(\mu_\ell = S_\ell \bar g_t\)</span> has a different slope on <span class="math inline">\(S_\ell\)</span> in each period. With <span class="math inline">\(\bar g_t\)</span> equal to 4.8 and 17.3, a single coefficient on <span class="math inline">\(S_\ell\)</span> cannot match both, and part of the decline gap stays in the estimate. This is the difference between ADH’s control and design 1.</p>
+</section>
 </section>
 <section id="the-medicaid-application" class="level2" data-number="19.5">
 <h2 data-number="19.5" class="anchored" data-anchor-id="the-medicaid-application"><span class="header-section-number">19.5</span> The Medicaid application</h2>

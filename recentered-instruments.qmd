@@ -388,6 +388,64 @@ the shares are exogenous given the controls. The data cannot tell us which
 assumption holds. Every estimate is negative, and recentering shows how much
 of the size depends on the assumption.
 
+### A two-zone example
+
+To see what the manufacturing-share control does, take two zones and three
+manufacturing industries in one period. Each industry receives a China shock
+of 30, in thousands of dollars of imports per worker, with probability 1/3,
+independently, and 0 otherwise, so $\bar g = 10$. Zone A has a share of 0.1 in
+each of the three industries, so $S_A = 0.3$. Zone B has a share of 0.1 in one
+of them, so $S_B = 0.1$. To keep the example short, suppose US import exposure
+equals the Bartik measure $B_\ell$, so the first stage is one and the
+instrument for exposure is $B_\ell - \mu_\ell$. The exposures take these
+values:
+
+| Zone | Shocked industries | Probability | $B_\ell$ | $B_\ell - \mu_\ell$ |
+|:----:|:------------------:|:-----------:|:--------:|:-------------------:|
+| A | 0 | 8/27  | 0 | −3 |
+| A | 1 | 12/27 | 3 | 0  |
+| A | 2 | 6/27  | 6 | 3  |
+| A | 3 | 1/27  | 9 | 6  |
+| B | 0 | 2/3   | 0 | −1 |
+| B | 1 | 1/3   | 3 | 2  |
+
+By @eq-ri-ss-mu, $\mu_A = 0.3 \times 10 = 3$ and $\mu_B = 0.1 \times 10 = 1$,
+which are the probability-weighted averages of each zone's exposures. Let the
+change in the manufacturing employment share, in percentage points, be
+
+$$
+y_\ell = -0.6 B_\ell - 10 S_\ell .
+$$
+
+Each \$1,000 of exposure per worker lowers the share by 0.6 points, and
+manufacturing-heavy zones decline by a further 10 points per unit of
+manufacturing share for other reasons, such as automation. In the most likely
+draw A has one shocked industry and B has none:
+
+$$
+y_A - y_B = -0.6 (3 - 0) - 10 (0.3 - 0.1) = -1.8 - 2 = -3.8 .
+$$
+
+The raw slope is
+
+$$
+\frac{-3.8}{3} = -1.27 = -0.6 - \frac{2}{3} .
+$$
+
+A declines 2 points more than B in every draw because it has more
+manufacturing. A also has more exposure in most draws, so the raw comparison
+counts this gap as an effect of imports, and the effect looks larger than it
+is. Pooling all draws of the two zones with equal weight, the raw slope is
+−0.8. Each zone's $B_\ell - \mu_\ell$ averages zero over the draws, so its
+covariance with $S_\ell$ is zero, and using it as the instrument gives exactly
+−0.6. Since $\mu_\ell = 10 S_\ell$, controlling for $S_\ell$ does the same.
+
+With two periods the mean shock changes, and $\mu_\ell = S_\ell \bar g_t$ has a
+different slope on $S_\ell$ in each period. With $\bar g_t$ equal to 4.8 and
+17.3, a single coefficient on $S_\ell$ cannot match both, and part of the
+decline gap stays in the estimate. This is the difference between ADH's
+control and design 1.
+
 ## The Medicaid application
 
 @borusyak-hull-2026 instrument Medicaid eligibility in the 2014 ACA expansion
