@@ -834,6 +834,79 @@ x_i = \sum_{j \sim i} n_j D_j, \qquad \mu_i = \sum_{j \sim i} n_j p_j .
 y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 \tag{19.8}\]</span></span></p>
 <p>with <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span> in thousands of pupils. Treatment raises participation by 5 points at the school and by 3 points per thousand treated pupils nearby. Schools in dense areas have lower participation for other reasons. As before, the schools, their pupils and errors are fixed, and the 1,000 replications redraw which 25 schools are treated. We regress <span class="math inline">\(y_i\)</span> on <span class="math inline">\(D_i\)</span> and on (a) <span class="math inline">\(x_i\)</span>, (b) <span class="math inline">\(x_i - \mu_i\)</span>, or (c) <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span>, with heteroskedasticity-robust standard errors.</p>
+<p>To see what goes wrong without the control, take two untreated schools whose neighbours each have 400 pupils, and treat each neighbour independently with probability 1/3. School A is in town and has three neighbours within 3 km, so <span class="math inline">\(N_A = 1.2\)</span> thousand and <span class="math inline">\(\mu_A = 0.4\)</span>. School B is rural and has one neighbour, so <span class="math inline">\(N_B = 0.4\)</span> and <span class="math inline">\(\mu_B = 0.133\)</span>. The number of A’s neighbours treated is binomial, so the exposures take these values:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">School</th>
+<th style="text-align: center;">Treated neighbours</th>
+<th style="text-align: center;">Probability</th>
+<th style="text-align: center;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x - \mu\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">8/27</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">−0.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">12/27</td>
+<td style="text-align: center;">0.4</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">6/27</td>
+<td style="text-align: center;">0.8</td>
+<td style="text-align: center;">0.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">1/27</td>
+<td style="text-align: center;">1.2</td>
+<td style="text-align: center;">0.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">2/3</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">−0.133</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1/3</td>
+<td style="text-align: center;">0.4</td>
+<td style="text-align: center;">0.267</td>
+</tr>
+</tbody>
+</table>
+<p>Each school’s expected exposure is its exposure averaged over the draws, weighted by their probabilities. For A,</p>
+<p><span class="math display">\[
+\mu_A = \frac{0 \times 8 + 0.4 \times 12 + 0.8 \times 6 + 1.2 \times 1}{27}
+= \frac{10.8}{27} = 0.4 ,
+\]</span></p>
+<p>which is the 1.2 thousand pupils nearby times the treatment probability 1/3. For B, <span class="math inline">\(\mu_B = 0 \times 2/3 + 0.4 \times 1/3 = 0.133\)</span>. The town school expects more treated neighbours because it has more neighbours. In the most likely draw A has one treated neighbour and B has none. With <span class="math inline">\(\eta_i\)</span> set to zero, <a href="#eq-ri-spill-dgp" class="quarto-xref">Equation&nbsp;<span>19.8</span></a> gives</p>
+<p><span class="math display">\[
+y_A - y_B = 0.03 (0.4 - 0) - 0.02 (1.2 - 0.4) = 0.012 - 0.016 = -0.004 .
+\]</span></p>
+<p>A has 0.4 thousand more treated pupils nearby and participation 0.4 points lower, so the comparison suggests a spillover of about −0.01 per thousand, when the true value is 0.03. The density gap, which is the same in every draw, is attributed to exposure.</p>
+<p>The formula instrument uses <span class="math inline">\(x - \mu\)</span>, how lucky each school was relative to its own expectation, as the instrument for <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[
+\hat\beta = \frac{\text{cov}(y, x - \mu)}{\text{cov}(x, x - \mu)}, \qquad
+\text{cov}(y, x - \mu) = 0.03 \, \text{cov}(x, x - \mu) - 0.02 \, \text{cov}(N, x - \mu) .
+\]</span></p>
+<p>The second term is zero. <span class="math inline">\(N\)</span> is fixed for each school, and each school’s <span class="math inline">\(x - \mu\)</span> averages zero over its draws; for A, <span class="math inline">\((-0.4 \times 8 + 0 \times 12 + 0.4 \times 6 + 0.8 \times 1)/27 = 0\)</span>. The ratio is then exactly 0.03. Raw <span class="math inline">\(x\)</span> does not have this property, because A’s exposure is high in most draws and A is the dense school. Pooling all draws of the two schools with equal weight, the covariance of <span class="math inline">\(x\)</span> with <span class="math inline">\(N\)</span> is 0.053 and the variance of <span class="math inline">\(x\)</span> is 0.089, so the slope of <span class="math inline">\(y\)</span> on <span class="math inline">\(x\)</span> is <span class="math inline">\((0.03 \times 0.089 - 0.02 \times 0.053)/0.089 = 0.018\)</span>. The covariance of <span class="math inline">\(x - \mu\)</span> with <span class="math inline">\(N\)</span> is 0, and the formula instrument gives 0.03.</p>
+<p>With 75 schools and one draw, the covariance of <span class="math inline">\(N\)</span> with <span class="math inline">\(x - \mu\)</span> is close to zero but not exactly zero, which is the extra noise of estimator (b). Controlling for <span class="math inline">\(N_i\)</span>, which here is the same as controlling for <span class="math inline">\(\mu_i\)</span>, removes the density term exactly. The comparison is then between schools with the same number of pupils nearby, which is why (c) is tighter.</p>
 <div id="cell-ri-deworm" class="cell" data-cache="true" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
