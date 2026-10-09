@@ -152,7 +152,7 @@ Results are validated to match `causal_econometrics_guide` within 1% (real data)
 - `did-continuous.qmd` → `data/walmart_lw.csv` (generated in the R guide; copy here)
 - `survival-causal.qmd` → `data/survival_sim.csv` (n=1500 Weibull; propensity intercept=-4 for ~30% treatment)
 - `shift-share-iv.qmd` → `data/shift_share_sim.csv`, `shift_share_shares.csv`, `shift_share_shocks.csv`, `shift_share_bad_v.csv`, `shift_share_bad_noise.csv`
-- `recentered-instruments.qmd` → `data/recenter_people.csv`, `recenter_policy_draws.csv` (generator `data/gen_recentering.R`), `adh_master.csv`, `adh_shares_triplets.csv`, `adh_shocks.csv` (GPSS bartik-weight files via `~/projects/claude/shiftshare_adh_showcase/data/`)
+- `recentered-instruments.qmd` → `data/recenter_people.csv`, `recenter_policy_draws.csv` (generator `data/gen_recentering.R`), `adh_master.csv`, `adh_shares_triplets.csv`, `adh_shocks.csv` (GPSS bartik-weight files via `~/projects/claude/shiftshare_adh_showcase/data/`), `deworm_schools.csv`, `deworm_draws.csv` (generator `data/gen_deworming.R`, run in the R guide, CSVs copied)
 
 ### Notable chapter additions (May 2026)
 - `did.qmd`: Added **Nonlinear ETWFE** section using `Panelest.etwfe(family="poisson")`. Uses cohort FE + year FE (not unit FE) to avoid contamination bias. `emfx()` returns log-scale ATTs (log IRR).
@@ -480,7 +480,7 @@ after R edits, diff prose with code chunks stripped.
 
 
 ## Chapter added 2026-10-06
-- `recentered-instruments.qmd` — Recentered formula instruments (Borusyak & Hull 2023 Econometrica; 2026 "Optimal Formula Instruments" WP): expected instrument, optimal = recentered best predictor, shift-share as one formula instrument (comparison table, two differences: recentering + formula), Medicaid-style design-based MC (1,000 policy redraws), ADH recentering under two shock designs (−0.596 → −0.267 → −0.144)
+- `recentered-instruments.qmd` — Recentered formula instruments (Borusyak & Hull 2023 Econometrica; 2026 "Optimal Formula Instruments" WP): expected instrument, optimal = recentered best predictor, shift-share as one formula instrument (comparison table, two differences: recentering + formula), Medicaid-style design-based MC (1,000 policy redraws), ADH recentering under two shock designs (−0.596 → −0.267 → −0.144), simulated Miguel–Kremer deworming spillovers (no control −0.024, recentered 0.030 with SD 0.038 and 43% robust coverage, total-pupils control 0.030 SD 0.020)
 ## Panelest weights (2026-10-06)
 
 Panelest's `feols`/`feiv` ignored `weights` in estimation until the 2026-10-06 fix
