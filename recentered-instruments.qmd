@@ -450,6 +450,69 @@ redraw which 25 schools are treated. We regress $y_i$ on $D_i$ and on (a)
 $x_i$, (b) $x_i - \mu_i$, or (c) $x_i$ and $N_i$, with
 heteroskedasticity-robust standard errors.
 
+To see what goes wrong without the control, take two untreated schools whose
+neighbours each have 400 pupils, and treat each neighbour independently with
+probability 1/3. School A is in town and has three neighbours within 3 km, so
+$N_A = 1.2$ thousand and $\mu_A = 0.4$. School B is rural and has one
+neighbour, so $N_B = 0.4$ and $\mu_B = 0.133$. The number of A's neighbours
+treated is binomial, so the exposures take these values:
+
+| School | Treated neighbours | Probability | $x$ | $x - \mu$ |
+|:------:|:------------------:|:-----------:|:---:|:---------:|
+| A | 0 | 8/27  | 0   | −0.4   |
+| A | 1 | 12/27 | 0.4 | 0      |
+| A | 2 | 6/27  | 0.8 | 0.4    |
+| A | 3 | 1/27  | 1.2 | 0.8    |
+| B | 0 | 2/3   | 0   | −0.133 |
+| B | 1 | 1/3   | 0.4 | 0.267  |
+
+Each school's expected exposure is its exposure averaged over the draws,
+weighted by their probabilities. For A,
+
+$$
+\mu_A = \frac{0 \times 8 + 0.4 \times 12 + 0.8 \times 6 + 1.2 \times 1}{27}
+= \frac{10.8}{27} = 0.4 ,
+$$
+
+which is the 1.2 thousand pupils nearby times the treatment probability 1/3.
+For B, $\mu_B = 0 \times 2/3 + 0.4 \times 1/3 = 0.133$. The town school
+expects more treated neighbours because it has more neighbours. In the most likely draw A has one
+treated neighbour and B has none. With $\eta_i$ set to zero,
+@eq-ri-spill-dgp gives
+
+$$
+y_A - y_B = 0.03 (0.4 - 0) - 0.02 (1.2 - 0.4) = 0.012 - 0.016 = -0.004 .
+$$
+
+A has 0.4 thousand more treated pupils nearby and participation 0.4 points
+lower, so the comparison suggests a spillover of about −0.01 per thousand,
+when the true value is 0.03. The density gap, which is the same in every
+draw, is attributed to exposure.
+
+The formula instrument uses $x - \mu$, how lucky each school was relative to
+its own expectation, as the instrument for $x$:
+
+$$
+\hat\beta = \frac{\text{cov}(y, x - \mu)}{\text{cov}(x, x - \mu)}, \qquad
+\text{cov}(y, x - \mu) = 0.03 \, \text{cov}(x, x - \mu) - 0.02 \, \text{cov}(N, x - \mu) .
+$$
+
+The second term is zero. $N$ is fixed for each school, and each school's
+$x - \mu$ averages zero over its draws; for A,
+$(-0.4 \times 8 + 0 \times 12 + 0.4 \times 6 + 0.8 \times 1)/27 = 0$. The
+ratio is then exactly 0.03. Raw $x$ does not have this property, because A's
+exposure is high in most draws and A is the dense school. Pooling all draws of
+the two schools with equal weight, the covariance of $x$ with $N$ is 0.053 and
+the variance of $x$ is 0.089, so the slope of $y$ on $x$ is
+$(0.03 \times 0.089 - 0.02 \times 0.053)/0.089 = 0.018$. The covariance of
+$x - \mu$ with $N$ is 0, and the formula instrument gives 0.03.
+
+With 75 schools and one draw, the covariance of $N$ with $x - \mu$ is close to
+zero but not exactly zero, which is the extra noise of estimator (b).
+Controlling for $N_i$, which here is the same as controlling for $\mu_i$,
+removes the density term exactly. The comparison is then between schools with
+the same number of pupils nearby, which is why (c) is tighter.
+
 ```{julia}
 #| label: ri-deworm
 #| cache: true
