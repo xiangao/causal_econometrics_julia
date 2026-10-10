@@ -42,21 +42,27 @@ The error may depend on $w$ in any way. Poorer people may have worse
 outcomes, and regions with more manufacturing may have been declining anyway.
 
 A formula instrument is $z_i = f_i(g, w)$ for a fixed function $f_i$. Its
-expected value over the shock draws, holding $w$ fixed, is the expected
-instrument $\mu_i = E[z_i \mid w]$. The recentered instrument
-$\tilde z_i = z_i - \mu_i$ is valid, because by iterated expectations and
-@eq-ri-exog,
+expected value over the shock draws that could have occurred, holding $w$
+fixed, is the expected instrument $\mu_i = E[z_i \mid w]$. The average is
+over draws for the same unit, not over units. The recentered instrument
+$\tilde z_i = z_i - \mu_i$ therefore averages zero over the draws for every
+unit, $E[\tilde z_i \mid w] = 0$. It is valid, because by iterated
+expectations and @eq-ri-exog,
 
 $$
 E[\tilde z_i \varepsilon_i]
+= E\big[\tilde z_i\, E[\varepsilon_i \mid g, w]\big]
 = E\big[\tilde z_i\, E[\varepsilon_i \mid w]\big]
 = E\big[E[\tilde z_i \mid w]\, E[\varepsilon_i \mid w]\big] = 0 .
 $$
 
 Without recentering the same steps give $E[z_i \varepsilon_i] = E[\mu_i
 E[\varepsilon_i \mid w]]$, which is not zero when the expected instrument is
-correlated with the predictable part of the error. Subtracting $\mu_i$ and
-controlling for $\mu_i$ are equivalent by Frisch–Waugh–Lovell. Computing
+correlated with the predictable part of the error. We can also keep $z_i$ as
+the instrument and control for $\mu_i$. In the population the regression of
+$z_i$ on $\mu_i$ has slope one and intercept zero, so its residual is
+$z_i - \mu_i$ and the two approaches use the same variation. In a sample the
+fitted slope is not exactly one, and the estimates differ. Computing
 $\mu_i$ requires the design: how the shocks could have been drawn. We redraw
 them from that design, or permute them if they are exchangeable, and average
 the formula over the draws.
@@ -69,7 +75,9 @@ $$
 \tilde z = E[x \mid g, w] - E[x \mid w] .
 $$ {#eq-ri-optimal}
 
-The full optimal instrument adds two refinements, partly controlling for the
+Among recentered formulas it has the strongest first stage
+[@borusyak-hull-2026, Lemma 1]. The full optimal instrument adds two
+refinements, partly controlling for the
 predictable part of the error and GLS weighting, which need a model of the
 error. The authors drop them. Their algorithm predicts the treatment from its
 formula, recenters the prediction by redrawing the shocks, and uses the result
@@ -93,7 +101,8 @@ $$ {#eq-ri-ss-mu}
 If the shares sum to one, $\mu_\ell = \bar g_t$ is common to all regions and
 period effects absorb it, so Bartik is already recentered. If they are
 incomplete, as with manufacturing shares, heavily manufacturing regions get a
-large instrument in every draw, and Bartik is biased unless we control for
+large instrument in every draw, and under the shock view Bartik is biased
+unless we control for
 $S_\ell$ interacted with period [@borusyak-hull-jaravel-2022].
 
 The second is the formula. Take two regions with half their employment in
@@ -102,7 +111,7 @@ with Chinese imports. Region B's make military components and do not. Bartik
 gives both half the shock, but only A's import competition rises, so the
 instrument varies where the treatment does not. The best predictor gives A
 half the shock and B nothing, then recenters each by its own expected value.
-Both instruments are valid, and the second has the stronger first stage. When
+Once recentered, both instruments are valid, and the second has the stronger first stage. When
 the treatment really is shares times shocks, the best predictor is Bartik
 itself and the two differ only by recentering. The formula matters when the
 treatment has more structure than Bartik uses: eligibility rules, export
@@ -202,9 +211,10 @@ We compare four estimators, all with standard errors clustered by state.
    varies within states, among people whose income lies between the lowest
    and highest thresholds. It is valid.
 4. OLS of $y_i$ on $x_i$ and $\mu_i$. Instrumenting $x_i$ with $x_i - \mu_i$
-   while controlling for $\mu_i$ reduces to this regression
-   [@borusyak-hull-2026, footnote 8], so it is the controlled form of 3. It
-   is valid.
+   while controlling for $\mu_i$ reduces to this regression, because
+   $x_i - \mu_i$ and $\mu_i$ add up to $x_i$, so the instrument reproduces
+   the treatment [@borusyak-hull-2026, footnote 8]. It uses the same
+   variation as 3, but the estimates differ in a finite sample. It is valid.
 
 The Monte Carlo is design-based. We generate the people once: their incomes,
 states and errors are the same in every replication. In each of 1,000
@@ -308,7 +318,7 @@ with the other-country shocks gives the prediction, which is the Bartik
 instrument itself, so the formula-instrument approach does not change the
 instrument. It changes the control. The shares, lagged employment shares in
 the 722 commuting zones, are incomplete, so the expected instrument $\mu_\ell$
-varies across zones, and controlling for it is equivalent to subtracting it.
+varies across zones, and we control for it.
 Its form depends on the shock design.
 
 - Design 1: the 397 shocks are exchangeable within each period. Every
