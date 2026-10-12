@@ -63,6 +63,7 @@ $$ {#eq-ri-exog}
 
 The error may depend on $w$ in any way. Poorer people may have worse
 outcomes, and regions with more manufacturing may have been declining anyway.
+We need exogeneity of the shocks, not of the exposure.
 
 A formula instrument is $z_i = f_i(g, w)$ for a fixed function $f_i$. Its
 expected value over the shock draws that could have occurred, holding $w$
@@ -97,8 +98,9 @@ shocks if they are exchangeable, and take the mean. When the formula is linear
 in the shocks, the second and third steps reduce to applying the formula to
 the expected shocks. When it is not, they do not, and we have to average.
 
-When the formula gives a binary treatment, as eligibility is, $\mu_i$ is the
-propensity score, the probability of treatment given $w$. When it gives a
+When the formula gives a binary treatment, as eligibility is, $\mu_i$ is a
+design-based propensity score: the probability of treatment given $w$,
+computed from the design. When it gives a
 continuous one, such as import exposure, $\mu_i$ is the expected treatment
 given $w$. It differs from the propensity score of an observational study in
 three ways. It is computed from the formula and the design, like the known
@@ -164,7 +166,8 @@ large instrument in every draw, and under the shock view Bartik is biased
 unless we control for
 $S_\ell$ interacted with period [@borusyak-hull-jaravel-2022].
 
-The second is the formula. Take two regions with half their employment in
+The second is the formula. Recentering and choosing a formula are separate
+decisions. Take two regions with half their employment in
 electronics, and an import shock to electronics. Region A's plants compete
 with Chinese imports. Region B's make military components and do not. Bartik
 gives both half the shock, but only A's import competition rises, so the
@@ -735,8 +738,10 @@ schools with the same number of pupils nearby, which is why (c) is tighter.
 
 ## Summary
 
-In every case the work is computing the expected treatment $\mu$, from the
-shocks, the fixed exposure and the design:
+The calculation in each setting is the same: hold exposure fixed, redraw the
+shocks under an explicit design, and average the formula. The result is the
+expected treatment $\mu$, which depends on the shocks, the fixed exposure and
+the design:
 
 | Case | Shocks | Fixed exposure | Design | Expected treatment $\mu$ |
 |:-----|:-------|:---------------|:-------|:-------------------------|
