@@ -21,27 +21,27 @@ and the controls $(20 \times 10 + 80 \times 0)/100 = 2$. The difference in
 means is 7, although every effect is 1. Assignment is random, but A is treated
 more often and has higher outcomes anyway, and the comparison mixes the two.
 
-The usual fix is to control for the stratum. There is another way to see it.
-Let $D_i$ be unit $i$'s treatment and $p_i$ its assignment probability, 0.8 or
-0.2. The difference $D_i - p_i$ averages zero within each stratum, so it is
+The usual fix is to compare treated and control units within each stratum, or
+to control for the stratum. There is another way to see it. Let $D_i$ be unit
+$i$'s treatment and $p_i$ its assignment probability, 0.8 or 0.2. The
+difference $D_i - p_i$ averages zero within each stratum, so it is
 uncorrelated with anything fixed within a stratum, including the baseline
 outcome. In this draw, using $D_i - p_i$ as the instrument for $D_i$ gives
 exactly 1, and so does controlling for $p_i$.
 
-Many treatments have the same structure, but nobody writes the probability
-down. Medicaid eligibility applies a state's rules, which may be as good as
-random, to a person's income, which is not. Import exposure applies industry
-shocks to a region's industry mix. Spillover exposure applies a random
-assignment to the map of schools. Units with more exposure expect more
-treatment in every draw, as stratum A did. Here the stratum is the exposure
-itself, such as income or a region's industry shares. It is continuous, so no
-two units share one and we cannot compare within strata. The expected
-treatment reduces it to one number, as a propensity score does.
-@borusyak-hull-2023 show that the
-same fix works: subtract each unit's expected treatment, computed from the
-formula and the distribution of the shocks, or control for it.
-@borusyak-hull-2026 show which formula is best. We apply the result to the
-Bartik instrument, the China shock and spillovers in a deworming experiment.
+Many treatments are computed from a formula that combines a random shock with
+non-random exposure. Medicaid eligibility is a state's rules applied to a
+person's income. Import exposure is national industry shocks applied to a
+region's industry mix. The Bartik instrument of the previous chapter is one
+such formula. These treatments have the structure of the stratified
+experiment: units with more exposure expect more treatment in every draw, as
+stratum A did. Here the stratum is the exposure itself, such as income or a
+region's industry shares. It is continuous, so no two units share one and we
+cannot compare within strata. The expected treatment reduces it to one number,
+as a propensity score does, and plays the role of the assignment probability.
+This chapter covers the general version of Borusyak and Hull
+[@borusyak-hull-2023], their result on which formula is best
+[@borusyak-hull-2026], and what both mean for shift-share.
 
 ## Formula instruments
 
@@ -54,7 +54,7 @@ $$ {#eq-ri-model}
 The treatment is $x_i = h_i(g, w, u)$, where $h_i$ is a known function, $g$
 collects the random shocks, $w$ collects predetermined variables such as
 income or industry shares, and $u$ collects anything else. The identifying
-assumption is that only the shocks are random [@borusyak-hull-2026,
+assumption puts all the randomness on the shocks [@borusyak-hull-2026,
 Assumption 1]:
 
 $$
@@ -64,13 +64,14 @@ $$ {#eq-ri-exog}
 The error may depend on $w$ in any way. Poorer people may have worse
 outcomes, and regions with more manufacturing may have been declining anyway.
 
-A formula instrument is $z_i = f_i(g, w)$ for a known function $f_i$. Its
-expected value $\mu_i = E[z_i \mid w]$ is its average over the shock draws
-that could have occurred, for the same unit with its $w$ fixed. It plays the
-role of the assignment probability in the stratified experiment. The
-recentered instrument $\tilde z_i = z_i - \mu_i$ averages zero over the draws
-for every unit, and it is valid, because by iterated expectations and
-@eq-ri-exog,
+A formula instrument is $z_i = f_i(g, w)$ for a fixed function $f_i$. Its
+expected value over the shock draws that could have occurred, holding $w$
+fixed, is the expected instrument $\mu_i = E[z_i \mid w]$. The average is
+over draws for the same unit, not over units. In the stratified experiment
+$\mu_i$ is the assignment probability $p_i$. The recentered instrument
+$\tilde z_i = z_i - \mu_i$ therefore averages zero over the draws for every
+unit, $E[\tilde z_i \mid w] = 0$. It is valid, because by iterated
+expectations and @eq-ri-exog,
 
 $$
 E[\tilde z_i \varepsilon_i]
@@ -81,106 +82,143 @@ $$
 
 Without recentering the same steps give $E[z_i \varepsilon_i] = E[\mu_i
 E[\varepsilon_i \mid w]]$, which is not zero when the expected instrument is
-correlated with the predictable part of the error.
+correlated with the predictable part of the error. We can also keep $z_i$ as
+the instrument and control for $\mu_i$. In the population the regression of
+$z_i$ on $\mu_i$ has slope one and intercept zero, so its residual is
+$z_i - \mu_i$ and the two approaches use the same variation. In a sample the
+fitted slope is not exactly one, and the estimates differ.
 
-Computing $\mu_i$ requires the design: how the shocks could have been drawn.
-We redraw them from that design, or permute them if they are exchangeable, and
-average the formula over the draws. When the formula is linear in the shocks,
-this is the formula applied to the expected shocks. We can also keep $z_i$ as
-the instrument and control for $\mu_i$. In the population the two use the same
-variation, because the regression of $z_i$ on $\mu_i$ has slope one. In a
-sample the estimates differ slightly.
+The work is in computing $\mu_i$, and it takes three steps in every
+application below. First, state the shocks and the design: how they could
+have been drawn. Second, apply the formula to each possible draw, holding the
+unit's $w$ fixed. Third, average over the draws, weighting each by its
+probability. When the design has many draws, we simulate them, or permute the
+shocks if they are exchangeable, and take the mean. When the formula is linear
+in the shocks, the second and third steps reduce to applying the formula to
+the expected shocks. When it is not, they do not, and we have to average.
+
+When the formula gives a binary treatment, as eligibility is, $\mu_i$ is the
+propensity score, the probability of treatment given $w$. When it gives a
+continuous one, such as import exposure, $\mu_i$ is the expected treatment
+given $w$. It differs from the propensity score of an observational study in
+three ways. It is computed from the formula and the design, like the known
+assignment probability of a stratified experiment, and not estimated from a
+model of treatment on covariates. It is used by subtracting it, as the
+expected treatment is in the partially linear model, and not as a weight. And
+the assumption is about the shocks. We assume nothing about how $w$ affects
+the outcome, so $x_i - \mu_i$ is uncorrelated with every fixed
+characteristic, measured or not.
+
+Recentering and instrumenting fix two different problems. Recentering removes
+the bias from fixed exposure: some units expect a larger treatment in every
+draw. When the treatment is the formula itself, $x_i = h_i(g, w)$, as
+eligibility in the simulation and spillover exposure in the deworming example
+are, this is the only problem, and OLS controlling for $\mu_i$ is enough. When
+the treatment also depends on $u$, it can be endogenous through $u$ even given
+$\mu_i$. In ADH, US imports also respond to US demand. We then need an
+instrument built from the shocks alone, such as Bartik with imports into other
+countries, and that instrument is itself recentered, or its expected value
+controlled for. ADH need both fixes, and the simulation and deworming need
+only the first. The expected value itself is never the instrument. It is the
+part predictable from exposure, the part that can be correlated with the
+error.
 
 Any recentered formula is valid, so we can pick the most precise.
-@borusyak-hull-2026 [Theorem 1] show that it starts from the best prediction
-of the treatment, recentered:
+@borusyak-hull-2026 [Theorem 1] show it starts from the best prediction of the
+treatment, recentered:
 
 $$
 \tilde z = E[x \mid g, w] - E[x \mid w] .
 $$ {#eq-ri-optimal}
 
 Among recentered formulas it has the strongest first stage
-[@borusyak-hull-2026, Lemma 1]. The fully optimal instrument adds refinements
-that need a model of the error, and the authors drop them. When $x_i$ depends
-only on $(g, w)$, as eligibility does, the prediction is $x_i$ itself, and the
-instrument is the treatment minus its expected value.
+[@borusyak-hull-2026, Lemma 1]. The full optimal instrument adds two
+refinements, partly controlling for the
+predictable part of the error and GLS weighting, which need a model of the
+error. The authors drop them. Their algorithm predicts the treatment from its
+formula, recenters the prediction by redrawing the shocks, and uses the result
+as the instrument. When $x_i$ depends only on $(g, w)$, the prediction is
+$x_i$ itself.
 
 ## Shift-share as a formula instrument
 
-The Bartik instrument of @eq-shift-share-iv-1 is the linear formula
-$B_\ell = \sum_k s_{\ell k} g_k$, where $s_{\ell k}$ is region $\ell$'s
-employment share in industry $k$ and $g_k$ is the industry's shock. Suppose the
-shocks are exchangeable within period $t$, with mean $\bar g_t$, and let
-$S_\ell = \sum_k s_{\ell k}$ be the region's sum of shares. Then
+The Bartik instrument $B_\ell = \sum_k s_{\ell k} g_k$ of @eq-shift-share-iv-1
+is the linear formula, shares times shocks. It differs from
+@eq-ri-optimal in two ways.
+
+The first is recentering. The three steps give the expected instrument.
+The shocks are the industry shocks $g_k$, and suppose they are exchangeable
+within period $t$: any reshuffling of them across industries is equally
+likely. Each industry's expected shock is then the period mean $\bar g_t$.
+The formula is linear, so its average is the shares times $\bar g_t$. Let
+$S_\ell = \sum_k s_{\ell k}$ be region $\ell$'s sum of shares. Then
 
 $$
 \mu_\ell = S_\ell\, \bar g_t .
 $$ {#eq-ri-ss-mu}
 
-If the shares sum to one, $\mu_\ell = \bar g_t$ is the same for all regions and
+If the shares sum to one, $\mu_\ell = \bar g_t$ is common to all regions and
 period effects absorb it, so Bartik is already recentered. If they are
-incomplete, as with manufacturing shares, regions with more manufacturing get
-a larger instrument in every draw, as stratum A got more treatment. Under the
-shock view Bartik is then biased unless we control for $S_\ell$ interacted with
-period [@borusyak-hull-jaravel-2022]. Under the share view, where the shares
-are as good as random given the controls [@goldsmith-pinkham-sorkin-swift-2020],
-Bartik is valid without it.
+incomplete, as with manufacturing shares, heavily manufacturing regions get a
+large instrument in every draw, and under the shock view Bartik is biased
+unless we control for
+$S_\ell$ interacted with period [@borusyak-hull-jaravel-2022].
 
-### A two-zone example
+The second is the formula. Take two regions with half their employment in
+electronics, and an import shock to electronics. Region A's plants compete
+with Chinese imports. Region B's make military components and do not. Bartik
+gives both half the shock, but only A's import competition rises, so the
+instrument varies where the treatment does not. The best predictor gives A
+half the shock and B nothing, then recenters each by its own expected value.
+Once recentered, both instruments are valid, and the second has the stronger first stage. When
+the treatment really is shares times shocks, the best predictor is Bartik
+itself and the two differ only by recentering. The formula matters when the
+treatment has more structure than Bartik uses: eligibility rules, export
+exposure, transport networks, nonlinear indices.
 
-Take two zones, P and Q, and three manufacturing industries in one period.
-Suppose we observe China shocks of 30, 0 and 0, in thousands of dollars of
-imports per worker, and that any reshuffling of these shocks across the
-industries was equally likely. Each industry is then the shocked one with
-probability 1/3, and the expected shock is $\bar g = 10$. Zone P has a share of
-0.1 in each industry, so $S_P = 0.3$. Zone Q has a share of 0.1 in industry 3
-only, so $S_Q = 0.1$. To keep the example short, suppose US import exposure
-equals $B_\ell$, so the instrument for exposure is $B_\ell - \mu_\ell$. The
-exposures in the three draws are:
+|                     | Shift-share (Bartik)      | Recentered formula instrument          |
+|---------------------|---------------------------|----------------------------------------|
+| Formula             | Shares times shocks       | Best prediction of the treatment       |
+| Expected instrument | Usually not subtracted    | Subtracted, or controlled for          |
+| Shock design        | Implicit                  | Written down to compute $\mu_\ell$     |
+| Inputs              | Shares and shocks         | Treatment formula and shock design     |
 
-| Shocked industry | $B_P$ | $B_P - \mu_P$ | $B_Q$ | $B_Q - \mu_Q$ |
-|:----------------:|:-----:|:-------------:|:-----:|:-------------:|
-| 1 | 3 | 0 | 0 | −1 |
-| 2 | 3 | 0 | 0 | −1 |
-| 3 | 3 | 0 | 3 | 2  |
+: Shift-share and recentered formula instruments. {#tbl-ri-compare}
 
-By @eq-ri-ss-mu, $\mu_P = 0.3 \times 10 = 3$ and $\mu_Q = 0.1 \times 10 = 1$,
-the averages of each column of exposures. Let the change in the manufacturing
-employment share, in percentage points, be
+The formula instrument needs more inputs: the treatment's formula and an explicit
+shock design. With heterogeneous effects, different instruments weight units
+differently, so a gain in precision is a gain for a different weighted
+average [@borusyak-hull-2026, Proposition D1].
+
+### Why recenter
+
+Bartik needs one of two assumptions. If the shares are as good as random given
+the controls [@goldsmith-pinkham-sorkin-swift-2020], Bartik is valid as it
+stands and recentering is not needed. If only the shocks are random [@borusyak-hull-jaravel-2022], the shares may be
+correlated with the error. Writing each shock as the mean shock plus a
+deviation splits the instrument in two:
 
 $$
-y_\ell = -0.6 B_\ell - 10 S_\ell .
-$$
+B_\ell = S_\ell\, \bar g_t + \sum_k s_{\ell k}\,(g_k - \bar g_t) .
+$$ {#eq-ri-bartik-split}
 
-The first term is the effect of imports. The second is a decline that
-manufacturing-heavy zones have anyway, for example from automation. In two of
-the three
-draws P has exposure 3 and Q has none:
+The first part is the expected instrument of @eq-ri-ss-mu. It depends only on
+how much exposure the region has, so with incomplete shares a region with more
+exposure gets a larger value in every draw, and this part is correlated with
+the error whenever exposure is. The second part depends on whether the
+region's industries received larger or smaller shocks than average. If the
+shocks are independent of the shares and the errors, the deviations average to
+zero whatever the shares are, so this part is uncorrelated with the error.
+Recentering keeps only the second part. When the shares sum to one, the first
+part is $\bar g_t$ for every region and the period effects absorb it.
 
-$$
-y_P - y_Q = -0.6 (3 - 0) - 10 (0.3 - 0.1) = -1.8 - 2 = -3.8 .
-$$
-
-The raw slope is $-3.8/3 = -1.27 = -0.6 - 2/3$. P declines 2 points more than
-Q in every draw, and it also has more exposure in most draws, so the
-comparison counts the 2 points as an effect of imports. Pooling the three
-draws, the raw slope is −1.1. Each zone's $B_\ell - \mu_\ell$ averages zero
-over the draws, so it is uncorrelated with $S_\ell$, and as the instrument it
-gives exactly −0.6. Since $\mu_\ell = 10 S_\ell$, controlling for $S_\ell$ does
-the same.
-
-### The formula
-
-Recentering is one difference between Bartik and @eq-ri-optimal. The other is
-the formula. Take two regions with half their employment in electronics, where
-only the first region's plants compete with Chinese imports. Bartik gives both
-half the electronics shock. The best predictor gives the first region half the
-shock and the second nothing. Once recentered both are valid, and the second
-has the stronger first stage. When the treatment really is shares times shocks,
-the best predictor is Bartik itself. The formula matters when the treatment
-has more structure: eligibility rules, transport networks, nonlinear indices.
-With heterogeneous effects, different instruments estimate different weighted
-averages [@borusyak-hull-2026, Proposition D1].
+This gives the formula instrument four advantages. Its validity rests only on the shocks, such as a policy choice or a foreign supply shock, which are often easier to defend than the shares. The
+design has to be written down, so the assumption is explicit and can be
+varied, as the two ADH designs below show. The instrument can use exposure to
+gain power, because the best predictor tracks the treatment more closely than
+a shock-only index. And it is not tied to a linear formula or to independent
+units: it covers eligibility rules, networks and nonlinear indices, with
+shocks shared by many units.
 
 ## Simulation
 
@@ -190,46 +228,66 @@ $i$ lives in state $s(i)$ and has income $\text{inc}_i$, in multiples of the
 poverty line, drawn from a log-normal distribution with median 1.4. The shock
 is the states' policy: each state $k$ draws an eligibility threshold $T_k$
 from $\{0.5, 1, 1.38, 2\}$, each value with probability 1/4, independently
-across states. Let $\alpha_k \sim N(0, 0.3^2)$ be a state effect and
-$\nu_i \sim N(0, 1)$ an individual error. Eligibility and the outcome are
+across states. Eligibility and the outcome are
 
 $$
 x_i = 1[\text{inc}_i < T_{s(i)}], \qquad
 y_i = 0.3\, x_i + \varepsilon_i, \qquad
-\varepsilon_i = -0.5 \log \text{inc}_i + \alpha_{s(i)} + \nu_i .
+\varepsilon_i = -0.5 \log \text{inc}_i + \alpha_{s(i)} + \nu_i ,
 $$ {#eq-ri-dgp}
 
-The true effect is 0.3. The shocks $g$ are the 50 thresholds, and $w$ is the
-incomes and states. Poorer people are more often eligible and have higher
-errors, so OLS is biased upward. The thresholds are drawn independently of
-incomes and errors, so @eq-ri-exog holds.
+where $\alpha_k \sim N(0, 0.3^2)$ is a state effect and $\nu_i \sim N(0, 1)$.
+The true effect is 0.3. In the notation of @eq-ri-exog, the shocks $g$ are the
+50 thresholds and the predetermined variables $w$ are the incomes and states.
+Poorer people are more often eligible and have higher errors, so eligibility
+is correlated with the error through income and OLS is biased upward. The
+thresholds are drawn independently of incomes and errors, so @eq-ri-exog
+holds.
 
-Expected eligibility $\mu_i$ is the share of the four thresholds above person
-$i$'s income: 1 below 0.5, 0.75 between 0.5 and 1, 0.5 between 1 and 1.38,
-0.25 between 1.38 and 2, and 0 above 2. Income plays the role of the stratum.
-A person with income 1.2 has $\mu_i = 0.5$, and their recentered treatment
-$x_i - \mu_i$ is 0.5 if their state drew 1.38 or 2 and −0.5 if it drew 0.5 or
-1, with equal chance whatever their error. People below 0.5 or above 2 always
-have zero and carry no identifying variation.
+Expected eligibility follows the three steps. The shocks are the thresholds,
+and the design gives each of the four values probability 1/4. The formula is
+$x_i = 1[\text{inc}_i < T_{s(i)}]$. Applying it to each threshold, holding
+income fixed, and averaging gives $\mu_i$, the probability that person $i$ is
+eligible. It is the share of the four thresholds above their income: 1 below 0.5, 0.75 between 0.5 and 1, 0.5
+between 1 and 1.38, 0.25 between 1.38 and 2, and 0 above 2. It depends on
+income only, because every state draws from the same four values. Given
+income, the recentered treatment $x_i - \mu_i$ moves only with the draw, which
+is why it is exogenous. A person with income 1.2 has $\mu_i = 0.5$. The
+instrument is 0.5 if their state drew 1.38 or 2 and −0.5 if it drew 0.5 or 1,
+with equal chance whatever their error. People below 0.5 or above 2 always
+have zero and carry no identifying variation. The formula is not linear, so
+$\mu_i$ is not eligibility at the mean threshold, 1.22. That would make the
+person with income 1.2 eligible for sure, while their $\mu_i$ is 0.5.
 
 We compare four estimators, all with standard errors clustered by state.
 
-1. OLS of $y_i$ on $x_i$. It is biased.
-2. The simulated instrument of @currie-gruber-1996. Each state's rules are
-   applied to one fixed national sample, here all 10,000 people, and the share
-   who would be eligible is the state's instrument. It measures the
-   generosity of the rules and not the composition of the state's residents.
-   It is valid.
-3. The recentered treatment, instrumenting $x_i$ with $x_i - \mu_i$. It is
-   valid.
+1. OLS of $y_i$ on $x_i$. This is the same as instrumenting $x_i$ with
+   itself, the best predictor without recentering. It is biased.
+2. The simulated instrument of @currie-gruber-1996. They apply each state's
+   rules to one fixed national sample and use the share of that sample who
+   would be eligible as the state's instrument. The same population is run
+   through every state's rules, so the instrument measures the generosity of
+   the rules and not the composition of the state's residents. Here the
+   national sample is all 10,000 people, and everyone in a state gets the
+   same value. It is valid.
+3. The recentered treatment, instrumenting $x_i$ with $x_i - \mu_i$. It
+   varies within states, among people whose income lies between the lowest
+   and highest thresholds. It is valid.
 4. OLS of $y_i$ on $x_i$ and $\mu_i$. Instrumenting $x_i$ with $x_i - \mu_i$
    while controlling for $\mu_i$ reduces to this regression, because
-   $x_i - \mu_i$ and $\mu_i$ add up to $x_i$ [@borusyak-hull-2026, footnote
-   8]. It is valid.
+   $x_i - \mu_i$ and $\mu_i$ add up to $x_i$, so the instrument reproduces
+   the treatment [@borusyak-hull-2026, footnote 8]. It uses the same
+   variation as 3, but the estimates differ in a finite sample. It is valid.
 
-The Monte Carlo is design-based. The people, their incomes, states and errors
-are fixed, and each of 1,000 replications draws new thresholds for the 50
-states, which is the only randomness the identifying assumption allows.
+The Monte Carlo is design-based. We generate the people once: their incomes,
+states and errors are the same in every replication. In each of 1,000
+replications we draw new thresholds for the 50 states, recompute eligibility
+and outcomes, and fit the four estimators. The only randomness across
+replications is the policy draw, which is what the identifying assumption
+treats as random, so the spread of the estimates across replications measures
+each estimator's precision under that design. The people and the 1,000 × 50
+thresholds are stored as CSVs so the Julia companion computes the same
+numbers.
 
 ```{julia}
 #| label: ri-mc
@@ -283,55 +341,71 @@ DataFrame(estimator = ["OLS", "Simulated instrument", "Recentered treatment",
 
 The table gives each estimator's mean and standard deviation over the 1,000
 replications, the share of clustered 95% intervals that contain 0.3, and the
-average first-stage $R^2$. OLS averages 0.637, and its intervals never contain
-0.3. The three other estimators are centred on 0.3, with coverage of 92.7% to
-93.7%, slightly below 95% with 50 clusters. The simulated instrument has a
-standard deviation of 0.167 and a first-stage $R^2$ of 0.26, because it is
-the same for everyone in a state. The recentered treatment also uses the
-variation within states, among people whose eligibility depends on the
-threshold. Its standard deviation is 0.086, half as large, with an $R^2$ of
-0.59, and its controlled form has 0.080.
+average first-stage $R^2$. OLS averages 0.637 against a true 0.3, and its
+intervals never contain 0.3. The three other estimators are centred on 0.3,
+with coverage of 92.7% to 93.7%, slightly below 95% with 50 clusters. They
+differ in precision. The simulated instrument has a standard deviation of
+0.167 and a first-stage $R^2$ of 0.26. It gives everyone in a state the same
+value, so it cannot separate people whose eligibility depends on the
+threshold from people who are eligible, or ineligible, under every threshold.
+The recentered treatment has a standard deviation of 0.086, half as large, and
+an $R^2$ of 0.59, because it uses that variation within states. Its controlled
+form has 0.080.
 
-In real data, @borusyak-hull-2026 instrument Medicaid eligibility in the 2014
-ACA expansion with actual minus expected eligibility, treating expansion as
-random within the governor's party. Over the simulated instrument the
-first-stage partial $R^2$ rises from 0.01 to 0.80, and the standard error on
-crowd-out falls by 44%. Most of the gain comes from the 18% of the sample
-whose eligibility the expansion could change.
+In real data, @borusyak-hull-2026 instrument Medicaid eligibility in the 2014 ACA expansion
+with actual minus expected eligibility, treating expansion as random within
+the governor's party. The first-stage partial $R^2$ rises from 0.01 to 0.80
+over the simulated instrument and the standard error on crowd-out falls by
+44%. Most of the gain comes from the 18% of the sample whose eligibility the
+expansion could change; outside it, the recentered instrument is zero, and in
+the full sample without an exposure control it is less precise than the
+simulated one [@borusyak-hull-2026, Table A4]. Their 2012–2013 placebo on
+private insurance is −0.011, half the main estimate of −0.023 (Table A2).
 
 ## The China shock
 
-In ADH the shocks are the growth of Chinese imports into eight other
-high-income countries, per US worker, in 397 manufacturing industries over
-1990–2000 and 2000–2007. ADH argue they are exogenous because the growth came
-from China's side, through reform, rising productivity and WTO accession. The
-argument is weaker for demand or technology shocks shared by all rich
-countries, and the identifying variation is concentrated in a few industries
-such as computers, toys and audio equipment
+In ADH the shocks are at the industry-period level: the growth of Chinese
+imports into eight other high-income countries, per US worker, in 397
+manufacturing industries over 1990–2000 and 2000–2007. ADH argue they are
+exogenous because the growth came from China's side, through reform, rising
+productivity and WTO accession, and because imports into other countries do
+not respond to US demand. The argument is weaker for demand or technology
+shocks shared by all rich countries, and the identifying variation is
+concentrated in a few industries such as computers, toys and audio equipment
 [@goldsmith-pinkham-sorkin-swift-2020].
 
-The treatment, US import exposure per worker, is shares times US import
-growth. Replacing US imports with the other-country shocks gives the
-prediction, which is the Bartik instrument itself. So the formula-instrument
-approach keeps the instrument and changes the control. The shares, lagged
-employment shares in the 722 commuting zones, are incomplete, so $\mu_\ell$
-varies across zones. Its form depends on the shock design.
+All four regressions below use the same instrument and differ only in what
+they control for. The treatment, US import exposure per worker, is shares
+times US import growth, and US imports also reflect US demand. Replacing them
+with the other-country shocks gives the prediction, which is the Bartik
+instrument itself, so the formula-instrument approach does not change the
+instrument. It changes the control. The shares, lagged employment shares in
+the 722 commuting zones, are incomplete, so the expected instrument $\mu_\ell$
+varies across zones, and we control for it.
+The shocks are the 397 industry shocks in each period and the formula is
+shares times shocks, so $\mu_\ell$ depends only on which reshufflings of the
+shocks the design treats as equally likely.
 
 - Design 1: the 397 shocks are exchangeable within each period. Every
-  industry has the same expected shock, the period mean $\bar g_t$, which is
-  4.8 in the first period and 17.3 in the second, and
-  $\mu_\ell = S_\ell \bar g_t$.
+  industry then has the same expected shock, the period mean $\bar g_t$, which
+  is 4.8 in the first period and 17.3 in the second, and @eq-ri-ss-mu gives
+  $\mu_\ell = S_\ell \bar g_t$. A zone with 20 percent of its workers in
+  manufacturing has $\mu_\ell = 0.2 \times 4.8 = 0.96$ in the first period
+  and $0.2 \times 17.3 = 3.46$ in the second. Only a zone's manufacturing
+  intensity is treated as predictable.
 - Design 2: the shocks are exchangeable only within each of the 20 two-digit
   SIC sectors in each period. Each industry's expected shock is its sector's
   mean $\bar g_{mt}$, and $\mu_\ell = \sum_m S_{\ell m} \bar g_{mt}$, where
-  $S_{\ell m}$ is the zone's share in sector $m$. A zone heavy in electronics
-  is then expected to receive a large instrument.
+  $S_{\ell m}$ is the zone's share in sector $m$. A zone's sector mix is also
+  treated as predictable: a zone heavy in electronics is expected to receive a
+  large instrument.
 
 ADH control for the start-of-period manufacturing share with one coefficient
 for both periods, which approximates design 1's $\mu_\ell$. The second row
-drops that control, so nothing recenters the instrument. All fits use ADH's
-other controls, census-division effects, population weights and standard
-errors clustered by state, with the GPSS replication files.
+drops that control, so nothing recenters the instrument, and it is valid only
+if the shares are exogenous. All fits use ADH's other controls,
+census-division effects, population weights and standard errors clustered by
+state, with the GPSS replication files.
 
 ```{julia}
 #| label: ri-adh
@@ -374,76 +448,166 @@ DataFrame(specification = first.(fits),
 ```
 
 The first row reproduces ADH's −0.596: an increase in import exposure of
-\$1,000 per worker over a decade lowers the manufacturing employment share by
+$1,000 per worker over a decade lowers the manufacturing employment share by
 about 0.6 percentage points. Without the manufacturing-share control the
 estimate is −0.712.
 
-Controlling for design 1's $\mu_\ell$ lowers the estimate to −0.267 (0.087).
-ADH's control is close to $S_\ell$, with a correlation of 0.92, but the slope
-of $\mu_\ell$ on $S_\ell$ is the mean shock, which more than triples between
-periods, and one coefficient cannot match both. So ADH's estimate still
-compares manufacturing-heavy zones in the second period, when they get a much
-larger instrument whichever industries China hit. Design 2 also removes the
-comparison across sectors, such as electronics and toys against food and
-paper, and the estimate falls to −0.144 (0.117).
+Each of the last two rows removes one source of variation. ADH's estimate
+partly compares zones with more and less manufacturing across the two periods:
+because the mean shock more than triples, a manufacturing-heavy zone gets a
+much larger instrument in the second period whichever industries China hit.
+Controlling for design 1's $\mu_\ell$ removes that comparison, and the estimate
+falls to −0.267 (0.087). ADH's control is close to $S_\ell$, with a
+correlation of 0.92, but one coefficient cannot absorb a term whose slope more
+than triples between periods. Design 2 also removes the comparison across
+sectors, such as electronics and toys against food and paper, and the estimate
+falls to −0.144 (0.117).
 
 Whether the removed comparisons are confounded is the substantive question.
 If manufacturing-heavy zones declined faster in the 2000s for other reasons,
 such as automation, the design 1 control is needed and ADH overstate the
-effect. But the average shock is itself part of the China shock, since Chinese
-imports rose across nearly all of manufacturing. Designs 1 and 2 use only the
-variation in which industries China hit harder than average, so they cannot
-measure an effect that works through manufacturing as a whole. ADH's −0.596
-does use it, and it is valid if the shares are exogenous given the controls.
-The data cannot tell us which assumption holds. Every estimate is negative,
-and recentering shows how much of the size depends on the assumption.
+effect. But the average shock is itself part of the China shock, since
+Chinese imports rose across nearly all of manufacturing. Designs 1 and 2 treat
+that average as predictable and use only the variation in which industries
+China hit harder than average, so they cannot measure an effect that works
+through manufacturing as a whole. ADH's −0.596 does use it, and it is valid if
+the shares are exogenous given the controls. The data cannot tell us which
+assumption holds. Every estimate is negative, and recentering shows how much
+of the size depends on the assumption.
+
+### A two-zone example
+
+To see what the manufacturing-share control does, take two zones, P and Q,
+and three manufacturing industries, 1, 2 and 3, in one period. Zone P has 10
+percent of its workers in each industry, so its manufacturing share is
+$S_P = 0.3$. Zone Q has 10 percent in industry 3 only, so $S_Q = 0.1$. Suppose
+we observe China shocks $g_1 = 30$, $g_2 = 0$ and $g_3 = 0$, in thousands of
+dollars of imports per worker. Under design 1 any reshuffling of these shocks
+across the industries is equally likely, so the shock of 30 could have gone to
+any of the three industries, each with probability 1/3. To keep the example
+short, suppose US import exposure equals the Bartik measure $B_\ell$, and let
+the change in the manufacturing employment share, in percentage points, be
+
+$$
+y_\ell = -0.6 B_\ell - 10 S_\ell .
+$$
+
+Each \$1,000 of exposure per worker lowers the share by 0.6 points, and
+manufacturing-heavy zones decline by a further 10 points per unit of
+manufacturing share for other reasons, such as automation. P has the larger
+share, so it declines 2 points more than Q in every draw.
+
+Each row of the table is one draw. A zone's exposure is its shares times the
+shocks, and its outcome follows from the equation above. The last row
+averages each zone's exposure over the three draws, which is its expected
+exposure.
+
+| Draw    | $g_1$ | $g_2$ | $g_3$ | $B_P$         | $B_Q$         | $y_P$ | $y_Q$ |
+|:-------:|:-----:|:-----:|:-----:|:-------------:|:-------------:|:-----:|:-----:|
+| 1       | 30    | 0     | 0     | 3             | 0             | −4.8  | −1.0  |
+| 2       | 0     | 30    | 0     | 3             | 0             | −4.8  | −1.0  |
+| 3       | 0     | 0     | 30    | 3             | 3             | −4.8  | −2.8  |
+| Average |       |       |       | $\mu_P = 3$   | $\mu_Q = 1$   |       |       |
+
+P's exposure is $0.1 \times 30 = 3$ in every draw, because its three shares
+are equal. Q's is 3 only when industry 3 is shocked. The averages match
+@eq-ri-ss-mu with the expected shock $\bar g = 10$: $\mu_P = 0.3 \times 10 = 3$
+and $\mu_Q = 0.1 \times 10 = 1$.
+
+Comparing the two zones within a draw is biased. In draw 1, P has 3 more units
+of exposure than Q and an outcome 3.8 points lower:
+
+$$
+\frac{-4.8 - (-1.0)}{3 - 0} = -1.27 = -0.6 - \frac{2}{3} .
+$$
+
+Of the 3.8 points, 1.8 come from imports and 2 from P's larger manufacturing
+share. P has more exposure in most draws, so the comparison counts the 2
+points as an effect of imports, and the effect looks larger than it is.
+
+Comparing each zone with its own expected exposure is not biased. P's
+exposure equals its average in every draw, so $B_P - \mu_P$ is always zero and
+P carries no information. Q's exposure is 0 in two draws and 3 in one, and
+when it rises by 3, Q's outcome falls from −1.0 to −2.8:
+
+$$
+\frac{-2.8 - (-1.0)}{3 - 0} = -0.6 .
+$$
+
+Q's manufacturing share is the same in every draw, so it cancels. This is what
+the instrument $B_\ell - \mu_\ell$ does. It measures how much more or less
+exposure a zone got than it expected, which averages zero for every zone, so
+it is unrelated to any fixed characteristic of the zone. Pooling the three
+draws of both zones, the raw slope of $y_\ell$ on $B_\ell$ is −1.1, and using
+$B_\ell - \mu_\ell$ as the instrument gives exactly −0.6. Since
+$\mu_\ell = 10 S_\ell$, controlling for $S_\ell$ does the same.
+
+In real data we see one draw but many zones. The instrument then compares
+zones that got more exposure than they expected with zones that got less.
+Whether a zone was lucky does not depend on its manufacturing share, so the
+lucky and unlucky zones are alike in their shares, as treated and control
+units are in an experiment.
+
+With two periods the mean shock changes, and $\mu_\ell = S_\ell \bar g_t$ has a
+different slope on $S_\ell$ in each period. With $\bar g_t$ equal to 4.8 and
+17.3, a single coefficient on $S_\ell$ cannot match both, and part of the
+decline gap stays in the estimate. This is the difference between ADH's
+control and design 1.
 
 ## Spillovers: deworming
 
 @miguel-kremer-2004 study a deworming programme in 75 primary schools in
-Busia, Kenya, assigned in three groups of 25 that started treatment in
-different years. Worms spread between children, so treating one school can
-lower infection at schools nearby. To measure this, they count the pupils at
+Busia, Kenya. The schools were listed alphabetically within strata and
+assigned in turn to three groups of 25, which started treatment in different
+years. Worms spread between children, so treating one school can lower
+infection at schools nearby. To measure this, they count the pupils at
 treated schools within 3 km of each school, and they control for the total
 number of pupils within 3 km.
 
-Let $D_j$ be 1 if school $j$ is treated, $n_j$ its number of pupils, $p_j$ the
-probability that it is treated, and $j \sim i$ mean that $j$ is another school
-within 3 km of school $i$. The spillover exposure of school $i$ and its
+Let $D_j$ be 1 if school $j$ is treated, $n_j$ its number of pupils, $p_j$
+the probability that it is treated, and $j \sim i$ mean that $j$ is another
+school within 3 km of school $i$. The spillover exposure of school $i$ and its
 expected value are
 
 $$
 x_i = \sum_{j \sim i} n_j D_j, \qquad \mu_i = \sum_{j \sim i} n_j p_j .
 $$ {#eq-ri-spill}
 
-The shocks are the assignments, and $w$ is the locations and pupil counts.
-Assignment is random, but a school in a dense area has more treated neighbours
-in every draw. If density also affects the outcome, through crowding or
-sanitation, exposure is correlated with the error. In the first year one third
-of the schools were treated, so $p_j = 1/3$ and $\mu_i$ is one third of the
-total pupils within 3 km. Miguel and Kremer's control is therefore the
-recentering. If the probability differed across schools, for example by
-stratum, the control would have to be $\mu_i$ and not the total pupils. The
-exposure is the treatment itself, so the estimator is OLS controlling for
-$\mu_i$, as estimator 4 above.
+The three steps give $\mu_i$. The shocks $g$ are the assignments, and the
+predetermined variables $w$ are the locations and pupil counts. The formula is
+linear in the assignments, so averaging it over the draws replaces each $D_j$
+by its probability $p_j$. If exposure were instead 1 for any treated
+neighbour, the formula would not be linear, and $\mu_i$ would be the share of
+draws in which school $i$ has at least one treated neighbour, found by
+redrawing the assignment. Assignment is random, but a school in a dense area
+has more treated neighbours in every draw. If density also affects the
+outcome, through crowding or sanitation, the exposure is correlated with the
+error. In the first year one third of the schools were treated, so $p_j = 1/3$
+for every school and $\mu_i$ is one third of the total pupils within 3 km.
+Miguel and Kremer's total-pupils control is therefore the recentering. The
+exposure is the treatment itself, as eligibility was in the simulation, so
+the estimator is OLS controlling for $\mu_i$, estimator 4 above. If the
+treatment probability differed across schools, for example by stratum, the
+control would have to be $\mu_i$ and not the total pupils.
 
-A second simulation checks this. We place 75 schools in a 30 km by 30 km
-district, half around a town and half spread over the rest, with about 400
-pupils each. In each draw exactly 25 schools are treated, so $p_j = 1/3$. Let
-$N_i$ be the total pupils at other schools within 3 km and
-$\eta_i \sim N(0, 0.05^2)$ a school error. The outcome, school participation,
-is
+A second simulation checks this in a district like Busia. We place 75 schools
+in a 30 km by 30 km district, half around a town and half spread over the
+rest, and give each about 400 pupils. In each draw exactly 25 schools are
+treated, so $p_j = 1/3$. Let $N_i$ be the total pupils at other schools within
+3 km and $\eta_i \sim N(0, 0.05^2)$ a school error. The outcome, school
+participation, is
 
 $$
 y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 $$ {#eq-ri-spill-dgp}
 
 with $x_i$ and $N_i$ in thousands of pupils. Treatment raises participation by
-5 points at the school and by 3 points per thousand treated pupils nearby, and
-schools in dense areas have lower participation for other reasons. As before,
-only the assignment is redrawn across 1,000 replications. We regress $y_i$ on $D_i$ and on (a) $x_i$, (b)
-$x_i - \mu_i$, or (c) $x_i$ and $N_i$, with heteroskedasticity-robust standard
-errors.
+5 points at the school and by 3 points per thousand treated pupils nearby.
+Schools in dense areas have lower participation for other reasons. As before,
+the schools, their pupils and errors are fixed, and the 1,000 replications
+redraw which 25 schools are treated. We regress $y_i$ on $D_i$ and on (a)
+$x_i$, (b) $x_i - \mu_i$, or (c) $x_i$ and $N_i$, with
+heteroskedasticity-robust standard errors.
 
 ```{julia}
 #| label: ri-deworm
@@ -487,52 +651,107 @@ DataFrame(estimator = ["(a) Exposure, no control", "(b) Recentered exposure",
 ```
 
 Without the control, the spillover estimate averages −0.024 against a true
-0.03, and its intervals never contain 0.03. Both recentered versions are
-centred on 0.03. Regressing on $x_i - \mu_i$ alone leaves $-0.02 N_i$ in the
-error, so its standard deviation is 0.038, about twice the 0.020 of (c).
-Neighbouring schools share that error and the same treated schools, so the
-robust intervals of (b) contain 0.03 only 43% of the time. With the control
-the remaining error is independent across schools, and coverage is 92%.
+0.03, and its intervals never contain 0.03. Dense schools have more treated
+neighbours and lower participation, and the regression assigns that gap to the
+spillover. Both recentered versions are centred on 0.03. Regressing on
+$x_i - \mu_i$ alone leaves $-0.02 N_i$ in the error, so its standard deviation
+is 0.038, about twice the 0.020 of (c). Neighbouring schools share that error
+and the same treated schools, so the robust intervals of (b) contain 0.03 only
+43% of the time. With the control for nearby pupils the remaining error is
+independent across schools, and coverage is 92%.
 
 ### A two-school example
 
 Take two untreated schools, A and B, and three other schools, 1, 2 and 3, with
 400 pupils each. Exactly one of the three is treated, each with probability
-1/3. Town school A has all three within 3 km, so $N_A = 1.2$ thousand. Rural
-school B has only school 3 nearby, so $N_B = 0.4$. The exposures in the three
-draws are:
-
-| Treated school | $x_A$ | $x_A - \mu_A$ | $x_B$ | $x_B - \mu_B$ |
-|:--------------:|:-----:|:-------------:|:-----:|:-------------:|
-| 1 | 0.4 | 0 | 0   | −0.133 |
-| 2 | 0.4 | 0 | 0   | −0.133 |
-| 3 | 0.4 | 0 | 0.4 | 0.267  |
-
-The expected exposures are $\mu_A = 0.4$ and $\mu_B = 0.133$, the pupils
-nearby times 1/3. In two of the three draws A has one treated neighbour and B
-has none, and with $\eta_i$ set to zero @eq-ri-spill-dgp gives
+1/3, as in the full design, where exactly 25 of the 75 schools are treated.
+School A is in town and has all three within 3 km, so $N_A = 1.2$ thousand
+pupils nearby. School B is rural and has only school 3 nearby, so
+$N_B = 0.4$. With both schools untreated and $\eta_i$ set to zero,
+@eq-ri-spill-dgp gives
 
 $$
-y_A - y_B = 0.03 (0.4 - 0) - 0.02 (1.2 - 0.4) = 0.012 - 0.016 = -0.004 .
+y_i = 0.03 x_i - 0.02 N_i .
 $$
 
-The raw slope is $-0.004/0.4 = -0.01$, against a true 0.03. A has more pupils
-nearby, which lowers its participation in every draw, and more exposure in
-most draws, so the comparison counts the density gap as spillover. Pooling the
-three draws, the raw slope is 0. The recentered exposure is always 0 for A and
-averages zero for B, so it is uncorrelated with $N_i$, and with any other fixed
-characteristic of a school, and as the instrument it gives exactly 0.03.
+Density lowers A's participation 1.6 points below B's in every draw, because
+A has 0.8 thousand more pupils nearby.
+
+Each row of the table is one draw. A school's exposure is the pupils at its
+treated neighbours, in thousands, and its outcome follows from the equation
+above. The last row averages each school's exposure over the three draws,
+which is its expected exposure.
+
+| Treated school | $x_A$           | $x_B$             | $y_A$  | $y_B$  |
+|:--------------:|:---------------:|:-----------------:|:------:|:------:|
+| 1              | 0.4             | 0                 | −0.012 | −0.008 |
+| 2              | 0.4             | 0                 | −0.012 | −0.008 |
+| 3              | 0.4             | 0.4               | −0.012 | 0.004  |
+| Average        | $\mu_A = 0.4$   | $\mu_B = 0.133$   |        |        |
+
+Each expected exposure is the pupils nearby times the treatment probability
+1/3. The town school expects more treated neighbours because it has more
+neighbours.
+
+Comparing the two schools within a draw is biased. In draw 1, A has 0.4 more
+exposure than B and participation 0.004 lower:
+
+$$
+\frac{-0.012 - (-0.008)}{0.4 - 0} = -0.01 = 0.03 - 0.04 .
+$$
+
+The spillover raises A by 0.012 relative to B, and density lowers it by
+0.016. A has more exposure in most draws, so the comparison counts the density
+gap as an effect of exposure. This is omitted-variable bias. Density affects
+participation, and density is correlated with exposure, because exposure is
+built from nearby pupils. If either link were absent, there would be no bias.
+Here the bias is large enough to flip the sign.
+
+Comparing each school with its own expected exposure is not biased. A's
+exposure equals its average in every draw, so $x_A - \mu_A$ is always zero and
+A carries no information. B's exposure is 0 in two draws and 0.4 in one, and
+when it rises, B's participation rises from −0.008 to 0.004:
+
+$$
+\frac{0.004 - (-0.008)}{0.4 - 0} = 0.03 .
+$$
+
+B's density is the same in every draw, so it cancels. Pooling the three draws
+of both schools, the raw slope of $y_i$ on $x_i$ is 0, and using $x_i - \mu_i$
+as the instrument gives exactly 0.03.
+
+The argument uses nothing specific to density. Any fixed characteristic of a
+school, such as local wealth or sanitation, cancels in the same way, because
+$x_i - \mu_i$ comes only from the draw. We do not need to know which fixed
+variables affect the outcome, or to measure them. We need only $\mu_i$, which
+comes from the design.
+
+With 75 schools and one draw, the instrument compares schools that got more
+treated neighbours than they expected with schools that got fewer. Their
+densities are alike on average but not exactly, which is the extra noise of
+estimator (b). Controlling for $N_i$, which here is the same as controlling
+for $\mu_i$, removes the density term exactly. The comparison is then between
+schools with the same number of pupils nearby, which is why (c) is tighter.
 
 ## Summary
 
-A treatment built from random shocks and fixed exposure is not random, for
-the same reason a stratified assignment is not: some units expect more
-treatment in every draw. Subtracting the expected treatment, computed from the
-formula and the shock design, or controlling for it, leaves only the variation
-from the draw. For Bartik with manufacturing shares, the expected instrument
-is the sum of shares times the period's mean shock, and controlling for it
-moves the ADH estimate from −0.60 to −0.27. For spillovers it is the treatment
-probability times nearby pupils, the control Miguel and Kremer used.
+In every case the work is computing the expected treatment $\mu$, from the
+shocks, the fixed exposure and the design:
+
+| Case | Shocks | Fixed exposure | Design | Expected treatment $\mu$ |
+|:-----|:-------|:---------------|:-------|:-------------------------|
+| Stratified experiment | Who is treated | Stratum | Probability 0.8 or 0.2 by stratum | The assignment probability |
+| Medicaid simulation | State thresholds | Income | Each threshold with probability 1/4 | Share of thresholds above income |
+| Bartik, design 1 | Industry shocks | Industry shares | Reshuffling within period | $S_\ell \bar g_t$ |
+| Bartik, design 2 | Industry shocks | Industry shares | Reshuffling within sector and period | $\sum_m S_{\ell m} \bar g_{mt}$ |
+| Deworming | Which schools are treated | Locations and pupils | 25 of 75 schools at random | Pupils nearby times 1/3 |
+
+: Expected treatment in each application. {#tbl-ri-mu}
+
+Shift-share is one formula instrument, with the formula and the design fixed
+by convention. Any formula of shocks and exposure is valid once its expected
+value over the shock design is subtracted, and the most efficient formula is
+the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period's mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment's own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27. The same logic covers spillovers. A school's expected exposure to treated neighbours is the treatment probability times its nearby pupils, which is the control Miguel and Kremer used.
 
 For the shift-share construction, the share and shock views, and inference,
 see the previous chapter, [Shift-Share Instrumental Variables](shift-share-iv.qmd).
