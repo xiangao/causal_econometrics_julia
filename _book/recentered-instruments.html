@@ -735,7 +735,7 @@ y_i = 0.3\, x_i + \varepsilon_i, \qquad
 <li>Design 1: the 397 shocks are exchangeable within each period. Every industry then has the same expected shock, the period mean <span class="math inline">\(\bar g_t\)</span>, which is 4.8 in the first period and 17.3 in the second, and <a href="#eq-ri-ss-mu" class="quarto-xref">Equation&nbsp;<span>19.4</span></a> gives <span class="math inline">\(\mu_\ell = S_\ell \bar g_t\)</span>. A zone with 20 percent of its workers in manufacturing has <span class="math inline">\(\mu_\ell = 0.2 \times 4.8 = 0.96\)</span> in the first period and <span class="math inline">\(0.2 \times 17.3 = 3.46\)</span> in the second. Only a zone’s manufacturing intensity is treated as predictable.</li>
 <li>Design 2: the shocks are exchangeable only within each of the 20 two-digit SIC sectors in each period. Each industry’s expected shock is its sector’s mean <span class="math inline">\(\bar g_{mt}\)</span>, and <span class="math inline">\(\mu_\ell = \sum_m S_{\ell m} \bar g_{mt}\)</span>, where <span class="math inline">\(S_{\ell m}\)</span> is the zone’s share in sector <span class="math inline">\(m\)</span>. A zone’s sector mix is also treated as predictable: a zone heavy in electronics is expected to receive a large instrument.</li>
 </ul>
-<p>ADH control for the start-of-period manufacturing share with one coefficient for both periods, which approximates design 1’s <span class="math inline">\(\mu_\ell\)</span>. The second row drops that control, so nothing recenters the instrument, and it is valid only if the shares are exogenous. All fits use ADH’s other controls, census-division effects, population weights and standard errors clustered by state, with the GPSS replication files.</p>
+<p>ADH control for the start-of-period manufacturing share with one coefficient for both periods, which approximates design 1’s <span class="math inline">\(\mu_\ell\)</span>. The second row drops that control, so nothing recenters the instrument, and it is valid only if the shares are exogenous. All fits use ADH’s other controls, census-division effects, population weights and standard errors clustered by state, with the GPSS replication files. The clustered standard errors reproduce ADH; we return to inference under the shock design below.</p>
 <div id="cell-ri-adh" class="cell" data-cache="true" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -823,8 +823,108 @@ y_i = 0.3\, x_i + \varepsilon_i, \qquad
 <p>The first row reproduces ADH’s −0.596: an increase in import exposure of $1,000 per worker over a decade lowers the manufacturing employment share by about 0.6 percentage points. Without the manufacturing-share control the estimate is −0.712.</p>
 <p>Each of the last two rows removes one source of variation. ADH’s estimate partly compares zones with more and less manufacturing across the two periods: because the mean shock more than triples, a manufacturing-heavy zone gets a much larger instrument in the second period whichever industries China hit. Controlling for design 1’s <span class="math inline">\(\mu_\ell\)</span> removes that comparison, and the estimate falls to −0.267 (0.087). ADH’s control is close to <span class="math inline">\(S_\ell\)</span>, with a correlation of 0.92, but one coefficient cannot absorb a term whose slope more than triples between periods. Design 2 also removes the comparison across sectors, such as electronics and toys against food and paper, and the estimate falls to −0.144 (0.117).</p>
 <p>Whether the removed comparisons are confounded is the substantive question. If manufacturing-heavy zones declined faster in the 2000s for other reasons, such as automation, the design 1 control is needed and ADH overstate the effect. But the average shock is itself part of the China shock, since Chinese imports rose across nearly all of manufacturing. Designs 1 and 2 treat that average as predictable and use only the variation in which industries China hit harder than average, so they cannot measure an effect that works through manufacturing as a whole. ADH’s −0.596 does use it, and it is valid if the shares are exogenous given the controls. The data cannot tell us which assumption holds. Every estimate is negative, and recentering shows how much of the size depends on the assumption.</p>
-<section id="a-two-zone-example" class="level3" data-number="19.4.1">
-<h3 data-number="19.4.1" class="anchored" data-anchor-id="a-two-zone-example"><span class="header-section-number">19.4.1</span> A two-zone example</h3>
+<section id="inference-under-the-shock-design" class="level3" data-number="19.4.1">
+<h3 data-number="19.4.1" class="anchored" data-anchor-id="inference-under-the-shock-design"><span class="header-section-number">19.4.1</span> Inference under the shock design</h3>
+<p>The standard errors above are clustered by state. They reproduce ADH, but they describe a different source of randomness from the one designs 1 and 2 rely on. Under those designs the random part is which industries received which shocks, and every zone’s instrument is built from the same 397 shocks in each period. Inference that follows the design reshuffles the shocks, as the simulation redrew the thresholds, and asks how unusual the observed data are among the reshuffles <span class="citation" data-cites="borusyak-hull-2023">(<a href="references.html#ref-borusyak-hull-2023" role="doc-biblioref">Borusyak and Hull 2023</a>)</span>.</p>
+<p>Let <span class="math inline">\(y_\ell\)</span> be the change in zone <span class="math inline">\(\ell\)</span>’s manufacturing employment share and <span class="math inline">\(x_\ell\)</span> its US import exposure. For a hypothesised effect <span class="math inline">\(b\)</span>, form <span class="math inline">\(e_\ell(b) = y_\ell - b x_\ell\)</span>. If <span class="math inline">\(b = \beta\)</span>, <span class="math inline">\(e_\ell(b)\)</span> is the contribution of the controls plus the error, and under the design it is the same whichever reshuffle of the shocks occurred. Let <span class="math inline">\(\theta(b)\)</span> be the coefficient on the Bartik instrument <span class="math inline">\(B_\ell\)</span> in a weighted regression of <span class="math inline">\(e_\ell(b)\)</span> on <span class="math inline">\(B_\ell\)</span> and the controls, including the design’s <span class="math inline">\(\mu_\ell\)</span>. We recompute <span class="math inline">\(B_\ell\)</span> and <span class="math inline">\(\theta(b)\)</span> under 1,999 reshuffles permitted by the design, holding <span class="math inline">\(e_\ell(b)\)</span> fixed. The p-value for <span class="math inline">\(b\)</span> is the share of reshuffles, counting the observed one, whose <span class="math inline">\(|\theta(b)|\)</span> is at least the observed value. The 95% interval collects the values of <span class="math inline">\(b\)</span> whose p-value is above 0.05. At the IV estimate <span class="math inline">\(\theta\)</span> is zero, so the interval contains the estimate, and the test does not need a strong first stage. It does need the reshuffles to be equally likely given the errors, which is a little more than <a href="#eq-ri-exog" class="quarto-xref">Equation&nbsp;<span>19.2</span></a>. The reshuffles are stored in the data folder, so both books use the same ones.</p>
+<div id="cell-ri-adh-perm" class="cell" data-cache="true" data-execution_count="4">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">LinearAlgebra</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>perms <span class="op">=</span> [<span class="fu">Matrix</span><span class="dt">{Int}</span>(CSV.<span class="fu">read</span>(<span class="st">"data/adh_perms_design</span><span class="sc">$</span>d<span class="st">.csv"</span>, DataFrame)) for d <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>divs <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">unique</span>(adh.division))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>W0 <span class="op">=</span> <span class="fu">hcat</span>(<span class="fu">ones</span>(<span class="fu">nrow</span>(adh)), adh.l_sh_popedu_c, adh.l_sh_popfborn, adh.l_sh_empl_f,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>          adh.l_sh_routine33, adh.l_task_outsource, adh.t2n,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>          [<span class="fu">Float64</span>.(adh.division <span class="op">.==</span> v) for v <span class="kw">in</span> divs[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>]]<span class="op">...</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> [<span class="fu">hcat</span>(W0, adh.S, adh.S_t2),                <span class="co"># design 1: mu = S x period mean</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>     <span class="fu">hcat</span>(W0, adh.mu2)]                         <span class="co"># design 2: mu = sector means</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>b_grid <span class="op">=</span> (<span class="op">-</span><span class="fl">1500</span><span class="op">:</span><span class="fl">1000</span>) <span class="op">./</span> <span class="fl">1000</span>                   <span class="co"># hypothesised effects b</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>sw <span class="op">=</span> <span class="fu">sqrt</span>.(adh.weights)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ri_test</span>(W, perm)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    Q <span class="op">=</span> <span class="fu">Matrix</span>(<span class="fu">qr</span>(sw <span class="op">.*</span> W).Q)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">res</span>(v) <span class="op">=</span> (u <span class="op">=</span> sw <span class="op">.*</span> v; u <span class="op">.-</span> Q <span class="op">*</span> (Q<span class="op">'</span> <span class="op">*</span> u))   <span class="co"># weighted residual on controls and mu</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    yt <span class="op">=</span> <span class="fu">res</span>(adh.d_sh_empl_mfg); xt <span class="op">=</span> <span class="fu">res</span>(adh.shock)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># theta(b) = sum(Bt .* (yt .- b .* xt)) / sum(Bt.^2) is linear in b, so keep three sums</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sums</span>(B) <span class="op">=</span> (bt <span class="op">=</span> <span class="fu">res</span>(B); [<span class="fu">dot</span>(bt, yt), <span class="fu">dot</span>(bt, xt), <span class="fu">dot</span>(bt, bt)])</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    obs <span class="op">=</span> <span class="fu">sums</span>(adh.B)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    P <span class="op">=</span> <span class="fu">size</span>(perm, <span class="fl">2</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    sims <span class="op">=</span> <span class="fu">zeros</span>(P, <span class="fl">3</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>P               <span class="co"># one reshuffling per column</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        sims[p, <span class="op">:</span>] <span class="op">=</span> <span class="fu">sums</span>(<span class="fu">by_row</span>(tr.share <span class="op">.*</span> shk.g[perm[tr.col, p]]))</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theta</span>(m, b) <span class="op">=</span> <span class="fu">abs</span>.(m[<span class="op">:</span>, <span class="fl">1</span>] <span class="op">.-</span> b <span class="op">.*</span> m[<span class="op">:</span>, <span class="fl">2</span>]) <span class="op">./</span> m[<span class="op">:</span>, <span class="fl">3</span>]</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    p_val <span class="op">=</span> [(<span class="fl">1</span> <span class="op">+</span> <span class="fu">sum</span>(<span class="fu">theta</span>(sims, b) <span class="op">.&gt;=</span> <span class="fu">theta</span>(obs<span class="op">'</span>, b))) <span class="op">/</span> (P <span class="op">+</span> <span class="fl">1</span>) for b <span class="kw">in</span> b_grid]</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> b_grid[p_val <span class="op">.&gt;</span> <span class="fl">0.05</span>]</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">minimum</span>(ok), <span class="fu">maximum</span>(ok), p_val[<span class="fu">findfirst</span>(<span class="op">==</span>(<span class="fl">0</span>), b_grid)]</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>ri <span class="op">=</span> [<span class="fu">ri_test</span>(W[d], perms[d]) for d <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>]</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>est <span class="op">=</span> [<span class="fu">coef</span>(<span class="fu">last</span>(fits[k]))[<span class="fl">1</span>] for k <span class="kw">in</span> <span class="fl">3</span><span class="op">:</span><span class="fl">4</span>]</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>se_ <span class="op">=</span> [<span class="fu">stderror</span>(<span class="fu">last</span>(fits[k]))[<span class="fl">1</span>] for k <span class="kw">in</span> <span class="fl">3</span><span class="op">:</span><span class="fl">4</span>]</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(design   <span class="op">=</span> [<span class="st">"Design 1 (S x period)"</span>, <span class="st">"Design 2 (sector means)"</span>],</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>          estimate <span class="op">=</span> <span class="fu">round</span>.(est, digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>          state_lo <span class="op">=</span> <span class="fu">round</span>.(est <span class="op">.-</span> <span class="fl">1.96</span> <span class="op">.*</span> se_, digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>          state_hi <span class="op">=</span> <span class="fu">round</span>.(est <span class="op">.+</span> <span class="fl">1.96</span> <span class="op">.*</span> se_, digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>          ri_lo <span class="op">=</span> [<span class="fu">round</span>(r[<span class="fl">1</span>], digits <span class="op">=</span> <span class="fl">3</span>) for r <span class="kw">in</span> ri],</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>          ri_hi <span class="op">=</span> [<span class="fu">round</span>(r[<span class="fl">2</span>], digits <span class="op">=</span> <span class="fl">3</span>) for r <span class="kw">in</span> ri],</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>          ri_p0 <span class="op">=</span> [<span class="fu">round</span>(r[<span class="fl">3</span>], digits <span class="op">=</span> <span class="fl">3</span>) for r <span class="kw">in</span> ri])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="ri-adh-perm" class="cell-output cell-output-display" data-execution_count="5">
+<div><div style="float: left;"><span>2×7 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small">
+<thead>
+<tr class="columnLabelRow header">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">design</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">state_lo</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">state_hi</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">ri_lo</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">ri_hi</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">ri_p0</th>
+</tr>
+<tr class="columnLabelRow even">
+<th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">Design 1 (S x period)</td>
+<td style="text-align: right;">-0.267</td>
+<td style="text-align: right;">-0.438</td>
+<td style="text-align: right;">-0.096</td>
+<td style="text-align: right;">-0.526</td>
+<td style="text-align: right;">-0.016</td>
+<td style="text-align: right;">0.036</td>
+</tr>
+<tr class="dataRow even">
+<td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: left;">Design 2 (sector means)</td>
+<td style="text-align: right;">-0.144</td>
+<td style="text-align: right;">-0.373</td>
+<td style="text-align: right;">0.085</td>
+<td style="text-align: right;">-0.418</td>
+<td style="text-align: right;">0.107</td>
+<td style="text-align: right;">0.226</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>The intervals that reshuffle the shocks are wider than the clustered ones. Under design 1 the interval runs from −0.526 to −0.016, against −0.438 to −0.096 with state clustering, and the p-value for no effect is 0.036. Under design 2 it runs from −0.418 to 0.107, and the p-value is 0.226. With the design’s own inference, design 1 still finds a negative effect at the 5% level, but its interval nearly reaches zero, and design 2 cannot rule out no effect.</p>
+</section>
+<section id="a-two-zone-example" class="level3" data-number="19.4.2">
+<h3 data-number="19.4.2" class="anchored" data-anchor-id="a-two-zone-example"><span class="header-section-number">19.4.2</span> A two-zone example</h3>
 <p>To see what the manufacturing-share control does, take two zones, P and Q, and three manufacturing industries, 1, 2 and 3, in one period. Zone P has 10 percent of its workers in each industry, so its manufacturing share is <span class="math inline">\(S_P = 0.3\)</span>. Zone Q has 10 percent in industry 3 only, so <span class="math inline">\(S_Q = 0.1\)</span>. Suppose we observe China shocks <span class="math inline">\(g_1 = 30\)</span>, <span class="math inline">\(g_2 = 0\)</span> and <span class="math inline">\(g_3 = 0\)</span>, in thousands of dollars of imports per worker. Under design 1 any reshuffling of these shocks across the industries is equally likely, so the shock of 30 could have gone to any of the three industries, each with probability 1/3. To keep the example short, suppose US import exposure equals the Bartik measure <span class="math inline">\(B_\ell\)</span>, and let the change in the manufacturing employment share, in percentage points, be</p>
 <p><span class="math display">\[
 y_\ell = -0.6 B_\ell - 10 S_\ell .
@@ -924,47 +1024,48 @@ x_i = \sum_{j \sim i} n_j D_j, \qquad \mu_i = \sum_{j \sim i} n_j p_j .
 <p><span id="eq-ri-spill-dgp"><span class="math display">\[
 y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 \tag{19.8}\]</span></span></p>
-<p>with <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span> in thousands of pupils. Treatment raises participation by 5 points at the school and by 3 points per thousand treated pupils nearby. Schools in dense areas have lower participation for other reasons. As before, the schools, their pupils and errors are fixed, and the 1,000 replications redraw which 25 schools are treated. We regress <span class="math inline">\(y_i\)</span> on <span class="math inline">\(D_i\)</span> and on (a) <span class="math inline">\(x_i\)</span>, (b) <span class="math inline">\(x_i - \mu_i\)</span>, or (c) <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span>, with heteroskedasticity-robust standard errors.</p>
-<div id="cell-ri-deworm" class="cell" data-cache="true" data-execution_count="4">
+<p>with <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span> in thousands of pupils. Treatment raises participation by 5 points at the school and by 3 points per thousand treated pupils nearby. Schools in dense areas have lower participation for other reasons. As before, the schools, their pupils and errors are fixed, and the 1,000 replications redraw which 25 schools are treated. We regress <span class="math inline">\(y_i\)</span> on <span class="math inline">\(D_i\)</span> and on (a) <span class="math inline">\(x_i\)</span>, (b) <span class="math inline">\(x_i - \mu_i\)</span>, or (c) <span class="math inline">\(x_i\)</span> and <span class="math inline">\(N_i\)</span>, with heteroskedasticity-robust standard errors. The table reports the mean and standard deviation of each estimate over the replications, the coverage of the robust 95% intervals for 0.03, and the mean robust standard error. Only the assignment changes across replications, so the standard deviation is the estimate’s sampling variation under the design, and a robust standard error is accurate when it matches it.</p>
+<div id="cell-ri-deworm" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>schools <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/deworm_schools.csv"</span>, DataFrame)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>treat   <span class="op">=</span> <span class="fu">Matrix</span>(CSV.<span class="fu">read</span>(<span class="st">"data/deworm_draws.csv"</span>, DataFrame)[<span class="op">:</span>, <span class="fl">2</span><span class="op">:</span><span class="kw">end</span>])</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ns <span class="op">=</span> <span class="fu">nrow</span>(schools)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>near <span class="op">=</span> [i <span class="op">!=</span> j <span class="op">&amp;&amp;</span> <span class="fu">hypot</span>(schools.east[i] <span class="op">-</span> schools.east[j],</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                        schools.north[i] <span class="op">-</span> schools.north[j]) <span class="op">&lt;</span> <span class="fl">3</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns, j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns]                <span class="co"># within 3 km</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>N  <span class="op">=</span> near <span class="op">*</span> schools.pupils <span class="op">./</span> <span class="fl">1000</span>             <span class="co"># total pupils nearby, thousands</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> N <span class="op">./</span> <span class="fl">3</span>                                    <span class="co"># expected treated pupils nearby</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">one_assign</span>(r)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    D <span class="op">=</span> <span class="fu">Float64</span>.(treat[r, <span class="op">:</span>])</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> near <span class="op">*</span> (schools.pupils <span class="op">.*</span> D) <span class="op">./</span> <span class="fl">1000</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">DataFrame</span>(D <span class="op">=</span> D, x <span class="op">=</span> x, N <span class="op">=</span> N, x_rc <span class="op">=</span> x <span class="op">.-</span> mu,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                  y <span class="op">=</span> <span class="fl">0.05</span> <span class="op">.*</span> D <span class="op">.+</span> <span class="fl">0.03</span> <span class="op">.*</span> x <span class="op">.-</span> <span class="fl">0.02</span> <span class="op">.*</span> N <span class="op">.+</span> schools.eta)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    fits <span class="op">=</span> (<span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()),</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x_rc), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()),</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x <span class="op">+</span> N), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()))</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [(<span class="fu">coef</span>(f)[<span class="fl">3</span>], <span class="fu">stderror</span>(f)[<span class="fl">3</span>]) for f <span class="kw">in</span> fits]</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>R <span class="op">=</span> <span class="fu">size</span>(treat, <span class="fl">1</span>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>dw_est <span class="op">=</span> <span class="fu">zeros</span>(R, <span class="fl">3</span>); dw_se <span class="op">=</span> <span class="fu">zeros</span>(R, <span class="fl">3</span>)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> r <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>R               <span class="co"># one slot per draw, race-free</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j, (b, s)) <span class="kw">in</span> <span class="fu">enumerate</span>(<span class="fu">one_assign</span>(r))</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        dw_est[r, j], dw_se[r, j] <span class="op">=</span> b, s</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(estimator <span class="op">=</span> [<span class="st">"(a) Exposure, no control"</span>, <span class="st">"(b) Recentered exposure"</span>,</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"(c) Exposure, control for nearby pupils"</span>],</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>          mean     <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(dw_est, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>),</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>          sd       <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">std</span>(dw_est, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>),</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>          coverage <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(<span class="fu">abs</span>.(dw_est <span class="op">.-</span> <span class="fl">0.03</span>) <span class="op">.&lt;=</span> <span class="fl">1.96</span> <span class="op">.*</span> dw_se, dims <span class="op">=</span> <span class="fl">1</span>)),</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>                            digits <span class="op">=</span> <span class="fl">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>schools <span class="op">=</span> CSV.<span class="fu">read</span>(<span class="st">"data/deworm_schools.csv"</span>, DataFrame)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>treat   <span class="op">=</span> <span class="fu">Matrix</span>(CSV.<span class="fu">read</span>(<span class="st">"data/deworm_draws.csv"</span>, DataFrame)[<span class="op">:</span>, <span class="fl">2</span><span class="op">:</span><span class="kw">end</span>])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>ns <span class="op">=</span> <span class="fu">nrow</span>(schools)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>near <span class="op">=</span> [i <span class="op">!=</span> j <span class="op">&amp;&amp;</span> <span class="fu">hypot</span>(schools.east[i] <span class="op">-</span> schools.east[j],</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                        schools.north[i] <span class="op">-</span> schools.north[j]) <span class="op">&lt;</span> <span class="fl">3</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns, j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns]                <span class="co"># within 3 km</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>N  <span class="op">=</span> near <span class="op">*</span> schools.pupils <span class="op">./</span> <span class="fl">1000</span>             <span class="co"># total pupils nearby, thousands</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> N <span class="op">./</span> <span class="fl">3</span>                                    <span class="co"># expected treated pupils nearby</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">one_assign</span>(r)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    D <span class="op">=</span> <span class="fu">Float64</span>.(treat[r, <span class="op">:</span>])</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> near <span class="op">*</span> (schools.pupils <span class="op">.*</span> D) <span class="op">./</span> <span class="fl">1000</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">DataFrame</span>(D <span class="op">=</span> D, x <span class="op">=</span> x, N <span class="op">=</span> N, x_rc <span class="op">=</span> x <span class="op">.-</span> mu,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                  y <span class="op">=</span> <span class="fl">0.05</span> <span class="op">.*</span> D <span class="op">.+</span> <span class="fl">0.03</span> <span class="op">.*</span> x <span class="op">.-</span> <span class="fl">0.02</span> <span class="op">.*</span> N <span class="op">.+</span> schools.eta)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    fits <span class="op">=</span> (<span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()),</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x_rc), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()),</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">feols</span>(d, <span class="pp">@formula</span>(y <span class="op">~</span> D <span class="op">+</span> x <span class="op">+</span> N), vcov <span class="op">=</span> Vcov.<span class="fu">robust</span>()))</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [(<span class="fu">coef</span>(f)[<span class="fl">3</span>], <span class="fu">stderror</span>(f)[<span class="fl">3</span>]) for f <span class="kw">in</span> fits]</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>R <span class="op">=</span> <span class="fu">size</span>(treat, <span class="fl">1</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>dw_est <span class="op">=</span> <span class="fu">zeros</span>(R, <span class="fl">3</span>); dw_se <span class="op">=</span> <span class="fu">zeros</span>(R, <span class="fl">3</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="bu">Threads</span>.<span class="pp">@threads</span> <span class="cf">for</span> r <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>R               <span class="co"># one slot per draw, race-free</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j, (b, s)) <span class="kw">in</span> <span class="fu">enumerate</span>(<span class="fu">one_assign</span>(r))</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        dw_est[r, j], dw_se[r, j] <span class="op">=</span> b, s</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="fu">DataFrame</span>(estimator <span class="op">=</span> [<span class="st">"(a) Exposure, no control"</span>, <span class="st">"(b) Recentered exposure"</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"(c) Exposure, control for nearby pupils"</span>],</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>          mean     <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(dw_est, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>          sd       <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">std</span>(dw_est, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>          coverage <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(<span class="fu">abs</span>.(dw_est <span class="op">.-</span> <span class="fl">0.03</span>) <span class="op">.&lt;=</span> <span class="fl">1.96</span> <span class="op">.*</span> dw_se, dims <span class="op">=</span> <span class="fl">1</span>)),</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>                            digits <span class="op">=</span> <span class="fl">3</span>),</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>          mean_se  <span class="op">=</span> <span class="fu">round</span>.(<span class="fu">vec</span>(<span class="fu">mean</span>(dw_se, dims <span class="op">=</span> <span class="fl">1</span>)), digits <span class="op">=</span> <span class="fl">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div id="ri-deworm" class="cell-output cell-output-display" data-execution_count="5">
-<div><div style="float: left;"><span>3×4 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<div id="ri-deworm" class="cell-output cell-output-display" data-execution_count="6">
+<div><div style="float: left;"><span>3×5 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
 <table class="data-frame caption-top table table-sm table-striped small">
 <thead>
 <tr class="columnLabelRow header">
@@ -973,10 +1074,12 @@ y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 <th style="text-align: left;" data-quarto-table-cell-role="th">mean</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">sd</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">coverage</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">mean_se</th>
 </tr>
 <tr class="columnLabelRow even">
 <th class="stubheadLabel" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th" title="Float64">Float64</th>
@@ -989,6 +1092,7 @@ y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 <td style="text-align: right;">-0.024</td>
 <td style="text-align: right;">0.012</td>
 <td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.005</td>
 </tr>
 <tr class="dataRow even">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">2</td>
@@ -996,6 +1100,7 @@ y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 <td style="text-align: right;">0.03</td>
 <td style="text-align: right;">0.038</td>
 <td style="text-align: right;">0.43</td>
+<td style="text-align: right;">0.016</td>
 </tr>
 <tr class="dataRow odd">
 <td class="rowLabel" style="text-align: right; font-weight: bold;">3</td>
@@ -1003,13 +1108,14 @@ y_i = 0.05 D_i + 0.03 x_i - 0.02 N_i + \eta_i ,
 <td style="text-align: right;">0.03</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.92</td>
+<td style="text-align: right;">0.017</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<p>Without the control, the spillover estimate averages −0.024 against a true 0.03, and its intervals never contain 0.03. Dense schools have more treated neighbours and lower participation, and the regression assigns that gap to the spillover. Both recentered versions are centred on 0.03. Regressing on <span class="math inline">\(x_i - \mu_i\)</span> alone leaves <span class="math inline">\(-0.02 N_i\)</span> in the error, so its standard deviation is 0.038, about twice the 0.020 of (c). Neighbouring schools share that error and the same treated schools, so the robust intervals of (b) contain 0.03 only 43% of the time. With the control for nearby pupils the remaining error is independent across schools, and coverage is 92%.</p>
+<p>Without the control, the spillover estimate averages −0.024 against a true 0.03, and its intervals never contain 0.03. Dense schools have more treated neighbours and lower participation, and the regression assigns that gap to the spillover. Both recentered versions are centred on 0.03. Regressing on <span class="math inline">\(x_i - \mu_i\)</span> alone leaves <span class="math inline">\(-0.02 N_i\)</span> in the error, so its standard deviation is 0.038, about twice the 0.020 of (c). Neighbouring schools share that error and the same treated schools, so the robust standard error of (b) averages 0.016 against a standard deviation of 0.038, and its intervals contain 0.03 only 43% of the time. With the control for nearby pupils the remaining error is independent across schools, the robust standard error averages 0.017 against 0.020, and coverage is 92%. That match is a property of this simulation, where the school errors are independent. The design does not guarantee it, because every school’s exposure comes from the same 25 treated schools. In a single data set the inference that follows the design redraws the assignment, as we reshuffled the shocks for ADH. It has to hypothesise both the direct effect and the spillover, because a school’s outcome under another assignment depends on both.</p>
 <section id="a-two-school-example" class="level3" data-number="19.5.1">
 <h3 data-number="19.5.1" class="anchored" data-anchor-id="a-two-school-example"><span class="header-section-number">19.5.1</span> A two-school example</h3>
 <p>Take two untreated schools, A and B, and three other schools, 1, 2 and 3, with 400 pupils each. Exactly one of the three is treated, each with probability 1/3, as in the full design, where exactly 25 of the 75 schools are treated. School A is in town and has all three within 3 km, so <span class="math inline">\(N_A = 1.2\)</span> thousand pupils nearby. School B is rural and has only school 3 nearby, so <span class="math inline">\(N_B = 0.4\)</span>. With both schools untreated and <span class="math inline">\(\eta_i\)</span> set to zero, <a href="#eq-ri-spill-dgp" class="quarto-xref">Equation&nbsp;<span>19.8</span></a> gives</p>
@@ -1148,7 +1254,7 @@ Table&nbsp;19.2: Expected instrument in each application. In the stratified expe
 </div>
 </figure>
 </div>
-<p>Shift-share is one formula instrument, with the formula and the design fixed by convention. Any formula of shocks and exposure is valid once its expected value over the shock design is subtracted, and the most efficient formula is the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period’s mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment’s own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27. The same logic covers spillovers. A school’s expected exposure to treated neighbours is the treatment probability times its nearby pupils, which is the control Miguel and Kremer used.</p>
+<p>Shift-share is one formula instrument, with the formula and the design fixed by convention. Any formula of shocks and exposure is valid once its expected value over the shock design is subtracted, and the most efficient formula is the recentered best prediction of the treatment. Applied to Bartik, this has two consequences. When the shares do not sum to one, the regression must control for the sum of shares times the period’s mean shock. When the treatment depends on the shocks through more than shares times shocks, a prediction built from the treatment’s own formula is a stronger instrument than Bartik. In the ADH data the first consequence alone moves the estimate from −0.60 to −0.27, and inference that reshuffles the shocks gives it a 95% interval of −0.53 to −0.02, wider than the state-clustered one. The same logic covers spillovers. A school’s expected exposure to treated neighbours is the treatment probability times its nearby pupils, which is the control Miguel and Kremer used.</p>
 <p>For the shift-share construction, the share and shock views, and inference, see the previous chapter, <a href="./shift-share-iv.html">Shift-Share Instrumental Variables</a>.</p>
 
 
