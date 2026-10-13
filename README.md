@@ -9,7 +9,7 @@ Live site: **https://xiangao.github.io/causal_econometrics_julia/**
 
 ## Chapters
 
-The chapter list below mirrors `_quarto.yml`. There are 26 content
+The chapter list below mirrors `_quarto.yml`. There are 27 content
 chapters organized into eight parts, plus the preface (`index.qmd`) and
 a references page.
 
@@ -36,24 +36,25 @@ a references page.
 16. **Randomization Inference for SC** — Placebo unit tests, MSPE ratio, Fisher p-values, TASC posterior
 17. **IV and Regression Discontinuity** — LATE, weak-IV, RD designs with `RDRobust.jl`
 18. **Shift-Share IV** — Bartik instruments, Rotemberg weights
-19. **IV in Poisson with Fixed Effects** — Control-function and GMM approaches
+19. **Recentered Formula Instruments** — expected instrument from the shock design, recentered Bartik on the ADH China shock, deworming spillovers
+20. **IV in Poisson with Fixed Effects** — Control-function and GMM approaches
 
 ### Longitudinal Causal Inference
-20. **G-Methods** — G-computation, IPW, marginal structural models
+21. **G-Methods** — G-computation, IPW, marginal structural models
 
 ### Survival & Time-to-Event
-21. **Survival Causal Inference** — RMST, IPW-adjusted survival curves
+22. **Survival Causal Inference** — RMST, IPW-adjusted survival curves
 
 ### Mediation
-22. **Causal Mediation** — CDE, NDE, NIE with `Crumble.jl`
+23. **Causal Mediation** — CDE, NDE, NIE with `Crumble.jl`
 
 ### Causal Discovery
-23. **Discovery: Observed Variables** — PC, RSL-D algorithms via `CausalInference.jl`; a survey-weighted real-data example on PISA 2022 (background-knowledge tier orientation, bootstrap edge stability)
-24. **Discovery: Latent Variables** — FCI, L-MARVEL, PAGs
-25. **From Graph to Estimate** — Identification routing (a-fix/p-fix/nested) and TMLE/AIPW estimation with `CausalGraphs.jl`
+24. **Discovery: Observed Variables** — PC, RSL-D algorithms via `CausalInference.jl`; a survey-weighted real-data example on PISA 2022 (background-knowledge tier orientation, bootstrap edge stability)
+25. **Discovery: Latent Variables** — FCI, L-MARVEL, PAGs
+26. **From Graph to Estimate** — Identification routing (a-fix/p-fix/nested) and TMLE/AIPW estimation with `CausalGraphs.jl`
 
 ### Appendix
-26. **Package Ecosystem** — Overview of all custom Julia packages
+27. **Package Ecosystem** — Overview of all custom Julia packages
 
 ## Writing style
 
@@ -92,10 +93,12 @@ machine. To run the examples yourself:
 
 ```bash
 # 1. Clone the custom packages somewhere, e.g. ~/projects/software/
+#    and clone CausalInference.jl and RecursiveCausalDiscovery.jl into
+#    ~/projects/repo_cloned/
 # 2. From the book directory, dev them into the project environment:
 julia --project=. -e 'using Pkg; \
-  for p in ("CausalEstimate","CausalGraphs","SynthDiD","DiD", \
-            "RDRobust","Panelest","Lavaan","Crumble"); \
+  for p in ("CausalEstimate","CausalGraphs","Crumble","Lavaan","MSC", \
+            "Panelest","RDRobust","ShiftShareIV","SynthDiD","TASC"); \
     Pkg.develop(path=joinpath(homedir(),"projects","software",p*".jl")); end; \
   Pkg.instantiate()'
 ```
@@ -108,24 +111,24 @@ versions in `Manifest.toml` rather than to a stable public API.
 
 ## Custom Packages
 
-All live at `~/projects/software/` and are referenced in the book's `Manifest.toml`:
+The `Manifest.toml` takes these packages from local paths, not from the
+General registry. All but two live in `~/projects/software/`:
 
 | Package | What it provides |
 |---|---|
 | `CausalEstimate.jl` | Unified TMLE/AIPW: `estimate(ATE(...), TMLE(...), df)` |
 | `CausalGraphs.jl` | ADMG identification routing + TMLE/AIPW for backdoor/front-door/nested |
-| `SynthDiD.jl` | `synthdid_estimate`, `sc_estimate`, `did_estimate`, `california_prop99()` |
-| `DiD.jl` (ETWFE) | `att_gt`, `emfx`, `dataset("mpdta")` |
-| `RDRobust.jl` | `rdrobust`, `rdbwselect`, `rdplot` |
-| `Panelest.jl` | `feols`, `feiv` for fixed-effects panel models |
-| `Lavaan.jl` | `sem()` structural equation models |
 | `Crumble.jl` | Causal mediation (CDE, NDE, NIE) |
+| `Lavaan.jl` | `sem()` structural equation models |
+| `MSC.jl` | Multivariate synthetic control (Shen, Song and Abadie 2025); in `Project.toml` but not loaded by any chapter |
+| `Panelest.jl` | `feols`, `feiv` for fixed-effects panel models |
+| `RDRobust.jl` | `rdrobust`, `rdbwselect`, `rdplot` |
+| `ShiftShareIV.jl` | `bartik_iv`, `rotemberg_weights`, `bhj_collapse` |
+| `SynthDiD.jl` | `synthdid_estimate`, `sc_estimate`, `did_estimate`, `california_prop99()` |
+| `TASC.jl` | Time-aware synthetic control with a Kalman smoother |
 
-Packages loaded via `include()` (not in `Project.toml`):
-
-| Package | Used in |
-|---|---|
-| `TASC.jl` | `synthetic-control-did-tasc.qmd`, `randomization-inference-sc.qmd` |
+`CausalInference.jl` and `RecursiveCausalDiscovery.jl` are local clones of
+public repositories, kept in `~/projects/repo_cloned/`.
 
 ## Dependencies
 
