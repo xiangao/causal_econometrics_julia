@@ -195,9 +195,9 @@ But in observational studies, most cases we cannot assume unconfoundedness. What
 
 ## Unconfoundedness and Overlap
 
-Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability), stated jointly for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for $Y(0)$): $$ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\} $$ {#eq-identification-12} Overlap: $$ 0 < \pi(x)= P(W=1 | X=x) < 1 $$ {#eq-identification-13} SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.
+Weaker Assumptions: Unconfoundedness in mean form, stated for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for $Y(0)$). This is conditional mean independence: $$ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\} $$ {#eq-identification-12} Overlap: $$ 0 < \pi(x)= P(W=1 | X=x) < 1 $$ {#eq-identification-13} SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.
 
-Within each subgroup of $X=x$, W is independent of $Y(0)$. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.
+Within each subgroup of $X=x$, the mean of each potential outcome does not depend on $W$. That is enough for mean estimands, the ATE, ATT and CATE. It is weaker than ignorability in the sense of Rosenbaum and Rubin [-@rosenbaum-rubin-1983], $(Y(0), Y(1)) \perp W \mid X$, full conditional independence, which distributional estimands such as the QTE require. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.
 
 However, these two criteria are often contradictory: we may need more covariates to satisfy conditional independence; meanwhile, if the dimension of covariates goes high, then it's likely in some partition we don't have control units.
 

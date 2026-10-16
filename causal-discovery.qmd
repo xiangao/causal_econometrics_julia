@@ -1,7 +1,9 @@
 # Causal Discovery: Observed Variables
 
 ```{julia}
-#| include: false
+#| code-fold: true
+#| code-summary: "Setup: packages and graph-plotting helpers"
+#| output: false
 using CausalInference
 using RecursiveCausalDiscovery
 using CausalGraphs
@@ -176,7 +178,7 @@ end
 
 ## PC Algorithm
 
-The **PC algorithm** (Spirtes & Glymour, 1991) starts from a complete undirected graph and removes edges whenever a conditional independence is found. It searches for separating sets $Z$ of increasing size, conditioning on subsets of the current neighbors. After skeleton discovery, Meek's rules orient as many edges as possible.
+The **PC algorithm** [@spirtes-glymour-1991-pc] starts from a complete undirected graph and removes edges whenever a conditional independence is found. It searches for separating sets $Z$ of increasing size, conditioning on subsets of the current neighbors. After skeleton discovery, Meek's rules orient as many edges as possible.
 
 **How it works, step by step:**
 

@@ -1,7 +1,9 @@
 # Causal Discovery: Latent Variables
 
 ```{julia}
-#| include: false
+#| code-fold: true
+#| code-summary: "Setup: packages and graph-plotting helpers"
+#| output: false
 using CausalInference
 using RecursiveCausalDiscovery
 using CausalGraphs
@@ -116,7 +118,7 @@ Just as DAGs have Markov equivalence classes represented by CPDAGs, MAGs have eq
 **Reading a PAG for policy purposes:**
 
 - A definite $X \to Y$ edge is the most useful finding: it means any intervention on $X$ propagates to $Y$ regardless of which specific MAG the data came from.
-- A definite $X \leftrightarrow Y$ edge is a warning: before using regression of $Y$ on $X$ to estimate a causal effect, you must address the hidden confounder — through an instrument, a proxy, or a natural experiment.
+- A definite $X \leftrightarrow Y$ edge is a warning: before using regression of $Y$ on $X$ to estimate a causal effect, you must address the hidden confounder — through an instrument, a proxy, or a natural experiment. A proxy here means proximal causal inference, which identifies the effect from two proxies of the hidden confounder, a negative-control exposure and a negative-control outcome [@miao-geng-tchetgen-2018; @tchetgen-tchetgen-2024-proximal]; the [proximal chapter](https://xiangao.github.io/blog_book/proximal-intro.html) of *Topics on Econometrics and Causal Inference* introduces it.
 - $\circ$ marks indicate what you *don't* know. Additional data, temporal ordering, or experimental variation can resolve them.
 
 ## Simulation with Hidden Variables
@@ -359,7 +361,7 @@ end
 
 | Property | PC / RSL-D | FCI | L-MARVEL |
 |---|---|---|---|
-| Latent confounders | ✗ assumes none | ✓ handles | ✓ handles |
+| Latent confounders | No: assumes none | Yes | Yes |
 | Output | CPDAG | PAG | Skeleton |
 | Orientations | ✓ | ✓ | ✗ |
 | MB estimation | CI tests | CI tests | Precision matrix |

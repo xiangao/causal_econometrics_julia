@@ -201,6 +201,12 @@ The bidirected edge `A <-> Y` means that ordinary backdoor adjustment is not
 available. But the graph is p-fixable, the ADMG generalization that includes
 front-door identification.
 
+The front-door formula, $\sum_m P(M = m \mid A = a) \sum_{a'} P(Y \mid A = a', M = m) P(A = a')$,
+needs positivity in two places, like backdoor adjustment: $0 < P(A = 1) < 1$, and
+$P(M = m \mid A = a) > 0$ for every mediator value $m$ and treatment value $a$, so
+that every $(A, M)$ cell has data. In a small sample or a bootstrap resample an
+empty $(A, M)$ cell leaves its conditional mean undefined.
+
 ```{julia}
 id_fd = identify(g_fd, :A, :Y)
 (strategy = id_fd.strategy,

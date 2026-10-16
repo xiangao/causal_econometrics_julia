@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -480,7 +500,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3605ba07" class="cell" data-execution_count="2">
+<div id="b813ae00" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -558,6 +578,7 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 <li>Including <span class="math inline">\(L_1\)</span> blocks the <span class="math inline">\(A_0 \to L_1 \to Y\)</span> pathway, so the coefficient on <span class="math inline">\(A_0\)</span> now measures only the <em>direct</em> effect, not the total effect.</li>
 </ul>
 <p>This is exactly the setting g-methods were designed for.</p>
+<p>This chapter covers two of Robins’s g-methods, the g-formula and marginal structural models fit by IPTW. The third, g-estimation of structural nested mean models <span class="citation" data-cites="robins-1994-snmm vansteelandt-joffe-2014">(<a href="references.html#ref-robins-1994-snmm" role="doc-biblioref">Robins 1994</a>; <a href="references.html#ref-vansteelandt-joffe-2014" role="doc-biblioref">Vansteelandt and Joffe 2014</a>)</span>, models the effect of each treatment given the history up to that point, so it can let effects vary with the time-varying confounders <span class="math inline">\(L_t\)</span>, which a marginal structural model averages over. The <a href="https://xiangao.github.io/blog_book/g-estimation.html">g-estimation chapter</a> of <em>Topics on Econometrics and Causal Inference</em> works through it.</p>
 </section>
 </section>
 <section id="parametric-g-formula" class="level2" data-number="21.2">
@@ -820,6 +841,14 @@ MSM (IPTW):                    1.593  (correct)</code></pre>
 </ul>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-robins-1994-snmm" class="csl-entry" role="listitem">
+Robins, James M. 1994. <span>“Correcting for Non-Compliance in Randomized Trials Using Structural Nested Mean Models.”</span> <em>Communications in Statistics – Theory and Methods</em> 23 (8): 2379–2412. <a href="https://doi.org/10.1080/03610929408831393">https://doi.org/10.1080/03610929408831393</a>.
+</div>
+<div id="ref-vansteelandt-joffe-2014" class="csl-entry" role="listitem">
+Vansteelandt, Stijn, and Marshall Joffe. 2014. <span>“Structural Nested Models and <span>G</span>-Estimation: The Partially Realized Promise.”</span> <em>Statistical Science</em> 29 (4): 707–31. <a href="https://doi.org/10.1214/14-STS493">https://doi.org/10.1214/14-STS493</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

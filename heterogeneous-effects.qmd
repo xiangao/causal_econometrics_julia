@@ -230,6 +230,13 @@ tau_X = e_hat .* tau_X0 .+ (1 .- e_hat) .* tau_X1
 @printf("X-learner CATE correlation with truth: %.3f\n", cor(tau_X, tau))
 ```
 
+The weights look crossed, with $\hat e(x)$ on $\hat\tau_{X0}$, the estimate built
+from control units. That is deliberate [@kunzel-2019-metalearners]. Where
+$\hat e(x)$ is small, treated units are scarce, so $\hat\mu_1$ is poorly estimated,
+and the control pseudo-effects $\hat\mu_1(X) - Y$ inherit its noise. The treated
+pseudo-effects $Y - \hat\mu_0(X)$ rest on $\hat\mu_0$, fitted on the many controls,
+so there $\hat\tau_{X1}$ gets the weight $1 - \hat e(x)$, close to one.
+
 The X-learner is useful when one treatment arm is much smaller than the
 other.
 

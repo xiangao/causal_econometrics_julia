@@ -104,6 +104,14 @@ Neither regression recovers the true total effect:
 
 This is exactly the setting g-methods were designed for.
 
+This chapter covers two of Robins's g-methods, the g-formula and marginal
+structural models fit by IPTW. The third, g-estimation of structural nested mean
+models [@robins-1994-snmm; @vansteelandt-joffe-2014], models the effect of each
+treatment given the history up to that point, so it can let effects vary with
+the time-varying confounders $L_t$, which a marginal structural model averages
+over. The [g-estimation chapter](https://xiangao.github.io/blog_book/g-estimation.html)
+of *Topics on Econometrics and Causal Inference* works through it.
+
 ## Parametric g-formula
 
 The g-formula identifies the mean outcome under a fixed regime $\bar a$ under

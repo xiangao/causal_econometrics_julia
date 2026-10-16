@@ -506,7 +506,7 @@ window.Quarto = {
 </header>
 
 
-<div id="3ffe6a05" class="cell" data-execution_count="2">
+<div id="9057378f" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -580,8 +580,8 @@ window.Quarto = {
 </section>
 <section id="unconfoundedness-and-overlap" class="level2" data-number="1.7">
 <h2 data-number="1.7" class="anchored" data-anchor-id="unconfoundedness-and-overlap"><span class="header-section-number">1.7</span> Unconfoundedness and Overlap</h2>
-<p>Weaker Assumptions: Unconfoundedness (conditional independence, or ignorability), stated jointly for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for <span class="math inline">\(Y(0)\)</span>): <span id="eq-identification-12"><span class="math display">\[ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\}  \tag{1.12}\]</span></span> Overlap: <span id="eq-identification-13"><span class="math display">\[ 0 &lt; \pi(x)= P(W=1 | X=x) &lt; 1  \tag{1.13}\]</span></span> SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.</p>
-<p>Within each subgroup of <span class="math inline">\(X=x\)</span>, W is independent of <span class="math inline">\(Y(0)\)</span>. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.</p>
+<p>Weaker Assumptions: Unconfoundedness in mean form, stated for both potential outcomes since we are after the ATE here (as opposed to the ATT case above, which only required it for <span class="math inline">\(Y(0)\)</span>). This is conditional mean independence: <span id="eq-identification-12"><span class="math display">\[ E[Y(d) | W, X] = E[Y(d)| X] \quad \text{for } d \in \{0,1\}  \tag{1.12}\]</span></span> Overlap: <span id="eq-identification-13"><span class="math display">\[ 0 &lt; \pi(x)= P(W=1 | X=x) &lt; 1  \tag{1.13}\]</span></span> SUTVA (stable unit treatment value assumption): 1. No interference between units. No spillovers. 2. Consistency. No hidden versions of treatment or control. Treatment is clearly defined.</p>
+<p>Within each subgroup of <span class="math inline">\(X=x\)</span>, the mean of each potential outcome does not depend on <span class="math inline">\(W\)</span>. That is enough for mean estimands, the ATE, ATT and CATE. It is weaker than ignorability in the sense of Rosenbaum and Rubin <span class="citation" data-cites="rosenbaum-rubin-1983">(<a href="references.html#ref-rosenbaum-rubin-1983" role="doc-biblioref">1983</a>)</span>, <span class="math inline">\((Y(0), Y(1)) \perp W \mid X\)</span>, full conditional independence, which distributional estimands such as the QTE require. With the overlap assumption, we ensure there is a comparable control unit for each treated unit.</p>
 <p>However, these two criteria are often contradictory: we may need more covariates to satisfy conditional independence; meanwhile, if the dimension of covariates goes high, then it’s likely in some partition we don’t have control units.</p>
 <p>We need four assumptions for identification:</p>
 <ul>
@@ -633,6 +633,9 @@ flowchart LR
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-rosenbaum-rubin-1983" class="csl-entry" role="listitem">
+Rosenbaum, Paul R., and Donald B. Rubin. 1983. <span>“The Central Role of the Propensity Score in Observational Studies for Causal Effects.”</span> <em>Biometrika</em> 70 (1): 41–55.
+</div>
 <div id="ref-rubin1980" class="csl-entry" role="listitem">
 Rubin, Donald B. 1980. <span>“Randomization Analysis of Experimental Data: The Fisher Randomization Test Comment.”</span> <em>Journal of the American Statistical Association</em> 75 (371): 591–93.
 </div>
