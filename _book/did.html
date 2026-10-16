@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="5dfb06c2" class="cell" data-execution_count="2">
+<div id="9ea923d3" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -524,7 +524,7 @@ window.Quarto = {
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Distributions</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>When unconfoundedness fails, we need weaker assumptions. The parallel trends assumption leads to the difference-in-differences estimator.</p>
+<p>When unconfoundedness fails, we need a different assumption. Parallel trends, which leads to the difference-in-differences estimator, restricts a different counterfactual object. It is not weaker in general: neither assumption implies the other.</p>
 <blockquote class="blockquote">
 <p><strong>Related reading</strong>: For a side-by-side comparison of DiD, synthetic DiD, synthetic control, and TASC on a <em>single</em> panel — the Proposition 99 California smoking data, where the four estimators do not agree — see the <a href="https://xiangao.github.io/blog_book/tasc-time-aware-synthetic-control.html">Same data, different estimators</a> chapter in <em>Topics on Econometrics and Causal Inference</em>.</p>
 </blockquote>
@@ -564,7 +564,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <h2 data-number="13.5" class="anchored" data-anchor-id="advantages-and-disadvantages-of-did"><span class="header-section-number">13.5</span> Advantages and Disadvantages of DiD</h2>
 <p>Advantages:</p>
 <ul>
-<li>No need to assume unconfoundedness. PT and NA take its place, alongside the maintained conditions listed above. Or say we don’t need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This is importantly weaker in a lot of situations. There can be selection bias. If the selection bias does not change over time, then DiD can handle it.</li>
+<li>No need to assume unconfoundedness. PT and NA take its place, alongside the maintained conditions listed above. Or say we don’t need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This allows selection on untreated outcome levels. If the selection bias does not change over time, then DiD can handle it. It is not a relaxation of unconfoundedness, though: groups can have equal untreated post-period levels and unequal untreated changes, and then unconfoundedness holds while parallel trends fails.</li>
 </ul>
 <p>Disadvantages:</p>
 <ul>
@@ -613,7 +613,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <section id="example-1-us-teen-employment" class="level2" data-number="13.10">
 <h2 data-number="13.10" class="anchored" data-anchor-id="example-1-us-teen-employment"><span class="header-section-number">13.10</span> Example 1: US Teen Employment</h2>
 <p>We’ll use the mpdta dataset on US teen employment from the did package. “Treatment” in this dataset refers to an increase in the minimum wage rate. Our goal is to estimate the effect of this minimum wage treatment (treat) on the log of teen employment (lemp). Notice that the panel ID is at the county level (countyreal), but treatment was staggered across cohorts (first_treat) so that a group of counties were treated at the same time. In addition to these staggered treatment effects, we also observe log population (lpop) as a potential control variable.</p>
-<div id="da35f532" class="cell" data-cache="true" data-execution_count="3">
+<div id="4f2bfc05" class="cell" data-cache="true" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># mpdta from the did R package (Callaway &amp; Sant'Anna 2021)</span></span>
@@ -705,7 +705,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 </div>
 <p>The three tables below give the panel shape: observations per year, the ever-treated indicator, and the treatment cohorts.</p>
-<div id="4939177b" class="cell" data-cache="true" data-execution_count="4">
+<div id="d72e7a9b" class="cell" data-cache="true" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(<span class="fu">combine</span>(<span class="fu">groupby</span>(mpdta, <span class="op">:</span>year), nrow))</span>
@@ -830,7 +830,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 </div>
 <p>The panel is balanced: 500 counties observed in each of 2003 through 2007, 2,500 observations. 955 observations belong to ever-treated counties and 1,545 to never-treated ones. The cohorts are 2004 (100 observations, so 20 counties), 2006 (200, or 40 counties) and 2007 (655, or 131 counties), with 309 counties never treated. Treatment timing is staggered, which is exactly the case where plain TWFE misbehaves.</p>
 <p>We fit ETWFE with log population as a control, clustering on county.</p>
-<div id="e8b00f7e" class="cell" data-cache="true" data-execution_count="5">
+<div id="77544107" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mod <span class="op">=</span> <span class="fu">etwfe</span>(mpdta, <span class="pp">@formula</span>(lemp <span class="op">~</span> lpop);   <span class="co"># outcome ~ controls</span></span>
@@ -839,7 +839,7 @@ E[Y_2(0) | D=1 ] &amp;= E[Y_1(1) | D=1] + E[Y_2(0) - Y_1(0) | D=0]\\
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>            vcov <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>countyreal));  <span class="co"># clustered by county</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="2e620b6f" class="cell" data-cache="true" data-execution_count="6">
+<div id="c982c347" class="cell" data-cache="true" data-execution_count="6">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_regression_html</span>(mod.model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1026,7 +1026,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 <p>The raw model has one coefficient per cohort-year cell plus the control interactions, 22 in all. That is not something to read directly. <code>emfx()</code> aggregates the cells into the ATT.</p>
-<div id="0d737652" class="cell" data-cache="true" data-execution_count="7">
+<div id="4ab0fbc5" class="cell" data-cache="true" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1068,7 +1068,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 <p>The ATT is <span class="math inline">\(-0.0506\)</span> with a standard error of 0.0125 and a 95% interval of <span class="math inline">\([-0.0751, -0.0261]\)</span>. Raising the minimum wage lowered teen employment by about 5% on average across treated county-years.</p>
 <p>The same cells can be aggregated by time since treatment instead.</p>
-<div id="4421768b" class="cell" data-cache="true" data-execution_count="8">
+<div id="245984e2" class="cell" data-cache="true" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
@@ -1135,7 +1135,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 <p>The effect grows with exposure: <span class="math inline">\(-0.033\)</span> in the treatment year, <span class="math inline">\(-0.057\)</span> after one year, <span class="math inline">\(-0.138\)</span> after two, <span class="math inline">\(-0.110\)</span> after three. All four are significant. The standard errors widen with event time, from 0.013 to 0.032, because the later horizons rest on fewer cohorts: event time 0 uses all three cohorts (191 counties), event time 1 uses the 2004 and 2006 cohorts (60 counties), and event times 2 and 3 rest on the 2004 cohort alone (20 counties).</p>
 <p>Adding <code>post_only = FALSE</code> keeps the pre-treatment periods in the plot.</p>
-<div id="9b8df9e2" class="cell" data-cache="true" data-execution_count="9">
+<div id="64a7035b" class="cell" data-cache="true" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
@@ -1163,7 +1163,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <h2 data-number="13.11" class="anchored" data-anchor-id="example-2-staggered-did"><span class="header-section-number">13.11</span> Example 2: Staggered DiD</h2>
 <p>To see whether ETWFE recovers what it should, we switch to simulated data where the answer is recorded in the file.</p>
 <p><code>data/did_staggered_6.dta</code> is Wooldridge’s simulated staggered panel: 500 units observed annually from 2001 to 2006, 3,000 observations. Units are treated in 2004 (119 units), 2005 (83) or 2006 (36), and 262 are never treated. The outcome is <code>y</code>, <code>x</code> is a covariate, <code>d4</code>, <code>d5</code> and <code>d6</code> are cohort dummies, and <code>f04</code>, <code>f05</code>, <code>f06</code> are year dummies. What makes the file useful is <code>te4</code>, <code>te5</code> and <code>te6</code>: the true unit-level treatment effect each unit would experience under each cohort’s treatment date. The effects are heterogeneous across units and grow with time since treatment, which is precisely the configuration that breaks plain TWFE.</p>
-<div id="9cd5a925" class="cell" data-cache="true" data-execution_count="10">
+<div id="6654b78d" class="cell" data-cache="true" data-execution_count="10">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># now we do staggered did.</span></span>
@@ -1296,7 +1296,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="2c85367f" class="cell" data-cache="true" data-execution_count="11">
+<div id="3e3c5fb3" class="cell" data-cache="true" data-execution_count="11">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">combine</span>(<span class="fu">groupby</span>(did_data, <span class="op">:</span>first_treat), nrow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1344,7 +1344,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 <p>The counts are observations, six per unit: 1,572 never-treated, 714 in the 2004 cohort, 498 in 2005, 216 in 2006.</p>
 <p>Because the true effects are in the data, we can compute the target before estimating it. Grouping the true effects by cohort and year gives the true ATT in each cohort-year cell.</p>
-<div id="e5a6f06e" class="cell" data-cache="true" data-execution_count="12">
+<div id="a8344eb5" class="cell" data-cache="true" data-execution_count="12">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cohort_cell</span>(d, f, lab) <span class="op">=</span> <span class="fu">ifelse</span>.((d <span class="op">.==</span> <span class="fl">1</span>) <span class="op">.&amp;</span> (f <span class="op">.==</span> <span class="fl">1</span>), lab, <span class="cn">missing</span>)</span>
@@ -1393,7 +1393,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 </div>
 </div>
-<div id="54182f8e" class="cell" data-cache="true" data-execution_count="13">
+<div id="f1db1c58" class="cell" data-cache="true" data-execution_count="13">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(<span class="fu">combine</span>(<span class="fu">groupby</span>(<span class="fu">dropmissing</span>(did_data, <span class="op">:</span>treated_cohort2), <span class="op">:</span>treated_cohort2), <span class="op">:</span>te5 <span class="op">=&gt;</span> mean <span class="op">=&gt;</span> <span class="op">:</span>mean5))</span>
@@ -1457,7 +1457,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 <p>So the true cohort-year ATTs are: the 2004 cohort gains 3.76, 4.02 and 4.58 in 2004, 2005 and 2006; the 2005 cohort gains 2.74 and 3.52 in 2005 and 2006; the 2006 cohort gains 1.85 in 2006. Effects grow with time since treatment and shrink across later cohorts — heterogeneity in both directions.</p>
 <p>Averaging those cells over the 559 treated observations gives a true overall ATT of <strong>3.677</strong>. That is the number ETWFE has to reproduce.</p>
-<div id="a05d903f" class="cell" data-cache="true" data-execution_count="14">
+<div id="f5ee2763" class="cell" data-cache="true" data-execution_count="14">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this replicates Jeff's results with pooled ols or xtreg, with covariate x.</span></span>
@@ -1642,7 +1642,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </table>
 </div>
 </div>
-<div id="4633ea58" class="cell" data-cache="true" data-execution_count="15">
+<div id="c9ca4fb0" class="cell" data-cache="true" data-execution_count="15">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1684,7 +1684,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 <p>ETWFE gives 3.67 with a standard error of 0.172 and a 95% interval of <span class="math inline">\([3.33, 4.01]\)</span>, against a true 3.677. It recovers the ATT to three decimals.</p>
 <p>The same holds for the disaggregations. By time since treatment:</p>
-<div id="bcc54873" class="cell" data-cache="true" data-execution_count="16">
+<div id="979b2d6b" class="cell" data-cache="true" data-execution_count="16">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>mod_es <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>)</span>
@@ -1743,7 +1743,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 </div>
 <p>Estimated 3.11, 4.02 and 4.21 at event times 0, 1 and 2, against true values of 3.11, 3.81 and 4.58. Every interval covers its truth, and the estimates reproduce the growth in the effect with exposure.</p>
 <p>And by calendar year:</p>
-<div id="20604c8c" class="cell" data-cache="true" data-execution_count="17">
+<div id="db74d4f1" class="cell" data-cache="true" data-execution_count="17">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod_es2 <span class="op">=</span> <span class="fu">emfx</span>(mod, <span class="kw">type</span> <span class="op">=</span> <span class="st">"calendar"</span>)</span>
@@ -1814,10 +1814,10 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="simulated-example-staggered-count-data" class="level3" data-number="13.12.1">
 <h3 data-number="13.12.1" class="anchored" data-anchor-id="simulated-example-staggered-count-data"><span class="header-section-number">13.12.1</span> Simulated example: staggered count data</h3>
 <p>We simulate <span class="math inline">\(N = 400\)</span> units over <span class="math inline">\(T = 6\)</span> periods, 2,400 observations. Units are split into four groups of 100 by id: the first is treated from period 3, the second from period 4, the third from period 5, and the fourth never. Each unit draws a fixed effect <span class="math inline">\(\alpha_i \sim N(0, 0.3^2)\)</span>. The log mean is <span class="math inline">\(\log \mu_{it} = 1 + 0.2t + \alpha_i + 0.4 D_{it}\)</span>, and the outcome is <span class="math inline">\(Y_{it} \sim \text{Poisson}(\mu_{it})\)</span>.</p>
-<p>The treatment effect is multiplicative and homogeneous on the log scale: every treated unit’s expected count rises by a factor of <span class="math inline">\(\exp(0.4)\)</span>, that is by <span class="math inline">\(\exp(0.4) - 1 = 0.492\)</span>, or 49%. Parallel trends holds on the log scale by construction, and fails on the level scale, since a constant proportional effect is a larger absolute effect for units with higher baselines.</p>
+<p>The treatment effect is multiplicative and homogeneous on the log scale: every treated unit’s expected count rises by a factor of <span class="math inline">\(\exp(0.4)\)</span>, that is by <span class="math inline">\(\exp(0.4) - 1 = 0.492\)</span>, or 49%. Parallel trends holds on the log scale by construction. Here it also holds on the level scale. Cohort membership is independent of the unit effects <span class="math inline">\(\alpha_i\)</span>, so every cohort’s untreated mean, <span class="math inline">\(\exp(1 + 0.2t)\,E[e^{\alpha_i}]\)</span>, follows the same path. What differs across scales is the effect: a constant proportional effect is a larger absolute effect where the baseline is higher, so level-scale effects change over calendar time. A design where level parallel trends fails would give cohorts different untreated baseline multipliers while keeping common proportional growth.</p>
 <p>On the count scale the ATT is not 0.492. It is <span class="math inline">\(E[\mu_{it}(0) \mid \text{treated}] \times (\exp(0.4)-1)\)</span>, and the mean untreated count among treated observations is 7.518, so the true ATT is <span class="math inline">\(7.518 \times 0.4918 = 3.698\)</span> counts.</p>
 <p>The table below reports mean counts by cohort and treatment status.</p>
-<div id="512ddb03" class="cell" data-cache="true" data-execution_count="18">
+<div id="5419eee4" class="cell" data-cache="true" data-execution_count="18">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">42</span>)</span>
@@ -1913,7 +1913,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="poisson-etwfe" class="level3" data-number="13.12.2">
 <h3 data-number="13.12.2" class="anchored" data-anchor-id="poisson-etwfe"><span class="header-section-number">13.12.2</span> Poisson ETWFE</h3>
 <p>Pass <code>family = "poisson"</code> to <code>etwfe()</code>. Everything else — cohort dummies, <code>emfx()</code>, event study — works identically to the linear case. We use <code>cgroup = "never"</code> so that pre-treatment estimates are not mechanistically forced to zero.</p>
-<div id="ddb4298c" class="cell" data-cache="true" data-execution_count="19">
+<div id="b8f24996" class="cell" data-cache="true" data-execution_count="19">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>mod_pois <span class="op">=</span> <span class="fu">etwfe</span>(df_count, <span class="pp">@formula</span>(count <span class="op">~</span> <span class="fl">1</span>);</span>
@@ -1924,7 +1924,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                 vcov   <span class="op">=</span> Vcov.<span class="fu">cluster</span>(<span class="op">:</span>id));</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="394479fe" class="cell" data-cache="true" data-execution_count="20">
+<div id="4ad0df5f" class="cell" data-cache="true" data-execution_count="20">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">emfx</span>(mod_pois)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1970,7 +1970,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="event-study" class="level3" data-number="13.12.3">
 <h3 data-number="13.12.3" class="anchored" data-anchor-id="event-study"><span class="header-section-number">13.12.3</span> Event study</h3>
 <p>Because we passed <code>cgroup = "never"</code>, the pre-treatment estimates are free parameters rather than zeros by construction, so the pre-period is an actual test here. On the count scale the post-treatment effect should also grow with event time even though the log-scale effect is constant, because the baseline count grows with the time trend: the true values are 3.06, 3.74, 4.18 and 4.55 at event times 0 through 3.</p>
-<div id="3359b052" class="cell" data-cache="true" data-execution_count="21">
+<div id="b5242b11" class="cell" data-cache="true" data-execution_count="21">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>mod_pois_es <span class="op">=</span> <span class="fu">emfx</span>(mod_pois, <span class="kw">type</span> <span class="op">=</span> <span class="st">"event"</span>, post_only <span class="op">=</span> <span class="cn">false</span>)</span>
@@ -2089,7 +2089,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <section id="comparison-linear-etwfe-on-logcount-1" class="level3" data-number="13.12.4">
 <h3 data-number="13.12.4" class="anchored" data-anchor-id="comparison-linear-etwfe-on-logcount-1"><span class="header-section-number">13.12.4</span> Comparison: linear ETWFE on log(count + 1)</h3>
 <p>A common alternative is to log-transform the count and run linear ETWFE. This is biased when zeros are present (the <span class="math inline">\(+1\)</span> shift distorts the linear index) and misinterprets the scale of the effect. For comparison:</p>
-<div id="668d1112" class="cell" data-cache="true" data-execution_count="22">
+<div id="d62af3f0" class="cell" data-cache="true" data-execution_count="22">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_count.log_count <span class="op">=</span> <span class="fu">log</span>.(df_count.count <span class="op">.+</span> <span class="fl">1</span>)</span>
@@ -2146,7 +2146,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p><span id="eq-did-12"><span class="math display">\[ \tau_g(t, c) = \frac{1}{|S_M|} \sum_{i \in S_M} \mathbb{E}[y_{it}(c, g) - y_{it}(\infty, g) \mid z_i, C_i = c, G_{it} = g],  \tag{13.12}\]</span></span></p>
 <p>where <span class="math inline">\(C_i\)</span> is unit <span class="math inline">\(i\)</span>’s first treatment period (so <span class="math inline">\(\{C_i &gt; t\}\)</span> is the not-yet-directly-treated comparison group), <span class="math inline">\(S_M = \{C_i = c\} \cup \{C_i &gt; t\}\)</span>, and <span class="math inline">\(g\)</span> is a chosen exposure level. The DR plug-in averages three pieces over <span class="math inline">\(S_M\)</span>: an IPW term from the treated cohort, an IPW term from the not-yet-treated, and a regression-imputation term, with three propensity models (<span class="math inline">\(\eta_{tc}\)</span> for cohort, <span class="math inline">\(\eta_{tcg}\)</span> and <span class="math inline">\(\eta_{t\infty g}\)</span> for exposure) and two outcome-change regressions. It is consistent if either all three propensities or both outcome models are correctly specified.</p>
 <p>The companion package <a href="https://github.com/xiangao/DidInterference.jl"><code>DidInterference.jl</code></a> implements this. The 2x2 base case (Xu 2023):</p>
-<div id="4797824b" class="cell" data-execution_count="23">
+<div id="30efc011" class="cell" data-execution_count="23">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DidInterference</span>, <span class="bu">DataFrames</span></span>
@@ -2173,7 +2173,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p>leave the dynamics of <span class="math inline">\(Y\)</span> unmodelled. Three things get run together here and are worth separating.</p>
 <p>The first is serial correlation in <span class="math inline">\(U_{it}\)</span>. That is an inference problem rather than an identification one: with exogenous treatment timing the event-time coefficients remain consistent, but conventional standard errors are wrong, which is why DiD is routinely clustered by unit.</p>
 <p>The second is dynamic selection. If units are treated <em>because</em> of their recent outcomes, then treatment timing is related to lagged <span class="math inline">\(Y\)</span> and the parallel-trends restriction the specification relies on no longer holds. That is an identification failure, and no amount of clustering repairs it.</p>
-<p>The third is what motivates the rest of this section. When the outcome is genuinely persistent — earnings, employment, consumption, anything with habits or adjustment costs — the <em>structural</em> process carries its own lag, and <a href="#eq-did-13" class="quarto-xref">Equation&nbsp;<span>13.13</span></a> is a static equation fitted to dynamic data. The event-time dummies then absorb the propagation of earlier shocks along with the treatment response, and the bias on those coefficients grows with the event-time horizon (Botosaru and Liu, 2025, Figure 1). Note where the bias comes from: not from persistence in the residual, which on its own does no such thing, but from fitting a static specification to a dynamic process.</p>
+<p>The third is what motivates the rest of this section. When the outcome is genuinely persistent — earnings, employment, consumption, anything with habits or adjustment costs — the <em>structural</em> process carries its own lag, and <a href="#eq-did-13" class="quarto-xref">Equation&nbsp;<span>13.13</span></a> is a static equation fitted to dynamic data. Which target the event-time coefficients estimate then matters. Under permanent treatment in <span class="math inline">\(Y_{it} = \rho Y_{i,t-1} + \delta D_{it} + U_{it}\)</span>, the total effect at horizon <span class="math inline">\(k\)</span> is <span class="math inline">\(\delta \sum_{j=0}^{k} \rho^j\)</span>, the immediate effect carried forward through the lag. A well-identified event study estimates that total effect. Its gap from the structural coefficient <span class="math inline">\(\delta\)</span> grows with the horizon (Botosaru and Liu, 2025, Figure 1), but that gap is bias only if the target is <span class="math inline">\(\delta\)</span>. Persistence in the residual alone does not produce it.</p>
 <p>Botosaru and Liu <span class="citation" data-cites="botosaru-liu-2025">(<a href="references.html#ref-botosaru-liu-2025" role="doc-biblioref">2025</a>)</span> introduce a <strong>dynamic panel with correlated random coefficients</strong> that handles both persistence and unit-level heterogeneity in dynamic responses:</p>
 <p><span id="eq-did-14"><span class="math display">\[ Y_{it} = \rho_Y Y_{i,t-1} + \alpha_i + \sum_j D_{it}^j \delta_{ij} + X_{it}'\beta + U_{it},  \tag{13.14}\]</span></span></p>
 <p>with a parsimonious AR(1) structure on the event-time effects to keep dimensionality manageable:</p>
@@ -2181,7 +2181,7 @@ Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</td>
 <p>The latent <span class="math inline">\(\lambda_i = (\alpha_i, \delta_{i0})\)</span> is a unit-specific correlated random coefficient. A two-step semiparametric estimator: step 1 is <strong>quasi-maximum likelihood</strong> for the common parameters <span class="math inline">\((\rho_Y, \rho_\delta, \sigma_U^2, \sigma_\varepsilon^2, \beta)\)</span> under a Gaussian working assumption on <span class="math inline">\(\lambda_i\)</span> (consistent under misspecification of that working assumption); step 2 is <strong>Tweedie / Gaussian-conjugate empirical Bayes</strong> for the unit-level posterior trajectories <span class="math inline">\(\{\delta_{i,j}\}_{j=0}^J\)</span>, achieving asymptotic ratio optimality.</p>
 <p>A companion paper <span class="citation" data-cites="botosaru-liu-2026">(<a href="references.html#ref-botosaru-liu-2026" role="doc-biblioref">Botosaru and Liu 2026</a>)</span> adds a <strong>homogeneous-feedback extension</strong>: covariates <span class="math inline">\(X_{it}\)</span> are allowed to adjust endogenously to past <span class="math inline">\(Y\)</span> and treatment (the canonical example: minimum-wage policy affects wages directly and also indirectly through firms re-optimising input demand). Under the assumption that the covariate adjustment rule does not depend on <span class="math inline">\(\lambda_i\)</span> given the observable history, the likelihood factors into a structural piece (for <span class="math inline">\(Y \mid X\)</span>, history) and a feedback piece (for <span class="math inline">\(X\)</span> given history), each separately identified. The factorisation yields a clean decomposition of dynamic treatment effects into <strong>direct</strong> (through <span class="math inline">\(\delta_{i,j}\)</span>) and <strong>indirect</strong> (through covariate feedback) components.</p>
 <p>The package <a href="https://github.com/xiangao/TVHTE.jl"><code>TVHTE.jl</code></a> implements both papers:</p>
-<div id="1a26a173" class="cell" data-execution_count="24">
+<div id="2e0fb642" class="cell" data-execution_count="24">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">TVHTE</span></span>

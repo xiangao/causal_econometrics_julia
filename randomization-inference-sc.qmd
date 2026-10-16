@@ -31,8 +31,8 @@ very helpful because there is no large sample of treated units. Two
 approaches are common:
 
 - **Randomization inference**: use donor units as placebos.
-- **Posterior inference**: put a model on the counterfactual path and compute
-  posterior uncertainty.
+- **Model-based inference**: put a model on the counterfactual path and compute
+  its uncertainty under that model.
 
 Here I use both on the Proposition 99 panel.
 
@@ -71,6 +71,11 @@ ca_effect = mean(ca_obs[(T0 + 1):end]) - mean(ca_cfact[(T0 + 1):end])
 ```
 
 Now run the placebo: each control state takes a turn as the "treated" unit.
+California stays out of every donor pool, so each placebo uses the other 37
+states while California uses all 38. This follows
+@abadie-diamond-hainmueller-2010. An exact reassignment argument would instead apply the same
+procedure under every allowed assignment, giving each hypothetical treated state
+the other 38 as donors.
 
 ```{julia}
 #| label: placebo-units
@@ -246,11 +251,17 @@ placebo_effect_time = mean(ca_pre[(T0_placebo + 1):end] .- ca_pre_cf[(T0_placebo
 
 Here the time-placebo effect is much smaller than the real effect.
 
-## TASC posterior as Bayesian alternative
+## TASC: a model-based band
 
-TASC models the panel with a linear Gaussian state-space process and returns
-a posterior distribution over the counterfactual path. This is model-based
-uncertainty, not a placebo distribution.
+TASC models the panel with a linear Gaussian state-space process. Its band
+comes from the Kalman smoother with the parameters fixed at their EM
+estimates: at each year it is the variance $h'P_t h$ of the latent untreated
+signal, where $h$ is California's loading vector and $P_t$ the smoothed state
+covariance. So it is a pointwise interval for the latent signal, conditional on
+the fitted parameters. It leaves out the observation noise, the uncertainty in
+the parameters, and donor selection. A predictive interval for California's
+untreated outcome would be wider, and an interval for the average effect would
+also need the covariance across years.
 
 ```{julia}
 #| label: tasc-band
@@ -273,15 +284,19 @@ outside    = (ca_obs[(T0 + 1):end] .< tasc_lower[(T0 + 1):end]) .|
         sum(outside), length(outside))
 ```
 
+The count is not a predictive check. The band covers the latent signal only, so
+even with no treatment effect, observed outcomes would fall outside it more
+often than one year in twenty.
+
 ```{julia}
 #| label: combined-plot
 #| cache: true
-#| fig-cap: "California's observed path (black) with TASC posterior band (green), classical SC counterfactual (blue), and placebo gap envelope (grey)."
+#| fig-cap: "California's observed path (black) with the TASC latent-signal band (green), classical SC counterfactual (blue), and placebo gap envelope (grey)."
 
 # Convert placebo gaps to counterfactual paths for visualisation
 fig = Figure(size = (820, 420), fontsize = 13)
 ax  = Axis(fig[1, 1], xlabel = "Year", ylabel = "Packs per capita",
-           title = "Frequentist placebo cloud vs Bayesian posterior band")
+           title = "Placebo cloud vs TASC latent-signal band")
 
 # Placebo counterfactuals (treated outcome minus gap, mapped to California's level)
 for i in 1:N0
@@ -301,12 +316,12 @@ fig
 
 ## How the two inference strategies compare
 
-| | Randomization inference | TASC posterior |
+| | Randomization inference | TASC band |
 |---|---|---|
 | **What is uncertain?** | Which unit was treated | Latent factor path |
 | **Null hypothesis** | Sharp null: no effect anywhere | None — direct uncertainty |
 | **Validity requires** | An assignment or exchangeability argument for the treated label, plus symmetric reapplication of the estimator | SSM correctly specified |
-| **Output** | Permutation p-value | Posterior band |
+| **Output** | Permutation p-value | Pointwise latent-signal band |
 | **Smallest p possible** | $1/(N_0 + 1)$ (here ~0.026) | N/A — continuous |
 | **Sensitivity to donor pool** | High (small N0 → coarse p) | Not priced: the band is conditional on the chosen donors and model |
 
@@ -324,6 +339,7 @@ report both when using TASC.
   otherwise it is a placebo diagnostic.
 - MSPE ratios account for pre-treatment fit.
 - Time placebos check whether the method finds effects before treatment.
-- TASC posterior bands give model-based uncertainty for the counterfactual
-  path, conditional on the donor pool and the state-space model. They do not
-  price donor selection or misspecification.
+- TASC bands give model-based uncertainty for the latent untreated signal,
+  conditional on the donor pool, the state-space model and its EM parameter
+  estimates. They leave out observation noise, parameter uncertainty, donor
+  selection and misspecification.

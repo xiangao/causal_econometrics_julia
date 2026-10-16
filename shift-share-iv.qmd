@@ -230,7 +230,12 @@ fig
 ### What goes wrong when shares are endogenous
 
 Now break the share-exogeneity assumption: make industry 1's share
-correlated with the second-stage error.
+correlated with the second-stage error. Under the share-exogeneity view of
+GPSS that alone makes the instrument invalid. Under the shock view of BHJ,
+endogenous shares are allowed, but only because many independent shocks average
+the share-confounder correlation away. With twenty industries and one realized
+set of shocks, industry 1's shock does not average out, so the shock argument
+fails here too, for a different reason.
 
 ```{julia}
 #| label: bad-shares
@@ -272,9 +277,11 @@ The endogenous industry's Rotemberg weight is unremarkable — it ranks third
 of twenty — because the weights measure *influence* (whose exogeneity the
 estimate leans on most), not *endogeneity*. An industry with a modest weight
 can still move the estimate substantially when its share is correlated with
-the error. What isolates the problem is the **leave-one-industry-out**
+the error. What points to the problem is the **leave-one-industry-out**
 check: dropping industry 1 from the instrument restores an estimate close
-to the truth.
+to the truth. The isolation is not clean. Renormalizing the rows put the
+confounder into every share, so the remaining nineteen shares still carry it;
+the return toward the truth says that contamination is small in this draw.
 
 ## BHJ shock-level inference
 

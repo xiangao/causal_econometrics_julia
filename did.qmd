@@ -42,7 +42,7 @@ using Random
 using Distributions
 ```
 
-When unconfoundedness fails, we need weaker assumptions. The parallel trends assumption leads to the difference-in-differences estimator.
+When unconfoundedness fails, we need a different assumption. Parallel trends, which leads to the difference-in-differences estimator, restricts a different counterfactual object. It is not weaker in general: neither assumption implies the other.
 
 > **Related reading**: For a side-by-side comparison of DiD, synthetic DiD,
 > synthetic control, and TASC on a *single* panel — the Proposition 99
@@ -97,7 +97,7 @@ Parallel trends and no anticipation are the two assumptions we name, but they ar
 
 Advantages:
 
--   No need to assume unconfoundedness. PT and NA take its place, alongside the maintained conditions listed above. Or say we don't need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This is importantly weaker in a lot of situations. There can be selection bias. If the selection bias does not change over time, then DiD can handle it.
+-   No need to assume unconfoundedness. PT and NA take its place, alongside the maintained conditions listed above. Or say we don't need treatment itself to be independent of potential outcomes, but we do need it to be independent to the change in potential outcome at least for untreated state. This allows selection on untreated outcome levels. If the selection bias does not change over time, then DiD can handle it. It is not a relaxation of unconfoundedness, though: groups can have equal untreated post-period levels and unequal untreated changes, and then unconfoundedness holds while parallel trends fails.
 
 Disadvantages:
 
@@ -413,8 +413,13 @@ $Y_{it} \sim \text{Poisson}(\mu_{it})$.
 The treatment effect is multiplicative and homogeneous on the log scale: every
 treated unit's expected count rises by a factor of $\exp(0.4)$, that is by
 $\exp(0.4) - 1 = 0.492$, or 49%. Parallel trends holds on the log scale by
-construction, and fails on the level scale, since a constant proportional
-effect is a larger absolute effect for units with higher baselines.
+construction. Here it also holds on the level scale. Cohort membership is
+independent of the unit effects $\alpha_i$, so every cohort's untreated mean,
+$\exp(1 + 0.2t)\,E[e^{\alpha_i}]$, follows the same path. What differs across scales
+is the effect: a constant proportional effect is a larger absolute effect where
+the baseline is higher, so level-scale effects change over calendar time. A
+design where level parallel trends fails would give cohorts different untreated
+baseline multipliers while keeping common proportional growth.
 
 On the count scale the ATT is not 0.492. It is
 $E[\mu_{it}(0) \mid \text{treated}] \times (\exp(0.4)-1)$, and the mean
@@ -593,12 +598,14 @@ identification failure, and no amount of clustering repairs it.
 The third is what motivates the rest of this section. When the outcome is
 genuinely persistent — earnings, employment, consumption, anything with habits
 or adjustment costs — the *structural* process carries its own lag, and
-@eq-did-13 is a static equation fitted to dynamic data. The event-time dummies
-then absorb the propagation of earlier shocks along with the treatment response,
-and the bias on those coefficients grows with the event-time horizon (Botosaru
-and Liu, 2025, Figure 1). Note where the bias comes from: not from persistence
-in the residual, which on its own does no such thing, but from fitting a static
-specification to a dynamic process.
+@eq-did-13 is a static equation fitted to dynamic data. Which target the
+event-time coefficients estimate then matters. Under permanent treatment in
+$Y_{it} = \rho Y_{i,t-1} + \delta D_{it} + U_{it}$, the total effect at horizon $k$
+is $\delta \sum_{j=0}^{k} \rho^j$, the immediate effect carried forward through the
+lag. A well-identified event study estimates that total effect. Its gap from the
+structural coefficient $\delta$ grows with the horizon (Botosaru and Liu, 2025,
+Figure 1), but that gap is bias only if the target is $\delta$. Persistence in the
+residual alone does not produce it.
 
 Botosaru and Liu [-@botosaru-liu-2025] introduce a **dynamic panel
 with correlated random coefficients** that handles both persistence

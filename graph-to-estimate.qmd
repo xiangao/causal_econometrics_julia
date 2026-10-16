@@ -211,8 +211,11 @@ not identification.
 ## End-to-end: discover, identify, estimate
 
 The previous chapters' discovery algorithms (PC, FCI, RSL-D, L-MARVEL)
-return graphs that can be passed directly to `identify()` and
-`estimate_causal()`. The full pipeline is:
+return equivalence classes, not single graphs. A CPDAG's undirected edge means
+the orientation is unresolved, not that a hidden confounder is present, and a PAG
+is a set of compatible MAGs, not one ADMG. Before `identify()` can run we must
+either identify the effect in every graph of the class, or state the substantive
+restrictions that pick one graph. The sketch below shows where that choice sits:
 
 ```{julia}
 #| eval: false
@@ -223,8 +226,9 @@ using CausalInference   # for PC algorithm
 # Step 1: discover the graph (chapter 11)
 graph_pc = pcalg(data, 0.05, gausscitest)
 
-# Step 2: convert to ADMG (if needed; PC returns a CPDAG)
-# Use the helpers in chapter 11 to convert CPDAG → ADMG
+# Step 2: PC returns a CPDAG. Choose one member DAG using stated background
+# knowledge (or loop over every member), and build graph_admg from that choice.
+# Treating undirected edges as bidirected would add confounding assumptions.
 
 # Step 3: identify and estimate
 id  = identify(graph_admg, :A, :Y)

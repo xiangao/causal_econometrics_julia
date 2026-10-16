@@ -53,11 +53,15 @@ The first term is causal. It is what moving the dose from $d'$ to $d$ does for t
 
 ### Strong parallel trends
 
-The second assumption removes the selection term. CGBS call it strong parallel trends:
+The second assumption changes the comparison so that the selection term no longer enters. CGBS call it strong parallel trends:
 
 $$E[Y_{i2}(d) - Y_{i1}(0) \mid D_i = d] = E[Y_{i2}(d) - Y_{i1}(0) \mid D_i > 0] \quad \text{for all } d > 0.$$ {#eq-dc-spt}
 
-In words, the average path from untreated in period 1 to dose $d$ in period 2 is the same for the units that chose $d$ as for all treated units. Together with @eq-dc-pt it gives $ATT(d \mid d) = ATE(d)$ for every $d$: the average effect of a dose is the same in every dose group, whatever dose the group chose. The selection term in @eq-dc-decomp is then zero. Comparisons across doses are causal, and the slope of the identified curve is the average causal response.
+In words, the average path from untreated in period 1 to dose $d$ in period 2 is the same for the units that chose $d$ as for all treated units. Together with @eq-dc-pt it gives $ATT(d \mid d) = ATE(d)$ for every $d$: each dose group's own-dose effect equals the effect of that dose averaged over all treated units. The identified curve is then $ATE(d)$, and a comparison across doses, $ATE(d) - ATE(d')$, sets two doses for the same population, so it is causal. Its slope is the average causal response of the treated population. This does not make the selection term in @eq-dc-decomp zero group by group. The group that chose $d$ can still respond to dose $d'$ differently from the group that chose $d'$; strong parallel trends only rules this out on average. For example, with three equally likely dose groups and zero untreated outcomes, let row $g$ of the matrix below give the effects of doses 1, 2 and 3 for the group that chose dose $g$:
+
+$$\begin{pmatrix} 1 & 0 & 0 \\ 0 & 2 & 6 \\ 2 & 4 & 3 \end{pmatrix}.$$
+
+The diagonal and the column means are both $(1, 2, 3)$, so $ATT(d \mid d) = ATE(d)$ at every dose. Yet for the group that chose dose 2, moving from dose 1 to dose 2 is worth 2, while the identified contrast is 1.
 
 Strong parallel trends is a stronger assumption than parallel trends, and of a different kind. It restricts treated potential outcomes, so no pre-treatment data can check it, and passing a pre-trend test says nothing about it. It restricts how units choose their dose. It is plausible when the dose is set for reasons unrelated to the gain, for example by a formula or a lottery. It is hard to defend when units choose their dose knowing what they will gain.
 

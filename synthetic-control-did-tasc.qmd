@@ -31,7 +31,7 @@ put on the untreated counterfactual.
 
 ## Synthetic Control
 
-The biggest problem with DiD is the parallel trends assumption. There is not really a test for it, just like the unconfoundedness assumption. It is less demanding than unconfoundedness, but it is still hard to justify in many applications.
+The biggest problem with DiD is the parallel trends assumption. There is not really a test for it, just like the unconfoundedness assumption. It restricts a different counterfactual object: it allows treated and control units to differ in untreated levels, but requires their untreated mean changes to be equal. Neither assumption implies the other, and parallel trends is still hard to justify in many applications.
 
 Synthetic control starts from a different idea. Instead of giving every control unit the same weight, it constructs a synthetic control unit from the donor pool:
 
@@ -181,13 +181,14 @@ The estimates are all negative: California's observed cigarette sales fell below
 years = Int.(setup.times)
 treated = vec(setup.Y[(setup.N0 + 1), :])
 sc_counterfactual = vec(tau_sc.weights.omega' * setup.Y[1:setup.N0, :])
-# SynthDiD fits with omega_intercept=true, so its synthetic match is c + ω'Y_donors
-# for a fitted level shift c (the omega weights demean the donor columns). Add the
-# pre-period level shift back so the plotted line matches the path SynthDiD compares
-# the treated unit against; otherwise the line is vertically offset.
+# The SDiD estimate is mean(post gap) - sum(λ .* pre gap), where gap = treated - ω'Y_donors.
+# Shifting ω'Y_donors by the λ-weighted pre-period gap gives the path whose average
+# post-period gap equals the reported estimate.
 sdid_raw = vec(tau_sdid.weights.omega' * setup.Y[1:setup.N0, :])
-sdid_intercept = mean(treated[1:setup.T0]) - mean(sdid_raw[1:setup.T0])
+sdid_intercept = sum(tau_sdid.weights.lambda .* (treated[1:setup.T0] .- sdid_raw[1:setup.T0]))
 sdid_counterfactual = sdid_raw .+ sdid_intercept
+@printf("SDiD estimate %.3f; mean post gap to plotted path %.3f\n", tau_sdid.estimate,
+        mean(treated[(setup.T0 + 1):end] .- sdid_counterfactual[(setup.T0 + 1):end]))
 tasc_counterfactual = tasc_pred.target
 tasc_se = sqrt.(max.(tasc_pred.variance, 0.0))
 tasc_lower = tasc_counterfactual .- 1.96 .* tasc_se
@@ -201,7 +202,7 @@ ax = Axis(
     title = "California Proposition 99: Counterfactual Paths",
 )
 
-band!(ax, years, tasc_lower, tasc_upper, color = (:seagreen, 0.18), label = "TASC 95% interval")
+band!(ax, years, tasc_lower, tasc_upper, color = (:seagreen, 0.18), label = "TASC 95% latent-signal band")
 lines!(ax, years, treated, color = :black, linewidth = 3, label = "California")
 lines!(ax, years, sc_counterfactual, color = :steelblue, linewidth = 2, label = "SC")
 lines!(ax, years, sdid_counterfactual, color = :darkorange, linewidth = 2, label = "SynthDiD")
@@ -212,7 +213,7 @@ axislegend(ax, position = :lb)
 fig
 ```
 
-The figure emphasizes where the counterfactual enters. After 1988, the black line is observed California. The colored lines are estimates of California's untreated path. The treatment-effect path is the vertical gap between the black line and each counterfactual.
+The figure emphasizes where the counterfactual enters. After 1988, the black line is observed California. The colored lines are estimates of California's untreated path. The treatment-effect path is the vertical gap between the black line and each counterfactual. The synthetic DiD line is the weighted donor average shifted by the time-weighted pre-1989 gap, so its average post-1988 gap equals the synthetic DiD estimate.
 
 ## Summary
 

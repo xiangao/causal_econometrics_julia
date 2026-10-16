@@ -82,8 +82,9 @@ Y    = ifelse.(D .== 1, Y1, Y0)
 
 Treatment is related to the observed covariate $X_2$, which also affects the
 outcome — a backdoor confounder. Because $X_2$ is observed and in the
-conditioning set, unconfoundedness holds and the estimators below are
-consistent for the true CATE/ATE.
+conditioning set, unconfoundedness and overlap identify the CATE and the ATE.
+Whether a fitted learner gets close also depends on the learner, its tuning and
+the sample size.
 
 ## A wrapper for fitting random forests
 
@@ -637,7 +638,8 @@ w_gap = mean(df_dm.W_dm[idx_T_dm]) - mean(df_dm.W_dm[idx_C_dm])
 ```
 
 The within transformation removes the fixed effects, and the rescaled
-contrast lands near the truth in this DGP. The cost is variance, because
+contrast lands near the original ATE in this DGP, although, as the caveat
+below explains, its target need not equal it. The cost is variance, because
 identification now comes from within-firm variation.
 
 A caveat on what this estimator targets. Splitting on $W_{dm} > 0$ vs
@@ -653,7 +655,7 @@ construction; treat this section as intuition, not a turnkey method.
 
 So how much does ignoring the panel cost? On this DGP the naive T-learner returns
 2.014 against a true panel ATE of 0.655 — about three times the truth — while the
-within transform recovers 0.689. The magnitude is specific to this design, since
+within transform gives 0.689. The magnitude is specific to this design, since
 it scales with how strongly the unit effect drives both treatment and outcome,
 but the direction is not: a unit effect that raises both leaves the naive
 estimate biased upward. Read those two numbers as the size of the confounding

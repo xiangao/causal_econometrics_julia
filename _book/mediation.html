@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="0a9fd5de" class="cell" data-execution_count="2">
+<div id="486b0c1d" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
@@ -927,7 +927,8 @@ ATE &amp;= NIE + NDE \\
 <p>This is the “cross-world” condition: the outcome under <span class="math inline">\((w,m)\)</span> is independent of <span class="math inline">\(M\)</span> under <span class="math inline">\(w^*\)</span>. These two situations cannot happen in the same world; you cannot set <span class="math inline">\(W\)</span> to both <span class="math inline">\(w\)</span> and <span class="math inline">\(w^*\)</span>. No experiment can implement it.</p>
 <p>This cross-world independence is <em>additional to</em>, not a replacement for, the usual identifying assumptions. The standard mediation formula for natural effects also requires:</p>
 <ul>
-<li>treatment ignorability (no unmeasured treatment-outcome confounding) given <span class="math inline">\(X\)</span>;</li>
+<li>treatment ignorability for the outcome (no unmeasured treatment-outcome confounding) given <span class="math inline">\(X\)</span>;</li>
+<li>treatment ignorability for the mediator (no unmeasured treatment-mediator confounding), <span class="math inline">\(M(w) \perp W \mid X\)</span>;</li>
 <li>mediator ignorability (no unmeasured mediator-outcome confounding) given <span class="math inline">\(W\)</span> and <span class="math inline">\(X\)</span>;</li>
 <li>positivity for both the treatment and the mediator; and</li>
 <li><strong>no treatment-induced confounding</strong> of the mediator-outcome relationship – there must be no variable affected by <span class="math inline">\(W\)</span> that confounds <span class="math inline">\(M\)</span> and <span class="math inline">\(Y\)</span>. (When such a confounder exists, natural effects are not identified by this formula and interventional direct/indirect effects are used instead.)</li>

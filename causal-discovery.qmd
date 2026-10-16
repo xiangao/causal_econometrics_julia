@@ -218,10 +218,10 @@ A high skeleton F1 with lower CPDAG F1 means the algorithm found the right adjac
 
 Two sets are central to the criterion:
 
-- **Markov boundary** $\text{Mb}(X)$: the minimal set $S$ such that $X \perp\!\!\!\perp (\text{all other variables}) \mid S$. Conditioning on $\text{Mb}(X)$ screens $X$ off from everything else in the graph. In a Gaussian DAG with no hidden variables, $\text{Mb}(X)$ consists of $X$'s parents, children, and co-parents (other parents of $X$'s children) — equivalently, all variables directly adjacent to $X$ in the skeleton.
+- **Markov boundary** $\text{Mb}(X)$: the minimal set $S$ such that $X \perp\!\!\!\perp (\text{all other variables}) \mid S$. Conditioning on $\text{Mb}(X)$ screens $X$ off from everything else in the graph. In a DAG with no hidden variables and a faithful distribution, $\text{Mb}(X)$ consists of $X$'s parents, children, and co-parents (other parents of $X$'s children). It is larger than the set of neighbours: in $X \to C \leftarrow Z$, $Z$ is a co-parent in the boundary of $X$ but is not adjacent to $X$.
 - **Neighbourhood** $\text{Ne}(X)$: the set of variables directly adjacent to $X$ in the *current* skeleton (connected by an undirected edge at this stage of the algorithm).
 
-Under causal sufficiency and faithfulness, $\text{Mb}(X) = \text{Ne}(X)$; the distinction arises during the algorithm's recursive steps as variables are removed one by one.
+So $\text{Ne}(X) \subseteq \text{Mb}(X)$, with equality only when every co-parent of $X$ is also adjacent to it. RSL-D's guarantee also requires the graph to be diamond-free. The Erdős–Rényi DAG simulated above is not restricted to that class, so the simulation tests the algorithm beyond its guarantee.
 
 Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
 
@@ -398,13 +398,16 @@ np_, pp_ = size(Xp)
   appears as spurious edges unless modelled as extra nodes.
 :::
 
-### Respecting the survey design
+### Using the survey weights
 
 PISA is not a simple random sample — students carry final weights `W_FSTUWT`.
 The CI tests are functions of the **covariance matrix** and a **sample size**,
-so we supply design-consistent inputs: a **weighted covariance/correlation**
+so we supply weighted inputs: a **weighted covariance/correlation**
 matrix, and **Kish's effective sample size**
-$n_{\text{eff}} = (\sum_i w_i)^2 / \sum_i w_i^2$.
+$n_{\text{eff}} = (\sum_i w_i)^2 / \sum_i w_i^2$, where $w_i$ is student $i$'s weight.
+This reproduces the weighted covariance, not the survey design. School
+clustering, stratification, the replicate-weight variance and plausible-value
+uncertainty are all left out, so the CI tests below are exploratory.
 
 ```{julia}
 mu_p  = (Xp' * wp) ./ sum(wp)
@@ -429,7 +432,7 @@ end
 The CI test recomputes correlations from a data matrix, so to honour the design
 we build a synthetic sample of $n_{\text{eff}}$ rows whose empirical covariance
 equals the design-weighted $\Sigma_w$ exactly (a Cholesky recolour). Both PC and
-RSL-D then run on these design-consistent inputs unchanged.
+RSL-D then run on these weighted inputs unchanged.
 
 ```{julia}
 m_eff = round(Int, neff)

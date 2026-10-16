@@ -480,7 +480,7 @@ window.Quarto = {
 </header>
 
 
-<div id="95a5fdd4" class="cell" data-execution_count="2">
+<div id="3605ba07" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -562,7 +562,7 @@ Naive (with L1): A0=0.474, A1=0.478, total=0.951</code></pre>
 </section>
 <section id="parametric-g-formula" class="level2" data-number="21.2">
 <h2 data-number="21.2" class="anchored" data-anchor-id="parametric-g-formula"><span class="header-section-number">21.2</span> Parametric g-formula</h2>
-<p>The g-formula writes the mean outcome under a treatment regime as:</p>
+<p>The g-formula identifies the mean outcome under a fixed regime <span class="math inline">\(\bar a\)</span> under three assumptions. Consistency: a unit that follows <span class="math inline">\(\bar a\)</span> has outcome <span class="math inline">\(Y(\bar a)\)</span>. Sequential exchangeability: at each time <span class="math inline">\(t\)</span>, <span class="math inline">\(Y(\bar a) \perp A_t \mid \bar A_{t-1} = \bar a_{t-1}, \bar L_t\)</span>. Positivity: every history that occurs under the regime has a positive probability of receiving the next treatment the regime assigns. In the simulation the first two hold by construction, since <span class="math inline">\(L_0\)</span> and <span class="math inline">\(L_1\)</span> are the only causes of treatment. The g-formula then writes the mean outcome under the regime as:</p>
 <p><span id="eq-g-methods-1"><span class="math display">\[
 \mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]
 \prod_{t=0}^{K} f(l_t \mid \bar a_{t-1}, \bar l_{t-1}),

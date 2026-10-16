@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="f332b910" class="cell" data-execution_count="2">
+<div id="40439798" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -594,7 +594,7 @@ S(t) = P(T &gt; t)
 </section>
 <section id="ipw-adjusted-survival" class="level2" data-number="22.4">
 <h2 data-number="22.4" class="anchored" data-anchor-id="ipw-adjusted-survival"><span class="header-section-number">22.4</span> IPW-adjusted survival</h2>
-<p>To adjust for confounding, weight observations by the inverse propensity score before computing KM:</p>
+<p>To adjust for confounding, weight observations by the inverse propensity score before computing KM. These weights adjust for treatment assignment only. They do nothing about censoring, so the weighted KM curve is valid only if censoring is independent of the event time within each treatment arm. That holds here by construction: the simulated censoring is random dropout plus an administrative end of follow-up at 12 years. If censoring depended on prognosis, we would also need inverse-probability-of-censoring weights. The weights are capped at their 99th percentile, a choice that trades a little bias for less variance and that should be checked for sensitivity.</p>
 <div id="cell-ipw-survival" class="cell" data-cache="true" data-execution_count="5">
 <details open="" class="code-fold">
 <summary>Code</summary>

@@ -28,8 +28,8 @@ CairoMakie.activate!(type = "png")
 
 Bayesian methods return a posterior distribution, not only a point estimate
 and a standard error. For causal inference this is useful when we want
-uncertainty about individual treatment effects, policy values, or other
-derived quantities.
+uncertainty about conditional average treatment effects, policy values, or
+other derived quantities.
 
 The two common models in this area are:
 
@@ -81,7 +81,15 @@ The simplest Bayesian causal inference recipe is Bayesian g-computation:
 4. The posterior of the ATE is the distribution of the average difference
    across posterior draws.
 
-A Bayesian linear regression with a flat prior is enough to show the idea:
+Both potential outcomes in the simulation share the same residual, so every
+unit's individual effect equals $\tau(X_i)$. That equality is a feature of the
+simulation. In general the difference of predicted means at $x$ is the
+conditional average effect $E[Y(1) - Y(0) \mid X = x]$; the data show one potential
+outcome per person and do not identify the individual effect without a model for
+how the two potential outcomes are related.
+
+A Bayesian linear regression with the usual improper prior
+$p(\beta, \sigma^2) \propto 1/\sigma^2$ is enough to show the idea:
 
 ```{julia}
 #| label: bayes-gcomp
@@ -89,9 +97,9 @@ A Bayesian linear regression with a flat prior is enough to show the idea:
 
 """
     bayes_linreg(X, y; n_samples=2000)
-Bayesian linear regression with a Normal-Inverse-Gamma conjugate prior
-(flat prior → the posterior is centered at the OLS estimates, with spread
-close to the OLS standard errors). Returns `n_samples` posterior
+Bayesian linear regression under the improper prior p(β, σ²) ∝ 1/σ²: σ² is
+drawn from its Inverse-Gamma marginal posterior and β | σ² from a normal centred
+at the OLS estimates, so the spread is close to the OLS standard errors. Returns `n_samples` posterior
 draws of (β, σ²).
 """
 function bayes_linreg(X::Matrix, y::Vector; n_samples::Int = 2000)
@@ -134,16 +142,16 @@ ate_post = vec(mean(ite_post, dims = 2))
 @printf("  True ATE:            %.3f\n", mean(tau))
 ```
 
-With a flat prior, this credible interval is close to the usual frequentist
+With this prior, the credible interval is close to the usual frequentist
 interval. With informative priors, the posterior reflects both the prior and
 the data.
 
-### Individual-level credible intervals
+### Credible intervals for the CATE
 
 ```{julia}
 #| label: ite-credible
 #| cache: true
-#| fig-cap: "Posterior mean ITE vs true τ(x) = 1 + 2 X₁. Blue band shows 95% pointwise credible interval across posterior draws."
+#| fig-cap: "Posterior mean of the conditional average effect at each unit's covariates vs true τ(x) = 1 + 2 X₁. Blue band shows 95% pointwise credible interval across posterior draws."
 
 ite_mean = vec(mean(ite_post, dims = 1))
 ite_lo   = [quantile(ite_post[:, i], 0.025) for i in 1:n]
@@ -153,20 +161,21 @@ ite_hi   = [quantile(ite_post[:, i], 0.975) for i in 1:n]
 ord = sortperm(df.X1)
 
 fig = Figure(size = (700, 400))
-ax = Axis(fig[1, 1], xlabel = "X1", ylabel = "ITE",
-          title = "Posterior ITEs vs truth")
+ax = Axis(fig[1, 1], xlabel = "X1", ylabel = "CATE",
+          title = "Posterior CATEs vs truth")
 band!(ax, df.X1[ord], ite_lo[ord], ite_hi[ord],
       color = (:steelblue, 0.2), label = "95% CrI")
 scatter!(ax, df.X1, ite_mean, color = (:steelblue, 0.4), markersize = 3,
-         label = "Posterior mean ITE")
+         label = "Posterior mean CATE")
 lines!(ax, [-3, 3], 1 .+ 2 .* [-3, 3], color = :firebrick,
        linestyle = :dash, linewidth = 2, label = "True τ(x)")
 axislegend(ax, position = :rb, framevisible = false)
 fig
 ```
 
-The blue ribbon is the pointwise 95% credible interval. The red dashed line
-is the true treatment-effect function.
+The blue ribbon is the pointwise 95% credible interval for the conditional
+average effect, given the linear model and the prior. The red dashed line is the
+true treatment-effect function.
 
 ## Why use BART/BCF in R instead?
 
@@ -179,7 +188,7 @@ For flexible Bayesian causal inference, R's `BART` and `bcf` are better
 tools. They use sums of regression trees and provide:
 
 - flexible outcome models without manually specifying interactions;
-- posterior draws of individual treatment effects;
+- posterior draws of conditional average treatment effects;
 - in BCF, separate priors for baseline prediction and treatment-effect
   heterogeneity.
 
@@ -190,7 +199,7 @@ Compare the rough sketch:
 | Bayesian point estimate of ATE | ✓ | ✓ |
 | Posterior credible intervals | ✓ | ✓ |
 | Flexible nonparametric outcome model | (limited to linear + interactions) | ✓ |
-| Native ITE posterior with regularisation | (linear-model heterogeneity only) | ✓ |
+| Native CATE posterior with regularisation | (linear-model heterogeneity only) | ✓ |
 | Separation of prognostic and treatment effects | – | ✓ (BCF) |
 
 For now, Julia users who need BART/BCF should call out to R. Reimplementing
@@ -203,7 +212,7 @@ these models in Julia would be a separate package project.
 | Prior information matters | Asymptotic theory is well-understood |
 | Need full posterior for downstream decisions | Computational cost matters at scale |
 | Small sample, weak identification | Effects are well-identified |
-| Want individual-level credible intervals | Existing frequentist toolkit suffices |
+| Want posterior intervals for conditional effects | Existing frequentist toolkit suffices |
 
 Bayesian methods are most useful when the posterior itself will be used:
 for treatment recommendations, policy values, or hierarchical models. If the
