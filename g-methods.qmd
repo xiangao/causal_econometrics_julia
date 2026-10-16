@@ -106,7 +106,14 @@ This is exactly the setting g-methods were designed for.
 
 ## Parametric g-formula
 
-The g-formula writes the mean outcome under a treatment regime as:
+The g-formula identifies the mean outcome under a fixed regime $\bar a$ under
+three assumptions. Consistency: a unit that follows $\bar a$ has outcome
+$Y(\bar a)$. Sequential exchangeability: at each time $t$,
+$Y(\bar a) \perp A_t \mid \bar A_{t-1} = \bar a_{t-1}, \bar L_t$. Positivity: every
+history that occurs under the regime has a positive probability of receiving the
+next treatment the regime assigns. In the simulation the first two hold by
+construction, since $L_0$ and $L_1$ are the only causes of treatment. The
+g-formula then writes the mean outcome under the regime as:
 
 $$
 \mathbb{E}[Y(\bar a)] = \sum_{\bar l} \mathbb{E}[Y \mid \bar a, \bar l]

@@ -487,3 +487,27 @@ Panelest's `feols`/`feiv` ignored `weights` in estimation until the 2026-10-06 f
 (branch `fix-weights` in `~/projects/software/Panelest.jl`). Any chapter calling them
 with `weights =` needed a re-render: `shift-share-iv.qmd`'s BHJ shock-level IV moved
 from 0.537 to 0.531, now equal to the location-level IV as BHJ's equivalence says.
+
+## Codex expert review fixes (2026-10-16)
+
+Verified against `~/projects/books/report/EXPERT_REVIEW_20261016.qmd`; log in
+`~/projects/books/_review6/VERIFY_20261016.md`. **Code bugs:** sensitivity-analysis
+contour matrix was indexed (R2_Y, R2_D) but plotted with R2_D on x — transposed, and the
+bias formula is asymmetric; the benchmark verdict `min(R2) > RV` replaced by the
+Cinelli-Hazlett bias formula (X1: bias 0.409 < 1.4975, still NO). synthetic-control-did-tasc
+SDiD path used the unweighted pre gap; now lambda-weighted, and the printed check shows
+mean post gap = estimate = -15.604. **Prose:** Bayesian CATE vs ITE, prior named as
+1/sigma^2; QTE needs no rank condition (four-quantile restriction displayed) and
+Endid.jl's QTEs are of the Lee-Wooldridge transformed outcome; TASC band = latent signal
+with EM plug-in parameters (no observation noise), counting outside years is not a
+predictive check; placebo uses 37 vs 38 donors (ADH convention); IF variance = Var(phi)/n
+and ATT EIF centering; Markov boundary is not the neighbourhood, diamond-free caveat;
+PISA weighting is exploratory; discovery output is an equivalence class, not an ADMG;
+matching weights not only 0/1, unused controls do not bias ATT; IPW-KM assumes independent
+censoring (true by construction here); plus the R-guide passages ported verbatim (did,
+did-continuous, iv-rdd, mediation) or by hand (continuous-treatments, heterogeneity,
+E-value, g-methods, shift-share, estimation covariate sets, PT vs unconfoundedness).
+Full render clean. **Note:** re-executing causal-discovery.qmd (prose-only change) moved
+the single-draw RSL-D result (skeleton F1 1.000 -> 0.941, CI tests 43 -> 38; PC 203 -> 202);
+the 100-rep MC barely moved (0.937 -> 0.935). The chapter does not quote these numbers,
+but the run is not reproducible across renders — worth chasing if the numbers get quoted.

@@ -238,8 +238,14 @@ doubly robust, and the algebra is the same as in the binary case worked through
 in @sec-plug-in-bias: the first term is a plug-in built from the outcome model,
 the second subtracts that model's own residual reweighted by the score, so a
 first-order error in $\hat\mu$ enters twice with opposite signs and cancels, and
-what survives involves the *product* of the error in $\hat\mu$ and the error in
-$\hat r$. If either nuisance is right, the product is zero.
+what survives from the nuisances involves the *product* of the error in $\hat\mu$
+and the error in $\hat r$. If either nuisance is right, that product is zero. At a
+fixed bandwidth a second term remains, the smoothing bias of the kernel. With a
+correct generalized propensity score, a zero outcome model and true curve
+$\mu(a) = a^2$, the correction averages $\mu$ over a normal window of standard
+deviation $h$ around $d$, so its expected value is $E[(d + hZ)^2] = d^2 + h^2$ for
+standard normal $Z$, which is 4.25 rather than 4 at $d = 2$ and $h = 0.5$. The
+double robustness holds in the limit as $h$ shrinks.
 
 The second is why a bandwidth appears here when none appeared for the ATE. The
 ATE is a single number and is estimable at the $\sqrt n$ rate. But $\mu(d)$ at a

@@ -378,11 +378,15 @@ which is the odds of a logistic propensity score — so entropy balancing is IPW
 for a logit model whose coefficients are set by exact mean balance rather than by
 likelihood.
 
-Matching is weighting too, with the weights restricted to zero and one and
-chosen by a distance rule rather than by a model. The restriction is where the
-trade-off lives: matching sets some weights to zero, so it discards
-observations, while weighting keeps everyone and pays with extreme weights when
-overlap is poor. Matching gives stable estimates for a changed estimand; weighting keeps the estimand and has higher variance.
+Matching is weighting too, with weights chosen by a distance rule rather than by
+a model. One-to-one matching without replacement gives each control a weight of
+zero or one; matching with replacement or full matching gives a control a weight
+equal to the number of times, or the share in which, it is used. The zero weights are where the
+trade-off lives: matching discards observations, while weighting keeps everyone
+and pays with extreme weights when overlap is poor. Discarding controls leaves an
+ATT target unchanged; discarding treated units, as calipers and trimming do,
+changes it. Matching that drops treated units gives stable estimates for a changed
+estimand; weighting keeps the estimand and has higher variance.
 
 AIPW uses both columns: start from regression adjustment, then add the
 odds-weighted average of the control residuals $Y - \hat\mu_0(X)$. It is
@@ -451,10 +455,13 @@ runs the same five routes on the Lalonde data, where effects are heterogeneous
 and overlap is poor, and there they spread from \$1,214 to \$1,855.
 
 The exception here is instructive. One-to-one matching without replacement gives
-1.287, nearly 30% high, and it is the one route that throws data away: 364 of the
-1,182 controls receive weight zero. Matching with replacement, which reuses good
-controls instead of discarding them, gave 0.988 earlier in the chapter. That gap
-is the cost of the zero weights, not of matching as an idea.
+1.287, nearly 30% high. It leaves 364 of the 1,182 controls unused, but unused
+controls do not by themselves bias an ATT: the treated units, and so the target,
+are unchanged. The bias comes from match quality. Without replacement, once the
+best controls are taken, later treated units get worse matches and residual
+imbalance remains. Matching with replacement, which reuses good controls, gave
+0.988 earlier in the chapter. That gap is the cost of the poorer matches, not of
+matching as an idea.
 
 These are point estimates, and standard errors are not comparable across the
 rows: matching is not a smooth functional of the data, so the bootstrap is

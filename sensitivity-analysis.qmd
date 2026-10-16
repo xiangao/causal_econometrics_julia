@@ -85,8 +85,9 @@ The adjusted regression is still biased because $U$ is unobserved.
 
 ## Cinelli-Hazlett robustness value
 
-The robustness value is the minimum partial $R^2$ an unobserved confounder
-would need with both treatment and outcome to bring the estimate to zero.
+The robustness value is the smallest partial $R^2$ that an unobserved
+confounder would need with treatment and with outcome, the same value on both, to
+bring the estimate to zero. It is an equal-strength threshold.
 
 The closed-form expression depends only on the t-statistic of the
 treatment coefficient and the regression's degrees of freedom:
@@ -106,8 +107,9 @@ we want explained away ($q = 1$ for full explanation).
 
 """
     robustness_value(t_stat, df; q=1.0)
-Minimum partial R² with both treatment and outcome that an unmeasured
-confounder would need to fully explain away a fraction `q` of the estimate.
+Equal-strength threshold: the partial R², the same with treatment and with
+outcome, that an unmeasured confounder needs to explain away a fraction `q` of
+the estimate.
 Cinelli & Hazlett (2020).
 """
 function robustness_value(t_stat::Real, df::Real; q::Real=1.0)
@@ -163,18 +165,29 @@ pR2_X1_D   = partial_r2(fit_D_full, fit_D_noX1)
 @printf("  Partial R² with Y: %.4f\n", pR2_X1_Y)
 @printf("  Partial R² with D: %.4f\n", pR2_X1_D)
 @printf("\nRobustness value:    %.4f\n", rv)
-@printf("\nIf an unobserved confounder is as strong as X1 with BOTH Y and D,\n")
-@printf("would it explain the estimate? %s\n",
-        min(pR2_X1_Y, pR2_X1_D) > rv ? "YES — fragile result" : "NO — robust to this benchmark")
+# A confounder with these two partial R² values biases the estimate by
+# se * sqrt(df) * sqrt(R²_Y * R²_D / (1 - R²_D)) (Cinelli-Hazlett 2020, eq. 4).
+# Comparing min(R²_Y, R²_D) with the RV is not enough: the RV is the equal-strength
+# threshold, and an unequal pair can explain the estimate with one value below it.
+bias_X1 = stderror(fit_adj)[2] * sqrt(df_resid) *
+          sqrt(pR2_X1_Y * pR2_X1_D / (1 - pR2_X1_D))
+@printf("\nBias from a confounder with X1's two partial R²: %.4f\n", bias_X1)
+@printf("Would it explain the estimate (%.4f)? %s\n", abs(coef(fit_adj)[2]),
+        bias_X1 >= abs(coef(fit_adj)[2]) ? "YES" : "NO")
 ```
 
-The benchmark comparison turns the RV into a sentence: an unmeasured
-confounder as strong as $X_1$ would or would not overturn the result.
+The RV answers the equal-strength question only. A confounder can explain the
+estimate away with one partial $R^2$ below the RV if the other is large enough,
+because the bias depends on their product. So for a specific pair of strengths we
+use the bias formula, as the code does: an unmeasured confounder as strong as
+$X_1$ on both margins would or would not overturn the result.
 
 Because this is a simulation we can check the machinery against the confounder
 that actually exists. $U$'s partial $R^2$ is 0.787 with the outcome and 0.064
-with the treatment. The second number is far below the robustness value, so the
-verdict "not explained away" is correct --- and it is correct even though the
+with the treatment. The two numbers straddle the robustness value, so the RV alone
+cannot say whether $U$ explains the estimate away. The bias formula can, and we
+apply it below: $U$'s bias is smaller than the estimate, so the verdict "not
+explained away" is correct --- and it is correct even though the
 adjusted estimate is badly biased. Those are different questions, and the
 distinction is the main thing to take from this section: a robustness value asks
 whether a confounder could drive the estimate to *zero*, not whether the estimate
@@ -204,8 +217,9 @@ tau_hat = coef(fit_adj)[2]
 se_hat  = stderror(fit_adj)[2]
 
 grid = 0.0:0.01:0.5
+# First index = R²_D (x axis), second = R²_Y (y axis), as contour! expects.
 bias_matrix = [se_hat * sqrt(df_resid) * sqrt(r2y * r2d / max(1 - r2d, 1e-8))
-               for r2y in grid, r2d in grid]
+               for r2d in grid, r2y in grid]
 adjusted    = tau_hat .- bias_matrix    # worst-case (downward) bias
 
 fig = Figure(size = (700, 500))
@@ -277,9 +291,11 @@ ev = evalue(1.40; lo = 1.20, hi = 1.62)
 @printf("E-value (CI):    %.2f\n", ev.e_ci)
 ```
 
-The interpretation is on the risk-ratio scale: a hidden confounder would
-need associations of this size with both treatment and outcome to explain
-away the result.
+The interpretation is on the risk-ratio scale. A hidden confounder with
+associations of this size with both treatment and outcome could explain away the
+result, and one weaker than this on both could not. Like the RV, it is an
+equal-strength threshold: a confounder stronger on one association can be weaker
+on the other.
 
 ## Rosenbaum bounds for matched studies
 

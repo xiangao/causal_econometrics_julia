@@ -148,7 +148,14 @@ estimates a counterfactual outcome distribution.
 
 `Endid.jl` uses Engression for this. It learns a stochastic model for
 $Y \mid X$ rather than only a conditional mean. Counterfactual draws from
-that model give QTEs.
+that model give QTEs, but of a transformed outcome. Following @lee-wooldridge-2025-dist-did,
+`Endid.jl` first subtracts each unit's pre-treatment mean (or pre-treatment
+trend) and then works with the post-treatment average of what remains. Its QTEs
+are quantile effects on that transformed outcome, not on the outcome level. The
+two can differ even when the mean effects agree. Let $B$ and $e$ be independent
+standard normals, with $Y_{pre} = B$, $Y_{post}(0) = B + e$ and $Y_{post}(1) = 2B + e$.
+The level QTE at quantile $q$ is $(\sqrt5 - \sqrt2)\,\Phi^{-1}(q)$, while after
+subtracting $B$ it is $(\sqrt2 - 1)\,\Phi^{-1}(q)$.
 
 ::: {.callout-note}
 The block below is **not executed** (`eval: false`). `Endid.jl` and its
@@ -257,18 +264,21 @@ result
 ```
 
 The curve below is a difference-in-quantiles: it subtracts quantile-by-quantile
-the treated change from the control change. This is a descriptive device, not an
-identified QTE. Reading it as a QTE takes two separate assumptions, and rank
-invariance supplies only one of them. The first identifies the counterfactual: we
-need a restriction that pins down the untreated post-treatment *distribution* for
-treated units, such as distributional parallel trends, changes-in-changes, or a
-copula assumption. Parallel trends in means does not deliver it. The second
-supplies the individual-effect reading: the difference of quantiles is not the
-quantile of the difference, so a rank condition such as rank invariance or rank
-similarity is what ties the marginal quantiles to the distribution of individual
-effects. Without the first assumption the curve identifies nothing; with the
-first but not the second it identifies a contrast of marginal quantiles, which is
-not the same object.
+the control change from the treated change. Reading it as the QTE for the treated,
+the difference between the marginal quantiles of $Y_{post}(1)$ and $Y_{post}(0)$
+among treated units, needs one assumption: that the treated group's untreated
+quantiles would have changed by the same amount as the control group's,
+
+$$Q_{Y_{post}(0) \mid D=1}(q) = Q_{Y_{pre}(0) \mid D=1}(q) + Q_{Y_{post}(0) \mid D=0}(q) - Q_{Y_{pre}(0) \mid D=0}(q),$$
+
+with the right side itself a valid quantile function. Parallel trends in means
+does not deliver this. Changes-in-changes is a different restriction with its own
+counterfactual construction. No rank condition is needed for the QTE, which is a
+contrast of marginal quantiles. A rank condition matters only for a different
+object, the distribution of individual effects. Rank similarity does not identify
+that distribution. Rank invariance does, but even then the difference of marginal
+quantiles is the effect for the unit at rank $q$, and it is a quantile of the
+individual effects only if it rises with $q$.
 
 Its *average*, though, is not a separate quantity: because
 $\int_0^1 F^{-1}(\tau)\,d\tau = E[Y]$, averaging this curve over the whole unit
@@ -284,7 +294,7 @@ at the top of the outcome distribution.
 ```{julia}
 #| label: qte-plot
 #| cache: true
-#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. This is not an identified QTE: reading it as one needs both an assumption identifying the untreated post-treatment distribution for treated units and a rank condition such as rank invariance. Its average, by contrast, *is* the ordinary difference-in-means DiD -- averaging a quantile function returns a mean -- so the information the curve adds is its shape, not its level."
+#| fig-cap: "Difference-in-quantiles (a descriptive quantile-DiD), computed at each quantile. It identifies the QTE for the treated only under the additive quantile-change restriction in the text; it is a quantile of individual effects only under rank invariance and a monotone curve. Its average, by contrast, *is* the ordinary difference-in-means DiD -- averaging a quantile function returns a mean -- so the information the curve adds is its shape, not its level."
 
 fig = Figure(size = (640, 360), fontsize = 13)
 ax  = Axis(fig[1, 1], xlabel = "Quantile τ", ylabel = "Difference-in-quantiles",

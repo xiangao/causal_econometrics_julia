@@ -63,7 +63,7 @@ For the treated potential-outcome mean, $\psi_1 = E\{E(Y \mid X, A=1)\}$, the ef
 
 For example, an IF-based bias-corrected estimator for the treated-arm mean $$\hat \psi_1 = P_n \left[ \frac{A}{\hat \pi (X)} \{ Y - \hat \mu_1 (X) \} + \hat \mu_1(X) \right]$$ {#eq-nonparametric-3} where $P_n$ means sample mean. This is the familiar AIPW estimator. It is known to be doubly robust.
 
-Since we know the influence function, we can calculate its variance. This variance is the same as variance of $\hat \psi$ since they differ by a constant $\psi$. We can use any estimators to estimate the nuisance parameters, then get $\hat \psi$. Then the sample variance is the variance of the influence function; and the sample mean is the ATE.
+Since we know the influence function, we can calculate its variance. Under asymptotic linearity, $\hat\psi - \psi \approx \frac1n \sum_i \phi(Z_i)$, so the variance of the estimator is approximately $\text{Var}(\phi)/n$; the influence function and the estimator do not have the same variance. We estimate the nuisance parameters, form $\hat\psi$, and use the sample variance of the estimated influence values divided by $n$. This needs more than cross-fitting: the nuisance errors must shrink fast enough that their product is $o_p(n^{-1/2})$, and overlap must hold. Cross-fitting handles the separate empirical-process term, so that flexible learners need no complexity restrictions.
 
 In this estimator, both $\hat \mu$ and $\hat \pi$ can be done using any estimator, such as machine learning. One caveat: with adaptive learners (random forests, boosting), the nuisance fits should be *cross-fit* — predicted for each observation from a model trained without it — otherwise own-observation overfitting can bias the estimate. The manual AIPW below reuses full-sample fits to keep the code short; the `CausalEstimate.jl` calls use `crossfit=5`.
 
@@ -303,8 +303,8 @@ regression-imputation ATT, `mean(Y_treated − μ̂₀(X_treated))`. That is con
 if the control outcome model is correct, but it is **not** the doubly-robust /
 augmented ATT, and the influence-function SE understates uncertainty because it
 ignores estimation of `μ₀` and `π`. The proper ATT efficient influence function
-(Hahn 1998) is `(1/p)[A(Y−μ₀) − (1−A)·π/(1−π)·(Y−μ₀)]` evaluated over the **full**
-sample; the `CausalEstimate.jl` call in the next subsection computes the
+(Hahn 1998) is `(1/p)[A(Y−μ₀−τ) − (1−A)·π/(1−π)·(Y−μ₀)]`, with `τ` the ATT, evaluated over the **full**
+sample; without the `−τ` it is the score, whose mean is `τ`. The `CausalEstimate.jl` call in the next subsection computes the
 cross-fit, doubly-robust version.
 
 ```{julia}

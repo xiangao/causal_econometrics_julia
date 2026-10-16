@@ -120,7 +120,14 @@ effect and baseline imbalance.
 ## IPW-adjusted survival
 
 To adjust for confounding, weight observations by the inverse propensity
-score before computing KM:
+score before computing KM. These weights adjust for treatment assignment only.
+They do nothing about censoring, so the weighted KM curve is valid only if
+censoring is independent of the event time within each treatment arm. That holds
+here by construction: the simulated censoring is random dropout plus an
+administrative end of follow-up at 12 years. If censoring depended on prognosis,
+we would also need inverse-probability-of-censoring weights. The weights are
+capped at their 99th percentile, a choice that trades a little bias for less
+variance and that should be checked for sensitivity.
 
 ```{julia}
 #| label: ipw-survival

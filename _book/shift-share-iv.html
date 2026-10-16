@@ -483,7 +483,7 @@ window.Quarto = {
 </header>
 
 
-<div id="e7d3e342" class="cell" data-execution_count="2">
+<div id="aa3c3262" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -723,7 +723,7 @@ Shift-share IV estimate: 0.5309</code></pre>
 </section>
 <section id="what-goes-wrong-when-shares-are-endogenous" class="level3" data-number="18.4.2">
 <h3 data-number="18.4.2" class="anchored" data-anchor-id="what-goes-wrong-when-shares-are-endogenous"><span class="header-section-number">18.4.2</span> What goes wrong when shares are endogenous</h3>
-<p>Now break the share-exogeneity assumption: make industry 1’s share correlated with the second-stage error.</p>
+<p>Now break the share-exogeneity assumption: make industry 1’s share correlated with the second-stage error. Under the share-exogeneity view of GPSS that alone makes the instrument invalid. Under the shock view of BHJ, endogenous shares are allowed, but only because many independent shocks average the share-confounder correlation away. With twenty industries and one realized set of shocks, industry 1’s shock does not average out, so the shock argument fails here too, for a different reason.</p>
 <div id="bad-shares" class="cell" data-cache="true" data-execution_count="7">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -763,7 +763,7 @@ Rotemberg weight of industry 1: 0.110 (rank 3 of 20 by |α|)
 Leave-industry-1-out IV: 0.480</code></pre>
 </div>
 </div>
-<p>The estimate is biased, and the bias comes from one industry’s share being related to the error. Note what the diagnostics do and do not catch here. The endogenous industry’s Rotemberg weight is unremarkable — it ranks third of twenty — because the weights measure <em>influence</em> (whose exogeneity the estimate leans on most), not <em>endogeneity</em>. An industry with a modest weight can still move the estimate substantially when its share is correlated with the error. What isolates the problem is the <strong>leave-one-industry-out</strong> check: dropping industry 1 from the instrument restores an estimate close to the truth.</p>
+<p>The estimate is biased, and the bias comes from one industry’s share being related to the error. Note what the diagnostics do and do not catch here. The endogenous industry’s Rotemberg weight is unremarkable — it ranks third of twenty — because the weights measure <em>influence</em> (whose exogeneity the estimate leans on most), not <em>endogeneity</em>. An industry with a modest weight can still move the estimate substantially when its share is correlated with the error. What points to the problem is the <strong>leave-one-industry-out</strong> check: dropping industry 1 from the instrument restores an estimate close to the truth. The isolation is not clean. Renormalizing the rows put the confounder into every share, so the remaining nineteen shares still carry it; the return toward the truth says that contamination is small in this draw.</p>
 </section>
 </section>
 <section id="bhj-shock-level-inference" class="level2" data-number="18.5">
@@ -800,7 +800,7 @@ BHJ shock-level IV:             0.531
 \tag{18.5}\]</span></span></p>
 <p>where the shocks <span class="math inline">\(\Delta M^{\text{other}}_k\)</span> are growth in Chinese imports into other high-income countries. This leave-one-out construction removes US-specific demand from the shock.</p>
 <p>The snippet below is schematic — the full ADH specification additionally needs period effects, the ADH control set, and population weights (a validated replication against the GPSS benchmark lives in the <code>ShiftShareIV.jl</code> repository).</p>
-<div id="d8111d24" class="cell" data-execution_count="9">
+<div id="0cbb1ea1" class="cell" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># David Dorn distributes the replication data at ddorn.net</span></span>

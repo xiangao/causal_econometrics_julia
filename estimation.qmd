@@ -203,6 +203,15 @@ ${\rm E}[\frac{\pi(X)}{1-\pi(X)}(1-W)Y] = P(W=1)\, {\rm E}[Y(0)|W=1]$).
 
 $$ \mu_0^{AIPW} = E[\frac{(1-W)(Y-\mu_0(X))}{1-\pi(X)} + \mu_0(X)] $$ {#eq-estimation-12}
 
+The two working models below follow the Stata manual's `teffects aipw` example,
+and they use different covariates: prenatal care (`prenatal1`) enters only the
+outcome model, mother's education (`medu`) only the propensity model; both use
+marital status, mother's age and first-baby status. Double robustness needs a
+common adjustment set. Here we take the union of these five covariates as
+sufficient. Then each model
+is correct only if the covariate it leaves out is irrelevant to it: education to
+birth weight given the others, or prenatal care to smoking.
+
 ```{julia}
 #| warning: false
 #| cache: true

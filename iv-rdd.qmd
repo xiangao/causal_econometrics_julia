@@ -462,7 +462,7 @@ What are the polynomial 2SLS and DDML PLIV estimating, if not LATE? PLIV targets
 
 ### Diagnostic: RESET on Z ~ X
 
-Rich covariates says $E[Z \mid X]$ is linear in $X$. That is exactly the null of Ramsey's RESET test [@ramsey-1969]. We can apply it to a regression of $Z$ on $X$ and see whether higher-order terms of $X$ are jointly significant.
+Rich covariates says $E[Z \mid X]$ is linear in $X$. Ramsey's RESET test [@ramsey-1969] checks one implication of that: whether a few higher-order terms add to a regression of $Z$ on $X$. It can detect some departures from linearity. It cannot establish linearity, and it says nothing about exclusion, instrument independence or monotonicity.
 
 ```{julia tsls-late-reset}
 #| warning: false
@@ -483,16 +483,16 @@ F_stat         = ((rss_r - rss_u) / q) / (rss_u / (n - k_u))
 
 It rejects strongly here, $\text{RESET} = 131.6$ on 2 and 7,996 degrees of
 freedom with $p < 10^{-56}$, which is the right answer given that we
-put a sine wave in $E[Z \mid X]$. The same test on real data is cheap, and it
-tells us whether the LATE interpretation is defensible before we report a 2SLS
-coefficient.
+put a sine wave in $E[Z \mid X]$. The same test on real data is cheap. A
+rejection is a clear warning against reading 2SLS as the LATE; a non-rejection is
+weaker evidence, because the test looks only at the terms we included.
 
 ### What to Do Instead
 
 @blandhol-et-al-2025 give four steps for empirical work.
 
 1. **Reconsider the covariates.** If $Z$ is unconditionally exogenous, drop them. A kitchen-sink set of controls makes rich covariates *less* likely.
-2. **Run RESET on `Z ~ X`.** If it does not reject, the linear-IV-as-LATE interpretation is defensible.
+2. **Run RESET on `Z ~ X`.** A rejection rules out reading linear IV as the LATE. A non-rejection is consistent with rich covariates but does not prove it, and the other IV assumptions still need their own argument.
 3. **If RESET rejects, report DDML PLIV alongside 2SLS.** That is what the cross-fitting chunk above does. DDML PLIV targets $\beta_{rich}$, a non-negatively weighted average of conditional LATEs.
 4. **For a binary instrument, also estimate the unconditional LATE.** With instrument propensity score weighting [@sloczynski-2024],
 
