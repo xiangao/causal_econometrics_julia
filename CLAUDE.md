@@ -511,3 +511,16 @@ Full render clean. **Note:** re-executing causal-discovery.qmd (prose-only chang
 the single-draw RSL-D result (skeleton F1 1.000 -> 0.941, CI tests 43 -> 38; PC 203 -> 202);
 the 100-rep MC barely moved (0.937 -> 0.935). The chapter does not quote these numbers,
 but the run is not reproducible across renders — worth chasing if the numbers get quoted.
+
+## Google Research review fixes, shared items (2026-10-16, branch `google-review-fixes`)
+
+Ported from the R guide's fixes (log `~/projects/books/_review6/VERIFY_GOOGLE_CG_20261016.md`).
+poisson-iv: Windmeijer moment, tail bound, correlated-random-effects simulation with a
+`Threads.@threads` cluster bootstrap and its own results paragraph. Panelest `feprobit`
+with `fe()` throws a MethodError (`Vector{FixedEffect{...}}` vs `Vector{FixedEffect}`), so the
+first stage uses a categorical period regressor `tcat` instead; the package bug is not
+fixed. iv-rdd ITT/LATE wording and a pointer to the R guide's discrete-running-variable
+section; identification "weaker assumptions"; front-door positivity; g-methods A0
+coefficient and SNMM pointer; X-learner note; did pointer to att_gt/sunab; discovery
+setup chunk labelled; nonparametric, continuous-treatments, latent and did citation hunks;
+9 bib entries.

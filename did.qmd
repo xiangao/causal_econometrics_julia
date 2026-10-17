@@ -114,7 +114,7 @@ here $W_{it} =(1[t=2] \cdot D_i)$, which is the interaction of post-treatment in
 
 This is usually called Two Way Fixed Effect (TWFE). There are multiple ways to implement the same model in practice.
 
-TWFE can be done by "Pooled OLS". That is, using OLS on time dummies and firm (individual) dummies. Wooldridge (2021) shows it's equivalent to use treatment dummies, instead of individual dummies. He also shows that this model can be equivalently implemented with fixed effect model and random effect model.
+TWFE can be done by "Pooled OLS". That is, using OLS on time dummies and firm (individual) dummies. @wooldridge-2021-etwfe shows it's equivalent to use treatment dummies, instead of individual dummies. He also shows that this model can be equivalently implemented with fixed effect model and random effect model.
 
 ## TWFE with Staggered Treatment Timing
 
@@ -128,7 +128,7 @@ However, what is $\beta$ here?
 
 ## Goodman-Bacon Decomposition
 
-Goodman-Bacon (2021) showed that $\beta$ in the TWFE is a weighted average of many different treatment effects, between treated cohorts, and control units, both can be different at different time points. The weights are a function of the size of the subsample, relative size of treatment and control units, and the timing of treatment in the sub sample. The decomposition weights themselves are non-negative and sum to one; the problem is that the units treated earlier are used as controls later. When those "forbidden" 2x2 comparisons are expressed in terms of the underlying cohort-time ATTs, some ATTs receive negative weight (de Chaisemartin and D'Haultfœuille 2020). Therefore there is no meaningful interpretation of $\beta$: it does not need to be a convex combination of treatment effects.
+@goodman-bacon-2021 showed that $\beta$ in the TWFE is a weighted average of many different treatment effects, between treated cohorts, and control units, both can be different at different time points. The weights are a function of the size of the subsample, relative size of treatment and control units, and the timing of treatment in the sub sample. The decomposition weights themselves are non-negative and sum to one; the problem is that the units treated earlier are used as controls later. When those "forbidden" 2x2 comparisons are expressed in terms of the underlying cohort-time ATTs, some ATTs receive negative weight (de Chaisemartin and D'Haultfœuille 2020). Therefore there is no meaningful interpretation of $\beta$: it does not need to be a convex combination of treatment effects.
 
 ![Bacon decomposition](images/bacon1.png)
 
@@ -136,7 +136,7 @@ Goodman-Bacon (2021) showed that $\beta$ in the TWFE is a weighted average of ma
 
 ## Wooldridge's ETWFE
 
-There are a lot of ways to deal with staggered DiD situation. Wooldridge (2021) is basically saying: This is not a problem of TWFE, it's a mis-use of TWFE. The reason we get non-sensible result of $\beta$ is that we know there is heterogeneous treatment effect, in the sense the treatment effect differs across cohort, but we force them to be the same. If we relax it, it can work. As he shows, this works when we specify cohort effects accordingly.
+There are a lot of ways to deal with staggered DiD situation. @wooldridge-2021-etwfe is basically saying: This is not a problem of TWFE, it's a mis-use of TWFE. The reason we get non-sensible result of $\beta$ is that we know there is heterogeneous treatment effect, in the sense the treatment effect differs across cohort, but we force them to be the same. If we relax it, it can work. As he shows, this works when we specify cohort effects accordingly.
 
 $$ y_{it} = \alpha_i + \phi_t + \sum_{g=g_0}^G \sum_{t=g}^T \lambda_{g,t} \times 1(g,t) + \epsilon_{i,t} $$ {#eq-did-11}
 
@@ -254,6 +254,17 @@ With `etwfe`'s default comparison group the pre-treatment estimates are forced
 to zero by construction, so their sitting on the line is arithmetic, not
 evidence for parallel trends. The Poisson example below uses
 `cgroup = "never"`, which frees them and makes the pre-period a real check.
+
+### The same data with two other staggered estimators
+
+ETWFE is one of several estimators built to avoid the forbidden comparisons of
+TWFE. The [R companion](https://xiangao.github.io/causal_econometrics_guide/did.html)
+fits two others on the same `mpdta` data, @callaway-santanna-2021 and
+@sun-abraham-2021. They give ATTs of $-0.042$ and $-0.040$ against ETWFE's
+$-0.051$, and the same growing event-time path. The gap is the comparison group:
+ETWFE by default compares with the not-yet-treated cohorts as well as the
+never-treated, and with never-treated controls only it gives $-0.042$ with the
+covariate and $-0.040$ without it, matching the other two.
 
 ## Example 2: Staggered DiD
 

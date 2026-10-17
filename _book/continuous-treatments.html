@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="d774c988" class="cell" data-execution_count="2">
+<div id="1658b751" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -612,7 +612,7 @@ f_D\bigl(d \mid r(d, X)\bigr) = f_D\bigl(d \mid r(d, X),\, X\bigr).
 <p>In practice we start with a normal model for <span class="math inline">\(D \mid X\)</span>, <span class="math inline">\(D \mid X \sim \mathcal{N}(\beta_0 + \beta'X, \sigma^2)\)</span>. Fitting <span class="math inline">\(D\)</span> on <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> by OLS gives <span class="math inline">\(\hat\beta\)</span> and <span class="math inline">\(\hat\sigma\)</span>, and the score at any dose <span class="math inline">\(d\)</span> for unit <span class="math inline">\(i\)</span> is the normal density evaluated there,</p>
 <p><span id="eq-continuous-treatments-gpshat"><span class="math display">\[
 \hat r(d, x_i) = \frac{1}{\hat\sigma\sqrt{2\pi}}
-  \exp\!\left\{-\frac{\bigl(d - x_i'\hat\beta\bigr)^2}{2\hat\sigma^2}\right\}.
+  \exp\!\left\{-\frac{\bigl(d - \hat\beta_0 - x_i'\hat\beta\bigr)^2}{2\hat\sigma^2}\right\}.
 \tag{10.5}\]</span></span></p>
 <p>That is the whole calculation: one linear regression, then one density evaluation per unit per dose.</p>
 <div id="gps" class="cell" data-cache="true" data-execution_count="5">

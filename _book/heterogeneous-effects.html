@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="b9086e66" class="cell" data-execution_count="2">
+<div id="95a4718a" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -698,6 +698,7 @@ True CATE at X1 = 0.8: 2.60</code></pre>
 <pre><code>X-learner CATE correlation with truth: 0.928</code></pre>
 </div>
 </div>
+<p>The weights look crossed, with <span class="math inline">\(\hat e(x)\)</span> on <span class="math inline">\(\hat\tau_{X0}\)</span>, the estimate built from control units. That is deliberate <span class="citation" data-cites="kunzel-2019-metalearners">(<a href="references.html#ref-kunzel-2019-metalearners" role="doc-biblioref">Künzel et al. 2019</a>)</span>. Where <span class="math inline">\(\hat e(x)\)</span> is small, treated units are scarce, so <span class="math inline">\(\hat\mu_1\)</span> is poorly estimated, and the control pseudo-effects <span class="math inline">\(\hat\mu_1(X) - Y\)</span> inherit its noise. The treated pseudo-effects <span class="math inline">\(Y - \hat\mu_0(X)\)</span> rest on <span class="math inline">\(\hat\mu_0\)</span>, fitted on the many controls, so there <span class="math inline">\(\hat\tau_{X1}\)</span> gets the weight <span class="math inline">\(1 - \hat e(x)\)</span>, close to one.</p>
 <p>The X-learner is useful when one treatment arm is much smaller than the other.</p>
 </section>
 <section id="r-learner-nie-wager-2021" class="level2" data-number="9.6">
