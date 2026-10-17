@@ -232,7 +232,10 @@ In the first DGP the scalar estimands are close because:
 - The instrument shifts compliers uniformly across $X$, so LATE ≈ ATE
 
 If treatment selection depends on the effect modifier, the numbers separate.
-Here I make high-$X$ units more likely to take treatment:
+Here I make high-$X$ units more likely to take treatment. The untreated
+probability $p_{D0} = 0.10 + 0.20U + 0.6X$ is clipped to $[0,1]$ first, and the
+offer then raises the clipped probability by 0.50, capped at one. This differs
+from the first DGP, which added 0.50 before clipping:
 
 ```{julia}
 #| label: dgp-selective
