@@ -216,7 +216,7 @@ A high skeleton F1 with lower CPDAG F1 means the algorithm found the right adjac
 
 ## RSL-D Algorithm
 
-**RSL-D** (Recursive Structure Learning — Diamond-free; Mokhtarian et al., JMLR 2025) works by *recursively removing* variables that satisfy a **removability** criterion.
+**RSL-D** (Recursive Structure Learning — Diamond-free; @mokhtarian-2025-rcd) works by *recursively removing* variables that satisfy a **removability** criterion.
 
 Two sets are central to the criterion:
 
@@ -225,11 +225,19 @@ Two sets are central to the criterion:
 
 So $\text{Ne}(X) \subseteq \text{Mb}(X)$, with equality only when every co-parent of $X$ is also adjacent to it. RSL-D's guarantee also requires the graph to be diamond-free. The Erdős–Rényi DAG simulated above is not restricted to that class, so the simulation tests the algorithm beyond its guarantee.
 
-Variable $X$ is removable if, for every pair $Y \in \text{Mb}(X)$, $Z \in \text{Ne}(X)$:
+In a diamond-free DAG, $X$ is removable if and only if every pair of distinct
+variables $Y, Z$ in its Markov boundary stays dependent when we condition on the
+rest of the boundary together with $X$ [Theorem 39 of @mokhtarian-2025-rcd]:
 
-$$\exists\, W \subseteq \text{Mb}(X) \setminus \{Y, Z\} \text{ such that } Y \perp\!\!\!\perp Z \mid W$$ {#eq-causal-discovery-4}
+$$Y \not\perp\!\!\!\perp Z \mid \bigl(\text{Mb}(X) \cup \{X\}\bigr) \setminus \{Y, Z\} \quad \text{for all distinct } Y, Z \in \text{Mb}(X)$$ {#eq-causal-discovery-4}
 
-(Lemma 3 of the paper). Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.
+Each pair needs one CI test with a fixed conditioning set; there is no search
+over subsets. A small example shows why the condition is dependence and not
+separation. In $A \to B$, $A \to X$, $B \to X$, the sink $X$ is removable:
+deleting it leaves $A \to B$, the correct graph over the remaining variables. Its
+boundary is $\{A, B\}$, and $A$ and $B$ are dependent given $X$, so the
+condition holds. No subset of the boundary separates $A$ from $B$, so a
+criterion that asked for a separating set would wrongly keep $X$. Removing variables one by one and recording the local neighbourhood structure recovers the full CPDAG.
 
 A variable is removable if its local neighborhood can be learned before the
 rest of the graph is fully known. The algorithm removes such variables one
@@ -238,7 +246,7 @@ at a time and records the local structure.
 **How it works, step by step:**
 
 1. Estimate the Markov boundary $\text{Mb}(X)$ of each variable (all variables that, conditioned on, make $X$ independent of everything else).
-2. Find a removable variable $X$ — one whose neighbourhood satisfies the criterion above.
+2. Find a removable variable $X$ — one whose Markov boundary satisfies @eq-causal-discovery-4.
 3. Record the local skeleton structure around $X$, then remove $X$ from the graph.
 4. Repeat on the reduced variable set until all variables have been processed.
 5. Reconstruct the full CPDAG from the recorded local structures.

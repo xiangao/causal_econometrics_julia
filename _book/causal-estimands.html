@@ -503,7 +503,7 @@ window.Quarto = {
 </header>
 
 
-<div id="fcfedacb" class="cell" data-execution_count="2">
+<div id="30f9a6f8" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
@@ -755,7 +755,7 @@ QTE(0.90) = 2.289</code></pre>
 <li>Treatment selection is on <span class="math inline">\(U\)</span> (unobserved type), not <span class="math inline">\(X\)</span> (which drives τ), so ATT ≈ ATE</li>
 <li>The instrument shifts compliers uniformly across <span class="math inline">\(X\)</span>, so LATE ≈ ATE</li>
 </ul>
-<p>If treatment selection depends on the effect modifier, the numbers separate. Here I make high-<span class="math inline">\(X\)</span> units more likely to take treatment:</p>
+<p>If treatment selection depends on the effect modifier, the numbers separate. Here I make high-<span class="math inline">\(X\)</span> units more likely to take treatment. The untreated probability <span class="math inline">\(p_{D0} = 0.10 + 0.20U + 0.6X\)</span> is clipped to <span class="math inline">\([0,1]\)</span> first, and the offer then raises the clipped probability by 0.50, capped at one. This differs from the first DGP, which added 0.50 before clipping:</p>
 <div id="dgp-selective" class="cell" data-cache="true" data-execution_count="9">
 <details open="" class="code-fold">
 <summary>Code</summary>

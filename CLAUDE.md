@@ -524,3 +524,13 @@ section; identification "weaker assumptions"; front-door positivity; g-methods A
 coefficient and SNMM pointer; X-learner note; did pointer to att_gt/sunab; discovery
 setup chunk labelled; nonparametric, continuous-treatments, latent and did citation hunks;
 9 bib entries.
+
+## Codex continued review (2026-10-17, branch `continued-review-fixes`)
+
+Log `~/projects/books/_review6/VERIFY_CONTINUED_20261017.md`. J1: eq-causal-discovery-4 was a
+separating-set condition; now Theorem 39 of Mokhtarian et al. (2025): dependence of every pair in
+Mb(X) given (Mb(X) + X) minus the pair, matching the package's is_removable. Sink example
+A->B, A->X, B->X added. Latent chapter: Theorem 32 cited, Z ranges over Ne(X) minus Y, and
+Condition 1 is no longer called the RSL-D criterion. J2: a missing edge no longer "rules out" a
+causal relationship (X->M->Y). New bib key mokhtarian-2025-rcd. R1 clipping note ported to
+causal-estimands.

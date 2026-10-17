@@ -234,7 +234,7 @@ In practice for economic research: focus first on `<->` edges — these flag def
 
 ## L-MARVEL Algorithm
 
-**L-MARVEL** (Latent Markov Boundary Variable Elimination; Mokhtarian et al., JMLR 2025) extends the recursive MARVEL approach to handle latent confounders. Instead of exhaustive CI-test-based Markov boundary discovery, L-MARVEL uses a **Gaussian precision matrix** estimator:
+**L-MARVEL** (Latent Markov Boundary Variable Elimination; @mokhtarian-2025-rcd) extends the recursive MARVEL approach to handle latent confounders. Instead of exhaustive CI-test-based Markov boundary discovery, L-MARVEL uses a **Gaussian precision matrix** estimator:
 
 $$\widehat{\text{Mb}}(X) = \left\{Y : \frac{|\hat P_{XY}|}{\sqrt{\hat P_{XX} \hat P_{YY}}} > \tau\right\}$$ {#eq-causal-discovery-latent-1}
 
@@ -244,14 +244,14 @@ In a Gaussian linear model, a zero in the precision matrix means conditional
 independence given all other variables. L-MARVEL uses this fact to estimate
 Markov boundaries with fewer CI tests.
 
-The removability criterion changes for the latent case (Theorem 32). Recall: $\text{Mb}(X)$ is the Markov boundary of $X$ — the minimal conditioning set that screens $X$ off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and $\text{Ne}(X)$ is the set of variables directly adjacent to $X$ in the current skeleton. Variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X)$:
+The removability criterion changes for the latent case (Theorem 32). Recall: $\text{Mb}(X)$ is the Markov boundary of $X$ — the minimal conditioning set that screens $X$ off from all other variables (estimated here via the precision matrix above rather than by exhaustive CI tests) — and $\text{Ne}(X)$ is the set of variables directly adjacent to $X$ in the current skeleton. Variable $X$ is removable iff for every $Y \in \text{Mb}(X)$ and $Z \in \text{Ne}(X) \setminus \{Y\}$, at least one of two conditions holds [Theorem 32 of @mokhtarian-2025-rcd]:
 
 $$\underbrace{\exists\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \perp\!\!\!\perp Z \mid W}_{\text{Condition 1}} \quad\text{or}\quad \underbrace{\forall\, W \subseteq \text{Mb}(X) \setminus \{Y,Z\}: Y \not\perp\!\!\!\perp Z \mid W \cup \{X\}}_{\text{Condition 2}}$$ {#eq-causal-discovery-latent-2}
 
 **Intuition for the two conditions:**
 
-- **Condition 1** is the same as the observed-variable (RSL-D) removability criterion: $Y$ and $Z$ can be separated by some subset of the Markov boundary.
-- **Condition 2** is new and handles latent variables: it captures latent-induced dependencies through the theorem's removable-variable criterion. Loosely, when $Y$ and $Z$ are connected through a hidden common cause, no subset of Mb$(X)$ separates them, yet conditioning on $X$ changes the dependence. **This is not a generic d-separation rule** — it should not be read as "conditioning on $X$ blocks hidden confounding," which would be false in general MAG/PAG reasoning. It is a theorem-specific condition (Theorem 32) on when $X$ can be removed without losing latent-structure information; the formal statement above, not the intuition, is what the algorithm uses.
+- **Condition 1**: some subset of the Markov boundary separates $Y$ and $Z$. This is not the RSL-D criterion of the previous chapter. RSL-D asks instead for dependence given the whole boundary plus $X$, a single test that is valid only under its diamond-free DAG assumption.
+- **Condition 2**: $Y$ and $Z$ are dependent given every subset of the boundary once $X$ is added to it. This is a condition of Theorem 32, not a d-separation rule. It does not say that conditioning on $X$ removes hidden confounding.
 
 Together, the two conditions ensure that removing $X$ does not destroy information about the latent structure connecting its neighbours.
 
@@ -273,7 +273,7 @@ f1_lm = f1_score(true_obs_skel, lm_skel)
 
 Unlike FCI, L-MARVEL returns only the **skeleton** — undirected edges with no arrowhead or bidirected marks. This is a deliberate design choice: the recursive removal procedure identifies *adjacencies* efficiently but does not run the full PAG orientation phase.
 
-This is still valuable. Knowing which pairs of variables are adjacent tells you which potential causal relationships to investigate further (with instruments, experiments, or domain knowledge). Variables with no edge are conditionally independent given some observed set — no causal relationship need be posited between them.
+This is still valuable. Knowing which pairs of variables are adjacent tells you which potential causal relationships to investigate further (with instruments, experiments, or domain knowledge). A missing edge means some observed conditioning set separates the two variables under the graph assumptions. It does not rule out a causal effect. In $X \to M \to Y$, $X$ and $Y$ are not adjacent and $X \perp\!\!\!\perp Y \mid M$, yet the total effect of $X$ on $Y$ runs through $M$. Before excluding a pair from a causal question, we must examine directed paths and identification.
 
 If you need orientations as well as skeleton, run FCI. If you only need to screen out non-adjacent pairs (the most common use case in large-$p$ problems), L-MARVEL's precision matrix approach is substantially faster.
 :::
