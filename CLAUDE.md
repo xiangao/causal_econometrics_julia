@@ -29,7 +29,7 @@
 | Identification | `causal-estimands.qmd` | ATE/ATT/LATE/CATE/QTE on one DGP |
 | Identification | `graphs-identification-estimation.qmd` | ADMGs, ID algorithm |
 | Identification | `smoking-cessation-graphs.qmd` | Applied NHEFS DAG workflow |
-| Identification | `sensitivity-analysis.qmd` | Cinelli-Hazlett RV, E-values, Rosenbaum bounds (inline) |
+| Identification | `sensitivity-analysis.qmd` | NHEFS: Cinelli-Hazlett RV + benchmarks, E-values, Rosenbaum bounds, marginal sensitivity model (ZSB + Dorn-Guo sharp bounds via QuantileRegressions.jl) |
 | Estimation | `estimation.qmd` | RA, IPW, AIPW, IPWRA |
 | Estimation | `matching.qmd` | NN matching, IPW, balance diagnostics, entropy balancing (inline Newton on convex dual) |
 | Estimation | `nonparametric.qmd` | TMLE, DoubleML, CausalEstimate.jl |
@@ -534,3 +534,15 @@ A->B, A->X, B->X added. Latent chapter: Theorem 32 cited, Z ranges over Ne(X) mi
 Condition 1 is no longer called the RSL-D criterion. J2: a missing edge no longer "rules out" a
 causal relationship (X->M->Y). New bib key mokhtarian-2025-rcd. R1 clipping note ported to
 causal-estimands.
+
+## 2026-10-28: sensitivity-analysis re-ported from the R guide
+
+- Whole chapter re-ported (it had drifted to a simulated example); old copy in
+  `archive/pre_port_20261028/`. Prose identical to R except the sensemakr sentence and the
+  three bootstrap numbers (Julia RNG). All deterministic numbers match R exactly.
+- New section: marginal sensitivity model for IPW (Tan 2006; Zhao-Small-Bhattacharya 2019;
+  Dorn-Guo 2023). Sharp bounds by Dorn-Guo Lemma 1 = weighted linear quantile regression,
+  done as unweighted `QuantileRegressions.qreg_coef(w.*y, w.*G, τ, IP())` (check function is
+  positively homogeneous). New dep: QuantileRegressions. Chapter front matter sets
+  `julia: exeflags: ["--threads=6"]` for the bootstrap (Xoshiro(1000+b) per draw).
+- Point bounds agree with R to 5e-7. Validation scripts: `~/projects/books/_review6/msm_validation/`.

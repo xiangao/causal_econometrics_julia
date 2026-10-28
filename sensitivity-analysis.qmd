@@ -1,13 +1,24 @@
+---
+julia:
+  exeflags: ["--threads=6"]
+---
+
 # Sensitivity Analysis
 
 ```{julia}
 #| include: false
 using DataFrames
 using GLM
+using StatsModels
+using StatsBase
 using Statistics
+using Distributions
 using Random
 using LinearAlgebra
 using Printf
+using DelimitedFiles
+using Downloads
+using QuantileRegressions
 using CairoMakie
 CairoMakie.activate!(type = "png")
 ```
@@ -16,10 +27,16 @@ CairoMakie.activate!(type = "png")
 #| eval: false
 using DataFrames
 using GLM
+using StatsModels
+using StatsBase
 using Statistics
+using Distributions
 using Random
 using LinearAlgebra
 using Printf
+using DelimitedFiles
+using Downloads
+using QuantileRegressions
 using CairoMakie
 CairoMakie.activate!(type = "png")
 ```
@@ -30,354 +47,674 @@ worry about some remaining confounding. Sensitivity analysis asks a practical
 question: how strong would unmeasured confounding have to be to change the
 conclusion?
 
-> **Related reading**: An extended R-based treatment of the
-> Cinelli-Hazlett robustness value with `sensemakr` and benchmark
-> interpretations appears in the
+> **Related reading**: An extended treatment of the Cinelli-Hazlett
+> robustness value and benchmark interpretations appears in the
 > [companion blog chapter on sensitivity analysis](https://xiangao.github.io/blog_book/sensitivity-analysis.html)
 > of *Topics on Econometrics and Causal Inference*.
 
-Here I use three tools:
+Here I use four methods:
 
-1. **Cinelli-Hazlett (2020) omitted-variable bias bounds** — robustness
-   values and benchmark comparisons for OLS regression estimates.
-2. **E-values (VanderWeele-Ding 2017)** — for risk-ratio estimates, the
-   minimum strength an unmeasured confounder would need.
-3. **Rosenbaum bounds** — the critical odds ratio of hidden bias that
-   would render a matched-sample test insignificant.
+1. **Cinelli-Hazlett (2020) omitted-variable bias bounds** — for OLS
+   regression estimates, quantifies how strong an omitted variable
+   would need to be (in terms of partial $R^2$ with treatment and outcome)
+   to bring the estimate to zero.
+2. **E-values (VanderWeele-Ding 2017)** — for risk ratios, the minimum
+   strength of association (on the risk-ratio scale) that an unmeasured
+   confounder would need with both treatment and outcome to fully explain
+   the observed association.
+3. **Rosenbaum bounds** — for matched estimators, the magnitude of
+   non-random treatment assignment within matched pairs that would render
+   the test result insignificant.
+4. **The marginal sensitivity model (Tan 2006; Zhao, Small and Bhattacharya
+   2019; Dorn and Guo 2023)** — for weighting estimators, the factor by which
+   an unmeasured confounder may move each unit's odds of treatment before the
+   confidence interval for the ATE includes zero.
 
-There is no standard Julia package for these, but the formulas are short.
+## The NHEFS smoking-cessation example
 
-## A simulated example
-
-Use a simulation so the truth is known:
+We use the National Health and Nutrition Examination Survey I Epidemiologic
+Follow-up Study (NHEFS) data — the same dataset used in the
+[applied DAG-workflow chapter](smoking-cessation-graphs.qmd). The question:
+what is the effect of quitting smoking (`qsmk`) on weight gain over
+10 years (`wt82_71`)? We start from the raw comparison.
 
 ```{julia}
-#| label: dgp
+#| label: data
 #| cache: true
+function read_rdatasets_csv(url, cols)
+    local_file = Downloads.download(url; timeout = 120)
+    x, header = readdlm(local_file, ',', Any, '\n'; header = true)
+    raw = DataFrame(x, Symbol.(vec(header)))
+    DataFrame((c => Float64.(raw[!, c]) for c in cols)...)
+end
 
-Random.seed!(2026)
-n   = 2000
-X1  = randn(n)
-X2  = randn(n)
-U   = randn(n)             # unmeasured confounder
-D   = @. Float64(rand() < 1 / (1 + exp(-(0.5 * X1 + 0.5 * X2 + 0.6 * U))))
-Y   = @. 1.0 * D + 1.5 * X1 + 1.5 * X2 + 1.0 * U + 0.5 * randn()
+nhefs_url = "https://vincentarelbundock.github.io/Rdatasets/csv/causaldata/nhefs_complete.csv"
+nhefs = read_rdatasets_csv(nhefs_url,
+    [:seqn, :qsmk, :wt82_71, :sex, :race, :age, :education,
+     :smokeintensity, :smokeyrs, :exercise, :active, :wt71])
+nhefs = nhefs[.!isnan.(nhefs.wt82_71), :]
 
-df  = DataFrame(Y = Y, D = D, X1 = X1, X2 = X2, U = U)
+@printf("n = %d\n", nrow(nhefs))
+@printf("Treated (quit smoking) = %d\n", sum(nhefs.qsmk))
+@printf("Mean weight gain (treated):   %.2f kg\n",
+        mean(nhefs.wt82_71[nhefs.qsmk .== 1]))
+@printf("Mean weight gain (untreated): %.2f kg\n",
+        mean(nhefs.wt82_71[nhefs.qsmk .== 0]))
+```
 
-# Pull the coefficient out BY NAME. Indexing positionally (`[end]`, `[2]`) is a
-# standing invitation to report the wrong number: `[end]` on `Y ~ D + X1 + X2`
-# is the coefficient on X2, not on D, and in this DGP X2's true coefficient
-# (1.5) is close enough to the confounded D estimate that the mistake does not
-# look like one.
+Of the 1,566 complete cases, 403 quit. Quitters gained 4.53 kg on average and
+continuing smokers 1.98 kg, a naive difference of 2.55 kg. But quitters and
+continuers differ on many baseline characteristics. We adjust for the standard
+set by OLS --- sex, age, race, education, smoking intensity, years smoked,
+exercise, activity and baseline weight --- and print the first three
+coefficients along with the treatment estimate. These are the nine covariates of
+the [smoking cessation](smoking-cessation-graphs.qmd) chapter with two
+differences in coding. Education enters as the five-category factor `education`,
+where that chapter used years of schooling, `school`, and the categorical
+variables enter as factors, not as numbers. So the estimates here are not directly
+comparable with the AIPW estimate of 3.29 kg there; part of any difference comes
+from the specification, not the estimator.
+
+```{julia}
+#| label: ols
+#| cache: true
+# The categorical covariates enter as dummies with the lowest level as base,
+# the same coding R uses for factors.
+FACTORS = Dict(c => DummyCoding() for c in [:sex, :race, :education, :exercise, :active])
+
+ols = lm(@formula(wt82_71 ~ qsmk + sex + age + race + education + smokeintensity +
+                            smokeyrs + exercise + active + wt71),
+         nhefs; contrasts = FACTORS)
+
 coef_of(m, name) = coef(m)[findfirst(==(name), coefnames(m))]
+se_of(m, name)   = stderror(m)[findfirst(==(name), coefnames(m))]
 
-@printf("True treatment effect: 1.000\n")
-@printf("Naive (D only):        %.3f\n",
-        coef_of(lm(@formula(Y ~ D), df), "D"))
-@printf("Adjusted (D, X1, X2):  %.3f  (biased because U is unobserved)\n",
-        coef_of(lm(@formula(Y ~ D + X1 + X2), df), "D"))
-@printf("Oracle (D, X1, X2, U): %.3f\n",
-        coef_of(lm(@formula(Y ~ D + X1 + X2 + U), df), "D"))
+ct = coeftable(ols)
+DataFrame(term = ct.rownms[1:3], estimate = round.(ct.cols[1][1:3], digits = 3),
+          std_error = round.(ct.cols[2][1:3], digits = 3),
+          statistic = round.(ct.cols[3][1:3], digits = 3),
+          p_value = round.(ct.cols[4][1:3], digits = 3))
 ```
 
-The adjusted regression is still biased because $U$ is unobserved.
+```{julia}
+#| label: ols-print
+#| cache: true
+@printf("\nAdjusted ACE estimate: %.3f kg  (SE = %.3f)\n",
+        coef_of(ols, "qsmk"), se_of(ols, "qsmk"))
+```
 
-## Cinelli-Hazlett robustness value
+The adjusted estimate is 3.381 kg with a standard error of 0.441, larger than
+the naive 2.55 kg. Adjustment moved the answer away from zero, not toward it.
+But the identification assumption requires that we have controlled for *all*
+relevant confounders. What if we missed one — say, a propensity to gain
+weight that also correlates with quitting decisions? Sensitivity analysis
+addresses this directly.
 
-The robustness value is the smallest partial $R^2$ that an unobserved
-confounder would need with treatment and with outcome, the same value on both, to
-bring the estimate to zero. It is an equal-strength threshold.
+## Cinelli-Hazlett OVB bounds
 
-The closed-form expression depends only on the t-statistic of the
-treatment coefficient and the regression's degrees of freedom:
+The framework is Cinelli and Hazlett [-@cinelli-hazlett-2020].
 
-$$
-RV_q = \tfrac{1}{2}\left[\sqrt{f_q^4 + 4 f_q^2} - f_q^2\right], \qquad
-f_q = q\, \frac{|t|}{\sqrt{df}},
-$$ {#eq-sensitivity-analysis-1}
+We code the Cinelli-Hazlett (2020) formulas directly, as their R package
+`sensemakr` does. The key inputs are:
 
-where $|t|$ is the absolute t-stat of the treatment coefficient, $df$ is
-the residual degrees of freedom, and $q$ is the fraction of the estimate
-we want explained away ($q = 1$ for full explanation).
+- a fitted regression
+- the treatment variable name
+- one or more *benchmark covariates* whose strength serves as a reference
+  for how strong a hypothetical unobserved confounder might be
 
 ```{julia}
-#| label: rv
+#| label: sensemakr
 #| cache: true
+# Cinelli and Hazlett (2020), coded as in their sensemakr package.
+partial_r2(t, dof) = t^2 / (t^2 + dof)
 
-"""
-    robustness_value(t_stat, df; q=1.0)
-Equal-strength threshold: the partial R², the same with treatment and with
-outcome, that an unmeasured confounder needs to explain away a fraction `q` of
-the estimate.
-Cinelli & Hazlett (2020).
-"""
-function robustness_value(t_stat::Real, df::Real; q::Real=1.0)
-    fq = q * abs(t_stat) / sqrt(df)
-    return 0.5 * (sqrt(fq^4 + 4 * fq^2) - fq^2)
+# Robustness value for a fraction q of the estimate. alpha = 1 asks when the
+# point estimate is explained away; alpha = 0.05 when the 95% CI reaches it.
+function robustness_value(t, dof; q = 1.0, alpha = 1.0)
+    fq    = q * abs(t) / sqrt(dof)
+    fcrit = alpha == 1 ? 0.0 : abs(quantile(TDist(dof - 1), alpha / 2)) / sqrt(dof - 1)
+    fqa   = fq - fcrit
+    fqa <= 0 && return 0.0
+    fcrit > 0 && fq > 1 / fcrit && return (fq^2 - fcrit^2) / (1 + fq^2)   # extreme RV
+    2 / (1 + sqrt(1 + 4 / fqa^2))
 end
 
-# Fit the adjusted regression and extract t-stat + dof
-fit_adj   = lm(@formula(Y ~ D + X1 + X2), df)
-t_adj     = coef(fit_adj)[2] / stderror(fit_adj)[2]
-df_resid  = dof_residual(fit_adj)
-
-rv  = robustness_value(t_adj, df_resid; q=1.0)
-rv5 = robustness_value(t_adj, df_resid; q=1.0 - 1.96/abs(t_adj))   # q to reach significance
-
-@printf("t-statistic on D:                %.2f\n", t_adj)
-@printf("Residual df:                     %.0f\n", df_resid)
-@printf("Robustness value (q=1):          %.4f  (= %.2f%% partial R²)\n",
-        rv, 100rv)
-@printf("RV to reach insignificance:      %.4f  (= %.2f%% partial R²)\n",
-        rv5, 100rv5)
-```
-
-The useful interpretation is comparative: compare the RV to the partial
-$R^2$ values of observed covariates.
-
-### Benchmarking against observed covariates
-
-How strong are the observed covariates as a reference? Compute their
-partial $R^2$ contributions:
-
-```{julia}
-#| label: benchmark
-#| cache: true
-
-# Partial R² of a covariate: variance explained over a model that omits it
-function partial_r2(full_fit, reduced_fit)
-    ss_full     = sum(abs2.(residuals(full_fit)))
-    ss_reduced  = sum(abs2.(residuals(reduced_fit)))
-    1 - ss_full / ss_reduced
+# Bound on a confounder k times as strong as covariate j (Cinelli-Hazlett 2020, sec. 6)
+function benchmark_bound(r2dxj, r2yxj, k)
+    r2dz = k * r2dxj / (1 - r2dxj)
+    r2zxj = k * r2dxj^2 / ((1 - k * r2dxj) * (1 - r2dxj))
+    r2yz = min(1.0, ((sqrt(k) + sqrt(r2zxj)) / sqrt(1 - r2zxj))^2 * r2yxj / (1 - r2yxj))
+    (r2dz = r2dz, r2yz = r2yz)
 end
 
-# Partial R² of X1 with the outcome (omit X1)
-fit_noX1_Y = lm(@formula(Y ~ D + X2), df)
-pR2_X1_Y   = partial_r2(fit_adj, fit_noX1_Y)
+# Estimate, SE and CI after removing the bias such a confounder could cause
+function adjusted(est, se, dof, r2dz, r2yz)
+    bias   = sqrt(r2yz * r2dz / (1 - r2dz)) * se * sqrt(dof)
+    adj    = sign(est) * (abs(est) - bias)
+    adj_se = sqrt(1 - r2yz) / sqrt(1 - r2dz) * se * sqrt(dof / (dof - 1))
+    tq     = quantile(TDist(dof), 0.975)
+    (estimate = adj, lower = adj - tq * adj_se, upper = adj + tq * adj_se)
+end
 
-# Partial R² of X1 with the treatment (a separate regression)
-fit_D_full = lm(@formula(D ~ X1 + X2), df)
-fit_D_noX1 = lm(@formula(D ~ X2), df)
-pR2_X1_D   = partial_r2(fit_D_full, fit_D_noX1)
+est, se, dof = coef_of(ols, "qsmk"), se_of(ols, "qsmk"), dof_residual(ols)
+t_d = est / se
 
-@printf("Benchmark — X1:\n")
-@printf("  Partial R² with Y: %.4f\n", pR2_X1_Y)
-@printf("  Partial R² with D: %.4f\n", pR2_X1_D)
-@printf("\nRobustness value:    %.4f\n", rv)
-# A confounder with these two partial R² values biases the estimate by
-# se * sqrt(df) * sqrt(R²_Y * R²_D / (1 - R²_D)) (Cinelli-Hazlett 2020, eq. 4).
-# Comparing min(R²_Y, R²_D) with the RV is not enough: the RV is the equal-strength
-# threshold, and an unequal pair can explain the estimate with one value below it.
-bias_X1 = stderror(fit_adj)[2] * sqrt(df_resid) *
-          sqrt(pR2_X1_Y * pR2_X1_D / (1 - pR2_X1_D))
-@printf("\nBias from a confounder with X1's two partial R²: %.4f\n", bias_X1)
-@printf("Would it explain the estimate (%.4f)? %s\n", abs(coef(fit_adj)[2]),
-        bias_X1 >= abs(coef(fit_adj)[2]) ? "YES" : "NO")
+# Benchmarks: partial R2 of each covariate with the treatment (regression of
+# qsmk on the covariates) and with the outcome (the outcome regression above).
+treat_reg = lm(@formula(qsmk ~ sex + age + race + education + smokeintensity +
+                                smokeyrs + exercise + active + wt71),
+               nhefs; contrasts = FACTORS)
+tstat(m, name) = coef_of(m, name) / se_of(m, name)
+
+bench = DataFrame(benchmark = String[], k = Int[], r2dz = Float64[], r2yz = Float64[],
+                  adj_estimate = Float64[], lower_CI = Float64[], upper_CI = Float64[])
+for j in ["smokeintensity", "smokeyrs"], k in 1:3
+    r2dxj = partial_r2(tstat(treat_reg, j), dof_residual(treat_reg))
+    r2yxj = partial_r2(tstat(ols, j), dof)
+    b = benchmark_bound(r2dxj, r2yxj, k)
+    a = adjusted(est, se, dof, b.r2dz, b.r2yz)
+    push!(bench, (j, k, b.r2dz, b.r2yz, a.estimate, a.lower, a.upper))
+end
+
+@printf("Estimate %.3f  SE %.3f  t %.3f  df %d\n", est, se, t_d, dof)
+@printf("Partial R2 of treatment with outcome: %.2f%%\n", 100 * partial_r2(t_d, dof))
+@printf("Robustness value, q = 1:                %.2f%%\n",
+        100 * robustness_value(t_d, dof))
+@printf("Robustness value, q = 1, alpha = 0.05:  %.2f%%\n",
+        100 * robustness_value(t_d, dof; alpha = 0.05))
+transform(bench, Not([:benchmark, :k]) .=> (x -> round.(x, digits = 4)) .=> Not([:benchmark, :k]))
 ```
 
-The RV answers the equal-strength question only. A confounder can explain the
-estimate away with one partial $R^2$ below the RV if the other is large enough,
-because the bias depends on their product. So for a specific pair of strengths we
-use the bias formula, as the code does: an unmeasured confounder as strong as
-$X_1$ on both margins would or would not overturn the result.
+The summary tells us:
 
-Because this is a simulation we can check the machinery against the confounder
-that actually exists. $U$'s partial $R^2$ is 0.787 with the outcome and 0.064
-with the treatment. The two numbers straddle the robustness value, so the RV alone
-cannot say whether $U$ explains the estimate away. The bias formula can, and we
-apply it below: $U$'s bias is smaller than the estimate, so the verdict "not
-explained away" is correct --- and it is correct even though the
-adjusted estimate is badly biased. Those are different questions, and the
-distinction is the main thing to take from this section: a robustness value asks
-whether a confounder could drive the estimate to *zero*, not whether the estimate
-is *right*. Here it cannot, and the estimate is still 50% too large.
+- **Robustness value (RV)**: the minimum strength of association (in terms of
+  partial $R^2$) that an unmeasured confounder would need with both the
+  treatment and the outcome to reduce the estimate to zero. Higher = more
+  robust.
+- **RV_q**: the strength needed to "explain away" a fraction $q$ of the
+  estimate (here $q = 1$ means complete explanation).
+- **Benchmark comparisons**: how the RV compares to multiples of the
+  observed covariates.
 
-Feeding $U$'s true strengths into the Cinelli-Hazlett bias formula gives a bound
-of 0.531, so the bias-corrected estimate is $1.497 - 0.531 = 0.966$ against a
-true effect of 1.000. The bound is doing its job: it is not a point correction
-one would apply in practice, since in real data the confounder's strengths are
-exactly what we do not know, but it confirms that the formula is calibrated
-rather than merely suggestive.
+For this regression the partial $R^2$ of quitting with weight change is 3.65%.
+The robustness value at $q=1$ is 17.67%. A confounder that explains 17.67% of the
+residual variance of both quitting and weight change, after the measured
+covariates, brings the estimate to zero; one that explains less than that of
+both cannot. It is an equal-strength threshold. A confounder can still explain
+the estimate away with one partial $R^2$ below 17.67% if the other is large
+enough, because the bias depends on their product. To leave it
+merely statistically indistinguishable from zero at the 5% level, 13.47% would
+be enough.
 
-### A sensitivity contour plot
+The benchmark rows put those numbers on a scale. Smoking intensity explains
+1.43% of the residual variance of quitting and 0.10% of the residual variance
+of weight change. A confounder three times as strong on both margins would move
+the estimate from 3.381 to 3.182, with a 95% interval of $[2.30, 4.07]$. None
+of the measured covariates comes near 17.67% on either margin, and the bounds
+built from them leave the estimate well above zero, so the estimate is robust to a
+confounder resembling the ones we already control for.
 
-The contour plot below shows, for each $(R^2_{D \sim U}, R^2_{Y \sim U})$
-pair, the implied estimate of the treatment effect under that strength
-of unobserved confounding:
+The same information is easier to read as a contour plot. The horizontal axis
+is the confounder's partial $R^2$ with the treatment, the vertical axis its
+partial $R^2$ with the outcome, and the contours give the adjusted estimate at
+each combination. The benchmark diamonds mark 1x, 2x and 3x smoking intensity
+and years smoked. All six sit very close to the origin, so we cut the axes at
+0.06 and 0.006 to keep their labels apart; the robustness value of 0.177 that
+would drive the estimate to zero is far outside this window.
 
 ```{julia}
-#| label: contour
+#| label: sens-plot
 #| cache: true
-
-# Bias formula (Cinelli-Hazlett 2020, eqn 4):
-# bias = se(τ̂) * sqrt(df) * sqrt( R²_Y * R²_D / (1 - R²_D) )
-# adjusted_estimate = τ̂ - bias (or + bias, the worst case is the larger absolute)
-tau_hat = coef(fit_adj)[2]
-se_hat  = stderror(fit_adj)[2]
-
-grid = 0.0:0.01:0.5
-# First index = R²_D (x axis), second = R²_Y (y axis), as contour! expects.
-bias_matrix = [se_hat * sqrt(df_resid) * sqrt(r2y * r2d / max(1 - r2d, 1e-8))
-               for r2d in grid, r2y in grid]
-adjusted    = tau_hat .- bias_matrix    # worst-case (downward) bias
+#| fig-cap: "Cinelli-Hazlett sensitivity contour, with the axes cut at 0.06 and 0.006 so the benchmark labels stay legible. Contours give the adjusted estimate at each pair of partial R-squared values. Diamonds mark confounders as strong as 1x, 2x and 3x smokeintensity and smokeyrs, with the implied estimate in parentheses. The contour reaching zero lies far outside this window."
+#| fig-width: 7
+#| fig-height: 5
+# Contours of the adjusted estimate over the confounder's two partial R2.
+r2d_grid = range(0, 0.06, length = 121)
+r2y_grid = range(0, 0.006, length = 121)
+Zadj = [adjusted(est, se, dof, a, b).estimate for a in r2d_grid, b in r2y_grid]
 
 fig = Figure(size = (700, 500))
-ax  = Axis(fig[1, 1],
-           xlabel = "Partial R² with treatment (R²_D ~ U)",
-           ylabel = "Partial R² with outcome (R²_Y ~ U)",
-           title  = "Sensitivity contour: adjusted estimate of τ\n" *
-                    "(0 contour = estimate reduced to 0)")
-contour!(ax, grid, grid, adjusted, levels = [0.0, 0.25, 0.5, 0.75, 1.0],
-         labels = true, color = :black)
-# Mark the X1 benchmark
-scatter!(ax, [pR2_X1_D], [pR2_X1_Y], color = :steelblue, markersize = 18,
-         label = "X1 benchmark")
-axislegend(ax, position = :rb, framevisible = false)
+ax = Axis(fig[1, 1],
+          xlabel = "Partial R² of confounder(s) with the treatment",
+          ylabel = "Partial R² of confounder(s) with the outcome")
+contour!(ax, r2d_grid, r2y_grid, Zadj; levels = 3.0:0.05:3.4, color = :gray40,
+         labels = true, labelsize = 10)
+scatter!(ax, [0.0], [0.0]; marker = :utriangle, color = :black, markersize = 12)
+text!(ax, 0.0, 0.0; text = @sprintf("Unadjusted (%.3f)", est), fontsize = 10,
+      align = (:left, :bottom), offset = (8, 4))
+for r in eachrow(bench)
+    scatter!(ax, [r.r2dz], [r.r2yz]; marker = :diamond, color = :red, markersize = 10)
+    text!(ax, r.r2dz, r.r2yz; text = @sprintf("%dx %s (%.3f)", r.k, r.benchmark, r.adj_estimate),
+          fontsize = 9, align = (:left, :center), offset = (8, 0))
+end
+xlims!(ax, 0, 0.06); ylims!(ax, 0, 0.006)
 fig
 ```
 
-A confounder above and to the right of the zero contour would reduce the
-estimate to zero. The benchmark dot shows the strength of an observed
-covariate for comparison.
+All six benchmark points sit below 0.05 on the treatment axis and below 0.005
+on the outcome axis, in the region where the adjusted estimate stays above
+3 kg. The contour that reaches zero is a long way out.
 
-## E-values
+## E-values for risk ratios
 
-For risk-ratio estimates, VanderWeele and Ding (2017) propose a
-simpler-to-interpret sensitivity statistic. For an observed risk ratio
-$RR > 1$, the **E-value** is the minimum strength of association (on the
-risk-ratio scale) that an unobserved confounder would need to have with
-both treatment and outcome to fully explain the observed association:
+The E-value is VanderWeele and Ding [-@vanderweele-ding-2017].
 
-$$
-\text{E-value} = RR + \sqrt{RR\,(RR - 1)}.
-$$ {#eq-sensitivity-analysis-2}
+For binary outcomes and risk-ratio-type estimands, VanderWeele and Ding
+(2017) propose the **E-value**: the minimum strength of association on the
+risk-ratio scale that an unmeasured confounder would need to have with both
+the treatment and the outcome to fully explain the observed risk ratio.
 
-For $RR < 1$, use $1/RR$ first and apply the formula.
+To illustrate, we dichotomize weight change into any gain versus none, fit the
+risk ratio by Poisson regression with a log link [@zou-2004] on the same covariates,
+and take the confidence interval from robust standard errors:
 
 ```{julia}
 #| label: evalue
 #| cache: true
+nhefs.gain = Float64.(nhefs.wt82_71 .> 0)
 
-"""
-    evalue(rr; lo=missing, hi=missing)
-Compute the E-value for a risk ratio and (optionally) its 95% confidence
-interval. Returns (E_point, E_ci) where E_ci is the E-value needed to
-shift the lower CI bound past 1 (or upper past 1 if rr < 1).
-"""
-function evalue(rr::Real; lo=missing, hi=missing)
-    e_point = rr >= 1 ? rr + sqrt(rr * (rr - 1)) : begin
-        rr_inv = 1 / rr
-        rr_inv + sqrt(rr_inv * (rr_inv - 1))
-    end
-    e_ci = missing
-    if !ismissing(lo) && !ismissing(hi)
-        if rr >= 1 && lo > 1
-            e_ci = lo + sqrt(lo * (lo - 1))
-        elseif rr < 1 && hi < 1
-            hi_inv = 1 / hi
-            e_ci = hi_inv + sqrt(hi_inv * (hi_inv - 1))
-        else
-            e_ci = 1.0   # CI crosses 1, no E-value needed
-        end
-    end
-    return (e_point = e_point, e_ci = e_ci)
-end
+rr_fit = glm(@formula(gain ~ qsmk + sex + age + race + education + smokeintensity +
+                              smokeyrs + exercise + active + wt71),
+             nhefs, Poisson(), LogLink(); contrasts = FACTORS)
 
-# Example: a study reports RR = 1.40 [1.20, 1.62]
-ev = evalue(1.40; lo = 1.20, hi = 1.62)
-@printf("RR = 1.40 [1.20, 1.62]\n")
-@printf("E-value (point): %.2f\n", ev.e_point)
-@printf("E-value (CI):    %.2f\n", ev.e_ci)
+# The Poisson likelihood is misspecified for a binary outcome (the Zou 2004
+# log-binomial-via-Poisson trick), so the model-based variance is wrong.
+# Use robust (sandwich, HC0) standard errors for the RR confidence interval.
+Xrr = modelmatrix(rr_fit)
+mu  = predict(rr_fit)
+u   = nhefs.gain .- mu
+bread = inv(Xrr' * (mu .* Xrr))
+V     = bread * (Xrr' * (u .^ 2 .* Xrr)) * bread
+jq    = findfirst(==("qsmk"), coefnames(rr_fit))
+b, s  = coef(rr_fit)[jq], sqrt(V[jq, jq])
+zq    = quantile(Normal(), 0.975)
+rr_est, rr_lo, rr_hi = exp(b), exp(b - zq * s), exp(b + zq * s)
+
+@printf("Adjusted RR (quit vs not): %.3f  [%.3f, %.3f]\n", rr_est, rr_lo, rr_hi)
+
+# VanderWeele and Ding (2017): E-value for a risk ratio above 1
+evalue(rr) = rr <= 1 ? 1.0 : rr + sqrt(rr * (rr - 1))
+@printf("E-value (point estimate):   %.2f\n", evalue(rr_est))
+@printf("E-value (confidence limit): %.2f\n", evalue(rr_lo))
 ```
 
-The interpretation is on the risk-ratio scale. A hidden confounder with
-associations of this size with both treatment and outcome could explain away the
-result, and one weaker than this on both could not. Like the RV, it is an
-equal-strength threshold: a confounder stronger on one association can be weaker
-on the other.
+The E-value reports two numbers:
 
-## Rosenbaum bounds for matched studies
+- **E-value (point estimate)**: an unmeasured confounder associated with both
+  treatment and outcome by risk ratios of this value, above and beyond the
+  measured confounders, could fully explain away the observed effect; one
+  weaker than this on both could not. Like the RV, it is an equal-strength
+  threshold, and a confounder stronger on one association can be weaker on the
+  other.
+- **E-value (confidence interval)**: the minimum strength needed to shift
+  the lower confidence bound to 1.
 
-For matched estimators (propensity score matching, full matching,
-optimal matching), **Rosenbaum bounds** (Rosenbaum 2002) parametrise
-hidden bias as $\Gamma$, the maximum ratio of treatment odds between the
-two units of a matched pair due to unobservables. $\Gamma = 1$ corresponds
-to within-pair randomisation; $\Gamma = 2$ means one unit's odds of
-receiving treatment can be up to twice the other's.
+The adjusted risk ratio is 1.218, with a 95% interval of $[1.135, 1.307]$.
+Quitters are about 22% more likely to gain any weight. The E-value for the
+point estimate is 1.73: an unmeasured confounder with risk-ratio associations
+of 1.73 with both quitting and weight gain, beyond the nine measured covariates,
+could account for the whole association, and one below 1.73 on both could not. The E-value for
+the confidence limit is 1.53, the strength that would push the lower bound to 1.
 
-For each value of $\Gamma$, the upper-bound $p$-value of the Wilcoxon
-signed-rank test on matched-pair outcome differences is:
+An E-value much greater than 1 suggests the result is hard to explain by
+unmeasured confounding. An E-value close to 1 means a modest unmeasured
+confounder could overturn the conclusion. At 1.73 this result sits in between:
+a confounder as strong as that is not implausible, but it would have to be
+unrelated to everything already in the model.
+
+The useful part of the E-value is that it is on the risk-ratio scale. It can
+be explained without specifying a model for the unobserved confounder.
+
+## Rosenbaum bounds (matched estimators)
+
+The sensitivity model and the bound computed below are Rosenbaum's [-@rosenbaum-2002].
+
+For matching estimators, **Rosenbaum bounds** (Rosenbaum 2002) provide a
+sensitivity analysis based on the maximum deviation from random assignment
+within matched pairs.
+
+Suppose units in a matched pair are observationally identical, but one
+might still be more likely than the other to receive treatment due to
+unobserved factors. Let $\Gamma$ bound the ratio of treatment odds between
+the two units of a pair: $\Gamma = 1$ means matched pairs are perfectly
+randomised (both units equally likely to be the treated one); $\Gamma = 2$
+means hidden bias could make one unit's odds of treatment up to twice the
+other's. Formally, let units $i$ and $j$ share the same observed covariates and
+let $\pi_i$ and $\pi_j$ be their probabilities of treatment given everything
+that affects treatment, observed or not. The model assumes
+
+$$
+\frac{1}{\Gamma} \le \frac{\pi_i (1-\pi_j)}{\pi_j (1-\pi_i)} \le \Gamma
+$$ {#eq-sensitivity-rosenbaum}
+
+[@rosenbaum-1987; @rosenbaum-2002, ch. 4].
+
+Rosenbaum bounds compute the range of $p$-values for the matched test
+under each value of $\Gamma$. The **critical $\Gamma$** is the smallest
+value at which the test becomes insignificant.
+
+Here is a worked example on the same NHEFS data. We fit the propensity score by
+logistic regression on the nine baseline covariates, match each of the 403
+quitters to its nearest unmatched control on that score, take the paired
+differences in weight change, and compute the upper-bound Wilcoxon
+signed-rank $p$-value on a grid $\Gamma \in [1, 4]$ in steps of 0.25:
 
 ```{julia}
 #| label: rosenbaum
 #| cache: true
+# Estimate propensity score
+ps_fit = glm(@formula(qsmk ~ sex + age + race + education + smokeintensity +
+                              smokeyrs + exercise + active + wt71),
+             nhefs, Binomial(), LogitLink(); contrasts = FACTORS)
+nhefs.ps = predict(ps_fit)
 
-# Simulate matched-pair differences from a known DGP
-Random.seed!(7)
-n_pairs = 500
-true_effect = 0.5
-diffs = true_effect .+ 0.8 .* randn(n_pairs)
-
-using Distributions: Normal, cdf
-
-"""
-    rosenbaum_pvalue(diffs, gamma)
-Upper-bound one-sided p-value of the Wilcoxon signed-rank test on matched
-pair differences, allowing for hidden bias of magnitude `gamma` ≥ 1.
-"""
-function rosenbaum_pvalue(diffs, gamma)
-    abs_d = abs.(diffs)
-    sgn   = sign.(diffs)
-    rks   = sortperm(sortperm(abs_d))   # ranks of |d|
-    # Under Γ, prob of positive sign is bounded by Γ/(1+Γ)
-    p_pos = gamma / (1 + gamma)
-    T_obs = sum(rks[sgn .> 0])
-    mu    = p_pos * sum(rks)
-    v     = p_pos * (1 - p_pos) * sum(rks .^ 2)
-    z     = (T_obs - mu) / sqrt(v)
-    return 1 - cdf(Normal(), z)
+# Simple greedy 1:1 nearest-neighbour matching on the propensity score, without
+# replacement. Nothing here is random, but the result depends on row order:
+# treated units are matched in data order, and each takes its control out of the
+# pool, so later units get worse matches. Check balance and match distances.
+treated_idx = findall(==(1), nhefs.qsmk)
+available   = findall(==(0), nhefs.qsmk)
+pairs_t, pairs_c = Int[], Int[]
+for ti in treated_idx
+    isempty(available) && break
+    best = argmin(abs.(nhefs.ps[ti] .- nhefs.ps[available]))
+    push!(pairs_t, ti); push!(pairs_c, available[best])
+    deleteat!(available, best)
 end
 
-gammas = 1.0:0.25:5.0
-pvals  = [rosenbaum_pvalue(diffs, g) for g in gammas]
-result = DataFrame(Gamma = gammas, p_upper = pvals)
+# Compute paired differences in outcome
+paired_diff = nhefs.wt82_71[pairs_t] .- nhefs.wt82_71[pairs_c]
+@printf("N matched pairs: %d\n", length(pairs_t))
+@printf("Mean paired difference (matched ATT): %.3f kg\n", mean(paired_diff))
 
-# Critical Γ: smallest Γ where p exceeds 0.05
-critical_idx = findfirst(p -> p > 0.05, pvals)
-critical_gamma = critical_idx === nothing ? Inf : gammas[critical_idx]
+# Rosenbaum bound calculation: range of p-values for Wilcoxon signed-rank
+# under each Gamma. We compute a large-sample NORMAL APPROXIMATION to the
+# weighted Bernoulli rank sum directly. With 403 pairs it tracks the canonical
+# bound closely, but it is an approximation: there is no exact Poisson-binomial
+# tail and no continuity correction here. It assumes a positive effect and is an
+# upper bound only where the observed rank sum is above its mean under Gamma.
+function rosenbaum_pvalue(diffs, gamma)
+    # The Wilcoxon signed-rank protocol discards exact-zero paired differences
+    # before ranking (a zero carries no information about the sign).
+    d     = diffs[diffs .!= 0]
+    ranks = tiedrank(abs.(d))
+    # Under Gamma, P(positive sign) is at most Gamma / (1 + Gamma)
+    p_pos = gamma / (1 + gamma)
+    T_obs = sum(ranks[d .> 0])
+    mu    = p_pos * sum(ranks)
+    v     = p_pos * (1 - p_pos) * sum(ranks .^ 2)
+    1 - cdf(Normal(), (T_obs - mu) / sqrt(v))
+end
 
-@printf("Critical Γ (p > 0.05): %.2f\n", critical_gamma)
-@printf("\n%-10s %s\n", "Γ", "p (upper bound)")
-for (g, p) in zip(gammas, pvals)
-    @printf("%-10.2f %.4f\n", g, p)
+gammas = 1.0:0.25:4.0
+result = DataFrame(Gamma = collect(gammas),
+                   p_value_upper = [rosenbaum_pvalue(paired_diff, g) for g in gammas])
+transform(result, :p_value_upper => (p -> round.(p, digits = 4)) => :p_value_upper)
+```
+
+Matching gives 403 pairs, one per quitter, with a mean paired difference of
+2.926 kg. The upper-bound $p$-value is 0.0334 at $\Gamma = 1.50$ and 0.2905 at
+$\Gamma = 1.75$, so the crossing of 0.05 falls between those two grid points.
+
+The **critical $\Gamma$** is the value at which the upper-bound $p$-value
+crosses 0.05. If it is around 2 or higher, the result is robust to moderate
+hidden bias. If it is close to 1, even small unmeasured confounding could
+overturn the conclusion. We read it off the grid:
+
+```{julia}
+#| label: critical-gamma
+#| cache: true
+sig_idx = findall(>(0.05), result.p_value_upper)
+if isempty(sig_idx)
+    @printf("No Gamma up to %.2f pushed the p-value above 0.05 -- extend `gammas` to find the crossing.\n",
+            maximum(result.Gamma))
+else
+    @printf("Critical Gamma (p > 0.05): %.2f\n", result.Gamma[minimum(sig_idx)])
 end
 ```
 
-If the critical $\Gamma$ is close to 1, small hidden bias could overturn the
-matched-pair result. (The reported value is the first point *on the 0.25
-grid* at which significance is lost; the actual crossing lies between it and
-the preceding grid point.)
+The critical $\Gamma$ is 1.75. This is the first value *on the 0.25 grid* at
+which significance is lost; the true crossing lies between 1.50 and 1.75, and a
+finer grid would locate it more precisely. The convention in applied work is
+often to report the largest $\Gamma$ at which significance is retained, which
+here is 1.50.
 
-## Reporting practice
+So hidden bias that made one member of a matched pair up to about 1.5 times
+more likely to quit than the other would leave the result significant, and bias
+beyond that would not.
 
-Most observational causal estimates should have some sensitivity analysis.
-A minimum report is:
+## The marginal sensitivity model (weighting estimators)
 
-| Estimator family | What to report |
-|---|---|
-| Linear regression | Cinelli-Hazlett RV + benchmark comparison |
-| Risk-ratio analysis | E-value (point + CI) |
-| Matched / pair-based test | Critical $\Gamma$ from Rosenbaum bounds |
+The model below is Tan's [-@tan-2006-distributional], in the form used by
+@zhao-small-bhattacharya-2019. The sharp bounds are those of @dorn-guo-2023.
 
-When the result is fragile, the next step is either to improve measurement
-and adjustment or to report partial-identification bounds.
+Rosenbaum's model compares the two units of a matched pair. Weighting
+estimators have no pairs. They weight each unit by the inverse of its
+estimated propensity score, so the natural bound compares each unit's true
+propensity with that score.
+
+Let $Z$ be the treatment indicator, $X$ the observed covariates and $U$ an
+unobserved confounder. The nominal propensity score $e(x) = P(Z = 1 \mid X = x)$
+is the one we estimate. The true propensity score
+$e_0(x, u) = P(Z = 1 \mid X = x, U = u)$ also conditions on $U$. Let
+$\Lambda \ge 1$ be the sensitivity parameter. The marginal sensitivity model
+assumes, for all $x$ and $u$,
+
+$$
+\frac{1}{\Lambda} \le \frac{e_0(x,u) / \{1 - e_0(x,u)\}}{e(x) / \{1 - e(x)\}} \le \Lambda
+$$ {#eq-sensitivity-msm}
+
+[@zhao-small-bhattacharya-2019, Definition 3.1]. The confounder may move a
+unit's odds of treatment at most a factor $\Lambda$ away from what the
+covariates predict. At $\Lambda = 1$ there is no hidden bias.
+
+The bound on the odds becomes a bound on each weight. Write the odds of $e_0$
+as the odds of $e$ times a factor between $1/\Lambda$ and $\Lambda$, and solve
+for $1/e_0$. A treated unit's weight must lie in
+
+$$
+1 + \frac{1/e(x) - 1}{\Lambda} \le \frac{1}{e_0(x,u)} \le 1 + \Lambda \{1/e(x) - 1\}.
+$$ {#eq-sensitivity-msm-weights}
+
+A control's weight $1/\{1 - e_0(x,u)\}$ obeys the same interval with $e$
+replaced by $1 - e$. At $\Lambda = 1$ both intervals shrink to the usual
+weights.
+
+We estimate the mean outcome in each arm by the stabilized (Hajek) IPW
+estimator, the weighted mean of $Y$ in that arm, and the ATE by the
+difference of the two means. Under the model we no longer know the weights,
+only their intervals. @zhao-small-bhattacharya-2019 [eq. 4.12] take the
+smallest and largest weighted means over all weights in the intervals. The
+largest mean puts the top weight on units with the largest outcomes, so it is
+found by sorting $Y$ and scanning one cutoff.
+
+These bounds are valid but not sharp. Some weights in the intervals cannot be
+the true ones, because the true inverse propensities must average to the
+nominal ones at each value of $X$. @dorn-guo-2023 [Theorem 1, Proposition 2]
+impose this. In the sharp upper bound for an arm, the weight jumps from the
+low to the high end of @eq-sensitivity-msm-weights at the conditional
+$\tau$-quantile of $Y$ given $X$, with $\tau = \Lambda / (1 + \Lambda)$, not at
+one cutoff for the whole sample. Their Lemma 1 computes it with one weighted
+linear quantile regression of $Y$ on $X$ in the arm. The lower bound applies
+the same step to $-Y$. Subtracting the arm bounds gives bounds on the ATE, and
+these are sharp [@dorn-guo-2023, Theorem 2]. For a confidence interval we
+follow @zhao-small-bhattacharya-2019 [eq. 4.11]. In each bootstrap sample we
+refit the propensity score and recompute the bounds. The interval runs from
+the 2.5th percentile of the lower bounds to the 97.5th percentile of the upper
+bounds.
+
+The functions below implement both bounds. We checked them outside the book.
+At $\Lambda = 1$ both return the Hajek estimate. The sorting scan matches a
+search over every vertex of the weight box. Lemma 1 matches a direct linear
+programming solution of Dorn and Guo's problem. In a simulation where the
+model holds with $\Lambda = 1.5$, the interval at $\Lambda = 1.5$ covered the
+true ATE in 299 of 300 replications.
+
+```{julia}
+#| label: msm-functions
+#| cache: true
+# Interval for a unit's inverse true propensity under the marginal sensitivity
+# model. `e` is the nominal probability of the unit's own arm.
+msm_weight_box(e, Λ) = (r = 1 ./ e .- 1; (lo = 1 .+ r ./ Λ, hi = 1 .+ Λ .* r))
+
+# Zhao, Small and Bhattacharya (2019, eq. 4.12): smallest and largest weighted
+# mean of y over weights in [lo, hi]. The maximum gives weight hi to the k
+# largest outcomes and lo to the rest, for some k; we scan every k.
+function zsb_bounds(y, lo, hi)
+    function ext(y)
+        o = sortperm(y; rev = true)
+        y, l, h = y[o], lo[o], hi[o]
+        num = sum(l .* y) .+ [0; cumsum((h .- l) .* y)]
+        den = sum(l) .+ [0; cumsum(h .- l)]
+        maximum(num ./ den)
+    end
+    (lower = -ext(-y), upper = ext(y))
+end
+
+# Dorn and Guo (2023, Lemma 1): sharp upper bound from one weighted linear
+# quantile regression of y on (1, X) at tau = Λ / (1 + Λ), with weights
+# (1 - e) / e. The check function is positively homogeneous, so the weighted
+# fit is an unweighted fit on rows scaled by their weights. The weight is
+# 1 + Λ (1 - e) / e above the fitted quantile and 1 + (1 - e) / (e Λ) below it.
+function qb_upper(y, X, e, Λ)
+    τ = Λ / (1 + Λ)
+    G = [ones(length(y)) X]
+    w = (1 .- e) ./ e
+    q = G * QuantileRegressions.qreg_coef(w .* y, w .* G, τ, IP())
+    r = y .- q
+    (sum(r .* (1 .+ Λ .^ sign.(r) .* (1 .- e) ./ e)) + sum(q ./ e)) / sum(1 ./ e)
+end
+
+qb_bounds(y, X, e, Λ) = (lower = -qb_upper(-y, X, e, Λ), upper = qb_upper(y, X, e, Λ))
+
+# ATE bounds: treated arm with e, control arm with 1 - e, then subtract.
+function msm_ate_bounds(y, z, X, e, Λ; method = :qb)
+    arm(idx, p) = method == :qb ? qb_bounds(y[idx], X[idx, :], p, Λ) :
+                  (b = msm_weight_box(p, Λ); zsb_bounds(y[idx], b.lo, b.hi))
+    t1 = arm(z .== 1, e[z .== 1])
+    t0 = arm(z .== 0, 1 .- e[z .== 0])
+    (lower = t1.lower - t0.upper, upper = t1.upper - t0.lower)
+end
+```
+
+We apply them to NHEFS with the propensity score fitted above, on a grid
+$\Lambda \in [1, 2]$ in steps of 0.1, with 1,000 bootstrap samples:
+
+```{julia}
+#| label: msm-nhefs
+#| cache: true
+X = modelmatrix(ps_fit)[:, 2:end]   # the nine covariates, factors as dummies
+z = nhefs.qsmk
+y = nhefs.wt82_71
+lambdas = 1.0:0.1:2.0
+
+zsb = [msm_ate_bounds(y, z, X, nhefs.ps, L; method = :zsb) for L in lambdas]
+qb  = [msm_ate_bounds(y, z, X, nhefs.ps, L) for L in lambdas]
+
+# Percentile bootstrap: refit the propensity score in each resample and
+# recompute the sharp bounds. One seeded generator per draw, so the result
+# does not depend on the number of threads.
+B = 1000
+boot_lo = zeros(B, length(lambdas))
+boot_hi = zeros(B, length(lambdas))
+Threads.@threads for b in 1:B
+    i  = rand(Xoshiro(1000 + b), 1:length(y), length(y))
+    Xb = X[i, :]
+    eb = predict(glm([ones(length(i)) Xb], z[i], Binomial(), LogitLink()))
+    for (k, L) in enumerate(lambdas)
+        r = msm_ate_bounds(y[i], z[i], Xb, eb, L)
+        boot_lo[b, k], boot_hi[b, k] = r.lower, r.upper
+    end
+end
+
+msm_table = DataFrame(
+    Lambda    = collect(lambdas),
+    zsb_lower = getfield.(zsb, :lower), zsb_upper = getfield.(zsb, :upper),
+    qb_lower  = getfield.(qb, :lower),  qb_upper  = getfield.(qb, :upper),
+    ci_lower  = [quantile(boot_lo[:, k], 0.025) for k in eachindex(lambdas)],
+    ci_upper  = [quantile(boot_hi[:, k], 0.975) for k in eachindex(lambdas)])
+
+robust_lambda = maximum(msm_table.Lambda[msm_table.ci_lower .> 0])
+@printf("Largest Lambda on the grid with the 95%% CI above zero: %.1f\n", robust_lambda)
+transform(msm_table, Not(:Lambda) .=> (x -> round.(x, digits = 3)) .=> Not(:Lambda))
+```
+
+At $\Lambda = 1$ both bounds equal the IPW estimate, 3.339 kg, with a
+bootstrap interval from 2.399 to 4.297 kg. The bounds widen quickly. At
+$\Lambda = 1.5$ the sharp bounds run from 1.035 to 5.725 kg and the lower end
+of the interval is 0.192 kg. At $\Lambda = 1.6$ the lower end is $-0.153$ kg.
+So a confounder that moved each person's odds of quitting by up to a factor of
+1.5, beyond what the nine covariates predict, could not explain away the
+weight gain; one that moved them by a factor of 1.6 could. The sharp point
+bounds stay above zero up to $\Lambda = 1.8$, the ZSB bounds only up to 1.7.
+The sharp bounds are narrower at every $\Lambda$; at $\Lambda = 2$ they are
+7.961 kg wide against 8.672 kg.
+
+How does $\Lambda$ relate to Rosenbaum's $\Gamma$? Each model contains the
+other at a different value of its parameter
+[@zhao-small-bhattacharya-2019, Proposition 7.1]. Suppose
+@eq-sensitivity-rosenbaum holds with $\Gamma$. The nominal $e(x)$ is the
+average of $e_0(x, U)$ over $U$, so its odds lie between the smallest and
+largest true odds at $x$. Every true odds is then within a factor $\Gamma$ of
+the odds of $e(x)$, and @eq-sensitivity-msm holds with $\Lambda = \Gamma$. In
+the other direction, two units may sit a factor $\Lambda$ above and below the
+odds of $e(x)$, so @eq-sensitivity-msm with $\Lambda$ gives
+@eq-sensitivity-rosenbaum with $\Gamma = \Lambda^2$. A conclusion that
+survives $\Lambda = 1.5$ therefore survives every confounder Rosenbaum's model
+allows at $\Gamma = 1.5$. The two analyses above are still not directly
+comparable. The matched analysis tests a sharp null for the ATT with
+randomization inference; the weighting analysis bounds the ATE and uses the
+bootstrap.
+
+The four analyses do not share a scale. $\Gamma$ and $\Lambda$ bound odds
+ratios of treatment, the E-value bounds a risk ratio, and the robustness value
+is a partial $R^2$. They also ask different questions: $\Gamma$, $\Lambda$ and
+the E-value ask when the result stops being significant, the robustness value
+asks when the point estimate reaches zero. Reporting one of them is normal
+practice; the numbers should not be averaged or compared directly.
+
+## What about partial identification?
+
+The bounding tradition here starts with Manski [-@manski-1990-bounds]; Lee [-@lee-2009-bounds] gives the treatment-selection bounds used in applied work.
+
+When sensitivity analysis shows the point estimate is fragile, partial
+identification is often the next step. Instead of one estimate, report bounds
+under weaker assumptions.
+
+The Manski (1990) "no-assumption" bounds say:
+
+$$
+\begin{aligned}
+\text{ATE} &\ge \mathbb{E}[Y|D{=}1]P(D{=}1) - \mathbb{E}[Y|D{=}0]P(D{=}0) - K\,P(D{=}1), \\
+\text{ATE} &\le \mathbb{E}[Y|D{=}1]P(D{=}1) - \mathbb{E}[Y|D{=}0]P(D{=}0) + K\,P(D{=}0).
+\end{aligned}
+$$ {#eq-sensitivity-analysis-1}
+
+Each potential-outcome mean is split by the law of total expectation, filling
+in the unobserved arm with its worst/best case. With outcomes bounded in
+$Y \in [0, K]$, this is a single interval of width exactly $K$ — bounded, but
+often too wide to be useful. Tighter bounds come from adding structure to a
+specific problem: Lee (2009) bounds address sample selection/attrition (the
+outcome is observed only for selected units) by combining random assignment
+with monotone selection and trimming the over-selected arm. For IV settings,
+@mourifie-wan-2017 provide a test of the LATE identifying assumptions
+(instrument validity plus monotonicity).
+
+These bounds usually complement a point estimate. They are useful when the
+point estimate depends too much on an untestable assumption. The marginal
+sensitivity model sits between the two extremes: at $\Lambda = 1$ it gives the
+point estimate, and as $\Lambda$ grows its sharp bounds widen toward the
+no-assumption interval.
 
 ## Summary
 
 - Sensitivity analysis asks how strong hidden confounding must be to change
   the result.
-- Robustness values are useful for regression estimates.
+- Cinelli-Hazlett bounds are useful for regression estimates.
 - E-values are useful for risk ratios.
 - Rosenbaum bounds are useful for matched pairs.
-- The basic formulas are easy to implement directly in Julia.
+- The marginal sensitivity model is useful for weighting estimators; Dorn and
+  Guo's quantile-balancing bounds are sharp and need one quantile regression
+  per arm.
+- Observational causal estimates should usually include at least one
+  sensitivity analysis.
